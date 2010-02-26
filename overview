@@ -1,0 +1,86 @@
+/**
+
+@mainpage Kyoto Cabinet: a straightforward implementation of DBM
+
+@section Introduction
+
+Kyoto Cabinet is a library of routines for managing a database.  The database is a simple data file containing records, each is a pair of a key and a value.  Every key and value is serial bytes with variable length.  Both binary data and character string can be used as a key and a value.  Each key must be unique within a database.  There is neither concept of data tables nor data types.  Records are organized in hash table or B+ tree.
+
+The following access methods are provided to the database: storing a record with a key and a value, deleting a record by a key, retrieving a record by a key.  Moreover, traversal access to every key are provided.  These access methods are similar to ones of DBM (or its followers: NDBM and GDBM) library defined in the UNIX standard.  Kyoto Cabinet is an alternative for DBM because of its higher performance.
+
+Each operation of hash database has the time complexity of O(1).  So, in theory, the performance is consant regardless of the scale of the database.  In practice, the performance is determined by the speed of the main memory or the storage device.  If the size of the database is less than the capacity of the main memory, the performance will seem on-memory speed which is fastar than std::map of STL.  Of cource, the database size can be greater than the capacity of the main memory and the upper limit is 8 exabytes.  Even in that case, each operation needs only one or two seeking of the storage device.
+
+Each operation of B+ tree has the time complexity of O(log N).  So, in theory, the performance is logarithmic about the scale of the database.  Although the performance of random access of B+ tree is slower than that of hash database, B+ tree supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers.  The performance of sequential access is much faster than that of random access.
+
+As the API is based on object-oriented design, hash database and B+ tree database have same methods which inherited from the upper abstract class.  Prototype database by containers of STL and cache database with LRU deletion algorithm are also provided under the same base class.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.
+
+The following classes are most important.
+
+@li kyotocabinet::FileDB -- common interface of concrete databases
+@li kyotocabinet::ProtoDB -- prototype implementation of on-memory database with STL
+@li kyotocabinet::CacheDB -- on-memory hash database for cache with LRU deletion
+@li kyotocabinet::HashDB -- file hash database
+@li kyotocabinet::TreeDB -- file tree database
+
+See the project homepage ( http://1978th.net/kyotocabinet/ ) for detail.
+
+@section Example
+
+@code
+#include <kchashdb.h>
+
+using namespace std;
+using namespace kyotocabinet;
+
+int main(int argc, char** argv) {
+
+  // create the database object
+  HashDB db;
+
+  // open the database
+  if (!db.open("casket.kch", FileDB::OWRITER | FileDB::OCREATE)) {
+    cout << "open error: " << db.error().string() << endl;
+  }
+
+  // store records
+  if (!db.set("foo", "hop") ||
+     !db.set("bar", "step") ||
+     !db.set("baz", "jump")) {
+    cout << "set error: " << db.error().string() << endl;
+  }
+
+  // retrieve records
+  string* value = db.get("foo");
+  if (value) {
+    cout << *value << endl;
+    delete value;
+  } else {
+    cout << "get error: " << db.error().string() << endl;
+  }
+
+  // traverse records
+  class Traverser : public DB::Visitor {
+    const char* visit_full(const char* kbuf, size_t ksiz,
+                           const char* vbuf, size_t vsiz, size_t *sp) {
+      cout << string(kbuf, ksiz) << ":" << string(vbuf, vsiz) << endl;
+      return NOP;
+    }
+  } traverser;
+  db.iterate(&traverser, false);
+
+  // close the database
+  if (!db.close()) {
+    cout << "close error: " << db.error().string() << endl;
+  }
+
+  return 0;
+}
+@endcode
+
+*/
+
+
+/**
+ * Common namespace of Kyoto Cabinet.
+ */
+namespace kyotocabinet {}

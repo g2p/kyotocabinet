@@ -1,0 +1,236 @@
+# Source of configuration for Kyoto Cabinet
+
+
+
+#================================================================
+# Generic Settings
+#================================================================
+
+# Package name
+AC_INIT(kyotocabinet, 0.5.19)
+
+# Package information
+MYLIBVER=1
+MYLIBREV=2
+MYFORMATVER=3
+
+# Targets
+MYHEADERFILES="kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h"
+MYHEADERFILES="$MYHEADERFILES kcprotodb.h kccachedb.h kchashdb.h kctreedb.h"
+MYLIBRARYFILES="libkyotocabinet.a"
+MYLIBOBJFILES="kcutil.o kcdb.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o"
+MYLIBOBJFILES="$MYLIBOBJFILES kcprotodb.o kccachedb.o kchashdb.o kctreedb.o"
+MYCOMMANDFILES="kcutiltest kcutilcodec kcprototest kccachetest"
+MYCOMMANDFILES="$MYCOMMANDFILES kchashtest kchashmgr kctreetest kctreemgr"
+MYMAN1FILES="kcutiltest.1 kcutilcodec.1 kcprototest.1 kccachetest.1"
+MYMAN1FILES="$MYMAN1FILES kchashtest.1 kchashmgr.1 kctreetest.1 kctreemgr.1"
+MYDOCUMENTFILES="COPYING ChangeLog THANKS doc kyotocabinet.idl"
+MYPCFILES="kyotocabinet.pc"
+
+# Building flags
+MYCXXFLAGS="-Wall -fPIC -fsigned-char -O2"
+MYCPPFLAGS="-I. -I\$(INCLUDEDIR) -I$HOME/include -I/usr/local/include"
+MYCPPFLAGS="$MYCPPFLAGS -DNDEBUG -D_GNU_SOURCE=1"
+MYCPPFLAGS="$MYCPPFLAGS -D_FILE_OFFSET_BITS=64 -D_REENTRANT -D__EXTENSIONS__"
+MYLDFLAGS="-L. -L\$(LIBDIR) -L$HOME/lib -L/usr/local/lib"
+MYCMDLDFLAGS=""
+MYRUNPATH="\$(LIBDIR)"
+MYLDLIBPATHENV="LD_LIBRARY_PATH"
+MYPOSTCMD="true"
+
+# Building paths
+PATH="$PATH:$HOME/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin"
+PATH="$PATH:/opt/SUNWspro/bin:/usr/ccs/bin:/usr/xpg4/bin:/usr/xpg6/bin:/usr/ucb"
+CPATH="$HOME/include:/usr/local/include:$CPATH"
+LIBRARY_PATH="$HOME/lib:/usr/local/lib:$LIBRARY_PATH"
+LD_LIBRARY_PATH="$HOME/lib:/usr/local/lib:$LD_LIBRARY_PATH"
+PKG_CONFIG_PATH="$HOME/lib/pkgconfig:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PATH CPATH LIBRARY_PATH LD_LIBRARY_PATH PKG_CONFIG_PATH
+
+
+
+#================================================================
+# Options
+#================================================================
+
+
+# Internal variables
+enables=""
+
+# Debug mode
+AC_ARG_ENABLE(debug,
+  AC_HELP_STRING([--enable-debug], [build for debugging]))
+if test "$enable_debug" = "yes"
+then
+  MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O0"
+  MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG"
+  MYCMDLDFLAGS="$MYCMDLDFLAGS -static"
+  enables="$enables (debug)"
+fi
+
+# Developping mode
+AC_ARG_ENABLE(devel,
+  AC_HELP_STRING([--enable-devel], [build for development]))
+if test "$enable_devel" = "yes"
+then
+  MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O2 -fno-inline -pipe"
+  MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG"
+  enables="$enables (devel)"
+fi
+
+# Profiling mode
+AC_ARG_ENABLE(profile,
+  AC_HELP_STRING([--enable-profile], [build for profiling]))
+if test "$enable_profile" = "yes"
+then
+  MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -pg -O2 -fno-inline -pipe"
+  enables="$enables (profile)"
+fi
+
+# Static mode
+AC_ARG_ENABLE(static,
+  AC_HELP_STRING([--enable-static], [build by static linking]))
+if test "$enable_static" = "yes"
+then
+  MYCMDLDFLAGS="$MYCMDLDFLAGS -static"
+  enables="$enables (static)"
+fi
+
+# Disable shared object
+AC_ARG_ENABLE(shared,
+  AC_HELP_STRING([--disable-shared], [avoid to build shared libraries]))
+if test "$enable_shared" = "no"
+then
+  enables="$enables (no-shared)"
+fi
+
+# Disable zlib compression
+AC_ARG_ENABLE(zlib,
+  AC_HELP_STRING([--disable-zlib], [build without zlib compression]))
+if test "$enable_zlib" = "no"
+then
+  MYCPPFLAGS="$MYCPPFLAGS -D_MYNOZLIB"
+  enables="$enables (no-zlib)"
+fi
+
+# Disable atomic operations
+AC_ARG_ENABLE(atomic,
+  AC_HELP_STRING([--disable-atomic], [build without atomic operations]))
+if test "$enable_atomic" = "no"
+then
+  MYCPPFLAGS="$MYCPPFLAGS -D_MYNOATOMIC"
+  enables="$enables (no-atomic)"
+fi
+
+# Messages
+printf '#================================================================\n'
+printf '# Configuring Kyoto Cabinet version %s%s.\n' "$PACKAGE_VERSION" "$enables"
+printf '#================================================================\n'
+
+
+
+#================================================================
+# Checking Commands and Libraries
+#================================================================
+
+# C and C++ compilers
+AC_PROG_CC
+AC_PROG_CXX
+
+# Reset variables
+if test "$GCC" != "yes"
+then
+  AC_MSG_WARN([another compiler except for GCC was detected])
+  MYCXXFLAGS=""
+fi
+test -n "$CXXFLAGS" && MYCXXFLAGS="$CXXFLAGS $MYCXXFLAGS"
+test -n "$CPPFLAGS" && MYCPPFLAGS="$CPPFLAGS $MYCPPFLAGS"
+test -n "$LDFLAGS" && MYLDFLAGS="$LDFLAGS $MYLDFLAGS"
+
+# Byte order
+AC_C_BIGENDIAN(MYCPPFLAGS="$MYCPPFLAGS -D_MYBIGEND")
+
+# Atomic operations
+if test "$GCC" == "yes"
+then
+  if uname -a | egrep ' x86_64' >/dev/null
+  then
+    MYCPPFLAGS="$MYCPPFLAGS -D_MYGCCATOMIC"
+  elif uname -a | egrep ' i686' >/dev/null
+  then
+    MYCPPFLAGS="$MYCPPFLAGS -D_MYGCCATOMIC"
+    MYCXXFLAGS="$MYCXXFLAGS -march=i686"
+  fi
+fi
+
+# Underlying libraries
+AC_CHECK_LIB(c, main)
+AC_CHECK_LIB(m, main)
+AC_CHECK_LIB(pthread, main)
+AC_CHECK_LIB(rt, main)
+AC_CHECK_LIB(stdc++, main)
+if test "$enable_zlib" != "no"
+then
+  AC_CHECK_LIB(z, main)
+fi
+AC_CHECK_LIB(kyotocabinet, main, AC_MSG_WARN([old version of Kyoto Cabinet was detected]))
+
+# Necessary headers
+AC_CHECK_HEADER(stdlib.h, true, AC_MSG_ERROR([stdlib.h is required]))
+AC_CHECK_HEADER(stdint.h, true, AC_MSG_ERROR([stdint.h is required]))
+AC_CHECK_HEADER(unistd.h, true, AC_MSG_ERROR([unistd.h is required]))
+AC_CHECK_HEADER(dirent.h, true, AC_MSG_ERROR([dirent.h is required]))
+AC_CHECK_HEADER(pthread.h, true, AC_MSG_ERROR([pthread.h is required]))
+
+# Shared libraries
+if test "$enable_shared" != "no" && test "$enable_profile" != "yes"
+then
+  if uname | grep Darwin >/dev/null
+  then
+    MYLIBRARYFILES="$MYLIBRARYFILES libkyotocabinet.$MYLIBVER.$MYLIBREV.0.dylib"
+    MYLIBRARYFILES="$MYLIBRARYFILES libkyotocabinet.$MYLIBVER.dylib"
+    MYLIBRARYFILES="$MYLIBRARYFILES libkyotocabinet.dylib"
+    MYLDLIBPATHENV="DYLD_LIBRARY_PATH"
+  else
+    MYLIBRARYFILES="$MYLIBRARYFILES libkyotocabinet.so.$MYLIBVER.$MYLIBREV.0"
+    MYLIBRARYFILES="$MYLIBRARYFILES libkyotocabinet.so.$MYLIBVER"
+    MYLIBRARYFILES="$MYLIBRARYFILES libkyotocabinet.so"
+  fi
+fi
+
+
+
+#================================================================
+# Generic Settings
+#================================================================
+
+# Export variables
+AC_SUBST(MYLIBVER)
+AC_SUBST(MYLIBREV)
+AC_SUBST(MYFORMATVER)
+AC_SUBST(MYHEADERFILES)
+AC_SUBST(MYLIBRARYFILES)
+AC_SUBST(MYLIBOBJFILES)
+AC_SUBST(MYCOMMANDFILES)
+AC_SUBST(MYMAN1FILES)
+AC_SUBST(MYDOCUMENTFILES)
+AC_SUBST(MYPCFILES)
+AC_SUBST(MYCXXFLAGS)
+AC_SUBST(MYCPPFLAGS)
+AC_SUBST(MYLDFLAGS)
+AC_SUBST(MYCMDLDFLAGS)
+AC_SUBST(MYRUNPATH)
+AC_SUBST(MYLDLIBPATHENV)
+AC_SUBST(MYPOSTCMD)
+
+# Targets
+AC_OUTPUT(Makefile kyotocabinet.pc)
+
+# Messages
+printf '#================================================================\n'
+printf '# Ready to make.\n'
+printf '#================================================================\n'
+
+
+
+# END OF FILE

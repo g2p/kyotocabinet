@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Language" content="en" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta name="author" content="Mikio Hirabayashi" />
+<meta name="keywords" content="Kyoto Cabinet, kyotocabinet, database, DBM" />
+<meta name="description" content="Specifications of Kyoto Cabinet" />
+<link rel="contents" href="./" />
+<link rel="stylesheet" href="common.css" />
+<link rel="icon" href="icon16.png" />
+<link rev="made" href="mailto:hirarin@gmail.com" />
+<title>Fundamental Specifications of Kyoto Cabinet Version 1</title>
+</head>
+
+<body>
+
+<h1 id="headline">Fundamental Specifications of Kyoto Cabinet Version 1</h1>
+
+<div class="note">Copyright (C) 2009-2010 Mikio Hirabayashi</div>
+<div class="note">Last Update: Sat, 26 Dec 2009 21:42:20 +0900</div>
+
+<hr />
+
+<h2 id="contents">Table of Contents</h2>
+
+<ol>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#tutorial">Tutorial</a></li>
+<li><a href="#command">Command Line Utilities</a></li>
+<li><a href="#license">License</a></li>
+</ol>
+
+<hr />
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Kyoto Cabinet is a library of routines for managing a database.  The database is a simple data file containing records, each is a pair of a key and a value.  Every key and value is serial bytes with variable length.  Both binary data and character string can be used as a key and a value.  Each key must be unique within a database.  There is neither concept of data tables nor data types.  Records are organized in hash table or B+ tree.</p>
+
+<p>The following access methods are provided to the database: storing a record with a key and a value, deleting a record by a key, retrieving a record by a key.  Moreover, traversal access to every key are provided.  These access methods are similar to ones of DBM (or its followers: NDBM and GDBM) library defined in the UNIX standard.  Kyoto Cabinet is an alternative for DBM because of its higher performance.</p>
+
+<p>Each operation of hash database has the time complexity of O(1).  So, in theory, the performance is consant regardless of the scale of the database.  In practice, the performance is determined by the speed of the main memory or the storage device.  If the size of the database is less than the capacity of the main memory, the performance will seem on-memory speed which is fastar than std::map of STL.  Of cource, the database size can be greater than the capacity of the main memory and the upper limit is 8 exabytes.  Even in that case, each operation needs only one or two seeking of the storage device.</p>
+
+<p>Each operation of B+ tree has the time complexity of O(log N).  So, in theory, the performance is logarithmic about the scale of the database.  Although the performance of random access of B+ tree is slower than that of hash database, B+ tree supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers.  The performance of sequential access is much faster than that of random access.</p>
+
+<p>As the API is based on object-oriented design, hash database and B+ tree database have same methods which inherited from the upper abstract class.  Prototype database by containers of STL and cache database with LRU deletion algorithm are also provided under the same base class.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.</p>
+
+<p>Kyoto Cabinet is written in the C++ language, and provided as API of C++.  Kyoto Cabinet is available on platforms which have API conforming to C++03 with the TR1 library extensions.  Kyoto Cabinet is a free software licensed under the GNU General Public License.</p>
+
+<hr />
+
+<h2 id="installation">Installation</h2>
+
+<p>This section describes how to install Kyoto Cabinet with the source package.  As for a binary package, see its installation manual.</p>
+
+<h3 id="installation_preparation">Preparation</h3>
+
+<p>Kyoto Cabinet is available on UNIX-like systems.  At least, the following environments are supported.</p>
+
+<ul>
+<li>Linux 2.4 and later (x86-32/x86-64/PowerPC/Alpha/SPARC)</li>
+<li>Mac OS X 10.3 and later (x86-32/x86-64/PowerPC)</li>
+</ul>
+
+<p><code>gcc</code> 4.1 or later and <code>make</code> are required to install Kyoto Cabinet with the source package.  They are installed by default on Linux, FreeBSD and so on.</p>
+
+<p>As Kyoto Cabinet depends on the following libraries, install them beforehand.</p>
+
+<ul>
+<li><a href="http://www.zlib.net/">zlib</a> : for loss-less data compression.  1.2.3 or later is suggested.</li>
+</ul>
+
+<h3 id="installation_installation">Installation</h3>
+
+<p>When an archive file of Kyoto Cabinet is extracted, change the current working directory to the generated directory and perform installation.</p>
+
+<p>Run the configuration script.</p>
+
+<pre>./configure
+</pre>
+
+<p>Build programs.</p>
+
+<pre>make
+</pre>
+
+<p>Perform self-diagnostic test.</p>
+
+<pre>make check
+</pre>
+
+<p>Install programs.  This operation must be carried out by the <code>root</code> user.</p>
+
+<pre>make install
+</pre>
+
+<h3 id="installation_result">Result</h3>
+
+<p>When a series of work finishes, the following files will be installed.</p>
+
+<pre>/usr/local/include/kccommon.h
+/usr/local/include/kcutil.h
+/usr/local/include/kcdb.h
+/usr/local/include/kcthread.h
+/usr/local/include/kcfile.h
+/usr/local/include/kccompress.h
+/usr/local/include/kccompare.h
+/usr/local/include/kcmap.h
+/usr/local/include/kcprotodb.h
+/usr/local/include/kccachedb.h
+/usr/local/include/kchashdb.h
+/usr/local/include/kctreedb.h
+/usr/local/lib/libkyotocabinet.a
+/usr/local/lib/libkyotocabinet.so.x.y.z
+/usr/local/lib/libkyotocabinet.so.x
+/usr/local/lib/libkyotocabinet.so
+/usr/local/lib/pkgconfig/kyotocabinet.pc
+/usr/local/bin/kcutiltest
+/usr/local/bin/kcutilcodec
+/usr/local/bin/kcprototest
+/usr/local/bin/kccachetest
+/usr/local/bin/kchashtest
+/usr/local/bin/kchashmgr
+/usr/local/bin/kctreetest
+/usr/local/bin/kctreemgr
+/usr/local/share/kyotocabinet/...
+/usr/local/man/man1/...
+</pre>
+
+<h3 id="installation_option">Options of Configure</h3>
+
+<p>The following options can be specified with `<code>./configure</code>'.</p>
+
+<ul class="options">
+<li><code>--enable-debug</code> : build for debugging.  Enable debugging symbols, do not perform optimization, and perform static linking.</li>
+<li><code>--enable-devel</code> : build for development.  Enable debugging symbols, perform optimization, and perform dynamic linking.</li>
+<li><code>--enable-profile</code> : build for profiling.  Enable profiling symbols, perform optimization, and perform dynamic linking.</li>
+<li><code>--enable-static</code> : build by static linking.</li>
+<li><code>--disable-shared</code> :  avoid to build shared libraries.</li>
+<li><code>--disable-zlib</code> : build without ZLIB compression.</li>
+<li><code>--disable-atomic</code> : build without atomic operations.</li>
+</ul>
+
+<p>`<code>--prefix</code>' and other options are also available as with usual UNIX software packages.  If you want to install Kyoto Cabinet under `<code>/usr</code>' not `<code>/usr/local</code>', specify `<code>--prefix=/usr</code>'.  As well, the library search path does not include `<code>/usr/local/lib</code>', it is necessary to set the environment variable `<code>LD_LIBRARY_PATH</code>' to include `<code>/usr/local/lib</code>' before running applications of Kyoto Cabinet.</p>
+
+<h3 id="installation_library">How to Use the Library</h3>
+
+<p>Kyoto Cabinet provides API of the C++ language and it is available by programs conforming to the C++03 standard.  As the header files of Kyoto Cabinet are provided as `<code>kcutil.h</code>', `<code>kchashdb.h</code>', and so on, applications should include one or more of them accordingly to use the API.  As the library is provided as `<code>libkyotocabinet.a</code>' and `<code>libkyotocabinet.so</code>' and they depends `<code>libz.so</code>', `<code>libstdc++.so</code>', `<code>librt.so</code>', `<code>libpthread.so</code>', `<code>libm.so</code>', and `<code>libc.so</code>', linker options corresponding to them are required by the build command.  The typical build command is the following.</p>
+
+<pre>g++ -I/usr/local/include example.cc -o example \
+  -L/usr/local/lib -lkyotocabinet -lz -lstdc++ -lrt -lpthread -lm -lc
+</pre>
+
+<hr />
+
+<h2 id="tutorial">Tutorial</h2>
+
+<p>This section describes how to use Kyoto Cabinet with the command line utilities and some sample application programs.</p>
+
+<h3 id="tutorial_kchashmgr">Command Line Utility for the File Hash Database</h3>
+
+<p>To begin with, let's build a file hash database with the command line utility `<code>kchashmgr</code>'.  The database stores a list of staffs of a company.  Each record is composed of the key and the value.  The key is the staff ID and the value is person's name.</p>
+
+<p>The database must be created just one time before any database operation.  Let's create a database file "casket.kch" with the default configuration.</p>
+
+<pre>$ kchashmgr create staffs.kch
+</pre>
+
+<p>Register some staffs into the database.</p>
+
+<pre>$ kchashmgr set staffs.kch 1001 "George Washington"
+$ kchashmgr set staffs.kch 1002 "John Adams"
+$ kchashmgr set staffs.kch 1003 "Thomas Jefferson"
+$ kchashmgr set staffs.kch 1004 "James Madison"
+</pre>
+
+<p>Check the current contents.</p>
+
+<pre>$ kchashmgr list -pv staffs.kch
+1001    George Washington
+1002    John Adams
+1003    Thomas Jefferson
+1004    James Madison
+</pre>
+
+<p>To retrieve the value of a record, search the database with the key.</p>
+
+<pre>$ kchashmgr get staffs.kch 1003
+Thomas Jefferson
+</pre>
+
+<p>Of cource, you can remove a record with the key.</p>
+
+<pre>$ kchashmgr remove staffs.kch 1003
+</pre>
+
+<p>That's all for the fundamental operations.  The DBM family have been improving performance thanks to discarding the functionality.</p>
+
+<h3 id="tutorial_kchashex">Sample Application of the File Hash Database</h3>
+
+<p>Next, let's write a sample application program handling a file hash database.  See the following source code.</p>
+
+<pre>#include &lt;kchashdb.h&gt;
+
+using namespace std;
+using namespace kyotocabinet;
+
+int main(int argc, char** argv) {
+
+  // create the database object
+  HashDB db;
+
+  // open the database
+  if (!db.open("casket.kch", FileDB::OWRITER | FileDB::OCREATE)) {
+    cout &lt;&lt; "open error: " &lt;&lt; db.error().string() &lt;&lt; endl;
+  }
+
+  // store records
+  if (!db.set("foo", "hop") ||
+     !db.set("bar", "step") ||
+     !db.set("baz", "jump")) {
+    cout &lt;&lt; "set error: " &lt;&lt; db.error().string() &lt;&lt; endl;
+  }
+
+  // retrieve records
+  string* value = db.get("foo");
+  if (value) {
+    cout &lt;&lt; *value &lt;&lt; endl;
+    delete value;
+  } else {
+    cout &lt;&lt; "get error: " &lt;&lt; db.error().string() &lt;&lt; endl;
+  }
+
+  // traverse records
+  class Traverser : public DB::Visitor {
+    const char* visit_full(const char* kbuf, size_t ksiz,
+                           const char* vbuf, size_t vsiz, size_t *sp) {
+      cout &lt;&lt; string(kbuf, ksiz) &lt;&lt; ":" &lt;&lt; string(vbuf, vsiz) &lt;&lt; endl;
+      return NOP;
+    }
+  } traverser;
+  db.iterate(&amp;traverser, false);
+
+  // close the database
+  if (!db.close()) {
+    cout &lt;&lt; "close error: " &lt;&lt; db.error().string() &lt;&lt; endl;
+  }
+
+  return 0;
+}
+</pre>
+
+<p>Save the above code as a file "example.cc".  Then, perform the following command line.  The command `<code>kcutilcodec conf</code>' prints the building configuration.</p>
+
+<pre>$ g++ `kcutilcodec conf -i` -o example example.cc `kcutilcodec conf -l`
+</pre>
+
+<p>Execute the application program built by the above.</p>
+
+<pre>$ ./example
+hop
+foo:hop
+bar:step
+baz:jump
+</pre>
+
+<p>The API of the file hash database is defined in the header `<code>kchash.h</code>'.  So, include the header near the front of a source file.  All symbols of Kyoto Cabinet are packaged in the name space `<code>kyotocabinet</code>'.  So, import the name space is useful.</p>
+
+<pre>#include &lt;kchashdb.h&gt;
+using namespace kyotocabinet;
+</pre>
+
+<p>The class `<code>HashDB</code>' contains all functionality of the file hash database and each instance expresses a file hash database file.</p>
+
+<pre>HashDB db;
+</pre>
+
+<p>Each database file must be opened by the `<code>open</code>' method before any database operation.  The flag `<code>FileDB::OWRITER</code>' means the process will update the database.  The flag `<code>FileDB::OCREAT</code>' means a database file will be created if it does not exist yet.</p>
+
+<pre>db.open("casket.kch", FileDB::OWRITER | FileDB::OCREATE);
+</pre>
+
+<p>Every opened database must be closed by the `<code>close</code>' method when it is no longer in use.  Closing the database is very important to avoid data corruption and memory leak.</p>
+
+<pre>db.close();
+</pre>
+
+<p>To store a record, use the `<code>set</code>' method with the key and the value.</p>
+
+<pre>db.put("foo", "hop");
+</pre>
+
+<p>To retrieve the value of a record, use the `<code>get</code>' method with the key.  The return value is NULL if no record corresponds to the key.  On success, the return value is the pointer to a dynamic object and it should be deleted explicitly after the use.</p>
+
+<pre>string* value = db.get("foo", "hop");
+if (value) {
+  cout &lt;&lt; *value &lt;&lt; endl;
+  delete value;
+}
+</pre>
+
+<p>Except for `<code>set</code>' and `<code>get</code>', there are other methods; `<code>add</code>', `<code>append</code>', `<code>remove</code>'.  Each method has two versions; for `<code>std::string</code>' parameters and for `<code>char*</code>' and `<code>size_t</code>' parameters.</p>
+
+<p>Traversing records is a bit complicated task.  It needs an object for call back operations.  The class must be implement the interface `<code>DB::Visitor</code>'.  The method `<code>visit_full</code>' is called for each record.  The parameters specify the pointer to key buffer, the length of the key buffer, the pointer to the value buffer, the length of the value buffer, and the pointer to the variable to notice the length of the return value.  The return value is `<code>NOP</code>' for no update, `<code>REMOVE</code>' to remove the record, or otherwise the pointer to the buffer contains arbitrary byte pattern to update the value.  The `<code>iterate</code>' method begins the iteration.  The second parameter is true for updating operation or false for non-updating operation.</p>
+
+<pre>class Traverser : public DB::Visitor {
+  const char* visit_full(const char* kbuf, size_t ksiz,
+                         const char* vbuf, size_t vsiz, size_t *sp) {
+    cout &lt;&lt; string(kbuf, ksiz) &lt;&lt; ":" &lt;&lt; string(vbuf, vsiz) &lt;&lt; endl;
+    return NOP;
+  }
+} traverser;
+db.iterate(&amp;traverser, false);
+</pre>
+
+<p>Though the `<code>accept</code>' method did not appear in the above sample, it is very useful.  It calls an arbitrary function with the same signature of the above iterator for a specified record.  As it is, almost all built-in operations as `<code>set</code>' and `<code>get</code>' are implemented with the `<code>accept</code>' method.  The following code is to store a record.</p>
+
+<pre>class Setter : public DB::Visitor {
+public:
+  Setter(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
+private:
+  const char* visit_full(const char* kbuf, size_t ksiz,
+                         const char* vbuf, size_t vsiz, size_t* sp) {
+    *sp = vsiz_;
+    return vbuf_;
+  }
+  const char* visit_empty(const char* kbuf, size_t ksiz, size_t* sp) {
+    *sp = vsiz_;
+    return vbuf_;
+  }
+  const char* vbuf_;
+  size_t vsiz_;
+};
+Setter setter("foo", 3);
+accept(kbuf, ksiz, &amp;setter, true);
+</pre>
+
+<p>You cau use the classes `<code>HashDB</code>', `<code>TreeDB</code>', `<code>ProtoHashDB</code>', `<code>ProtoTreeDB</code>', and `<code>CacheDB</code>' in the same way.  Please see the <a href="api/">the API documents</a> for detail.  Writing your own sample application is the best way to learn this library.</p>
+
+<hr />
+
+<h2 id="command">Command Line Utilities</h2>
+
+<p>This section describes how to use command line utilities.  They are useful to manage database contents and to test the library and its applications.</p>
+
+<h3 id="kcutiltest">kcutiltest</h3>
+
+<p>The command `<code>kcutiltest</code>' is a utility for facility test and performance test of the utility functions.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.  `<var>path</var>' specifies the path of a file.</p>
+
+<dl class="api">
+<dt><code>kcutiltest mutex [-th <var>num</var>] [-iv <var>num</var>] <var>rnum</var></code></dt>
+<dd>Performs test of lock primitives.</dd>
+<dt><code>kcutiltest file [-th <var>num</var>] [-rnd] [-msiz <var>num</var>] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs test of the filesystem abstraction.</dd>
+<dt><code>kcutiltest map [-rnd] <var>rnum</var></code></dt>
+<dd>Performs test of data mapping structures.</dd>
+<dt><code>kcutiltest misc <var>rnum</var></code></dt>
+<dd>Performs test of miscellaneous mechanisms.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
+<li><code>-iv <var>num</var></code> : specifies the interval between iterations.</li>
+<li><code>-rnd</code> : performs random test.</li>
+<li><code>-msiz <var>num</var></code> : specifies the size of the memory-mapped region.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<h3 id="kcutilcodec">kcutilcodec</h3>
+
+<p>The command `<code>kcutilcodec</code>' is a tool to use encoding and decoding features, or to show the configuration.  This command is used in the following format.</p>
+
+<dl class="api">
+<dt><code>kcutilcodec conf [-v|-i|-l|-p]</code></dt>
+<dd>Shows the configuration of Kyoto Cabinet.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-v</code> : show the version number of Kyoto Cabinet.</li>
+<li><code>-i</code> : show options to include the headers of Tokyo Cabinet.</li>
+<li><code>-l</code> : show options to link the library of Tokyo Cabinet.</li>
+<li><code>-p</code> : show the directory path of the commands.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<h3 id="kcprototest">kcprototest</h3>
+
+<p>The command `<code>kcprototest</code>' is a utility for facility test and performance test of the prototype database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
+
+<dl class="api">
+<dt><code>kcprototest order [-tree] [-th <var>num</var>] [-rnd] [-etc] [-tran] <var>rnum</var></code></dt>
+<dd>Performs in-order tests.</dd>
+<dt><code>kcprototest wicked [-tree] [-th <var>num</var>] [-it <var>num</var>] <var>rnum</var></code></dt>
+<dd>Performs mixed operations selected at random.</dd>
+<dt><code>kcprototest tran [-tree] [-th <var>num</var>] [-it <var>num</var>] <var>rnum</var></code></dt>
+<dd>Performs test of transaction.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-tree</code> : test the prototype tree database instead of the prototype hash database.</li>
+<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
+<li><code>-rnd</code> : performs random test.</li>
+<li><code>-etc</code> : performs miscellaneous operations.</li>
+<li><code>-tran</code> : performs transaction.</li>
+<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<h3 id="kccachetest">kccachetest</h3>
+
+<p>The command `<code>kccachetest</code>' is a utility for facility test and performance test of the cache database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
+
+<dl class="api">
+<dt><code>kccachetest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
+<dd>Performs in-order tests.</dd>
+<dt><code>kccachetest wicked [-th <var>num</var>] [-it <var>num</var>] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
+<dd>Performs mixed operations selected at random.</dd>
+<dt><code>kccachetest tran [-th <var>num</var>] [-it <var>num</var>] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
+<dd>Performs test of transaction.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
+<li><code>-rnd</code> : performs random test.</li>
+<li><code>-etc</code> : performs miscellaneous operations.</li>
+<li><code>-tran</code> : performs transaction.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
+<li><code>-capcnt <var>num</var></code> : specifies the muximum number of records.</li>
+<li><code>-capsiz <var>num</var></code> : specifies the muximum size of memory usage.</li>
+<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<h3 id="kchashtest">kchashtest</h3>
+
+<p>The command `<code>kchashtest</code>' is a utility for facility test and performance test of the file hash database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
+
+<dl class="api">
+<dt><code>kchashtest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs in-order tests.</dd>
+<dt><code>kchashtest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs mixed operations selected at random.</dd>
+<dt><code>kchashtest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs test of transaction.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
+<li><code>-rnd</code> : performs random test.</li>
+<li><code>-set</code> : performs setting operation only.</li>
+<li><code>-get</code> : performs getting operation only.</li>
+<li><code>-getw</code> : performs getting with a buffer operation only.</li>
+<li><code>-rem</code> : performs removing operation only.</li>
+<li><code>-etc</code> : performs miscellaneous operations.</li>
+<li><code>-tran</code> : performs transaction.</li>
+<li><code>-oat</code> : opens the database with the auto transaction option.</li>
+<li><code>-oas</code> : opens the database with the auto synchronization option.</li>
+<li><code>-onl</code> : opens the database with the no locking option.</li>
+<li><code>-otl</code> : opens the database with the try locking option.</li>
+<li><code>-onr</code> : opens the database with the no auto repair option.</li>
+<li><code>-apow <var>num</var></code> : specifies the power of the alignment of record size.</li>
+<li><code>-fpow <var>num</var></code> : specifies the power of the capacity of the free block pool.</li>
+<li><code>-ts</code> : tunes the database with the small option.</li>
+<li><code>-tl</code> : tunes the database with the linear option.</li>
+<li><code>-tc</code> : tunes the database with the compression option.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
+<li><code>-msiz <var>num</var></code> : specifies the size of the memory-mapped region.</li>
+<li><code>-dfunit <var>num</var></code> : specifies the unit step number of auto defragmentation.</li>
+<li><code>-erv</code> : reports all errors.</li>
+<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
+<li><code>-hard</code> : perfoms physical synchronization.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<h3 id="kchashmgr">kchashmgr</h3>
+
+<p>The command `<code>kchashmgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
+
+<dl class="api">
+<dt><code>kchashmgr create [-otr] [-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] <var>path</var></code></dt>
+<dd>Creates a database file.</dd>
+<dt><code>kchashmgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
+<dd>Prints status information.</dd>
+<dt><code>kchashmgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
+<dd>Stores a record.</dd>
+<dt><code>kchashmgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
+<dd>Removes a record.</dd>
+<dt><code>kchashmgr get [-onl|-otl|-onr] [-sx] [-px] [-pz] <var>path</var> <var>key</var></code></dt>
+<dd>Prints the value of a record.</dd>
+<dt><code>kchashmgr list [-onl|-otl|-onr] [-pv] [-px] <var>path</var></code></dt>
+<dd>Prints keys of all records, separated by line feeds.</dd>
+<dt><code>kchashmgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
+<dd>Imports records from a TSV file.</dd>
+<dt><code>kchashmgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
+<dd>Performs defragmentation.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-otr</code> : opens the database with the truncation option.</li>
+<li><code>-onl</code> : opens the database with the no locking option.</li>
+<li><code>-otl</code> : opens the database with the try locking option.</li>
+<li><code>-onr</code> : opens the database with the no auto repair option.</li>
+<li><code>-apow <var>num</var></code> : specifies the power of the alignment of record size.</li>
+<li><code>-fpow <var>num</var></code> : specifies the power of the capacity of the free block pool.</li>
+<li><code>-ts</code> : tunes the database with the small option.</li>
+<li><code>-tl</code> : tunes the database with the linear option.</li>
+<li><code>-tc</code> : tunes the database with the compression option.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
+<li><code>-st</code> : prints miscellaneous information.</li>
+<li><code>-add</code> : performs adding operation.</li>
+<li><code>-app</code> : performs appending operation.</li>
+<li><code>-inci</code> : performs integer increment operation.</li>
+<li><code>-incd</code> : performs real number increment operation.</li>
+<li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
+<li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
+<li><code>-pz</code> : does not append line feed at the end of the output.</li>
+<li><code>-pv</code> : prints values of records also.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<h3 id="kctreetest">kctreetest</h3>
+
+<p>The command `<code>kctreetest</code>' is a utility for facility test and performance test of the file tree database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
+
+<dl class="api">
+<dt><code>kctreetest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-ccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs in-order tests.</dd>
+<dt><code>kctreetest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-ccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs mixed operations selected at random.</dd>
+<dt><code>kctreetest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-ccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs test of transaction.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
+<li><code>-rnd</code> : performs random test.</li>
+<li><code>-set</code> : performs setting operation only.</li>
+<li><code>-get</code> : performs getting operation only.</li>
+<li><code>-getw</code> : performs getting with a buffer operation only.</li>
+<li><code>-rem</code> : performs removing operation only.</li>
+<li><code>-etc</code> : performs miscellaneous operations.</li>
+<li><code>-tran</code> : performs transaction.</li>
+<li><code>-oat</code> : opens the database with the auto transaction option.</li>
+<li><code>-oas</code> : opens the database with the auto synchronization option.</li>
+<li><code>-onl</code> : opens the database with the no locking option.</li>
+<li><code>-otl</code> : opens the database with the try locking option.</li>
+<li><code>-onr</code> : opens the database with the no auto repair option.</li>
+<li><code>-apow <var>num</var></code> : specifies the power of the alignment of record size.</li>
+<li><code>-fpow <var>num</var></code> : specifies the power of the capacity of the free block pool.</li>
+<li><code>-ts</code> : tunes the database with the small option.</li>
+<li><code>-tl</code> : tunes the database with the linear option.</li>
+<li><code>-tc</code> : tunes the database with the compression option.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
+<li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
+<li><code>-msiz <var>num</var></code> : specifies the size of the memory-mapped region.</li>
+<li><code>-dfunit <var>num</var></code> : specifies the unit step number of auto defragmentation.</li>
+<li><code>-ccap <var>num</var></code> : specifies the capacity size of the cache memory.</li>
+<li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
+<li><code>-erv</code> : reports all errors.</li>
+<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
+<li><code>-hard</code> : perfoms physical synchronization.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<h3 id="kctreemgr">kctreemgr</h3>
+
+<p>The command `<code>kctreemgr</code>' is a utility for test and debugging of the file tree database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
+
+<dl class="api">
+<dt><code>kctreemgr create [-otr] [-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-rcd] <var>path</var></code></dt>
+<dd>Creates a database file.</dd>
+<dt><code>kctreemgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
+<dd>Prints status information.</dd>
+<dt><code>kctreemgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
+<dd>Stores a record.</dd>
+<dt><code>kctreemgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
+<dd>Removes a record.</dd>
+<dt><code>kctreemgr get [-onl|-otl|-onr] [-sx] [-px] [-pz] <var>path</var> <var>key</var></code></dt>
+<dd>Prints the value of a record.</dd>
+<dt><code>kctreemgr list [-onl|-otl|-onr] [-pv] [-px] <var>path</var></code></dt>
+<dd>Prints keys of all records, separated by line feeds.</dd>
+<dt><code>kctreemgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
+<dd>Imports records from a TSV file.</dd>
+<dt><code>kctreemgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
+<dd>Performs defragmentation.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-otr</code> : opens the database with the truncation option.</li>
+<li><code>-onl</code> : opens the database with the no locking option.</li>
+<li><code>-otl</code> : opens the database with the try locking option.</li>
+<li><code>-onr</code> : opens the database with the no auto repair option.</li>
+<li><code>-apow <var>num</var></code> : specifies the power of the alignment of record size.</li>
+<li><code>-fpow <var>num</var></code> : specifies the power of the capacity of the free block pool.</li>
+<li><code>-ts</code> : tunes the database with the small option.</li>
+<li><code>-tl</code> : tunes the database with the linear option.</li>
+<li><code>-tc</code> : tunes the database with the compression option.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
+<li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
+<li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
+<li><code>-st</code> : prints miscellaneous information.</li>
+<li><code>-add</code> : performs adding operation.</li>
+<li><code>-app</code> : performs appending operation.</li>
+<li><code>-inci</code> : performs integer increment operation.</li>
+<li><code>-incd</code> : performs real number increment operation.</li>
+<li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
+<li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
+<li><code>-pz</code> : does not append line feed at the end of the output.</li>
+<li><code>-pv</code> : prints values of records also.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<hr />
+
+<h2 id="license">License</h2>
+
+<p>Kyoto Cabinet is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p>
+
+<p>Kyoto Cabinet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License along with this program.  If not, see `<code>http://www.gnu.org/licenses/</code>'.</p>
+
+<p>Kyoto Cabinet was written by Mikio Hirabayashi.  You can contact the author by e-mail to `<code>hirarin@gmail.com</code>'.</p>
+
+<hr />
+
+</body>
+
+</html>
+
+<!-- END OF FILE -->

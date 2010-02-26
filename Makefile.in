@@ -1,0 +1,574 @@
+# Makefile for Kyoto Cabinet
+
+
+
+#================================================================
+# Setting Variables
+#================================================================
+
+
+# Generic settings
+SHELL = @SHELL@
+
+# Package information
+PACKAGE = @PACKAGE_NAME@
+VERSION = @PACKAGE_VERSION@
+PACKAGEDIR = $(PACKAGE)-$(VERSION)
+PACKAGETGZ = $(PACKAGE)-$(VERSION).tar.gz
+LIBVER = @MYLIBVER@
+LIBREV = @MYLIBREV@
+FORMATVER = @MYFORMATVER@
+
+# Targets
+HEADERFILES = @MYHEADERFILES@
+LIBRARYFILES = @MYLIBRARYFILES@
+LIBOBJFILES = @MYLIBOBJFILES@
+COMMANDFILES = @MYCOMMANDFILES@
+MAN1FILES = @MYMAN1FILES@
+DOCUMENTFILES = @MYDOCUMENTFILES@
+PCFILES = @MYPCFILES@
+
+# Install destinations
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+INCLUDEDIR = @includedir@
+LIBDIR = @libdir@
+BINDIR = @bindir@
+LIBEXECDIR = @libexecdir@
+DATADIR = @datadir@/$(PACKAGE)
+MAN1DIR = @mandir@/man1
+PCDIR = @libdir@/pkgconfig
+DESTDIR =
+
+# Building configuration
+CXX = @CXX@
+CPPFLAGS = @MYCPPFLAGS@ \
+  -D_KC_PREFIX="\"$(prefix)\"" -D_KC_INCLUDEDIR="\"$(INCLUDEDIR)\"" \
+  -D_KC_LIBDIR="\"$(LIBDIR)\"" -D_KC_BINDIR="\"$(BINDIR)\"" -D_KC_LIBEXECDIR="\"$(LIBEXECDIR)\"" \
+  -D_KC_APPINC="\"-I$(INCLUDEDIR)\"" -D_KC_APPLIBS="\"-L$(LIBDIR) -lkyotocabinet @LIBS@\""
+CXXFLAGS = @MYCXXFLAGS@
+LDFLAGS = @MYLDFLAGS@
+CMDLDFLAGS = @MYCMDLDFLAGS@
+LIBS = @LIBS@
+LDENV = LD_RUN_PATH=/lib:/usr/lib:$(LIBDIR):$(HOME)/lib:/usr/local/lib:@MYRUNPATH@:.
+RUNENV = @MYLDLIBPATHENV@=.:/lib:/usr/lib:$(LIBDIR):$(HOME)/lib:/usr/local/lib:@MYRUNPATH@
+POSTCMD = @MYPOSTCMD@
+
+
+
+#================================================================
+# Suffix rules
+#================================================================
+
+
+.SUFFIXES :
+.SUFFIXES : .cc .o
+
+.cc.o :
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $<
+
+
+
+#================================================================
+# Actions
+#================================================================
+
+
+all : $(LIBRARYFILES) $(COMMANDFILES)
+	@$(POSTCMD)
+	@printf '\n'
+	@printf '#================================================================\n'
+	@printf '# Ready to install.\n'
+	@printf '#================================================================\n'
+
+
+clean :
+	rm -rf $(LIBRARYFILES) $(LIBOBJFILES) $(COMMANDFILES) $(CGIFILES) \
+	  *.o a.out check.in check.out gmon.out *.vlog words.tsv \
+	  casket* *.kch *.wal *.tmp *~ hoge moge tako ika
+
+
+version :
+	sed -e 's/_KC_VERSION.*/_KC_VERSION    "$(VERSION)"/' \
+	  -e "s/_KC_LIBVER.*/_KC_LIBVER     $(LIBVER)/" \
+	  -e "s/_KC_LIBREV.*/_KC_LIBREV     $(LIBREV)/" \
+	  -e 's/_KC_FMTVER.*/_KC_FMTVER     $(FORMATVER)/' myconf.h > myconf.h~
+	[ -f myconf.h~ ] && mv -f myconf.h~ myconf.h
+
+
+untabify :
+	ls *.cc *.h *.idl | while read name ; \
+	  do \
+	    sed -e 's/\t/        /g' -e 's/ *$$//' $$name > $$name~; \
+	    [ -f $$name~ ] && mv -f $$name~ $$name ; \
+	  done
+
+
+install :
+	mkdir -p $(DESTDIR)$(INCLUDEDIR)
+	cp -Rf $(HEADERFILES) $(DESTDIR)$(INCLUDEDIR)
+	mkdir -p $(DESTDIR)$(LIBDIR)
+	cp -Rf $(LIBRARYFILES) $(DESTDIR)$(LIBDIR)
+	mkdir -p $(DESTDIR)$(BINDIR)
+	cp -Rf $(COMMANDFILES) $(DESTDIR)$(BINDIR)
+	mkdir -p $(DESTDIR)$(DATADIR)
+	cp -Rf $(DOCUMENTFILES) $(DESTDIR)$(DATADIR)
+	mkdir -p $(DESTDIR)$(MAN1DIR)
+	cd man && cp -Rf $(MAN1FILES) $(DESTDIR)$(MAN1DIR)
+	mkdir -p $(DESTDIR)$(PCDIR)
+	cp -Rf $(PCFILES) $(DESTDIR)$(PCDIR)
+	[ "$$UID" == 0 ] && ldconfig || true
+	@printf '\n'
+	@printf '#================================================================\n'
+	@printf '# Thanks for using Kyoto Cabinet.\n'
+	@printf '#================================================================\n'
+
+
+install-strip :
+	make DESTDIR=$(DESTDIR) install
+	cd $(DESTDIR)$(BINDIR) && strip $(COMMANDFILES)
+
+
+uninstall :
+	cd $(DESTDIR)$(INCLUDEDIR) && rm -f $(HEADERFILES)
+	cd $(DESTDIR)$(LIBDIR) && rm -f $(LIBRARYFILES)
+	cd $(DESTDIR)$(BINDIR) && rm -f $(COMMANDFILES)
+	cd $(DESTDIR)$(MAN1DIR) && rm -f $(MAN1FILES)
+	rm -rf $(DESTDIR)$(DATADIR)
+	cd $(DESTDIR)$(PCDIR) && rm -f $(PCFILES)
+	[ "$$UID" == 0 ] && ldconfig || true
+
+
+dist :
+	make version
+	make untabify
+	make distclean
+	cd .. && tar cvf - $(PACKAGEDIR) | gzip -c > $(PACKAGETGZ)
+	sync ; sync
+
+
+distclean : clean
+	cd example && make clean
+	rm -rf Makefile kyotocabinet.pc config.cache config.log config.status autom4te.cache
+
+
+check :
+	make check-util
+	make check-proto
+	make check-cache
+	make check-hash
+	make check-tree
+	rm -rf casket*
+	@printf '\n'
+	@printf '#================================================================\n'
+	@printf '# Checking completed.\n'
+	@printf '#================================================================\n'
+
+
+check-util :
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcutilcodec --version
+	$(RUNENV) $(RUNCMD) ./kcutilcodec conf
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcutiltest mutex -th 4 -iv -1 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest file -th 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest file -th 4 -rnd -msiz 1m casket 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest map -bnum 1000 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest map -rnd -bnum 1000 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest misc 10000
+
+
+check-proto :
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcprototest order -etc 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest order -th 4 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest order -th 4 -rnd -etc 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest order -th 4 -rnd -etc -tran 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest wicked 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest wicked -th 4 -it 4 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest tran 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest tran -th 2 -it 4 10000
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcprototest order -tree -etc 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest order -tree -th 4 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest order -tree -th 4 -rnd -etc 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest order -tree -th 4 -rnd -etc -tran 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest wicked -tree 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest wicked -tree -th 4 -it 4 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest tran -tree 10000
+	$(RUNENV) $(RUNCMD) ./kcprototest tran -tree -th 2 -it 4 10000
+
+
+check-cache :
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kccachetest order -etc -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest order -th 4 -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest order -th 4 -rnd -etc -bnum 5000 -capcnt 10000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest order -th 4 -rnd -etc -bnum 5000 -capsiz 10000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest order -th 4 -rnd -etc -tran \
+	  -bnum 5000 -capcnt 10000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest wicked -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest wicked -th 4 -it 4 -bnum 5000 -capcnt 10000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest tran -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest tran -th 2 -it 4 -bnum 5000 10000
+
+
+check-hash :
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kchashmgr create -otr -apow 1 -fpow 2 -bnum 3 casket
+	$(RUNENV) $(RUNCMD) ./kchashmgr inform -st casket
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -add casket duffy 1231
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -add casket micky 0101
+	$(RUNENV) $(RUNCMD) ./kchashmgr set casket fal 1007
+	$(RUNENV) $(RUNCMD) ./kchashmgr set casket mikio 0211
+	$(RUNENV) $(RUNCMD) ./kchashmgr set casket natsuki 0810
+	$(RUNENV) $(RUNCMD) ./kchashmgr set casket micky ""
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -app casket duffy kukuku
+	$(RUNENV) $(RUNCMD) ./kchashmgr remove casket micky
+	$(RUNENV) $(RUNCMD) ./kchashmgr list -pv casket > check.out
+	$(RUNENV) $(RUNCMD) ./kchashmgr set casket ryu 1
+	$(RUNENV) $(RUNCMD) ./kchashmgr set casket ken 2
+	$(RUNENV) $(RUNCMD) ./kchashmgr remove casket duffy
+	$(RUNENV) $(RUNCMD) ./kchashmgr set casket ryu syo-ryu-ken
+	$(RUNENV) $(RUNCMD) ./kchashmgr set casket ken tatsumaki-senpu-kyaku
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -inci casket int 1234
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -inci casket int 5678
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -incd casket double 1234.5678
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -incd casket double 8765.4321
+	$(RUNENV) $(RUNCMD) ./kchashmgr get casket mikio
+	$(RUNENV) $(RUNCMD) ./kchashmgr get casket ryu
+	$(RUNENV) $(RUNCMD) ./kchashmgr import casket lab/numbers.tsv
+	$(RUNENV) $(RUNCMD) ./kchashmgr list -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kchashmgr defrag -onl casket
+	$(RUNENV) $(RUNCMD) ./kchashmgr inform -st casket
+	$(RUNENV) $(RUNCMD) ./kchashmgr create -otr -otl -onr -apow 1 -fpow 3 \
+	  -ts -tl -tc -bnum 1 casket
+	$(RUNENV) $(RUNCMD) ./kchashmgr import casket < lab/numbers.tsv
+	$(RUNENV) $(RUNCMD) ./kchashmgr set casket mikio kyotocabinet
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -app casket tako ikaunini
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -app casket mikio kyototyrant
+	$(RUNENV) $(RUNCMD) ./kchashmgr set -app casket mikio kyotodystopia
+	$(RUNENV) $(RUNCMD) ./kchashmgr get -px casket mikio > check.out
+	$(RUNENV) $(RUNCMD) ./kchashmgr list casket > check.out
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kchashtest order -set -bnum 5000 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -get -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -getw -msiz 5000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -rem -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -bnum 5000 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -etc \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -th 4 \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -th 4 -rnd -etc \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -th 4 -rnd -etc -tran \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -th 4 -rnd -etc -oat \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest order -th 4 -rnd -etc \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest wicked -bnum 5000 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest wicked -th 4 -it 4 \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest wicked -th 4 -it 4 -oat \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest wicked -th 4 -it 4 \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest tran casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest tran -th 2 -it 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashtest tran -th 2 -it 4 \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 casket 10000
+
+
+check-tree :
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kctreemgr create -otr -apow 1 -fpow 2 -bnum 3 casket
+	$(RUNENV) $(RUNCMD) ./kctreemgr inform -st casket
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -add casket duffy 1231
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -add casket micky 0101
+	$(RUNENV) $(RUNCMD) ./kctreemgr set casket fal 1007
+	$(RUNENV) $(RUNCMD) ./kctreemgr set casket mikio 0211
+	$(RUNENV) $(RUNCMD) ./kctreemgr set casket natsuki 0810
+	$(RUNENV) $(RUNCMD) ./kctreemgr set casket micky ""
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -app casket duffy kukuku
+	$(RUNENV) $(RUNCMD) ./kctreemgr remove casket micky
+	$(RUNENV) $(RUNCMD) ./kctreemgr list -pv casket > check.out
+	$(RUNENV) $(RUNCMD) ./kctreemgr set casket ryu 1
+	$(RUNENV) $(RUNCMD) ./kctreemgr set casket ken 2
+	$(RUNENV) $(RUNCMD) ./kctreemgr remove casket duffy
+	$(RUNENV) $(RUNCMD) ./kctreemgr set casket ryu syo-ryu-ken
+	$(RUNENV) $(RUNCMD) ./kctreemgr set casket ken tatsumaki-senpu-kyaku
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -inci casket int 1234
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -inci casket int 5678
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -incd casket double 1234.5678
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -incd casket double 8765.4321
+	$(RUNENV) $(RUNCMD) ./kctreemgr get casket mikio
+	$(RUNENV) $(RUNCMD) ./kctreemgr get casket ryu
+	$(RUNENV) $(RUNCMD) ./kctreemgr import casket lab/numbers.tsv
+	$(RUNENV) $(RUNCMD) ./kctreemgr list -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kctreemgr defrag -onl casket
+	$(RUNENV) $(RUNCMD) ./kctreemgr inform -st casket
+	$(RUNENV) $(RUNCMD) ./kctreemgr create -otr -otl -onr -apow 1 -fpow 3 \
+	  -ts -tl -tc -bnum 1 casket
+	$(RUNENV) $(RUNCMD) ./kctreemgr import casket < lab/numbers.tsv
+	$(RUNENV) $(RUNCMD) ./kctreemgr set casket mikio kyotocabinet
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -app casket tako ikaunini
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -app casket mikio kyototyrant
+	$(RUNENV) $(RUNCMD) ./kctreemgr set -app casket mikio kyotodystopia
+	$(RUNENV) $(RUNCMD) ./kctreemgr get -px casket mikio > check.out
+	$(RUNENV) $(RUNCMD) ./kctreemgr list casket > check.out
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kctreetest order -set \
+	  -psiz 100 -bnum 5000 -msiz 50000 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -get \
+	  -msiz 50000 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -getw \
+	  -msiz 5000 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -rem \
+	  -msiz 50000 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest order \
+	  -bnum 5000 -psiz 100 -msiz 50000 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -etc \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 -ccap 100k -rnd -etc \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k -rcd casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 -rnd -etc -tran \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k casket 1000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 -rnd -etc -oat \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k casket 5000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 -rnd -etc \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest wicked \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest wicked -th 4 -it 4 \
+	  -bnum 5000 -msiz 50000 -dfunit 4 -ccap 100k -rcd casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest wicked -th 4 -it 4 -oat \
+	  -bnum 5000 -msiz 50000 -dfunit 4 -ccap 100k casket 5000
+	$(RUNENV) $(RUNCMD) ./kctreetest wicked -th 4 -it 4 \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 casket 1000
+	$(RUNENV) $(RUNCMD) ./kctreetest tran casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest tran -th 2 -it 4 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest tran -th 2 -it 4 \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 -rcd casket 10000
+
+
+check-valgrind :
+	make RUNCMD="valgrind --tool=memcheck --log-file=%p.vlog" check
+	grep ERROR *.vlog | grep -v ' 0 errors' ; true
+	grep 'at exit' *.vlog | grep -v ' 0 bytes' ; true
+
+
+check-heavy :
+	make check-hash-heavy
+	make check-tree-heavy
+
+
+check-hash-heavy :
+	./kchashtest order -th 4 \
+	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashtest order -th 4 -rnd \
+	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashtest order -th 4 -etc \
+	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashtest order -th 4 -etc -rnd \
+	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashtest order -th 4 -etc -rnd \
+	  -ts -tl -tc -dfunit 2 casket 25000
+	./kchashtest wicked -th 4 -it 10 \
+	  -bnum 1000000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 casket 250000
+	./kchashtest wicked -th 4 -it 5 \
+	  -ts -tl -tc -dfunit 2 casket 25000
+	./kchashtest wicked -th 4 -it 2 -oat \
+	  -bnum 1000 -dfunit 8 casket 25000
+	./kchashtest wicked -th 4 -it 2 -oas \
+	  -bnum 1000 -dfunit 8 casket 2500
+	./kchashtest tran -th 4 -it 10 \
+	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashtest tran -th 4 -it 5 \
+	  -ts -tl -tc -dfunit 2 casket 250000
+
+
+check-tree-heavy :
+	./kctreetest order -th 4 \
+	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	./kctreetest order -th 4 -rnd \
+	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	./kctreetest order -th 4 -etc \
+	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	./kctreetest order -th 4 -etc -rnd \
+	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	./kctreetest order -th 4 -etc -rnd \
+	  -ts -tl -tc -dfunit 2 casket 25000
+	./kctreetest wicked -th 4 -it 5 \
+	  -bnum 100000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 -ccap 10m casket 250000
+	./kctreetest wicked -th 4 -it 2 \
+	  -ts -tl -tc -dfunit 2 -ccap 10m casket 25000
+	./kctreetest wicked -th 4 -it 2 -oat \
+	  -bnum 1000 -dfunit 8 -ccap 10m casket 25000
+	./kctreetest wicked -th 4 -it 2 -oas \
+	  -bnum 1000 -dfunit 8 -ccap 10m casket 2500
+	./kctreetest tran -th 4 -it 5 \
+	  -apow 2 -fpow 2 -bnum 50000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	./kctreetest tran -th 4 -it 2 \
+	  -ts -tl -tc -dfunit 2 -ccap 10m casket 250000
+
+
+check-forever :
+	while true ; \
+	  do \
+	    make check || break ; \
+	    make check || break ; \
+	    make check || break ; \
+	    make check || break ; \
+	    make check-heavy || break ; \
+	  done
+
+
+doc :
+	make docclean
+	mkdir -p doc/api
+	doxygen
+
+
+docclean :
+	rm -rf doc/api
+
+
+words.tsv :
+	cat /usr/share/dict/words | \
+	  tr '\t\r' '  ' | grep -v '^ *$$' | cat -n | sort | \
+	  LC_ALL=C sed -e 's/^ *//' -e 's/\(^[0-9]*\)\t\(.*\)/\2\t\1/' > words.tsv
+
+
+.PHONY : all clean install check doc
+
+
+
+#================================================================
+# Building binaries
+#================================================================
+
+
+libkyotocabinet.a : $(LIBOBJFILES)
+	$(AR) $(ARFLAGS) $@ $(LIBOBJFILES)
+
+
+libkyotocabinet.so.$(LIBVER).$(LIBREV).0 : $(LIBOBJFILES)
+	if uname -a | egrep -i 'SunOS' > /dev/null ; \
+	  then \
+	    $(CXX) $(CXXFLAGS) -shared -Wl,-G,-h,libkyotocabinet.so.$(LIBVER) -o $@ \
+	      $(LIBOBJFILES) $(LDFLAGS) $(LIBS) ; \
+	  else \
+	    $(CXX) $(CXXFLAGS) -shared -Wl,-soname,libkyotocabinet.so.$(LIBVER) -o $@ \
+	      $(LIBOBJFILES) $(LDFLAGS) $(LIBS) ; \
+	  fi
+
+
+libkyotocabinet.so.$(LIBVER) : libkyotocabinet.so.$(LIBVER).$(LIBREV).0
+	ln -f -s libkyotocabinet.so.$(LIBVER).$(LIBREV).0 $@
+
+
+libkyotocabinet.so : libkyotocabinet.so.$(LIBVER).$(LIBREV).0
+	ln -f -s libkyotocabinet.so.$(LIBVER).$(LIBREV).0 $@
+
+
+libkyotocabinet.$(LIBVER).$(LIBREV).0.dylib : $(LIBOBJFILES)
+	$(CXX) $(CXXFLAGS) -dynamiclib -o $@ \
+	  -install_name $(LIBDIR)/libkyotocabinet.$(LIBVER).dylib \
+	  -current_version $(LIBVER).$(LIBREV).0 -compatibility_version $(LIBVER) \
+	  $(LIBOBJFILES) $(LDFLAGS) $(LIBS)
+
+
+libkyotocabinet.$(LIBVER).dylib : libkyotocabinet.$(LIBVER).$(LIBREV).0.dylib
+	ln -f -s libkyotocabinet.$(LIBVER).$(LIBREV).0.dylib $@
+
+
+libkyotocabinet.dylib : libkyotocabinet.$(LIBVER).$(LIBREV).0.dylib
+	ln -f -s libkyotocabinet.$(LIBVER).$(LIBREV).0.dylib $@
+
+
+kcutiltest : kcutiltest.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kcutilcodec : kcutilcodec.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kcprototest : kcprototest.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kccachetest : kccachetest.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kchashtest : kchashtest.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kchashmgr : kchashmgr.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kctreetest : kctreetest.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kctreemgr : kctreemgr.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kcutil.o : kccommon.h kcutil.h myconf.h
+
+kcdb.o : kccommon.h kcutil.h kcdb.h myconf.h
+
+kcthread.o : kccommon.h kcutil.h kcthread.h myconf.h
+
+kcfile.o : kccommon.h kcutil.h kcthread.h kcfile.h myconf.h
+
+kccompress.o : kccommon.h kcutil.h kccompress.h myconf.h
+
+kccompare.o : kccommon.h kcutil.h kccompare.h myconf.h
+
+kcmap.o : kccommon.h kcutil.h kcmap.h myconf.h
+
+kcprotodb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h
+
+kccachedb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccachedb.h
+
+kchashdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kchashdb.h
+
+kctreedb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kchashdb.h kctreedb.h
+
+kcutiltest.o kcutilcodec.o : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  cmdcommon.h
+
+kcprototest.o : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h cmdcommon.h
+
+kccachetest.o : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccachedb.h cmdcommon.h
+
+kchashtest.o kchashmgr.o : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kchashdb.h cmdcommon.h
+
+kctreetest.o kctreemgr.o : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kchashdb.h kctreedb.h cmdcommon.h
+
+
+
+# END OF FILE

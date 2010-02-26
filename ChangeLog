@@ -1,0 +1,204 @@
+2010-02-16  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcthread.h (Thread::hash): new function.
+
+	* kchashdb.h (HashDB::accept): lock mechanism was modified to promotion locking.
+
+	* kchashdb.h (HashDB::adjust_record): a bug of boundary checking was fixed.
+
+	* kchashdb.h (HashDB::read_record): validation checking of size was added.
+
+	* kchashdb.h (HashDB::dfunit): new function.
+
+	- Release: 0.5.19
+
+2010-02-13  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (DB::get): new method.
+
+	* kccompress.h (ZlibRawCompressor): new class.
+
+	* kccompare.h, kccompare.cc: new files.
+
+	* kchashdb.h (HashDB::escape_cursors): end sentry escaping was added.
+
+	- Release: 0.5.18
+
+2010-02-11  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (Cursor::get, Cursor::get_pair): new functions.
+
+	* kchashmgr.c (runcreate, runinform): "-onr" option was added.
+
+	- Release: 0.5.17
+
+2010-02-08  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (typestring): new function.
+
+	* kcfile.c (File::refresh): new function.
+
+	* kctreedb.h, kctreedb.cc, kctreetest.cc, kctreemgr.cc: new files.
+
+	* kchashdb.h (HashDB::synchronize_opaque, HashDB::dump_opaque): new functions.
+
+	* kchashdb.h (HashDB::reorganize_file): new functions.
+
+	- Release: 0.5.16
+
+2010-02-07  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kchashdb.h (HashDB::abort_auto_transaction): new function.
+
+	* kchashdb.h (HashDB::accept_impl): a bug of race condition was fixed.
+
+	- Release: 0.5.15
+
+2010-02-04  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcfile.cc (File::begin_transaction, File::end_transaction): mmap is now used.
+
+	* kcfile.cc (File::write, File::write_fast): refactored.
+
+	* kchashtest.cc (procorder): a bug of integer overflow was fixed.
+
+	- Release: 0.5.14
+
+2010-02-03  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcfile.h (end_transaction, walapply): performance was improved.
+
+	* kchashdb.h (HashDB::commit_auto_transaction, HashDB::dump_auto_meta): new functions.
+
+	* kcutiltest.cc, kcprototest.cc, kccachetest.cc, kchashtest.cc: refactored for strace.
+
+	- Release: 0.5.13
+
+2010-02-02  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (CacheDB::open): OAUTOTRAN and OAUTOSYNC flags was added.
+
+	* kchashdb.h (HashDB::open): OAUTOTRAN and OAUTOSYNC flags was added.
+
+	* kchashdb.h (HashDB::calc_checksum): shuffling algo was modified.
+
+	* kcfile.cc (walapply): a bug of numeric overflow was fixed.
+
+	- Release: 0.5.12
+
+2010-02-01  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kccachedb.h (CacheDB::accept_impl): removing algo was modified.
+
+	* kccachedb.h (CacheDB::fold_hash): shuffling algo was modified.
+
+	* kchashdb.h (HashDB::cut_chain): removing algo was modified.
+
+	* kchashdb.h (HashDB::fold_hash): shuffling algo was modified.
+
+	* kcthread.h (PromotiveLock): abolished.
+
+	* kcthread.h (SpinRWLock::promote, SpinRWLock::demote): new functions.
+
+	- Release: 0.5.11
+
+2010-01-29  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kchashtest.c (runorder, procorder): a transaction parameter was added.
+
+	- Release: 0.5.10
+
+2010-01-26  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcthread.h (SpinRWLock, ScopedSpinRWLock, SlottedSpinRWLock): new classes.
+
+	* kcproto.h (ProtoDB): lock primitives were replaced by spin locks.
+
+	* kccachedb.h (CacheDB): lock primitives were replaced by spin locks.
+
+	* kchashdb.h (HashDB): lock primitives were replaced by spin locks.
+
+	- Release: 0.5.9
+
+2010-01-18  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kchashdb.h (HashDB::Cursor::accept) a bug of iterator increment was fixed.
+
+	* kcprotodb.h (ProtoDB::accept): the structure of the transaction log was fixed.
+
+	* kccachedb.h, kccachedb.cc, kccachetest.cc: new files.
+
+	- Release: 0.5.8
+
+2010-01-14  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcprotodb.h (ProtoDB): rewritten as a template class.
+
+	* kchashdb.h (HashDB::dump_free_blocks): a buf related to addressing was fixed.
+
+	* kcprototest.cc: new file.
+
+	- Release: 0.5.7
+
+2010-01-05  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcfile.cc (File::end_transaction): a bug of memory management vioration was fixed.
+
+	- Release: 0.5.6
+
+2010-01-05  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcfile.cc (walpath, walwrite, walapply, mywrite, myread): new functions.
+
+	* kcfile.cc (File::begin_transaction, File::end_transaction): new functions.
+
+	- Release: 0.5.5
+
+2010-01-04  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kchashdb.h (HashDB::trim_cursors, HashDB::disable_cursors): new functions.
+
+	* kchashdb.h (HashDB::tune_defrag, HashDB::defrag, HashDB::defrag_impl): new functions.
+
+	* kchashmgr.cc (rundefrag, procdefrag): new functions.
+
+	- Release: 0.5.4
+
+2010-01-03  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcutil.h (nearbyprime): performance was improved.
+
+	* kcfile.cc (File::expand): abolished.
+
+	* kcfile.cc (File::write): a bug of race condition was fixed.
+
+	- Release: 0.5.3
+
+2010-01-01  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kchashdb.h (HashDB::clear): implemented.
+
+	* cmdcommon.h: new file.
+
+	- Release: 0.5.2
+
+2009-12-27  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcprotodb.h (ProtoDB::accept): a bug of race condition was fixed.
+
+	* kchashdb.h (HashDB::calc_checksum): new function.
+
+	* kchashdb.h (HashDB::dump_meta, HashDB::load_meta): the data format was modified.
+
+	* kchashdb.h (HashDB::accept_impl): a bug of race condition was fixed.
+
+	* kcfile.cc (File::write): a bug of border vioration was fixed.
+
+	- Release: 0.5.1
+
+2009-12-25  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	- The initial version.
+
+	- Release: 0.5.0
+

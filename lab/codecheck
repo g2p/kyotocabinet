@@ -1,0 +1,87 @@
+#! /usr/bin/ruby -w
+
+#================================================================
+# formatcheck
+# Check files about compliance of the coding policy
+#================================================================
+
+
+SUFFIXES = /\.(h|cc)$/
+BADOPEN = /[^\w](if|while|for|switch)\(/
+BADCLOSE = /\)\{/
+BADTYPE = /[^\w](u)*(void|char|int|double|size_t|std::string)[0-9]*(_t)* +\*/
+BADFUNC = /[^:\w](memset|memcpy|strcpy|sprintf|memcmp|strcmp|strlen|strchr|strstr|isnan|nan)[^\w]/
+
+LIMITWIDTH = 97
+
+def checkfile(path)
+  printf("Checking: %s\n", path)
+  ok = true
+  open(path, "r") do |file|
+    num = 0
+    file.each do |line|
+      num += 1
+      line.chomp!
+      if line =~ /\s$/
+        printf("TRAINING SPACE: %s: %d: %s\n", path, num, line)
+        ok = false
+      end
+      if line =~ /\t/
+        printf("TAB CODE: %s: %d: %s\n", path, num, line)
+        ok = false
+      end
+      if line =~ BADOPEN
+        printf("BAD OPEN: %s: %d: %s\n", path, num, line)
+        ok = false
+      end
+      if line =~ BADCLOSE
+        printf("BAD CLOSE: %s: %d: %s\n", path, num, line)
+        ok = false
+      end
+      if line =~ BADTYPE
+        printf("BAD TYPE: %s: %d: %s\n", path, num, line)
+        ok = false
+      end
+      if line =~ BADFUNC
+        printf("BAD FUNC: %s: %d: %s\n", path, num, line)
+        ok = false
+      end
+      if line.length > LIMITWIDTH && !line.index("/*") && !line.index("*/")
+        printf("BAD WIDTH: %s: %d: %s\n", path, num, line)
+        ok = false
+      end
+    end
+  end
+  return ok
+end
+
+ok = true
+list = Array::new(ARGV)
+list.push(".") if list.empty?
+while !list.empty?
+  path = list.shift
+  begin
+    if File::ftype(path) == "directory"
+      Dir.entries(path).each do |cpath|
+        if cpath =~ SUFFIXES && cpath !~ /[#~]/
+          list.push(path + "/" + cpath)
+        end
+      end
+    else
+      ok = false if !checkfile(path)
+    end
+  rescue
+  end
+end
+
+if ok
+  printf("ALL OK\n")
+  exit(0)
+else
+  printf("ERROR\n")
+  exit(1)
+end
+
+
+
+# END OF FILE
