@@ -55,17 +55,21 @@ public:
      * Copy constructor.
      * @param src the source object.
      */
-    Iterator(const Iterator& src) : map_(src.map_), rec_(src.rec_) {}
+    Iterator(const Iterator& src) : map_(src.map_), rec_(src.rec_) {
+      _assert_(true);
+    }
     /**
      * Get the key.
      */
     const KEY& key() {
+      _assert_(true);
       return rec_->key;
     }
     /**
      * Get the value.
      */
     VALUE& value() {
+      _assert_(true);
       return rec_->value;
     }
     /**
@@ -74,6 +78,7 @@ public:
      * @return the reference to itself.
      */
     Iterator& operator =(const Iterator& right) {
+      _assert_(true);
       map_ = right.map_;
       rec_ = right.rec_;
       return *this;
@@ -83,7 +88,8 @@ public:
      * @param right the right operand.
      * @return true if the both are equal, or false if not.
      */
-    bool operator==(const Iterator& right) const {
+    bool operator ==(const Iterator& right) const {
+      _assert_(true);
       return map_ == right.map_ && rec_ == right.rec_;
     }
     /**
@@ -91,14 +97,16 @@ public:
      * @param right the right operand.
      * @return false if the both are equal, or true if not.
      */
-    bool operator!=(const Iterator& right) const {
+    bool operator !=(const Iterator& right) const {
+      _assert_(true);
       return map_ != right.map_ || rec_ != right.rec_;
     }
     /**
      * Preposting increment operator.
      * @return the iterator itself.
      */
-    Iterator& operator++() {
+    Iterator& operator ++() {
+      _assert_(true);
       rec_ = rec_->next;
       return *this;
     }
@@ -106,7 +114,8 @@ public:
      * Postpositive increment operator.
      * @return an iterator of the old position.
      */
-    Iterator operator++(int) {
+    Iterator operator ++(int) {
+      _assert_(true);
       Iterator old(*this);
       rec_ = rec_->next;
       return old;
@@ -115,7 +124,8 @@ public:
      * Preposting decrement operator.
      * @return the iterator itself.
      */
-    Iterator& operator--() {
+    Iterator& operator --() {
+      _assert_(true);
       if (rec_) {
         rec_ = rec_->prev;
       } else {
@@ -127,7 +137,8 @@ public:
      * Postpositive decrement operator.
      * @return an iterator of the old position.
      */
-    Iterator operator--(int) {
+    Iterator operator --(int) {
+      _assert_(true);
       Iterator old(*this);
       if (rec_) {
         rec_ = rec_->prev;
@@ -142,7 +153,9 @@ public:
      * @param map the container.
      * @param rec the pointer to the current record.
      */
-    explicit Iterator(LinkedHashMap* map, Record* rec) : map_(map), rec_(rec) {}
+    explicit Iterator(LinkedHashMap* map, Record* rec) : map_(map), rec_(rec) {
+      _assert_(map);
+    }
     /** The container. */
     LinkedHashMap* map_;
     /** The current record. */
@@ -161,6 +174,7 @@ public:
    */
   explicit LinkedHashMap() :
     buckets_(NULL), bnum_(LHMDEFBNUM), first_(NULL), last_(NULL), count_(0) {
+    _assert_(true);
     initialize();
   }
   /**
@@ -169,6 +183,7 @@ public:
    */
   explicit LinkedHashMap(size_t bnum) :
     buckets_(NULL), bnum_(bnum), first_(NULL), last_(NULL), count_(0) {
+    _assert_(true);
     if (bnum_ < 1) bnum_ = LHMDEFBNUM;
     initialize();
   }
@@ -176,6 +191,7 @@ public:
    * Destructor.
    */
   ~LinkedHashMap() {
+    _assert_(true);
     destroy();
   }
   /**
@@ -186,6 +202,7 @@ public:
    * @return the pointer to the value of the stored record.
    */
   VALUE *set(const KEY& key, const VALUE& value, MoveMode mode) {
+    _assert_(true);
     size_t bidx = hash_(key) % bnum_;
     Record* rec = buckets_[bidx];
     Record** entp = buckets_ + bidx;
@@ -254,6 +271,7 @@ public:
    * @return true on success, or false on failure.
    */
   bool remove(const KEY& key) {
+    _assert_(true);
     size_t bidx = hash_(key) % bnum_;
     Record* rec = buckets_[bidx];
     Record** entp = buckets_ + bidx;
@@ -282,6 +300,7 @@ public:
    * @return the pointer to the value of the migrated record, or NULL on failure.
    */
   VALUE* migrate(const KEY& key, LinkedHashMap* dist, MoveMode mode) {
+    _assert_(dist);
     size_t hash = hash_(key);
     size_t bidx = hash % bnum_;
     Record* rec = buckets_[bidx];
@@ -383,6 +402,7 @@ public:
    * @return the pointer to the value of the corresponding record, or NULL on failure.
    */
   VALUE* get(const KEY& key, MoveMode mode) {
+    _assert_(true);
     size_t bidx = hash_(key) % bnum_;
     Record* rec = buckets_[bidx];
     while (rec) {
@@ -427,6 +447,7 @@ public:
    * Remove all records.
    */
   void clear() {
+    _assert_(true);
     if (count_ < 1) return;
     Record* rec = last_;
     while (rec) {
@@ -445,18 +466,21 @@ public:
    * Get the number of records.
    */
   size_t count() {
+    _assert_(true);
     return count_;
   }
   /**
    * Get an iterator at the first record.
    */
   Iterator begin() {
+    _assert_(true);
     return Iterator(this, first_);
   }
   /**
    * Get an iterator of the end sentry.
    */
   Iterator end() {
+    _assert_(true);
     return Iterator(this, NULL);
   }
   /**
@@ -465,6 +489,7 @@ public:
    * @return the pointer to the value of the corresponding record, or NULL on failure.
    */
   Iterator find(const KEY& key) {
+    _assert_(true);
     size_t bidx = hash_(key) % bnum_;
     Record* rec = buckets_[bidx];
     while (rec) {
@@ -481,6 +506,7 @@ public:
    * @return the reference of the key of the first record.
    */
   const KEY& first_key() {
+    _assert_(true);
     return first_->key;
   }
   /**
@@ -488,6 +514,7 @@ public:
    * @return the reference of the value of the first record.
    */
   VALUE& first_value() {
+    _assert_(true);
     return first_->value;
   }
   /**
@@ -495,6 +522,7 @@ public:
    * @return the reference of the key of the last record.
    */
   const KEY& last_key() {
+    _assert_(true);
     return last_->key;
   }
   /**
@@ -502,6 +530,7 @@ public:
    * @return the reference of the value of the last record.
    */
   VALUE& last_value() {
+    _assert_(true);
     return last_->value;
   }
 private:
@@ -515,13 +544,16 @@ private:
     Record* prev;                        ///< previous record
     Record* next;                        ///< next record
     /** constructor */
-    Record(const KEY& k, const VALUE& v) :
-      key(k), value(v), child(NULL), prev(NULL), next(NULL) {}
+    explicit Record(const KEY& k, const VALUE& v) :
+      key(k), value(v), child(NULL), prev(NULL), next(NULL) {
+      _assert_(true);
+    }
   };
   /**
    * Initialize fields.
    */
   void initialize() {
+    _assert_(true);
     if (bnum_ >= LHMZMAPBNUM) {
       buckets_ = (Record**)mapalloc(sizeof(*buckets_) * bnum_);
     } else {
@@ -535,6 +567,7 @@ private:
    * Clean up fields.
    */
   void destroy() {
+    _assert_(true);
     Record* rec = last_;
     while (rec) {
       Record* prev = rec->prev;

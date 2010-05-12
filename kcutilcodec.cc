@@ -113,13 +113,15 @@ static int32_t procconf(int32_t mode) {
               (int)sizeof(void*), (int)sizeof(short), (int)sizeof(int), (int)sizeof(long),
               (int)sizeof(long long), (int)sizeof(size_t),
               (int)sizeof(float), (int)sizeof(double), (int)sizeof(long double));
-      iprintf("prefix: %s\n", _KC_PREFIX);
-      iprintf("includedir: %s\n", _KC_INCLUDEDIR);
-      iprintf("libdir: %s\n", _KC_LIBDIR);
-      iprintf("bindir: %s\n", _KC_BINDIR);
-      iprintf("libexecdir: %s\n", _KC_LIBEXECDIR);
-      iprintf("appinc: %s\n", _KC_APPINC);
-      iprintf("applibs: %s\n", _KC_APPLIBS);
+      if (std::strcmp(_KC_PREFIX, "*")) {
+        iprintf("prefix: %s\n", _KC_PREFIX);
+        iprintf("includedir: %s\n", _KC_INCLUDEDIR);
+        iprintf("libdir: %s\n", _KC_LIBDIR);
+        iprintf("bindir: %s\n", _KC_BINDIR);
+        iprintf("libexecdir: %s\n", _KC_LIBEXECDIR);
+        iprintf("appinc: %s\n", _KC_APPINC);
+        iprintf("applibs: %s\n", _KC_APPLIBS);
+      }
       break;
     }
   }

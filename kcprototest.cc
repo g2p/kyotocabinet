@@ -19,7 +19,7 @@
 
 // global variables
 const char* g_progname;                  // program name
-unsigned int g_randseed;                 // random seed
+uint32_t g_randseed;                     // random seed
 
 
 // function prototypes
@@ -27,12 +27,16 @@ int main(int argc, char** argv);
 static void usage();
 static void dberrprint(kc::FileDB* db, int32_t line, const char* func);
 static void dbmetaprint(kc::FileDB* db, bool verbose);
-static int runorder(int argc, char** argv);
-static int runwicked(int argc, char** argv);
-static int runtran(int argc, char** argv);
+static int32_t runorder(int argc, char** argv);
+static int32_t runqueue(int argc, char** argv);
+static int32_t runwicked(int argc, char** argv);
+static int32_t runtran(int argc, char** argv);
 template <class PROTODB>
 static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rnd,
                          bool etc, bool tran);
+template <class PROTODB>
+static int32_t procqueue(const char* tname, int64_t rnum, int32_t thnum, int32_t itnum,
+                         bool rnd);
 template <class PROTODB>
 static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_t itnum);
 template <class PROTODB>
@@ -42,13 +46,15 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
 // main routine
 int main(int argc, char** argv) {
   g_progname = argv[0];
-  const char* ebuf = getenv("KCRNDSEED");
-  g_randseed = ebuf ? kc::atoi(ebuf) : kc::time() * 1000;
+  const char* ebuf = kc::getenv("KCRNDSEED");
+  g_randseed = ebuf ? (uint32_t)kc::atoi(ebuf) : (uint32_t)(kc::time() * 1000);
   srand(g_randseed);
   if (argc < 2) usage();
   int32_t rv = 0;
   if (!std::strcmp(argv[1], "order")) {
     rv = runorder(argc, argv);
+  } else if (!std::strcmp(argv[1], "queue")) {
+    rv = runqueue(argc, argv);
   } else if (!std::strcmp(argv[1], "wicked")) {
     rv = runwicked(argc, argv);
   } else if (!std::strcmp(argv[1], "tran")) {
@@ -57,7 +63,7 @@ int main(int argc, char** argv) {
     usage();
   }
   if (rv != 0) {
-    iprintf("FAILED: KCRNDSEED=%u PID=%d", g_randseed, (int)getpid());
+    iprintf("FAILED: KCRNDSEED=%u PID=%ld", g_randseed, (long)kc::getpid());
     for (int32_t i = 0; i < argc; i++) {
       iprintf(" %s", argv[i]);
     }
@@ -73,6 +79,7 @@ static void usage() {
   eprintf("\n");
   eprintf("usage:\n");
   eprintf("  %s order [-tree] [-th num] [-rnd] [-etc] [-tran] rnum\n", g_progname);
+  eprintf("  %s queue [-tree] [-th num] [-it num] [-rnd] rnum\n", g_progname);
   eprintf("  %s wicked [-tree] [-th num] [-it num] rnum\n", g_progname);
   eprintf("  %s tran [-tree] [-th num] [-it num] rnum\n", g_progname);
   eprintf("\n");
@@ -80,21 +87,22 @@ static void usage() {
 }
 
 
-// print error message of file database
+// print the error message of a database
 static void dberrprint(kc::FileDB* db, int32_t line, const char* func) {
   kc::FileDB::Error err = db->error();
-  std::string path = db->path();
-  std::string estr = db->error().string();
-  iprintf("%s: %d: %s: %S: %S\n", g_progname, line, func, &path, &estr);
+  iprintf("%s: %d: %s: %s: %d: %s: %s\n",
+          g_progname, line, func, db->path().c_str(), err.code(), err.name(), err.message());
 }
 
 
-// print members of file database
+// print members of a database
 static void dbmetaprint(kc::FileDB* db, bool verbose) {
   if (verbose) {
     std::map<std::string, std::string> status;
     db->status(&status);
-    iprintf("type: %s\n", status["type"].c_str());
+    uint32_t type = kc::atoi(status["realtype"].c_str());
+    iprintf("type: %s (type=0x%02X) (%s)\n",
+            status["type"].c_str(), type, kc::DB::typestring(type));
     iprintf("path: %s\n", status["path"].c_str());
     iprintf("count: %s\n", status["count"].c_str());
     iprintf("size: %s\n", status["size"].c_str());
@@ -106,7 +114,7 @@ static void dbmetaprint(kc::FileDB* db, bool verbose) {
 
 
 // parse arguments of order command
-static int runorder(int argc, char** argv) {
+static int32_t runorder(int argc, char** argv) {
   const char* rstr = NULL;
   bool tree = false;
   int32_t thnum = 1;
@@ -149,8 +157,50 @@ static int runorder(int argc, char** argv) {
 }
 
 
+// parse arguments of queue command
+static int32_t runqueue(int argc, char** argv) {
+  const char* rstr = NULL;
+  bool tree = false;
+  int32_t thnum = 1;
+  int32_t itnum = 1;
+  bool rnd = false;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!rstr && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "-tree")) {
+        tree = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
+        if (++i >= argc) usage();
+        thnum = kc::atoix(argv[i]);
+      } else if (!std::strcmp(argv[i], "-it")) {
+        if (++i >= argc) usage();
+        itnum = kc::atoix(argv[i]);
+      } else if (!std::strcmp(argv[i], "-rnd")) {
+        rnd = true;
+      } else {
+        usage();
+      }
+    } else if (!rstr) {
+      rstr = argv[i];
+    } else {
+      usage();
+    }
+  }
+  if (!rstr) usage();
+  int64_t rnum = kc::atoix(rstr);
+  if (rnum < 1 || thnum < 1 || itnum < 1) usage();
+  if (thnum > THREADMAX) thnum = THREADMAX;
+  int32_t rv = 0;
+  if (tree) {
+    rv = procqueue<kc::ProtoTreeDB>("Tree", rnum, thnum, itnum, rnd);
+  } else {
+    rv = procqueue<kc::ProtoHashDB>("Hash", rnum, thnum, itnum, rnd);
+  }
+  return rv;
+}
+
+
 // parse arguments of wicked command
-static int runwicked(int argc, char** argv) {
+static int32_t runwicked(int argc, char** argv) {
   const char* rstr = NULL;
   bool tree = false;
   int32_t thnum = 1;
@@ -189,7 +239,7 @@ static int runwicked(int argc, char** argv) {
 
 
 // parse arguments of tran command
-static int runtran(int argc, char** argv) {
+static int32_t runtran(int argc, char** argv) {
   const char* rstr = NULL;
   bool tree = false;
   int32_t thnum = 1;
@@ -293,8 +343,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
               break;
             }
             case 2: {
-              if (!db_->remove(kbuf, ksiz) &&
-                  db_->error().code() != kc::FileDB::Error::NOREC) {
+              if (!db_->remove(kbuf, ksiz) && db_->error() != kc::FileDB::Error::NOREC) {
                 dberrprint(db_, __LINE__, "DB::remove");
                 err_ = true;
               }
@@ -306,10 +355,10 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                 switch (myrand(8)) {
                   default: {
                     size_t rsiz;
-                    char* rbuf = cur->get_key(&rsiz);
+                    char* rbuf = cur->get_key(&rsiz, myrand(10) == 0);
                     if (rbuf) {
                       delete[] rbuf;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get_key");
                       err_ = true;
                     }
@@ -317,33 +366,33 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                   }
                   case 1: {
                     size_t rsiz;
-                    char* rbuf = cur->get_value(&rsiz);
+                    char* rbuf = cur->get_value(&rsiz, myrand(10) == 0);
                     if (rbuf) {
                       delete[] rbuf;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get_value");
                       err_ = true;
                     }
                     break;
                   }
                   case 2: {
-                    size_t ksiz;
-                    const char* vbuf;
-                    size_t vsiz;
-                    char* kbuf = cur->get(&ksiz, &vbuf, &vsiz);
-                    if (kbuf) {
-                      delete[] kbuf;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    size_t rksiz;
+                    const char* rvbuf;
+                    size_t rvsiz;
+                    char* rkbuf = cur->get(&rksiz, &rvbuf, &rvsiz, myrand(10) == 0);
+                    if (rkbuf) {
+                      delete[] rkbuf;
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get");
                       err_ = true;
                     }
                     break;
                   }
                   case 3: {
-                    std::pair<std::string, std::string>* rec = cur->get_pair();
+                    std::pair<std::string, std::string>* rec = cur->get_pair(myrand(10) == 0);
                     if (rec) {
                       delete rec;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get_pair");
                       err_ = true;
                     }
@@ -351,14 +400,14 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                   }
                   case 4: {
                     if (myrand(8) == 0 && !cur->remove() &&
-                        db_->error().code() != kc::FileDB::Error::NOREC) {
+                        db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::remove");
                       err_ = true;
                     }
                     break;
                   }
                 }
-              } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+              } else if (db_->error() != kc::FileDB::Error::NOREC) {
                 dberrprint(db_, __LINE__, "Cursor::jump");
                 err_ = true;
               }
@@ -370,7 +419,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
               char* vbuf = db_->get(kbuf, ksiz, &vsiz);
               if (vbuf) {
                 delete[] vbuf;
-              } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+              } else if (db_->error() != kc::FileDB::Error::NOREC) {
                 dberrprint(db_, __LINE__, "DB::get");
                 err_ = true;
               }
@@ -445,7 +494,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
           size_t ksiz = std::sprintf(kbuf, "%08lld",
                                      (long long)(rnd_ ? myrand(range) + 1 : base + i));
           if (!db_->add(kbuf, ksiz, kbuf, ksiz) &&
-              db_->error().code() != kc::FileDB::Error::DUPREC) {
+              db_->error() != kc::FileDB::Error::DUPREC) {
             dberrprint(db_, __LINE__, "DB::add");
             err_ = true;
           }
@@ -594,7 +643,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
             err_ = true;
           }
           delete[] vbuf;
-        } else if (!rnd_ || db_->error().code() != kc::FileDB::Error::NOREC) {
+        } else if (!rnd_ || db_->error() != kc::FileDB::Error::NOREC) {
           dberrprint(db_, __LINE__, "DB::get");
           err_ = true;
         }
@@ -616,7 +665,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
             }
             case 2: {
               if (!db_->remove(kbuf, ksiz) &&
-                  db_->error().code() != kc::FileDB::Error::NOREC) {
+                  db_->error() != kc::FileDB::Error::NOREC) {
                 dberrprint(db_, __LINE__, "DB::remove");
                 err_ = true;
               }
@@ -628,10 +677,10 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                 switch (myrand(8)) {
                   default: {
                     size_t rsiz;
-                    char* rbuf = cur->get_key(&rsiz);
+                    char* rbuf = cur->get_key(&rsiz, myrand(10) == 0);
                     if (rbuf) {
                       delete[] rbuf;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get_key");
                       err_ = true;
                     }
@@ -639,33 +688,33 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                   }
                   case 1: {
                     size_t rsiz;
-                    char* rbuf = cur->get_value(&rsiz);
+                    char* rbuf = cur->get_value(&rsiz, myrand(10) == 0);
                     if (rbuf) {
                       delete[] rbuf;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get_value");
                       err_ = true;
                     }
                     break;
                   }
                   case 2: {
-                    size_t ksiz;
-                    const char* vbuf;
-                    size_t vsiz;
-                    char* kbuf = cur->get(&ksiz, &vbuf, &vsiz);
-                    if (kbuf) {
-                      delete[] kbuf;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    size_t rksiz;
+                    const char* rvbuf;
+                    size_t rvsiz;
+                    char* rkbuf = cur->get(&rksiz, &rvbuf, &rvsiz, myrand(10) == 0);
+                    if (rkbuf) {
+                      delete[] rkbuf;
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get");
                       err_ = true;
                     }
                     break;
                   }
                   case 3: {
-                    std::pair<std::string, std::string>* rec = cur->get_pair();
+                    std::pair<std::string, std::string>* rec = cur->get_pair(myrand(10) == 0);
                     if (rec) {
                       delete rec;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get_pair");
                       err_ = true;
                     }
@@ -673,14 +722,14 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                   }
                   case 4: {
                     if (myrand(8) == 0 && !cur->remove() &&
-                        db_->error().code() != kc::FileDB::Error::NOREC) {
+                        db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::remove");
                       err_ = true;
                     }
                     break;
                   }
                 }
-              } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+              } else if (db_->error() != kc::FileDB::Error::NOREC) {
                 dberrprint(db_, __LINE__, "Cursor::jump");
                 err_ = true;
               }
@@ -692,7 +741,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
               char* vbuf = db_->get(kbuf, ksiz, &vsiz);
               if (vbuf) {
                 delete[] vbuf;
-              } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+              } else if (db_->error() != kc::FileDB::Error::NOREC) {
                 dberrprint(db_, __LINE__, "DB::get");
                 err_ = true;
               }
@@ -773,7 +822,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
               dberrprint(db_, __LINE__, "DB::get");
               err_ = true;
             }
-          } else if (!rnd_ || db_->error().code() != kc::FileDB::Error::NOREC) {
+          } else if (!rnd_ || db_->error() != kc::FileDB::Error::NOREC) {
             dberrprint(db_, __LINE__, "DB::get");
             err_ = true;
           }
@@ -921,33 +970,33 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
       err = true;
     }
     typename PROTODB::Cursor cur(&db);
-    if (!cur.jump() && db.error().code() != kc::FileDB::Error::NOREC) {
+    if (!cur.jump() && db.error() != kc::FileDB::Error::NOREC) {
       dberrprint(&db, __LINE__, "Cursor::jump");
       err = true;
     }
     kc::DB::Cursor* paracur = db.cursor();
     int64_t range = rnum * thnum;
-    for (int64_t i = 0; !err && cur.accept(&visitorcursor, true, !rnd); i++) {
+    while (!err && cur.accept(&visitorcursor, true, !rnd)) {
       if (rnd) {
         char kbuf[RECBUFSIZ];
         size_t ksiz = std::sprintf(kbuf, "%08lld", (long long)myrand(range));
         switch (myrand(3)) {
           case 0: {
-            if (!db.remove(kbuf, ksiz) && db.error().code() != kc::FileDB::Error::NOREC) {
+            if (!db.remove(kbuf, ksiz) && db.error() != kc::FileDB::Error::NOREC) {
               dberrprint(&db, __LINE__, "DB::remove");
               err = true;
             }
             break;
           }
           case 1: {
-            if (!paracur->jump(kbuf, ksiz) && db.error().code() != kc::FileDB::Error::NOREC) {
+            if (!paracur->jump(kbuf, ksiz) && db.error() != kc::FileDB::Error::NOREC) {
               dberrprint(&db, __LINE__, "Cursor::jump");
               err = true;
             }
             break;
           }
           default: {
-            if (!cur.step() && db.error().code() != kc::FileDB::Error::NOREC) {
+            if (!cur.step() && db.error() != kc::FileDB::Error::NOREC) {
               dberrprint(&db, __LINE__, "Cursor::step");
               err = true;
             }
@@ -956,7 +1005,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
         }
       }
     }
-    if (db.error().code() != kc::FileDB::Error::NOREC) {
+    if (db.error() != kc::FileDB::Error::NOREC) {
       dberrprint(&db, __LINE__, "Cursor::accept");
       err = true;
     }
@@ -986,7 +1035,8 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
       explicit SyncProcessor(int64_t rnum, bool rnd, int64_t size) :
         rnum_(rnum), rnd_(rnd), size_(size) {}
     private:
-      bool process(const std::string& path) {
+      bool process(const std::string& path, int64_t count, int64_t size) {
+        if (size != size_) return false;
         return true;
       }
       int64_t rnum_;
@@ -995,6 +1045,34 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
     } syncprocessor(rnum, rnd, db.size());
     if (!db.synchronize(false, &syncprocessor)) {
       dberrprint(&db, __LINE__, "DB::synchronize");
+      err = true;
+    }
+    etime = kc::time();
+    dbmetaprint(&db, false);
+    iprintf("time: %.3f\n", etime - stime);
+  }
+  if (etc && db.size() < (256LL << 20)) {
+    iprintf("dumping records into snapshot:\n");
+    stime = kc::time();
+    std::ostringstream ostrm;
+    if (!db.dump_snapshot(&ostrm)) {
+      dberrprint(&db, __LINE__, "DB::dump_snapshot");
+      err = true;
+    }
+    etime = kc::time();
+    dbmetaprint(&db, false);
+    iprintf("time: %.3f\n", etime - stime);
+    iprintf("loading records from snapshot:\n");
+    stime = kc::time();
+    int64_t cnt = db.count();
+    if (rnd && myrand(2) == 0 && !db.clear()) {
+      dberrprint(&db, __LINE__, "DB::clear");
+      err = true;
+    }
+    const std::string& str = ostrm.str();
+    std::istringstream istrm(str);
+    if (!db.load_snapshot(&istrm) || db.count() != cnt) {
+      dberrprint(&db, __LINE__, "DB::load_snapshot");
       err = true;
     }
     etime = kc::time();
@@ -1031,7 +1109,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
         size_t ksiz = std::sprintf(kbuf, "%08lld",
                                    (long long)(rnd_ ? myrand(range) + 1 : base + i));
         if (!db_->remove(kbuf, ksiz) &&
-            ((!rnd_ && !etc_) || db_->error().code() != kc::FileDB::Error::NOREC)) {
+            ((!rnd_ && !etc_) || db_->error() != kc::FileDB::Error::NOREC)) {
           dberrprint(db_, __LINE__, "DB::remove");
           err_ = true;
         }
@@ -1053,7 +1131,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
             }
             case 2: {
               if (!db_->remove(kbuf, ksiz) &&
-                  db_->error().code() != kc::FileDB::Error::NOREC) {
+                  db_->error() != kc::FileDB::Error::NOREC) {
                 dberrprint(db_, __LINE__, "DB::remove");
                 err_ = true;
               }
@@ -1065,10 +1143,10 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                 switch (myrand(8)) {
                   default: {
                     size_t rsiz;
-                    char* rbuf = cur->get_key(&rsiz);
+                    char* rbuf = cur->get_key(&rsiz, myrand(10) == 0);
                     if (rbuf) {
                       delete[] rbuf;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get_key");
                       err_ = true;
                     }
@@ -1076,33 +1154,33 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                   }
                   case 1: {
                     size_t rsiz;
-                    char* rbuf = cur->get_value(&rsiz);
+                    char* rbuf = cur->get_value(&rsiz, myrand(10) == 0);
                     if (rbuf) {
                       delete[] rbuf;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get_value");
                       err_ = true;
                     }
                     break;
                   }
                   case 2: {
-                    size_t ksiz;
-                    const char* vbuf;
-                    size_t vsiz;
-                    char* kbuf = cur->get(&ksiz, &vbuf, &vsiz);
-                    if (kbuf) {
-                      delete[] kbuf;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    size_t rksiz;
+                    const char* rvbuf;
+                    size_t rvsiz;
+                    char* rkbuf = cur->get(&rksiz, &rvbuf, &rvsiz, myrand(10) == 0);
+                    if (rkbuf) {
+                      delete[] rkbuf;
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get");
                       err_ = true;
                     }
                     break;
                   }
                   case 3: {
-                    std::pair<std::string, std::string>* rec = cur->get_pair();
+                    std::pair<std::string, std::string>* rec = cur->get_pair(myrand(10) == 0);
                     if (rec) {
                       delete rec;
-                    } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                    } else if (db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::get_pair");
                       err_ = true;
                     }
@@ -1110,14 +1188,14 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                   }
                   case 4: {
                     if (myrand(8) == 0 && !cur->remove() &&
-                        db_->error().code() != kc::FileDB::Error::NOREC) {
+                        db_->error() != kc::FileDB::Error::NOREC) {
                       dberrprint(db_, __LINE__, "Cursor::remove");
                       err_ = true;
                     }
                     break;
                   }
                 }
-              } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+              } else if (db_->error() != kc::FileDB::Error::NOREC) {
                 dberrprint(db_, __LINE__, "Cursor::jump");
                 err_ = true;
               }
@@ -1129,7 +1207,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
               char* vbuf = db_->get(kbuf, ksiz, &vsiz);
               if (vbuf) {
                 delete[] vbuf;
-              } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+              } else if (db_->error() != kc::FileDB::Error::NOREC) {
                 dberrprint(db_, __LINE__, "DB::get");
                 err_ = true;
               }
@@ -1188,6 +1266,197 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
 }
 
 
+// perform queue command
+template <class PROTODB>
+static int32_t procqueue(const char* tname, int64_t rnum, int32_t thnum, int32_t itnum,
+                         bool rnd) {
+  iprintf("<%s Queue Test>\n  seed=%u  rnum=%lld  thnum=%d  itnum=%d  rnd=%d\n\n",
+          tname, g_randseed, (long long)rnum, thnum, itnum, rnd);
+  bool err = false;
+  PROTODB db;
+  for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
+    if (itnum > 1) iprintf("iteration %d:\n", itcnt);
+    double stime = kc::time();
+    uint32_t omode = PROTODB::OWRITER | PROTODB::OCREATE;
+    if (itcnt == 1) omode |= PROTODB::OTRUNCATE;
+    if (!db.open("-", omode)) {
+      dberrprint(&db, __LINE__, "DB::open");
+      err = true;
+    }
+    class ThreadQueue : public kc::Thread {
+    public:
+      void setparams(int32_t id, PROTODB* db, int64_t rnum, int32_t thnum, bool rnd,
+                     int64_t width) {
+        id_ = id;
+        db_ = db;
+        rnum_ = rnum;
+        thnum_ = thnum;
+        rnd_ = rnd;
+        width_ = width;
+        err_ = false;
+      }
+      bool error() {
+        return err_;
+      }
+      void run() {
+        kc::DB::Cursor* cur = db_->cursor();
+        int64_t base = id_ * rnum_;
+        int64_t range = rnum_ * thnum_;
+        for (int64_t i = 1; !err_ && i <= rnum_; i++) {
+          char kbuf[RECBUFSIZ];
+          size_t ksiz = std::sprintf(kbuf, "%010lld", (long long)(base + i));
+          if (!db_->set(kbuf, ksiz, kbuf, ksiz)) {
+            dberrprint(db_, __LINE__, "DB::set");
+            err_ = true;
+          }
+          if (rnd_) {
+            if (myrand(width_ / 2) == 0) {
+              if (!cur->jump() && db_->error() != kc::FileDB::Error::NOREC) {
+                dberrprint(db_, __LINE__, "Cursor::jump");
+                err_ = true;
+              }
+              ksiz = std::sprintf(kbuf, "%010lld", (long long)myrand(range) + 1);
+              switch (myrand(10)) {
+                case 0: {
+                  if (!db_->set(kbuf, ksiz, kbuf, ksiz)) {
+                    dberrprint(db_, __LINE__, "DB::set");
+                    err_ = true;
+                  }
+                  break;
+                }
+                case 1: {
+                  if (!db_->append(kbuf, ksiz, kbuf, ksiz)) {
+                    dberrprint(db_, __LINE__, "DB::append");
+                    err_ = true;
+                  }
+                  break;
+                }
+                case 2: {
+                  if (!db_->remove(kbuf, ksiz) &&
+                      db_->error() != kc::FileDB::Error::NOREC) {
+                    dberrprint(db_, __LINE__, "DB::remove");
+                    err_ = true;
+                  }
+                  break;
+                }
+              }
+              int64_t dnum = myrand(width_) + 2;
+              for (int64_t j = 0; j < dnum; j++) {
+                if (myrand(2) == 0) {
+                  size_t rsiz;
+                  char* rbuf = cur->get_key(&rsiz);
+                  if (rbuf) {
+                    if (myrand(10) == 0 && !db_->remove(rbuf, rsiz) &&
+                        db_->error() != kc::FileDB::Error::NOREC) {
+                      dberrprint(db_, __LINE__, "DB::remove");
+                      err_ = true;
+                    }
+                    if (myrand(2) == 0 && !cur->jump(rbuf, rsiz) &&
+                        db_->error() != kc::FileDB::Error::NOREC) {
+                      dberrprint(db_, __LINE__, "Cursor::jump");
+                      err_ = true;
+                    }
+                    if (myrand(10) == 0 && !db_->remove(rbuf, rsiz) &&
+                        db_->error() != kc::FileDB::Error::NOREC) {
+                      dberrprint(db_, __LINE__, "DB::remove");
+                      err_ = true;
+                    }
+                    delete[] rbuf;
+                  } else if (db_->error() != kc::FileDB::Error::NOREC) {
+                    dberrprint(db_, __LINE__, "Cursor::get_key");
+                    err_ = true;
+                  }
+                }
+                if (!cur->remove() && db_->error() != kc::FileDB::Error::NOREC) {
+                  dberrprint(db_, __LINE__, "Cursor::remove");
+                  err_ = true;
+                }
+              }
+            }
+          } else {
+            if (i > width_) {
+              if (!cur->jump() && db_->error() != kc::FileDB::Error::NOREC) {
+                dberrprint(db_, __LINE__, "Cursor::jump");
+                err_ = true;
+              }
+              if (!cur->remove() && db_->error() != kc::FileDB::Error::NOREC) {
+                dberrprint(db_, __LINE__, "Cursor::remove");
+                err_ = true;
+              }
+            }
+          }
+          if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
+            iputchar('.');
+            if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          }
+        }
+        delete cur;
+      }
+    private:
+      int32_t id_;
+      PROTODB* db_;
+      int64_t rnum_;
+      int32_t thnum_;
+      bool rnd_;
+      int64_t width_;
+      bool err_;
+    };
+    int64_t width = rnum / 10;
+    ThreadQueue threads[THREADMAX];
+    if (thnum < 2) {
+      threads[0].setparams(0, &db, rnum, thnum, rnd, width);
+      threads[0].run();
+      if (threads[0].error()) err = true;
+    } else {
+      for (int32_t i = 0; i < thnum; i++) {
+        threads[i].setparams(i, &db, rnum, thnum, rnd, width);
+        threads[i].start();
+      }
+      for (int32_t i = 0; i < thnum; i++) {
+        threads[i].join();
+        if (threads[i].error()) err = true;
+      }
+    }
+    int64_t count = db.count();
+    if (!rnd && itcnt == 1 && db.count() != width * thnum) {
+      dberrprint(&db, __LINE__, "DB::count");
+      err = true;
+    }
+    if ((rnd ? (myrand(2) == 0) : itcnt == itnum) && count > 0) {
+      kc::DB::Cursor* cur = db.cursor();
+      if (!cur->jump()) {
+        dberrprint(&db, __LINE__, "Cursor::jump");
+        err = true;
+      }
+      for (int64_t i = 1; i <= count; i++) {
+        if (!cur->remove()) {
+          dberrprint(&db, __LINE__, "Cursor::remove");
+          err = true;
+        }
+        if (rnum > 250 && i % (rnum / 250) == 0) {
+          iputchar('.');
+          if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+        }
+      }
+      if (rnd) iprintf(" (end)\n");
+      delete cur;
+      if (db.count() != 0) {
+        dberrprint(&db, __LINE__, "DB::count");
+        err = true;
+      }
+    }
+    dbmetaprint(&db, itcnt == itnum);
+    if (!db.close()) {
+      dberrprint(&db, __LINE__, "DB::close");
+      err = true;
+    }
+    iprintf("time: %.3f\n", kc::time() - stime);
+  }
+  iprintf("%s\n\n", err ? "error" : "ok");
+  return err ? 1 : 0;
+}
+
+
 // perform wicked command
 template <class PROTODB>
 static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_t itnum) {
@@ -1223,10 +1492,22 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
         int64_t range = rnum_ * thnum_;
         for (int64_t i = 1; !err_ && i <= rnum_; i++) {
           bool tran = myrand(100) == 0;
-          if (tran && !db_->begin_transaction(myrand(rnum_) == 0)) {
-            dberrprint(db_, __LINE__, "DB::begin_transaction");
-            tran = false;
-            err_ = true;
+          if (tran) {
+            if (myrand(2) == 0) {
+              if (!db_->begin_transaction(myrand(rnum_) == 0)) {
+                dberrprint(db_, __LINE__, "DB::begin_transaction");
+                tran = false;
+                err_ = true;
+              }
+            } else {
+              if (!db_->begin_transaction_try(myrand(rnum_) == 0)) {
+                if (db_->error() != kc::FileDB::Error::LOGIC) {
+                  dberrprint(db_, __LINE__, "DB::begin_transaction_try");
+                  err_ = true;
+                }
+                tran = false;
+              }
+            }
           }
           char kbuf[RECBUFSIZ];
           size_t ksiz = std::sprintf(kbuf, "%lld", (long long)(myrand(range) + 1));
@@ -1259,7 +1540,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
               }
               case 1: {
                 if (!db_->add(kbuf, ksiz, vbuf, vsiz) &&
-                    db_->error().code() != kc::FileDB::Error::DUPREC) {
+                    db_->error() != kc::FileDB::Error::DUPREC) {
                   dberrprint(db_, __LINE__, "DB::add");
                   err_ = true;
                 }
@@ -1274,16 +1555,16 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
               }
               case 3: {
                 if (myrand(2) == 0) {
-                  int64_t num = (double)myrand(rnum_);
+                  int64_t num = myrand(rnum_);
                   if (db_->increment(kbuf, ksiz, num) == INT64_MIN &&
-                      db_->error().code() != kc::FileDB::Error::LOGIC) {
+                      db_->error() != kc::FileDB::Error::LOGIC) {
                     dberrprint(db_, __LINE__, "DB::increment");
                     err_ = true;
                   }
                 } else {
-                  double num = (double)myrand(rnum_ * 10) / (myrand(rnum_) + 1);
-                  if (std::isnan(db_->increment(kbuf, ksiz, num)) &&
-                      db_->error().code() != kc::FileDB::Error::LOGIC) {
+                  double num = myrand(rnum_ * 10) / (myrand(rnum_) + 1.0);
+                  if (kc::chknan(db_->increment(kbuf, ksiz, num)) &&
+                      db_->error() != kc::FileDB::Error::LOGIC) {
                     dberrprint(db_, __LINE__, "DB::increment");
                     err_ = true;
                   }
@@ -1292,7 +1573,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
               }
               case 4: {
                 if (!db_->cas(kbuf, ksiz, kbuf, ksiz, vbuf, vsiz) &&
-                    db_->error().code() != kc::FileDB::Error::LOGIC) {
+                    db_->error() != kc::FileDB::Error::LOGIC) {
                   dberrprint(db_, __LINE__, "DB::cas");
                   err_ = true;
                 }
@@ -1300,7 +1581,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
               }
               case 5: {
                 if (!db_->remove(kbuf, ksiz) &&
-                    db_->error().code() != kc::FileDB::Error::NOREC) {
+                    db_->error() != kc::FileDB::Error::NOREC) {
                   dberrprint(db_, __LINE__, "DB::remove");
                   err_ = true;
                 }
@@ -1309,7 +1590,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
               case 6: {
                 if (myrand(10) == 0) {
                   if (!cur->jump(kbuf, ksiz) &&
-                      db_->error().code() != kc::FileDB::Error::NOREC) {
+                      db_->error() != kc::FileDB::Error::NOREC) {
                     dberrprint(db_, __LINE__, "Cursor::jump");
                     err_ = true;
                   }
@@ -1337,12 +1618,12 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
                     const char* lbuf_;
                   } visitor(lbuf_);
                   if (!cur->accept(&visitor, true, myrand(2) == 0) &&
-                      db_->error().code() != kc::FileDB::Error::NOREC) {
+                      db_->error() != kc::FileDB::Error::NOREC) {
                     dberrprint(db_, __LINE__, "Cursor::accept");
                     err_ = true;
                   }
                   if (myrand(5) > 0 && !cur->step() &&
-                      db_->error().code() != kc::FileDB::Error::NOREC) {
+                      db_->error() != kc::FileDB::Error::NOREC) {
                     dberrprint(db_, __LINE__, "Cursor::step");
                     err_ = true;
                   }
@@ -1354,7 +1635,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
                 char* rbuf = db_->get(kbuf, ksiz, &rsiz);
                 if (rbuf) {
                   delete[] rbuf;
-                } else if (db_->error().code() != kc::FileDB::Error::NOREC) {
+                } else if (db_->error() != kc::FileDB::Error::NOREC) {
                   dberrprint(db_, __LINE__, "DB::get");
                   err_ = true;
                 }
@@ -1371,7 +1652,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
             } else {
               class SyncProcessor : public kc::FileDB::FileProcessor {
               private:
-                bool process(const std::string& path) {
+                bool process(const std::string& path, int64_t count, int64_t size) {
                   yield();
                   return true;
                 }
@@ -1450,7 +1731,7 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
       dberrprint(&db, __LINE__, "DB::open");
       err = true;
     }
-    if (!paradb.open("+", omode)) {
+    if (!paradb.open("para", omode)) {
       dberrprint(&paradb, __LINE__, "DB::open");
       err = true;
     }
@@ -1474,7 +1755,7 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
         int64_t range = rnum_ * thnum_;
         char kbuf[RECBUFSIZ];
         size_t ksiz = std::sprintf(kbuf, "%lld", (long long)(myrand(range) + 1));
-        if (!cur->jump(kbuf, ksiz) && db_->error().code() != kc::FileDB::Error::NOREC) {
+        if (!cur->jump(kbuf, ksiz) && db_->error() != kc::FileDB::Error::NOREC) {
           dberrprint(db_, __LINE__, "Cursor::jump");
           err_ = true;
         }
@@ -1525,7 +1806,7 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
           } visitor(vbuf, vsiz, !tran || commit ? paradb_ : NULL);
           if (myrand(4) == 0) {
             if (!cur->accept(&visitor, true, myrand(2) == 0) &&
-                db_->error().code() != kc::FileDB::Error::NOREC) {
+                db_->error() != kc::FileDB::Error::NOREC) {
               dberrprint(db_, __LINE__, "Cursor::accept");
               err_ = true;
             }
@@ -1533,6 +1814,69 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
             if (!db_->accept(kbuf, ksiz, &visitor, true)) {
               dberrprint(db_, __LINE__, "DB::accept");
               err_ = true;
+            }
+          }
+          if (myrand(1000) == 0) {
+            ksiz = std::sprintf(kbuf, "%lld", (long long)(myrand(range) + 1));
+            if (!cur->jump(kbuf, ksiz)) {
+              if (db_->error() != kc::FileDB::Error::NOREC) {
+                dberrprint(db_, __LINE__, "Cursor::jump");
+                err_ = true;
+              } else if (!cur->jump() && db_->error() != kc::FileDB::Error::NOREC) {
+                dberrprint(db_, __LINE__, "Cursor::jump");
+                err_ = true;
+              }
+            }
+            std::vector<std::string> keys;
+            keys.reserve(100);
+            while (myrand(50) != 0) {
+              std::string* key = cur->get_key();
+              if (key) {
+                keys.push_back(*key);
+                delete key;
+              } else {
+                if (db_->error() != kc::FileDB::Error::NOREC) {
+                  dberrprint(db_, __LINE__, "Cursor::jump");
+                  err_ = true;
+                }
+                break;
+              }
+              if (!cur->step()) {
+                if (db_->error() != kc::FileDB::Error::NOREC) {
+                  dberrprint(db_, __LINE__, "Cursor::jump");
+                  err_ = true;
+                }
+                break;
+              }
+            }
+            class Remover : public kc::DB::Visitor {
+            public:
+              explicit Remover(kc::FileDB* paradb) : paradb_(paradb) {}
+            private:
+              const char* visit_full(const char* kbuf, size_t ksiz,
+                                     const char* vbuf, size_t vsiz, size_t* sp) {
+                if (myrand(200) == 0) return NOP;
+                if (paradb_) paradb_->remove(kbuf, ksiz);
+                return REMOVE;
+              }
+              kc::FileDB* paradb_;
+            } remover(!tran || commit ? paradb_ : NULL);
+            std::vector<std::string>::iterator it = keys.begin();
+            std::vector<std::string>::iterator end = keys.end();
+            while (it != end) {
+              if (myrand(50) == 0) {
+                if (!cur->accept(&remover, true, false) &&
+                    db_->error() != kc::FileDB::Error::NOREC) {
+                  dberrprint(db_, __LINE__, "Cursor::accept");
+                  err_ = true;
+                }
+              } else {
+                if (!db_->accept(it->c_str(), it->size(), &remover, true)) {
+                  dberrprint(db_, __LINE__, "DB::accept");
+                  err_ = true;
+                }
+              }
+              it++;
             }
           }
           if (tran && myrand(100) == 0) {

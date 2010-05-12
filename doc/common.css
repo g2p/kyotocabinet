@@ -138,6 +138,9 @@ td.label {
 td.number {
   text-align: right;
 }
+td div {
+  margin: 0ex;
+}
 
 a {
   color: #0022aa;

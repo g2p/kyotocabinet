@@ -23,7 +23,7 @@ const size_t FILEIOUNIT = 50;            // file I/O unit size
 
 // global variables
 const char* g_progname;                  // program name
-unsigned int g_randseed;                 // random seed
+uint32_t g_randseed;                     // random seed
 
 
 // function prototypes
@@ -32,10 +32,10 @@ static void usage();
 static void errprint(int32_t line, const char* format, ...);
 static void fileerrprint(kc::File* file, int32_t line, const char* func);
 static void filemetaprint(kc::File* file);
-static int runmutex(int argc, char** argv);
-static int runfile(int argc, char** argv);
-static int runmap(int argc, char** argv);
-static int runmisc(int argc, char** argv);
+static int32_t runmutex(int argc, char** argv);
+static int32_t runfile(int argc, char** argv);
+static int32_t runmap(int argc, char** argv);
+static int32_t runmisc(int argc, char** argv);
 static int32_t procmutex(int64_t rnum, int32_t thnum, double iv);
 static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd, int64_t msiz);
 static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum);
@@ -45,8 +45,8 @@ static int32_t procmisc(int64_t rnum);
 // main routine
 int main(int argc, char** argv) {
   g_progname = argv[0];
-  const char* ebuf = getenv("KCRNDSEED");
-  g_randseed = ebuf ? kc::atoi(ebuf) : kc::time() * 1000;
+  const char* ebuf = kc::getenv("KCRNDSEED");
+  g_randseed = ebuf ? (uint32_t)kc::atoi(ebuf) : (uint32_t)(kc::time() * 1000);
   srand(g_randseed);
   if (argc < 2) usage();
   int32_t rv = 0;
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     usage();
   }
   if (rv != 0) {
-    iprintf("FAILED: KCRNDSEED=%u PID=%d", g_randseed, (int)getpid());
+    iprintf("FAILED: KCRNDSEED=%u PID=%ld", g_randseed, (long)kc::getpid());
     for (int32_t i = 0; i < argc; i++) {
       iprintf(" %s", argv[i]);
     }
@@ -113,7 +113,7 @@ static void filemetaprint(kc::File* file) {
 
 
 // parse arguments of mutex command
-static int runmutex(int argc, char** argv) {
+static int32_t runmutex(int argc, char** argv) {
   const char* rstr = NULL;
   int32_t thnum = 1;
   double iv = 0.0;
@@ -144,7 +144,7 @@ static int runmutex(int argc, char** argv) {
 
 
 // parse arguments of file command
-static int runfile(int argc, char** argv) {
+static int32_t runfile(int argc, char** argv) {
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
@@ -181,7 +181,7 @@ static int runfile(int argc, char** argv) {
 
 
 // parse arguments of map command
-static int runmap(int argc, char** argv) {
+static int32_t runmap(int argc, char** argv) {
   const char* rstr = NULL;
   int32_t thnum = 1;
   bool rnd = false;
@@ -212,7 +212,7 @@ static int runmap(int argc, char** argv) {
 
 
 // parse arguments of misc command
-static int runmisc(int argc, char** argv) {
+static int32_t runmisc(int argc, char** argv) {
   const char* rstr = NULL;
   for (int32_t i = 2; i < argc; i++) {
     if (!rstr && argv[i][0] == '-') {
@@ -1452,6 +1452,55 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   stime = kc::time();
   if (!file.close()) {
     fileerrprint(&file, __LINE__, "File::close");
+    err = true;
+  }
+  etime = kc::time();
+  iprintf("time: %.3f\n", etime - stime);
+  iprintf("testing file utility functions:\n");
+  stime = kc::time();
+  kc::File::Status sbuf;
+  if (!kc::File::status(path, &sbuf) || sbuf.isdir || sbuf.size < 1) {
+    errprint(__LINE__, "File::status");
+    err = true;
+  }
+  if (!kc::File::status(kc::File::CDIRSTR, &sbuf) || !sbuf.isdir) {
+    errprint(__LINE__, "File::status");
+    err = true;
+  }
+  const std::string& abspath = kc::File::absolute_path(path);
+  if (abspath.size() < 1) {
+    errprint(__LINE__, "File::absolute_path");
+    err = true;
+  }
+  const std::string& tmppath = kc::strprintf("%s%ctmp", path, kc::File::EXTCHR);
+  if (!kc::File::rename(path, tmppath) || !kc::File::rename(tmppath, path)) {
+    errprint(__LINE__, "File::rename");
+    err = true;
+  }
+  etime = kc::time();
+  iprintf("time: %.3f\n", etime - stime);
+  iprintf("testing directory utility functions:\n");
+  stime = kc::time();
+  std::vector<std::string> files;
+  if (!kc::File::read_directory(kc::File::CDIRSTR, &files)) {
+    errprint(__LINE__, "File::read_directory");
+    err = true;
+  }
+  if (!kc::File::make_directory(tmppath)) {
+    errprint(__LINE__, "File::make_directory");
+    err = true;
+  }
+  if (!kc::File::remove_directory(tmppath)) {
+    errprint(__LINE__, "File::remove_directory");
+    err = true;
+  }
+  const std::string& cwdpath = kc::File::get_current_directory();
+  if (cwdpath.size() < 1) {
+    errprint(__LINE__, "File::get_current_directory");
+    err = true;
+  }
+  if (!kc::File::set_current_directory(cwdpath)) {
+    errprint(__LINE__, "File::set_current_directory");
     err = true;
   }
   etime = kc::time();

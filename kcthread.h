@@ -146,12 +146,14 @@ public:
    * @param mutex a mutex to lock the block.
    */
   explicit ScopedMutex(Mutex* mutex) : mutex_(mutex) {
+    _assert_(mutex);
     mutex_->lock();
   }
   /**
    * Destructor.
    */
   ~ScopedMutex() {
+    _assert_(true);
     mutex_->unlock();
   }
 private:
@@ -174,16 +176,21 @@ public:
   /**
    * Constructor.
    */
-  explicit SlottedMutex() : locks_() {}
+  explicit SlottedMutex() : locks_() {
+    _assert_(true);
+  }
   /**
    * Destructor.
    */
-  ~SlottedMutex() {}
+  ~SlottedMutex() {
+    _assert_(true);
+  }
   /**
    * Get the lock of a slot.
    * @param idx the index of a slot.
    */
   void lock(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].lock();
   }
   /**
@@ -191,12 +198,14 @@ public:
    * @param idx the index of a slot.
    */
   void unlock(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].unlock();
   }
   /**
    * Get the locks of all slots.
    */
   void lock_all() {
+    _assert_(true);
     for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].lock();
     }
@@ -205,6 +214,7 @@ public:
    * Release the locks of all slots.
    */
   void unlock_all() {
+    _assert_(true);
     for (int32_t i = SLOTNUM - 1; i >= 0; i--) {
       locks_[i].unlock();
     }
@@ -261,12 +271,14 @@ public:
    * @param spinlock a spin lock to lock the block.
    */
   explicit ScopedSpinLock(SpinLock* spinlock) : spinlock_(spinlock) {
+    _assert_(spinlock);
     spinlock_->lock();
   }
   /**
    * Destructor.
    */
   ~ScopedSpinLock() {
+    _assert_(true);
     spinlock_->unlock();
   }
 private:
@@ -289,16 +301,21 @@ public:
   /**
    * Constructor.
    */
-  explicit SlottedSpinLock() : locks_() {}
+  explicit SlottedSpinLock() : locks_() {
+    _assert_(true);
+  }
   /**
    * Destructor.
    */
-  ~SlottedSpinLock() {}
+  ~SlottedSpinLock() {
+    _assert_(true);
+  }
   /**
    * Get the lock of a slot.
    * @param idx the index of a slot.
    */
   void lock(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].lock();
   }
   /**
@@ -306,12 +323,14 @@ public:
    * @param idx the index of a slot.
    */
   void unlock(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].unlock();
   }
   /**
    * Get the locks of all slots.
    */
   void lock_all() {
+    _assert_(true);
     for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].lock();
     }
@@ -320,6 +339,7 @@ public:
    * Release the locks of all slots.
    */
   void unlock_all() {
+    _assert_(true);
     for (int32_t i = SLOTNUM - 1; i >= 0; i--) {
       locks_[i].unlock();
     }
@@ -386,6 +406,7 @@ public:
    * @param writer true for writer lock, or false for reader lock.
    */
   explicit ScopedRWLock(RWLock* rwlock, bool writer) : rwlock_(rwlock) {
+    _assert_(rwlock);
     if (writer) {
       rwlock_->lock_writer();
     } else {
@@ -396,6 +417,7 @@ public:
    * Destructor.
    */
   ~ScopedRWLock() {
+    _assert_(true);
     rwlock_->unlock();
   }
 private:
@@ -418,16 +440,21 @@ public:
   /**
    * Constructor.
    */
-  explicit SlottedRWLock() : locks_() {}
+  explicit SlottedRWLock() : locks_() {
+    _assert_(true);
+  }
   /**
    * Destructor.
    */
-  ~SlottedRWLock() {}
+  ~SlottedRWLock() {
+    _assert_(true);
+  }
   /**
    * Get the writer lock of a slot.
    * @param idx the index of a slot.
    */
   void lock_writer(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].lock_writer();
   }
   /**
@@ -435,6 +462,7 @@ public:
    * @param idx the index of a slot.
    */
   void lock_reader(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].lock_reader();
   }
   /**
@@ -442,12 +470,14 @@ public:
    * @param idx the index of a slot.
    */
   void unlock(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].unlock();
   }
   /**
    * Get the writer locks of all slots.
    */
   void lock_writer_all() {
+    _assert_(true);
     for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].lock_writer();
     }
@@ -456,6 +486,7 @@ public:
    * Get the reader locks of all slots.
    */
   void lock_reader_all() {
+    _assert_(true);
     for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].lock_reader();
     }
@@ -464,6 +495,7 @@ public:
    * Release the locks of all slots.
    */
   void unlock_all() {
+    _assert_(true);
     for (int32_t i = SLOTNUM - 1; i >= 0; i--) {
       locks_[i].unlock();
     }
@@ -539,6 +571,7 @@ public:
    * @param writer true for writer lock, or false for reader lock.
    */
   explicit ScopedSpinRWLock(SpinRWLock* srwlock, bool writer) : srwlock_(srwlock) {
+    _assert_(srwlock);
     if (writer) {
       srwlock_->lock_writer();
     } else {
@@ -549,6 +582,7 @@ public:
    * Destructor.
    */
   ~ScopedSpinRWLock() {
+    _assert_(true);
     srwlock_->unlock();
   }
 private:
@@ -571,16 +605,21 @@ public:
   /**
    * Constructor.
    */
-  explicit SlottedSpinRWLock() : locks_() {}
+  explicit SlottedSpinRWLock() : locks_() {
+    _assert_(true);
+  }
   /**
    * Destructor.
    */
-  ~SlottedSpinRWLock() {}
+  ~SlottedSpinRWLock() {
+    _assert_(true);
+  }
   /**
    * Get the writer lock of a slot.
    * @param idx the index of a slot.
    */
   void lock_writer(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].lock_writer();
   }
   /**
@@ -588,6 +627,7 @@ public:
    * @param idx the index of a slot.
    */
   void lock_reader(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].lock_reader();
   }
   /**
@@ -595,12 +635,14 @@ public:
    * @param idx the index of a slot.
    */
   void unlock(int32_t idx) {
+    _assert_(idx >= 0);
     locks_[idx].unlock();
   }
   /**
    * Get the writer locks of all slots.
    */
   void lock_writer_all() {
+    _assert_(true);
     for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].lock_writer();
     }
@@ -609,6 +651,7 @@ public:
    * Get the reader locks of all slots.
    */
   void lock_reader_all() {
+    _assert_(true);
     for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].lock_reader();
     }
@@ -617,6 +660,7 @@ public:
    * Release the locks of all slots.
    */
   void unlock_all() {
+    _assert_(true);
     for (int32_t i = SLOTNUM - 1; i >= 0; i--) {
       locks_[i].unlock();
     }
@@ -713,11 +757,14 @@ public:
   /**
    * Default constructor.
    */
-  explicit TSD() : key_(delete_value) {}
+  explicit TSD() : key_(delete_value) {
+    _assert_(true);
+  }
   /**
    * Destructor.
    */
   ~TSD() {
+    _assert_(true);
     TYPE* obj = (TYPE*)key_.get();
     if (obj) {
       delete obj;
@@ -729,6 +776,7 @@ public:
    * @return the reference to the inner object.
    */
   TYPE& operator *() {
+    _assert_(true);
     TYPE* obj = (TYPE*)key_.get();
     if (!obj) {
       obj = new TYPE;
@@ -741,6 +789,7 @@ public:
    * @return the pointer to the inner object.
    */
   TYPE* operator ->() {
+    _assert_(true);
     TYPE* obj = (TYPE*)key_.get();
     if (!obj) {
       obj = new TYPE;
@@ -753,6 +802,7 @@ public:
    * @return the copy of the inner object.
    */
   operator TYPE() const {
+    _assert_(true);
     TYPE* obj = (TYPE*)key_.get();
     if (!obj) return TYPE();
     return *obj;
@@ -763,6 +813,7 @@ private:
    * @param obj the inner object.
    */
   static void delete_value(void* obj) {
+    _assert_(true);
     delete (TYPE*)obj;
   }
   /** Dummy constructor to forbid the use. */
@@ -782,21 +833,29 @@ public:
   /**
    * Default constructor.
    */
-  AtomicInt64() : value_(0), lock_() {}
+  AtomicInt64() : value_(0), lock_() {
+    _assert_(true);
+  }
   /**
    * Copy constructor.
    * @param src the source object.
    */
-  AtomicInt64(const AtomicInt64& src) : value_(src.get()), lock_() {};
+  AtomicInt64(const AtomicInt64& src) : value_(src.get()), lock_() {
+    _assert_(true);
+  };
   /**
    * Constructor.
    * @param num the initial value.
    */
-  AtomicInt64(int64_t num) : value_(num), lock_() {}
+  AtomicInt64(int64_t num) : value_(num), lock_() {
+    _assert_(true);
+  }
   /**
    * Destructor.
    */
-  ~AtomicInt64() {}
+  ~AtomicInt64() {
+    _assert_(true);
+  }
   /**
    * Set the new value.
    * @param val the new value.
@@ -827,6 +886,7 @@ public:
    * @return the reference to itself.
    */
   AtomicInt64& operator =(const AtomicInt64& right) {
+    _assert_(true);
     set(right.get());
     return *this;
   }
@@ -836,6 +896,7 @@ public:
    * @return the reference to itself.
    */
   AtomicInt64& operator =(const int64_t& right) {
+    _assert_(true);
     set(right);
     return *this;
   }
@@ -844,6 +905,7 @@ public:
    * @return the current value.
    */
   operator int64_t() const {
+    _assert_(true);
     return get();
   }
   /**
@@ -852,6 +914,7 @@ public:
    * @return the reference to itself.
    */
   AtomicInt64& operator +=(int64_t right) {
+    _assert_(true);
     add(right);
     return *this;
   }
@@ -861,6 +924,7 @@ public:
    * @return the reference to itself.
    */
   AtomicInt64& operator -=(int64_t right) {
+    _assert_(true);
     add(-right);
     return *this;
   }
@@ -870,6 +934,7 @@ public:
    * @return the current value.
    */
   int64_t secure_least(int64_t val) {
+    _assert_(true);
     while (true) {
       int64_t cur = get();
       if (cur >= val) return cur;

@@ -38,7 +38,7 @@ const uint8_t TDBDEFAPOW = 8;            ///< default alignment power
 const uint8_t TDBDEFFPOW = 10;           ///< default free block pool power
 const int64_t TDBDEFBNUM = 64LL << 10;   ///< default bucket number
 const int32_t TDBDEFPSIZ = 8192;         ///< default page size
-const int64_t TDBDEFCCAP = 64LL << 20;   ///< default capacity size of the cache memory
+const int64_t TDBDEFPCCAP = 64LL << 20;  ///< default capacity size of the page cache
 const char TDBMETAKEY[] = "@";           ///< key of the record for meta data
 const int64_t TDBHEADSIZ = 64;           ///< size of the header
 const int64_t TDBMOFFNUMS = 8;           ///< offset of the numbers
@@ -53,6 +53,8 @@ const size_t TDBRECBUFSIZ = 64;          ///< size of the record buffer
 const int64_t TDBINIDBASE = 1LL << 48;   ///< base ID number for inner nodes
 const size_t TDBINLINKMIN = 8;           ///< minimum number of links in each inner node
 const int32_t TDBLEVELMAX = 16;          ///< maximum level of B+ tree
+const int32_t TDBATRANCNUM = 256;        ///< number of cached nodes for auto transaction
+const char* BDBTMPPATHEXT = "tmpkct";    ///< extension of the temporary file
 }
 
 
@@ -90,6 +92,7 @@ public:
      * @param db the container database object.
      */
     explicit Cursor(TreeDB* db) : db_(db), stack_(), kbuf_(NULL), ksiz_(0), lid_(0) {
+      _assert_(db);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       db_->curs_.push_back(this);
     }
@@ -97,8 +100,10 @@ public:
      * Destructor.
      */
     virtual ~Cursor() {
+      _assert_(true);
+      if (!db_) return;
       ScopedSpinRWLock lock(&db_->mlock_, true);
-      if (kbuf_ && kbuf_ != stack_) delete[] kbuf_;
+      if (kbuf_) clear_position();
       db_->curs_.remove(this);
     }
     /**
@@ -107,8 +112,11 @@ public:
      * @param writable true for writable operation, or false for read-only operation.
      * @param step true to move the cursor to the next record, or false for no move.
      * @return true on success, or false on failure.
+     * @note the operation for each record is performed atomically and other threads accessing
+     * the same record are blocked.
      */
-    virtual bool accept(Visitor* visitor, bool writable, bool step) {
+    virtual bool accept(Visitor* visitor, bool writable = true, bool step = false) {
+      _assert_(visitor);
       db_->mlock_.lock_reader();
       if (db_->omode_ == 0) {
         db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -116,13 +124,486 @@ public:
         return false;
       }
       if (writable && !(db_->writer_)) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+        db_->set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
         db_->mlock_.unlock();
         return false;
       }
       if (!kbuf_) {
         db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
         db_->mlock_.unlock();
+        return false;
+      }
+      bool err = false;
+      bool hit = false;
+      if (lid_ > 0 && !accept_spec(visitor, writable, step, &hit)) err = true;
+      if (!err && !hit) {
+        if (!db_->mlock_.promote()) {
+          db_->mlock_.unlock();
+          db_->mlock_.lock_writer();
+        }
+        if (kbuf_) {
+          bool retry = true;
+          while (!err && retry) {
+            if (!accept_atom(visitor, step, &retry)) err = true;
+          }
+        } else {
+          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          err = true;
+        }
+      }
+      db_->mlock_.unlock();
+      return !err;
+    }
+    /**
+     * Jump the cursor to the first record.
+     * @return true on success, or false on failure.
+     */
+    virtual bool jump() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, false);
+      if (db_->omode_ == 0) {
+        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        return false;
+      }
+      if (kbuf_) clear_position();
+      bool err = false;
+      if (!set_position(db_->first_)) err = true;
+      return !err;
+    }
+    /**
+     * Jump the cursor onto a record.
+     * @param kbuf the pointer to the key region.
+     * @param ksiz the size of the key region.
+     * @return true on success, or false on failure.
+     */
+    virtual bool jump(const char* kbuf, size_t ksiz) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ);
+      ScopedSpinRWLock lock(&db_->mlock_, false);
+      if (db_->omode_ == 0) {
+        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        return false;
+      }
+      if (kbuf_) clear_position();
+      set_position(kbuf, ksiz, 0);
+      bool err = false;
+      if (!adjust_position()) err = true;
+      return !err;
+    }
+    /**
+     * Jump the cursor to a record.
+     * @note Equal to the original Cursor::jump method except that the parameter is std::string.
+     */
+    virtual bool jump(const std::string& key) {
+      _assert_(true);
+      return jump(key.c_str(), key.size());
+    }
+    /**
+     * Step the cursor to the next record.
+     * @return true on success, or false on failure.
+     */
+    virtual bool step() {
+      _assert_(true);
+      DB::Visitor visitor;
+      if (!accept(&visitor, false, true)) return false;
+      if (!kbuf_) {
+        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        return false;
+      }
+      return true;
+    }
+    /**
+     * Get the database object.
+     * @return the database object.
+     */
+    virtual TreeDB* db() {
+      _assert_(true);
+      return db_;
+    }
+  private:
+    /**
+     * Clear the position.
+     */
+    void clear_position() {
+      _assert_(true);
+      if (kbuf_ != stack_) delete[] kbuf_;
+      kbuf_ = NULL;
+      lid_ = 0;
+    }
+    /**
+     * Set the current position.
+     * @param kbuf the pointer to the key region.
+     * @param ksiz the size of the key region.
+     * @param id the ID of the current node.
+     */
+    void set_position(const char* kbuf, size_t ksiz, int64_t id) {
+      _assert_(kbuf);
+      kbuf_ = ksiz > sizeof(stack_) ? new char[ksiz] : stack_;
+      ksiz_ = ksiz;
+      std::memcpy(kbuf_, kbuf, ksiz);
+      lid_ = id;
+    }
+    /**
+     * Set the current position with a record.
+     * @param rec the current record.
+     * @param id the ID of the current node.
+     */
+    void set_position(Record* rec, int64_t id) {
+      _assert_(rec);
+      char* dbuf = (char*)rec + sizeof(*rec);
+      set_position(dbuf, rec->ksiz, id);
+    }
+    /**
+     * Set the current position at the next node.
+     * @param id the ID of the next node.
+     * @return true on success, or false on failure.
+     */
+    bool set_position(int64_t id) {
+      _assert_(true);
+      while (id > 0) {
+        LeafNode* node = db_->load_leaf_node(id, false);
+        if (!node) {
+          db_->set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
+          db_->hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+          return false;
+        }
+        ScopedSpinRWLock lock(&node->lock, false);
+        RecordArray& recs = node->recs;
+        if (recs.size() > 0) {
+          set_position(recs.front(), id);
+          return true;
+        } else {
+          id = node->next;
+        }
+      }
+      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+      return false;
+    }
+    /**
+     * Accept a visitor to the current record speculatively.
+     * @param visitor a visitor object.
+     * @param writable true for writable operation, or false for read-only operation.
+     * @param step true to move the cursor to the next record, or false for no move.
+     * @param hitp the pointer to the variable for the hit flag.
+     * @return true on success, or false on failure.
+     */
+    bool accept_spec(Visitor* visitor, bool writable, bool step, bool* hitp) {
+      _assert_(visitor && hitp);
+      bool err = false;
+      bool hit = false;
+      char rstack[TDBRECBUFSIZ];
+      size_t rsiz = sizeof(Record) + ksiz_;
+      char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
+      Record* rec = (Record*)rbuf;
+      rec->ksiz = ksiz_;
+      rec->vsiz = 0;
+      std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
+      LeafNode* node = db_->load_leaf_node(lid_, false);
+      if (node) {
+        char lstack[TDBRECBUFSIZ];
+        char* lbuf = NULL;
+        size_t lsiz = 0;
+        Link* link = NULL;
+        int64_t hist[TDBLEVELMAX];
+        int32_t hnum = 0;
+        if (writable) {
+          node->lock.lock_writer();
+        } else {
+          node->lock.lock_reader();
+        }
+        RecordArray& recs = node->recs;
+        if (recs.size() > 0) {
+          Record* frec = recs.front();
+          Record* lrec = recs.back();
+          if (!db_->reccomp_(rec, frec) && !db_->reccomp_(lrec, rec)) {
+            RecordArray::iterator ritend = recs.end();
+            RecordArray::iterator rit = std::lower_bound(recs.begin(), ritend,
+                                                         rec, db_->reccomp_);
+            if (rit != ritend) {
+              hit = true;
+              if (db_->reccomp_(rec, *rit)) {
+                clear_position();
+                set_position(*rit, node->id);
+                if (rbuf != rstack) delete[] rbuf;
+                rsiz = sizeof(Record) + ksiz_;
+                rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
+                rec = (Record*)rbuf;
+                rec->ksiz = ksiz_;
+                rec->vsiz = 0;
+                std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
+              }
+              rec = *rit;
+              char* kbuf = (char*)rec + sizeof(*rec);
+              size_t ksiz = rec->ksiz;
+              size_t vsiz;
+              const char* vbuf = visitor->visit_full(kbuf, ksiz, kbuf + ksiz,
+                                                     rec->vsiz, &vsiz);
+              if (vbuf == Visitor::REMOVE) {
+                rsiz = sizeof(*rec) + rec->ksiz + rec->vsiz;
+                db_->count_ -= 1;
+                db_->cusage_ -= rsiz;
+                node->size -= rsiz;
+                node->dirty = true;
+                if (recs.size() <= 1) {
+                  lsiz = sizeof(Link) + ksiz;
+                  lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
+                  link = (Link*)lbuf;
+                  link->child = 0;
+                  link->ksiz = ksiz;
+                  std::memcpy(lbuf + sizeof(*link), kbuf, ksiz);
+                }
+                xfree(rec);
+                RecordArray::iterator ritnext = rit + 1;
+                if (ritnext != ritend) {
+                  clear_position();
+                  set_position(*ritnext, node->id);
+                  step = false;
+                }
+                recs.erase(rit);
+              } else if (vbuf != Visitor::NOP) {
+                int64_t diff = (int64_t)vsiz - (int64_t)rec->vsiz;
+                db_->cusage_ += diff;
+                node->size += diff;
+                node->dirty = true;
+                if (vsiz > rec->vsiz) {
+                  *rit = (Record*)xrealloc(rec, sizeof(*rec) + rec->ksiz + vsiz);
+                  rec = *rit;
+                  kbuf = (char*)rec + sizeof(*rec);
+                }
+                std::memcpy(kbuf + rec->ksiz, vbuf, vsiz);
+                rec->vsiz = vsiz;
+                if (node->size > db_->psiz_ && recs.size() > 1) {
+                  lsiz = sizeof(Link) + ksiz;
+                  lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
+                  link = (Link*)lbuf;
+                  link->child = 0;
+                  link->ksiz = ksiz;
+                  std::memcpy(lbuf + sizeof(*link), kbuf, ksiz);
+                }
+              }
+              if (step) {
+                rit++;
+                if (rit != ritend) {
+                  clear_position();
+                  set_position(*rit, node->id);
+                  step = false;
+                }
+              }
+            }
+          }
+        }
+        bool atran = db_->autotran_ && node->dirty;
+        bool async = db_->autosync_ && !db_->autotran_ && node->dirty;
+        node->lock.unlock();
+        if (hit && step) {
+          clear_position();
+          set_position(node->next);
+        }
+        if (hit) {
+          bool flush = db_->cusage_ > db_->pccap_;
+          if (link || flush || async) {
+            int64_t id = node->id;
+            if (atran && !link && !db_->tran_ && !db_->fix_auto_transaction_leaf(node))
+              err = true;
+            if (!db_->mlock_.promote()) {
+              db_->mlock_.unlock();
+              db_->mlock_.lock_writer();
+            }
+            if (link) {
+              node = db_->search_tree(link, true, hist, &hnum);
+              if (node) {
+                if (!db_->reorganize_tree(node, hist, hnum)) err = true;
+                if (atran && !db_->tran_ && !db_->fix_auto_transaction_tree()) err = true;
+              } else {
+                db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+                err = true;
+              }
+            } else if (flush) {
+              int32_t idx = id % TDBSLOTNUM;
+              LeafSlot* lslot = db_->lslots_ + idx;
+              if (!db_->flush_leaf_cache_part(lslot)) err = true;
+              InnerSlot* islot = db_->islots_ + idx;
+              if (islot->warm->count() > lslot->warm->count() + lslot->hot->count() + 1 &&
+                  !db_->flush_inner_cache_part(islot)) err = true;
+            }
+            if (async && !db_->fix_auto_synchronization()) err = true;
+          }
+        }
+        if (lbuf != lstack) delete[] lbuf;
+      }
+      if (rbuf != rstack) delete[] rbuf;
+      *hitp = hit;
+      return !err;
+    }
+    /**
+     * Accept a visitor to the current record atomically.
+     * @param visitor a visitor object.
+     * @param step true to move the cursor to the next record, or false for no move.
+     * @param retryp the pointer to the variable for the retry flag.
+     * @return true on success, or false on failure.
+     */
+    bool accept_atom(Visitor* visitor, bool step, bool *retryp) {
+      _assert_(visitor && retryp);
+      bool err = false;
+      bool reorg = false;
+      *retryp = false;
+      char lstack[TDBRECBUFSIZ];
+      size_t lsiz = sizeof(Link) + ksiz_;
+      char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
+      Link* link = (Link*)lbuf;
+      link->child = 0;
+      link->ksiz = ksiz_;
+      std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
+      int64_t hist[TDBLEVELMAX];
+      int32_t hnum = 0;
+      LeafNode* node = db_->search_tree(link, true, hist, &hnum);
+      if (!node) {
+        db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+        if (lbuf != lstack) delete[] lbuf;
+        return false;
+      }
+      if (node->recs.size() < 1) {
+        if (lbuf != lstack) delete[] lbuf;
+        clear_position();
+        if (!set_position(node->next)) return false;
+        node = db_->load_leaf_node(lid_, false);
+        if (!node) {
+          db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+          return false;
+        }
+        lsiz = sizeof(Link) + ksiz_;
+        char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
+        Link* link = (Link*)lbuf;
+        link->child = 0;
+        link->ksiz = ksiz_;
+        std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
+        node = db_->search_tree(link, true, hist, &hnum);
+        if (node->id != lid_) {
+          db_->set_error(__FILE__, __LINE__, Error::BROKEN, "invalid tree");
+          if (lbuf != lstack) delete[] lbuf;
+          return false;
+        }
+      }
+      char rstack[TDBRECBUFSIZ];
+      size_t rsiz = sizeof(Record) + ksiz_;
+      char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
+      Record* rec = (Record*)rbuf;
+      rec->ksiz = ksiz_;
+      rec->vsiz = 0;
+      std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
+      RecordArray& recs = node->recs;
+      RecordArray::iterator ritend = recs.end();
+      RecordArray::iterator rit = std::lower_bound(recs.begin(), ritend,
+                                                   rec, db_->reccomp_);
+      if (rit != ritend) {
+        if (db_->reccomp_(rec, *rit)) {
+          clear_position();
+          set_position(*rit, node->id);
+          if (rbuf != rstack) delete[] rbuf;
+          rsiz = sizeof(Record) + ksiz_;
+          rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
+          rec = (Record*)rbuf;
+          rec->ksiz = ksiz_;
+          rec->vsiz = 0;
+          std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
+        }
+        rec = *rit;
+        char* kbuf = (char*)rec + sizeof(*rec);
+        size_t ksiz = rec->ksiz;
+        size_t vsiz;
+        const char* vbuf = visitor->visit_full(kbuf, ksiz, kbuf + ksiz,
+                                               rec->vsiz, &vsiz);
+        if (vbuf == Visitor::REMOVE) {
+          rsiz = sizeof(*rec) + rec->ksiz + rec->vsiz;
+          db_->count_ -= 1;
+          db_->cusage_ -= rsiz;
+          node->size -= rsiz;
+          node->dirty = true;
+          xfree(rec);
+          RecordArray::iterator ritnext = rit + 1;
+          if (ritnext != ritend) {
+            clear_position();
+            set_position(*ritnext, node->id);
+            step = false;
+          }
+          recs.erase(rit);
+          if (recs.size() < 1) reorg = true;
+        } else if (vbuf != Visitor::NOP) {
+          int64_t diff = (int64_t)vsiz - (int64_t)rec->vsiz;
+          db_->cusage_ += diff;
+          node->size += diff;
+          node->dirty = true;
+          if (vsiz > rec->vsiz) {
+            *rit = (Record*)xrealloc(rec, sizeof(*rec) + rec->ksiz + vsiz);
+            rec = *rit;
+            kbuf = (char*)rec + sizeof(*rec);
+          }
+          std::memcpy(kbuf + rec->ksiz, vbuf, vsiz);
+          rec->vsiz = vsiz;
+          if (node->size > db_->psiz_ && recs.size() > 1) reorg = true;
+        }
+        if (step) {
+          rit++;
+          if (rit != ritend) {
+            clear_position();
+            set_position(*rit, node->id);
+          } else {
+            clear_position();
+            set_position(node->next);
+          }
+        }
+        bool atran = db_->autotran_ && node->dirty;
+        bool async = db_->autosync_ && !db_->autotran_ && node->dirty;
+        if (atran && !reorg && !db_->tran_ && !db_->fix_auto_transaction_leaf(node)) err = true;
+        if (reorg) {
+          if (!db_->reorganize_tree(node, hist, hnum)) err = true;
+          if (atran && !db_->tran_ && !db_->fix_auto_transaction_tree()) err = true;
+        } else if (db_->cusage_ > db_->pccap_) {
+          int32_t idx = node->id % TDBSLOTNUM;
+          LeafSlot* lslot = db_->lslots_ + idx;
+          if (!db_->flush_leaf_cache_part(lslot)) err = true;
+          InnerSlot* islot = db_->islots_ + idx;
+          if (islot->warm->count() > lslot->warm->count() + lslot->hot->count() + 1 &&
+              !db_->flush_inner_cache_part(islot)) err = true;
+        }
+        if (async && !db_->fix_auto_synchronization()) err = true;
+      } else {
+        int64_t lid = lid_;
+        clear_position();
+        if (set_position(node->next)) {
+          if (lid_ == lid) {
+            db_->set_error(__FILE__, __LINE__, Error::BROKEN, "invalid leaf node");
+            err = true;
+          } else {
+            *retryp = true;
+          }
+        } else {
+          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          err = true;
+        }
+      }
+      if (rbuf != rstack) delete[] rbuf;
+      if (lbuf != lstack) delete[] lbuf;
+      return !err;
+    }
+    /**
+     * Adjust the position to an existing record.
+     * @return true on success, or false on failure.
+     */
+    bool adjust_position() {
+      _assert_(true);
+      char lstack[TDBRECBUFSIZ];
+      size_t lsiz = sizeof(Link) + ksiz_;
+      char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
+      Link* link = (Link*)lbuf;
+      link->child = 0;
+      link->ksiz = ksiz_;
+      std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
+      int64_t hist[TDBLEVELMAX];
+      int32_t hnum = 0;
+      LeafNode* node = db_->search_tree(link, true, hist, &hnum);
+      if (!node) {
+        db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+        if (lbuf != lstack) delete[] lbuf;
         return false;
       }
       char rstack[TDBRECBUFSIZ];
@@ -132,187 +613,6 @@ public:
       rec->ksiz = ksiz_;
       rec->vsiz = 0;
       std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
-      LeafNode* node = db_->load_leaf_node(lid_, false);
-      bool retry = true;
-      bool reorg = false;
-      if (node) {
-        if (writable) {
-          node->lock.lock_writer();
-        } else {
-          node->lock.lock_reader();
-        }
-        if (db_->check_leaf_node_range(node, rec)) {
-
-          //std::cout << "ADHOC:" << std::string((char*)rec + sizeof(*rec), rec->ksiz) << std::endl;
-
-          retry = false;
-          reorg = db_->accept_impl(node, rec, visitor);
-        }
-        node->lock.unlock();
-      }
-      bool err = false;
-      char lstack[TDBRECBUFSIZ];
-      char* lbuf = NULL;
-      size_t lsiz = 0;
-      Link* link = NULL;
-      int64_t hist[TDBLEVELMAX];
-      int32_t hnum = 0;
-      if (retry) {
-        lsiz = sizeof(Link) + ksiz_;
-        lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
-        link = (Link*)lbuf;
-        link->child = 0;
-        link->ksiz = ksiz_;
-        std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
-        node = db_->search_tree(link, false, hist, &hnum);
-        if (node) {
-          if (writable) {
-            node->lock.lock_writer();
-          } else {
-            node->lock.lock_reader();
-          }
-
-          //std::cout << "RETRY:" << std::string((char*)rec + sizeof(*rec), rec->ksiz) << std::endl;
-
-          reorg = db_->accept_impl(node, rec, visitor);
-          node->lock.unlock();
-        } else {
-          err = true;
-        }
-      }
-      if (node) {
-        if (reorg && !link) {
-          lsiz = sizeof(Link) + ksiz_;
-          lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
-          link = (Link*)lbuf;
-          link->child = 0;
-          link->ksiz = ksiz_;
-          std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
-          node = db_->search_tree(link, false, hist, &hnum);
-        }
-        if (step) {
-          if (kbuf_ != stack_) delete[] kbuf_;
-          kbuf_ = NULL;
-          lid_ = 0;
-          if (!step_impl(node, rec)) err = true;
-        }
-        bool flush = false;
-        if (reorg && db_->mlock_.promote()) {
-          if (!db_->reorganize_tree(node, hist, hnum)) err = true;
-          reorg = false;
-        } else if (db_->cusage_ > db_->ccap_) {
-          int32_t idx = node->id % TDBSLOTNUM;
-          LeafSlot* lslot = db_->lslots_ + idx;
-          if (!db_->clean_leaf_cache_part(lslot)) err = true;
-          if (db_->mlock_.promote()) {
-            if (!db_->flush_leaf_cache_part(lslot)) err = true;
-            InnerSlot* islot = db_->islots_ + idx;
-            if (islot->warm->count() > lslot->warm->count() + lslot->hot->count() + 1 &&
-                !db_->flush_inner_cache_part(islot)) err = true;
-          } else {
-            flush = true;
-          }
-        }
-        db_->mlock_.unlock();
-        if (reorg) {
-          db_->mlock_.lock_writer();
-          node = db_->search_tree(link, false, hist, &hnum);
-          if (node) {
-            if (!db_->reorganize_tree(node, hist, hnum)) err = true;
-          } else {
-            err = true;
-          }
-          db_->mlock_.unlock();
-        } else if (flush) {
-          int32_t idx = node->id % TDBSLOTNUM;
-          LeafSlot* lslot = db_->lslots_ + idx;
-          db_->mlock_.lock_writer();
-          if (!db_->flush_leaf_cache_part(lslot)) err = true;
-          InnerSlot* islot = db_->islots_ + idx;
-          if (islot->warm->count() > lslot->warm->count() + lslot->hot->count() + 1 &&
-              !db_->flush_inner_cache_part(islot)) err = true;
-          db_->mlock_.unlock();
-        }
-      } else {
-        db_->mlock_.unlock();
-      }
-      if (rbuf != rstack) delete[] rbuf;
-      if (lbuf != lstack) delete[] lbuf;
-      return !err;
-    }
-    /**
-     * Jump the cursor to the first record.
-     * @return true on success, or false on failure.
-     */
-    virtual bool jump() {
-      ScopedSpinRWLock lock(&db_->mlock_, false);
-      if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
-        return false;
-      }
-      if (kbuf_) {
-        if (kbuf_ != stack_) delete[] kbuf_;
-        kbuf_ = NULL;
-        lid_ = 0;
-      }
-      int64_t id = db_->first_;
-      while (id > 0) {
-        LeafNode* node = db_->load_leaf_node(id, false);
-        if (!node) return false;
-        ScopedSpinRWLock lock(&node->lock, false);
-        RecordArray& recs = node->recs;
-        if (recs.size() > 0) {
-          Record* rec = recs.front();
-          char* dbuf = (char*)rec + sizeof(*rec);
-          kbuf_ = rec->ksiz > sizeof(stack_) ? new char[rec->ksiz] : stack_;
-          ksiz_ = rec->ksiz;
-          std::memcpy(kbuf_, dbuf, ksiz_);
-          lid_ = id;
-          return true;
-        } else {
-          id = node->next;
-        }
-      }
-      return true;
-    }
-    /**
-     * Jump the cursor onto a record.
-     * @param kbuf the pointer to the key region.
-     * @param ksiz the size of the key region.
-     * @return true on success, or false on failure.
-     */
-    virtual bool jump(const char* kbuf, size_t ksiz) {
-      ScopedSpinRWLock lock(&db_->mlock_, false);
-      if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
-        return false;
-      }
-      if (kbuf_) {
-        if (kbuf_ != stack_) delete[] kbuf_;
-        kbuf_ = NULL;
-        lid_ = 0;
-      }
-      char lstack[TDBRECBUFSIZ];
-      size_t lsiz = sizeof(Link) + ksiz;
-      char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
-      Link* link = (Link*)lbuf;
-      link->child = 0;
-      link->ksiz = ksiz;
-      std::memcpy(lbuf + sizeof(*link), kbuf, ksiz);
-      int64_t hist[TDBLEVELMAX];
-      int32_t hnum = 0;
-      LeafNode* node = db_->search_tree(link, true, hist, &hnum);
-      if (!node) {
-        if (lbuf != lstack) delete[] lbuf;
-        return false;
-      }
-      char rstack[TDBRECBUFSIZ];
-      size_t rsiz = sizeof(Record) + ksiz;
-      char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
-      Record* rec = (Record*)rbuf;
-      rec->ksiz = ksiz;
-      rec->vsiz = 0;
-      std::memcpy(rbuf + sizeof(*rec), kbuf, ksiz);
       bool err = false;
       node->lock.lock_reader();
       const RecordArray& recs = node->recs;
@@ -321,102 +621,13 @@ public:
                                                          rec, db_->reccomp_);
       if (rit == ritend) {
         node->lock.unlock();
-        int64_t id = node->next;
-        while (id > 0) {
-          node = db_->load_leaf_node(id, false);
-          if (!node) {
-            err = true;
-            break;
-          }
-          ScopedSpinRWLock lock(&node->lock, false);
-          RecordArray& recs = node->recs;
-          if (recs.size() > 0) {
-            rec = recs.front();
-            char* dbuf = (char*)rec + sizeof(*rec);
-            kbuf_ = rec->ksiz > sizeof(stack_) ? new char[rec->ksiz] : stack_;
-            ksiz_ = rec->ksiz;
-            std::memcpy(kbuf_, dbuf, ksiz_);
-            lid_ = id;
-            break;
-          } else {
-            id = node->next;
-          }
-        }
+        if (!set_position(node->next)) err = true;
       } else {
-        rec = *rit;
-        char* dbuf = (char*)rec + sizeof(*rec);
-        kbuf_ = rec->ksiz > sizeof(stack_) ? new char[rec->ksiz] : stack_;
-        ksiz_ = rec->ksiz;
-        std::memcpy(kbuf_, dbuf, ksiz_);
-        lid_ = node->id;
+        set_position(*rit, node->id);
         node->lock.unlock();
       }
       if (rbuf != rstack) delete[] rbuf;
       if (lbuf != lstack) delete[] lbuf;
-      return !err;
-    }
-    /**
-     * Jump the cursor to a record.
-     * @note Equal to the original Cursor::jump method except that the parameter is std::string.
-     */
-    virtual bool jump(const std::string& key) {
-      return jump(key.c_str(), key.size());
-    }
-    /**
-     * Step the cursor to the next record.
-     * @return true on success, or false on failure.
-     */
-    virtual bool step() {
-      DB::Visitor visitor;
-      if (!accept(&visitor, false, true)) return false;
-      if (!kbuf_) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
-        return false;
-      }
-      return true;
-    }
-  private:
-    /**
-     * Step the cursor to the next record.
-     * @param node the leaf node.
-     * @param rec the record containing the key only.
-     * @return true on success, or false on failure.
-     */
-    bool step_impl(LeafNode* node, Record* rec) {
-      node->lock.lock_reader();
-      const RecordArray& recs = node->recs;
-      RecordArray::const_iterator ritend = node->recs.end();
-      RecordArray::const_iterator rit = std::upper_bound(recs.begin(), ritend,
-                                                         rec, db_->reccomp_);
-      if (rit == ritend) {
-        node->lock.unlock();
-        int64_t id = node->next;
-        while (id > 0) {
-          node = db_->load_leaf_node(id, false);
-          if (!node) return false;
-          ScopedSpinRWLock lock(&node->lock, false);
-          RecordArray& recs = node->recs;
-          if (recs.size() > 0) {
-            rec = recs.front();
-            char* dbuf = (char*)rec + sizeof(*rec);
-            kbuf_ = rec->ksiz > sizeof(stack_) ? new char[rec->ksiz] : stack_;
-            ksiz_ = rec->ksiz;
-            std::memcpy(kbuf_, dbuf, ksiz_);
-            lid_ = id;
-            return true;
-          } else {
-            id = node->next;
-          }
-        }
-      } else {
-        rec = *rit;
-        char* dbuf = (char*)rec + sizeof(*rec);
-        kbuf_ = rec->ksiz > sizeof(stack_) ? new char[rec->ksiz] : stack_;
-        ksiz_ = rec->ksiz;
-        std::memcpy(kbuf_, dbuf, ksiz_);
-        lid_ = node->id;
-        node->lock.unlock();
-      }
       return true;
     }
     /** Dummy constructor to forbid the use. */
@@ -455,15 +666,27 @@ public:
   explicit TreeDB() :
     mlock_(), omode_(0), writer_(false), autotran_(false), autosync_(false),
     hdb_(), curs_(), apow_(TDBDEFAPOW), fpow_(TDBDEFFPOW), opts_(0), bnum_(TDBDEFBNUM),
-    psiz_(TDBDEFPSIZ), ccap_(TDBDEFCCAP),
+    psiz_(TDBDEFPSIZ), pccap_(TDBDEFPCCAP),
     root_(0), first_(0), last_(0), lcnt_(0), icnt_(0), count_(0), cusage_(0),
-    lslots_(), islots_(), reccomp_(), linkcomp_(), tran_(false), trcnt_(0) {}
+    lslots_(), islots_(), reccomp_(), linkcomp_(), tran_(false), trcnt_(0) {
+    _assert_(true);
+  }
   /**
    * Destructor.
    * @note If the database is not closed, it is closed implicitly.
    */
   virtual ~TreeDB() {
+    _assert_(true);
     if (omode_ != 0) close();
+    if (curs_.size() > 0) {
+      CursorList::const_iterator cit = curs_.begin();
+      CursorList::const_iterator citend = curs_.end();
+      while (cit != citend) {
+        Cursor* cur = *cit;
+        cur->db_ = NULL;
+        cit++;
+      }
+    }
   }
   /**
    * Accept a visitor to a record.
@@ -472,8 +695,11 @@ public:
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
+   * @note the operation for each record is performed atomically and other threads accessing the
+   * same record are blocked.
    */
-  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable) {
+  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     mlock_.lock_reader();
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -481,7 +707,7 @@ public:
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
@@ -496,6 +722,7 @@ public:
     int32_t hnum = 0;
     LeafNode* node = search_tree(link, true, hist, &hnum);
     if (!node) {
+      set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
       if (lbuf != lstack) delete[] lbuf;
       mlock_.unlock();
       return false;
@@ -513,13 +740,17 @@ public:
       node->lock.lock_reader();
     }
     bool reorg = accept_impl(node, rec, visitor);
+    bool atran = autotran_ && node->dirty;
+    bool async = autosync_ && !autotran_ && node->dirty;
     node->lock.unlock();
     bool flush = false;
     bool err = false;
+    if (atran && !reorg && !tran_ && !fix_auto_transaction_leaf(node)) err = true;
     if (reorg && mlock_.promote()) {
       if (!reorganize_tree(node, hist, hnum)) err = true;
+      if (atran && !tran_ && !fix_auto_transaction_tree()) err = true;
       reorg = false;
-    } else if (cusage_ > ccap_) {
+    } else if (cusage_ > pccap_) {
       int32_t idx = node->id % TDBSLOTNUM;
       LeafSlot* lslot = lslots_ + idx;
       if (!clean_leaf_cache_part(lslot)) err = true;
@@ -538,7 +769,9 @@ public:
       node = search_tree(link, false, hist, &hnum);
       if (node) {
         if (!reorganize_tree(node, hist, hnum)) err = true;
+        if (atran && !tran_ && !fix_auto_transaction_tree()) err = true;
       } else {
+        set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
         err = true;
       }
       mlock_.unlock();
@@ -554,6 +787,11 @@ public:
     }
     if (rbuf != rstack) delete[] rbuf;
     if (lbuf != lstack) delete[] lbuf;
+    if (async) {
+      mlock_.lock_writer();
+      if (!fix_auto_synchronization()) err = true;
+      mlock_.unlock();
+    }
     return !err;
   }
   /**
@@ -561,23 +799,37 @@ public:
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
+   * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  virtual bool iterate(Visitor *visitor, bool writable) {
+  virtual bool iterate(Visitor *visitor, bool writable = true) {
+    _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
+    bool atran = false;
+    if (autotran_ && writable && !tran_) {
+      if (begin_transaction_impl(autosync_)) {
+        atran = true;
+      } else {
+        err = true;
+      }
+    }
     int64_t id = first_;
     int64_t flcnt = 0;
     while (id > 0) {
       LeafNode* node = load_leaf_node(id, false);
-      if (!node) return false;
+      if (!node) {
+        set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
+        hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+        return false;
+      }
       id = node->next;
       const RecordArray& recs = node->recs;
       RecordArray keys;
@@ -620,11 +872,12 @@ public:
         if (node) {
           if (!reorganize_tree(node, hist, hnum)) err = true;
         } else {
+          set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
           err = true;
         }
         if (lbuf != lstack) delete[] lbuf;
       }
-      if (cusage_ > ccap_) {
+      if (cusage_ > pccap_) {
         for (int32_t i = 0; i < TDBSLOTNUM; i++) {
           LeafSlot* lslot = lslots_ + i;
           if (!flush_leaf_cache_part(lslot)) err = true;
@@ -638,6 +891,8 @@ public:
         kit++;
       }
     }
+    if (atran && !commit_transaction()) err = true;
+    if (autosync_ && !autotran_ && writable && !fix_auto_synchronization()) err = true;
     return !err;
   }
   /**
@@ -645,6 +900,7 @@ public:
    * @return the last happened error.
    */
   virtual Error error() const {
+    _assert_(true);
     return hdb_.error();
   }
   /**
@@ -653,23 +909,29 @@ public:
    * @param message a supplement message.
    */
   virtual void set_error(Error::Code code, const char* message) {
+    _assert_(message);
     hdb_.set_error(code, message);
   }
   /**
    * Open a database file.
    * @param path the path of a database file.
-   * @param mode the connection mode.  HashDB::OWRITER as a writer, HashDB::OREADER as a
-   * reader.  The following may be added to the writer mode by bitwise-or: HashDB::OCREATE,
-   * which means it creates a new database if the file does not exist, HashDB::OTRUNCATE, which
-   * means it creates a new database regardless if the file exists, HashDB::OAUTOTRAN, which
-   * means each updating operation is performed in implicit transaction, HashDB::OAUTOSYNC,
+   * @param mode the connection mode.  TreeDB::OWRITER as a writer, TreeDB::OREADER as a
+   * reader.  The following may be added to the writer mode by bitwise-or: TreeDB::OCREATE,
+   * which means it creates a new database if the file does not exist, TreeDB::OTRUNCATE, which
+   * means it creates a new database regardless if the file exists, TreeDB::OAUTOTRAN, which
+   * means each updating operation is performed in implicit transaction, TreeDB::OAUTOSYNC,
    * which means each updating operation is followed by implicit synchronization with the file
    * system.  The following may be added to both of the reader mode and the writer mode by
-   * bitwise-or: HashDB::ONOLOCK, which means it opens the database file without file locking,
-   * HashDB::TRYLOCK, which means locking is performed without blocking.
+   * bitwise-or: TreeDB::ONOLOCK, which means it opens the database file without file locking,
+   * TreeDB::OTRYLOCK, which means locking is performed without blocking, TreeDB::ONOREPAIR,
+   * which means the database file is not repaired implicitly even if file destruction is
+   * detected.
    * @return true on success, or false on failure.
+   * @note Every opened database must be closed by the TreeDB::close method when it is no
+   * longer in use.
    */
-  virtual bool open(const std::string& path, uint32_t mode) {
+  virtual bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -690,9 +952,26 @@ public:
     if (!hdb_.tune_buckets(bnum_)) return false;
     if (!hdb_.open(path, mode)) return false;
     if (hdb_.type() != TYPETREE) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid database type");
+      set_error(__FILE__, __LINE__, Error::INVALID, "invalid database type");
       hdb_.close();
       return false;
+    }
+    if (hdb_.recovered()) {
+      if (!writer_) {
+        if (!hdb_.close()) return false;
+        mode &= ~OREADER;
+        mode |= OWRITER;
+        if (!hdb_.open(path, mode)) return false;
+      }
+      if (!recalc_count()) return false;
+    } else if (hdb_.reorganized()) {
+      if (!writer_) {
+        if (!hdb_.close()) return false;
+        mode &= ~OREADER;
+        mode |= OWRITER;
+        if (!hdb_.open(path, mode)) return false;
+      }
+      if (!reorganize_file()) return false;
     }
     root_ = 0;
     first_ = 0;
@@ -732,6 +1011,9 @@ public:
     if (psiz_ < 1 || root_ < 1 || first_ < 1 || last_ < 1 ||
         lcnt_ < 1 || icnt_ < 0 || count_ < 0) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data");
+      hdb_.report(__FILE__, __LINE__, "info", "psiz=%ld root=%ld first=%ld last=%ld"
+                  " lcnt=%ld icnt=%ld count=%ld", (long)psiz_, (long)root_,
+                  (long)first_, (long)last_, (long)lcnt_, (long)icnt_, (long)count_);
       delete_inner_cache();
       delete_leaf_cache();
       hdb_.close();
@@ -748,6 +1030,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool close() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -755,33 +1038,26 @@ public:
     }
     bool err = false;
     disable_cursors();
-
-    // hoge
     int64_t lsiz = calc_leaf_cache_size();
     int64_t isiz = calc_inner_cache_size();
-    /*
-    printf("[closing: %lld = %lld + %lld]\n",
-           (long long)cusage_, (long long)lsiz, (long long)isiz);
-    */
     if (cusage_ != lsiz + isiz) {
-      printf("YABASU difference!!\n");
+      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid cache usage");
+      hdb_.report(__FILE__, __LINE__, "info", "cusage=%ld lsiz=%ld isiz=%ld",
+                  (long)cusage_, (long)lsiz, (long)isiz);
       err = true;
     }
-
-
     if (!flush_leaf_cache(true)) err = true;
     if (!flush_inner_cache(true)) err = true;
-
-
-    // hoge
-    if (cusage_ != 0 || calc_leaf_cache_count() != 0 || calc_leaf_cache_size() != 0 ||
-        calc_inner_cache_count() != 0 || calc_inner_cache_size() != 0) {
-      printf("YABASU not ZERO!!\n");
+    lsiz = calc_leaf_cache_size();
+    isiz = calc_inner_cache_size();
+    int64_t lcnt = calc_leaf_cache_count();
+    int64_t icnt = calc_inner_cache_count();
+    if (cusage_ != 0 || lsiz != 0 || isiz != 0 || lcnt != 0 || icnt != 0) {
+      set_error(__FILE__, __LINE__, Error::BROKEN, "remaining cache");
+      hdb_.report(__FILE__, __LINE__, "info", "cusage=%ld lsiz=%ld isiz=%ld lcnt=%ld icnt=%ld",
+                  (long)cusage_, (long)lsiz, (long)isiz, (long)lcnt, (long)icnt);
       err = true;
     }
-
-
-
     delete_inner_cache();
     delete_leaf_cache();
     if (writer_ && !dump_meta()) err = true;
@@ -796,7 +1072,8 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @return true on success, or false on failure.
    */
-  virtual bool synchronize(bool hard, FileProcessor* proc) {
+  virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+    _assert_(true);
     mlock_.lock_reader();
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -804,7 +1081,7 @@ public:
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
@@ -819,6 +1096,10 @@ public:
     if (!flush_leaf_cache(true)) err = true;
     if (!flush_inner_cache(true)) err = true;
     if (!dump_meta()) err = true;
+
+
+    // yabasu dame
+
     if (!hdb_.synchronize(hard, proc)) err = true;
     mlock_.unlock();
     return !err;
@@ -829,7 +1110,8 @@ public:
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction(bool hard) {
+  virtual bool begin_transaction(bool hard = false) {
+    _assert_(true);
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
       if (omode_ == 0) {
@@ -838,7 +1120,7 @@ public:
         return false;
       }
       if (!writer_) {
-        set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+        set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
         mlock_.unlock();
         return false;
       }
@@ -856,11 +1138,44 @@ public:
     return true;
   }
   /**
-   * Commit transaction.
+   * Try to begin transaction.
+   * @param hard true for physical synchronization with the device, or false for logical
+   * synchronization with the file system.
+   * @return true on success, or false on failure.
+   */
+  virtual bool begin_transaction_try(bool hard = false) {
+    _assert_(true);
+    mlock_.lock_writer();
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      mlock_.unlock();
+      return false;
+    }
+    if (!writer_) {
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      mlock_.unlock();
+      return false;
+    }
+    if (tran_) {
+      set_error(__FILE__, __LINE__, Error::LOGIC, "competition avoided");
+      mlock_.unlock();
+      return false;
+    }
+    if (!begin_transaction_impl(hard)) {
+      mlock_.unlock();
+      return false;
+    }
+    tran_ = true;
+    mlock_.unlock();
+    return true;
+  }
+  /**
+   * End transaction.
    * @param commit true to commit the transaction, or false to abort the transaction.
    * @return true on success, or false on failure.
    */
-  virtual bool end_transaction(bool commit) {
+  virtual bool end_transaction(bool commit = true) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -884,13 +1199,14 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool clear() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     disable_cursors();
@@ -916,6 +1232,7 @@ public:
    * @return the number of records, or -1 on failure.
    */
   virtual int64_t count() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -928,6 +1245,7 @@ public:
    * @return the size of the database file in bytes, or -1 on failure.
    */
   virtual int64_t size() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -937,9 +1255,10 @@ public:
   }
   /**
    * Get the path of the database file.
-   * @return the path of the database file in bytes, or an empty string on failure.
+   * @return the path of the database file, or an empty string on failure.
    */
   virtual std::string path() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -953,6 +1272,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool status(std::map<std::string, std::string>* strmap) {
+    _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -961,7 +1281,14 @@ public:
     if (!hdb_.status(strmap)) return false;
     (*strmap)["type"] = "TreeDB";
     (*strmap)["psiz"] = strprintf("%d", psiz_);
-    (*strmap)["ccap"] = strprintf("%lld", (long long)ccap_);
+    (*strmap)["pccap"] = strprintf("%lld", (long long)pccap_);
+    const char* compname = "external";
+    if (reccomp_.comp == &LEXICALCOMP) {
+      compname = "lexical";
+    } else if (reccomp_.comp == &DECIMALCOMP) {
+      compname = "decimal";
+    }
+    (*strmap)["rcomp"] = compname;
     (*strmap)["root"] = strprintf("%lld", (long long)root_);
     (*strmap)["first"] = strprintf("%lld", (long long)first_);
     (*strmap)["last"] = strprintf("%lld", (long long)last_);
@@ -989,11 +1316,12 @@ public:
   }
   /**
    * Create a cursor object.
-   * @return the return value is the cursor object.
+   * @return the return value is the created cursor object.
    * @note Because the object of the return value is allocated by the constructor, it should be
    * released with the delete operator when it is no longer in use.
    */
   virtual Cursor* cursor() {
+    _assert_(true);
     return new Cursor(this);
   }
   /**
@@ -1003,6 +1331,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_error_reporter(std::ostream* erstrm, bool ervbs) {
+    _assert_(erstrm);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1016,6 +1345,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_alignment(int8_t apow) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1030,6 +1360,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_fbp(int8_t fpow) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1040,10 +1371,12 @@ public:
   }
   /**
    * Set the optional features.
-   * @param opts the optional features.
+   * @param opts the optional features by bitwise-or: TreeDB::TSMALL to use 32-bit addressing,
+   * TreeDB::TLINEAR to use linear collision chaining, TreeDB::TCOMPRESS to compress each record.
    * @return true on success, or false on failure.
    */
   virtual bool tune_options(int8_t opts) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1058,6 +1391,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_buckets(int64_t bnum) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1072,6 +1406,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_page(int32_t psiz) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1086,6 +1421,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_map(int64_t msiz) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1099,6 +1435,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_defrag(int64_t dfunit) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1107,17 +1444,18 @@ public:
     return hdb_.tune_defrag(dfunit);
   }
   /**
-   * Set the capacity of the total size of the page cache.
-   * @param ccap the capacity of the total size of the page cache.
+   * Set the capacity size of the page cache.
+   * @param pccap the capacity size of the page cache.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_cache(int64_t ccap) {
+  virtual bool tune_page_cache(int64_t pccap) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    ccap_ = ccap > 0 ? ccap : TDBDEFCCAP;
+    pccap_ = pccap > 0 ? pccap : TDBDEFPCCAP;
     return true;
   }
   /**
@@ -1126,6 +1464,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_compressor(Compressor* comp) {
+    _assert_(comp);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1135,10 +1474,11 @@ public:
   }
   /**
    * Set the record comparator.
-   * @param comp the record comparator object.
+   * @param rcomp the record comparator object.
    * @return true on success, or false on failure.
    */
   virtual bool tune_comparator(Comparator* rcomp) {
+    _assert_(rcomp);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1152,6 +1492,7 @@ public:
    * @return the pointer to the opaque data region, whose size is 16 bytes.
    */
   virtual char* opaque() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1164,10 +1505,11 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool synchronize_opaque() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
-      return NULL;
+      return false;
     }
     return hdb_.synchronize_opaque();
   }
@@ -1177,10 +1519,11 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool defrag(int64_t step) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
-      return NULL;
+      return false;
     }
     return hdb_.defrag(step);
   }
@@ -1189,6 +1532,7 @@ public:
    * @return the status flags, or 0 on failure.
    */
   virtual uint8_t flags() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1206,6 +1550,7 @@ protected:
    */
   virtual void set_error(const char* file, int32_t line,
                          Error::Code code, const char* message) {
+    _assert_(file && line > 0 && message);
     hdb_.set_error(file, line, code, message);
   }
 private:
@@ -1222,9 +1567,10 @@ private:
   struct RecordComparator {
     Comparator* comp;                    ///< comparator
     /** constructor */
-    RecordComparator() : comp(NULL) {}
+    explicit RecordComparator() : comp(NULL) {}
     /** comparing operator */
-    bool operator()(const Record* const& a, const Record* const& b) const {
+    bool operator ()(const Record* const& a, const Record* const& b) const {
+      _assert_(true);
       char* akbuf = (char*)a + sizeof(*a);
       char* bkbuf = (char*)b + sizeof(*b);
       return comp->compare(akbuf, a->ksiz, bkbuf, b->ksiz) < 0;
@@ -1257,9 +1603,12 @@ private:
   struct LinkComparator {
     Comparator* comp;                    ///< comparator
     /** constructor */
-    LinkComparator() : comp(NULL) {}
+    explicit LinkComparator() : comp(NULL) {
+      _assert_(true);
+    }
     /** comparing operator */
-    bool operator()(const Link* const& a, const Link* const& b) const {
+    bool operator ()(const Link* const& a, const Link* const& b) const {
+      _assert_(true);
       char* akbuf = (char*)a + sizeof(*a);
       char* bkbuf = (char*)b + sizeof(*b);
       return comp->compare(akbuf, a->ksiz, bkbuf, b->ksiz) < 0;
@@ -1278,7 +1627,7 @@ private:
     bool dead;                           ///< whether to be removed
   };
   /**
-   * Slot cache of inner nodes.
+   * Slot cache of leaf nodes.
    */
   struct LeafSlot {
     SpinLock lock;                       ///< lock
@@ -1296,6 +1645,7 @@ private:
    * Open the leaf cache.
    */
   void create_leaf_cache() {
+    _assert_(true);
     int64_t bnum = bnum_ / TDBSLOTNUM + 1;
     if (bnum < INT8_MAX) bnum = INT8_MAX;
     bnum = nearbyprime(bnum);
@@ -1308,6 +1658,7 @@ private:
    * Close the leaf cache.
    */
   void delete_leaf_cache() {
+    _assert_(true);
     for (int32_t i = TDBSLOTNUM - 1; i >= 0; i--) {
       LeafSlot* slot = lslots_ + i;
       delete slot->warm;
@@ -1320,6 +1671,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool flush_leaf_cache(bool save) {
+    _assert_(true);
     bool err = false;
     for (int32_t i = TDBSLOTNUM - 1; i >= 0; i--) {
       LeafSlot* slot = lslots_ + i;
@@ -1346,9 +1698,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool flush_leaf_cache_part(LeafSlot* slot) {
-
-    //printf("[%d]", (int)cusage_);
-
+    _assert_(slot);
     bool err = false;
     if (slot->warm->count() > 0) {
       LeafNode* node = slot->warm->first_value();
@@ -1364,6 +1714,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool clean_leaf_cache() {
+    _assert_(true);
     bool err = false;
     for (int32_t i = 0; i < TDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
@@ -1391,6 +1742,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool clean_leaf_cache_part(LeafSlot* slot) {
+    _assert_(slot);
     bool err = false;
     ScopedSpinLock lock(&slot->lock);
     if (slot->warm->count() > 0) {
@@ -1409,6 +1761,7 @@ private:
    * @return the created leaf node.
    */
   LeafNode* create_leaf_node(int64_t prev, int64_t next) {
+    _assert_(true);
     LeafNode* node = new LeafNode;
     node->id = ++lcnt_;
     node->size = sizeof(int32_t) * 2;
@@ -1426,10 +1779,12 @@ private:
   }
   /**
    * Remove a leaf node from the cache.
+   * @param node the leaf node.
    * @param save whether to save dirty node.
    * @return true on success, or false on failure.
    */
   bool flush_leaf_node(LeafNode* node, bool save) {
+    _assert_(node);
     bool err = false;
     if (save && !save_leaf_node(node)) err = true;
     RecordArray::const_iterator rit = node->recs.begin();
@@ -1456,13 +1811,14 @@ private:
    * @return true on success, or false on failure.
    */
   bool save_leaf_node(LeafNode* node) {
+    _assert_(node);
     ScopedSpinRWLock lock(&node->lock, true);
     if (!node->dirty) return true;
     bool err = false;
     char hbuf[NUMBUFSIZ];
     size_t hsiz = std::sprintf(hbuf, "%c%llX", TDBLNPREFIX, (long long)node->id);
     if (node->dead) {
-      if (!hdb_.remove(hbuf, hsiz)) err = true;
+      if (!hdb_.remove(hbuf, hsiz) && hdb_.error().code() != Error::NOREC) err = true;
     } else {
       char* rbuf = new char[node->size];
       char* wp = rbuf;
@@ -1494,6 +1850,7 @@ private:
    * @return the loaded leaf node.
    */
   LeafNode* load_leaf_node(int64_t id, bool prom) {
+    _assert_(id > 0);
     int32_t sidx = id % TDBSLOTNUM;
     LeafSlot* slot = lslots_ + sidx;
     ScopedSpinLock lock(&slot->lock);
@@ -1517,7 +1874,7 @@ private:
     size_t hsiz = std::sprintf(hbuf, "%c%llX", TDBLNPREFIX, (long long)id);
     class VisitorImpl : public DB::Visitor {
     public:
-      VisitorImpl() : node_(NULL) {}
+      explicit VisitorImpl() : node_(NULL) {}
       LeafNode* pop() {
         return node_;
       }
@@ -1582,10 +1939,7 @@ private:
     } visitor;
     if (!hdb_.accept(hbuf, hsiz, &visitor, false)) return NULL;
     LeafNode* node = visitor.pop();
-    if (!node) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "leaf node was not found");
-      return false;
-    }
+    if (!node) return NULL;
     node->id = id;
     node->hot = false;
     node->dirty = false;
@@ -1601,6 +1955,7 @@ private:
    * @return true for in range, or false for out of range.
    */
   bool check_leaf_node_range(LeafNode* node, Record* rec) {
+    _assert_(node && rec);
     RecordArray& recs = node->recs;
     if (recs.size() < 1) return false;
     Record* frec = recs.front();
@@ -1615,6 +1970,7 @@ private:
    * @return true to reorganize the tree, or false if not.
    */
   bool accept_impl(LeafNode* node, Record* rec, Visitor* visitor) {
+    _assert_(node && rec && visitor);
     bool reorg = false;
     RecordArray& recs = node->recs;
     RecordArray::iterator ritend = recs.end();
@@ -1635,7 +1991,7 @@ private:
         recs.erase(rit);
         if (recs.size() < 1) reorg = true;
       } else if (vbuf != Visitor::NOP) {
-        int64_t diff = vsiz - rec->vsiz;
+        int64_t diff = (int64_t)vsiz - (int64_t)rec->vsiz;
         cusage_ += diff;
         node->size += diff;
         node->dirty = true;
@@ -1677,10 +2033,15 @@ private:
    * @return the created node, or NULL on failure.
    */
   LeafNode* divide_leaf_node(LeafNode* node) {
+    _assert_(node);
     LeafNode* newnode = create_leaf_node(node->id, node->next);
     if (newnode->next > 0) {
       LeafNode* nextnode = load_leaf_node(newnode->next, false);
-      if (!nextnode) return NULL;
+      if (!nextnode) {
+        set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
+        hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)newnode->next);
+        return NULL;
+      }
       nextnode->prev = newnode->id;
       nextnode->dirty = true;
     }
@@ -1699,6 +2060,7 @@ private:
       newnode->size += rsiz;
       rit++;
     }
+    escape_cursors(node->id, node->next, *mid);
     recs.erase(mid, ritend);
     return newnode;
   }
@@ -1706,6 +2068,7 @@ private:
    * Open the inner cache.
    */
   void create_inner_cache() {
+    _assert_(true);
     int64_t bnum = (bnum_ / TDBAVGWAY) / TDBSLOTNUM + 1;
     if (bnum < INT8_MAX) bnum = INT8_MAX;
     bnum = nearbyprime(bnum);
@@ -1717,6 +2080,7 @@ private:
    * Close the inner cache.
    */
   void delete_inner_cache() {
+    _assert_(true);
     for (int32_t i = TDBSLOTNUM - 1; i >= 0; i--) {
       InnerSlot* slot = islots_ + i;
       delete slot->warm;
@@ -1728,6 +2092,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool flush_inner_cache(bool save) {
+    _assert_(true);
     bool err = false;
     for (int32_t i = TDBSLOTNUM - 1; i >= 0; i--) {
       InnerSlot* slot = islots_ + i;
@@ -1747,6 +2112,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool flush_inner_cache_part(InnerSlot* slot) {
+    _assert_(slot);
     bool err = false;
     if (slot->warm->count() > 0) {
       InnerNode* node = slot->warm->first_value();
@@ -1759,6 +2125,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool clean_inner_cache() {
+    _assert_(true);
     bool err = false;
     for (int32_t i = 0; i < TDBSLOTNUM; i++) {
       InnerSlot* slot = islots_ + i;
@@ -1779,6 +2146,7 @@ private:
    * @return the created inner node.
    */
   InnerNode* create_inner_node(int64_t heir) {
+    _assert_(true);
     InnerNode* node = new InnerNode;
     node->id = ++icnt_ + TDBINIDBASE;
     node->heir = heir;
@@ -1794,10 +2162,12 @@ private:
   }
   /**
    * Remove an inner node from the cache.
+   * @param node the inner node.
    * @param save whether to save dirty node.
    * @return true on success, or false on failure.
    */
   bool flush_inner_node(InnerNode* node, bool save) {
+    _assert_(node);
     bool err = false;
     if (save && !save_inner_node(node)) err = true;
     LinkArray::const_iterator lit = node->links.begin();
@@ -1820,13 +2190,14 @@ private:
    * @return true on success, or false on failure.
    */
   bool save_inner_node(InnerNode* node) {
+    _assert_(true);
     if (!node->dirty) return true;
     bool err = false;
     char hbuf[NUMBUFSIZ];
     size_t hsiz = std::sprintf(hbuf, "%c%llX",
                                TDBINPREFIX, (long long)(node->id - TDBINIDBASE));
     if (node->dead) {
-      if (!hdb_.remove(hbuf, hsiz)) err = true;
+      if (!hdb_.remove(hbuf, hsiz) && hdb_.error().code() != Error::NOREC) err = true;
     } else {
       char* rbuf = new char[node->size];
       char* wp = rbuf;
@@ -1854,6 +2225,7 @@ private:
    * @return the loaded inner node.
    */
   InnerNode* load_inner_node(int64_t id) {
+    _assert_(id > 0);
     int32_t sidx = id % TDBSLOTNUM;
     InnerSlot* slot = islots_ + sidx;
     ScopedSpinLock lock(&slot->lock);
@@ -1863,7 +2235,7 @@ private:
     size_t hsiz = std::sprintf(hbuf, "%c%llX", TDBINPREFIX, (long long)(id - TDBINIDBASE));
     class VisitorImpl : public DB::Visitor {
     public:
-      VisitorImpl() : node_(NULL) {}
+      explicit VisitorImpl() : node_(NULL) {}
       InnerNode* pop() {
         return node_;
       }
@@ -1918,10 +2290,7 @@ private:
     } visitor;
     if (!hdb_.accept(hbuf, hsiz, &visitor, false)) return NULL;
     InnerNode* node = visitor.pop();
-    if (!node) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "inner node was not found");
-      return false;
-    }
+    if (!node) return NULL;
     node->id = id;
     node->dirty = false;
     node->dead = false;
@@ -1938,11 +2307,16 @@ private:
    * @return the corresponding leaf node, or NULL on failure.
    */
   LeafNode* search_tree(Link* link, bool prom, int64_t* hist, int32_t* hnp) {
+    _assert_(link && hist && hnp);
     int64_t id = root_;
     int32_t hnum = 0;
     while (id > TDBINIDBASE) {
       InnerNode* node = load_inner_node(id);
-      if (!node) return NULL;
+      if (!node) {
+        set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
+        hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+        return NULL;
+      }
       hist[hnum++] = id;
       const LinkArray& links = node->links;
       LinkArray::const_iterator litbeg = links.begin();
@@ -1967,6 +2341,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool reorganize_tree(LeafNode* node, int64_t* hist, int32_t hnum) {
+    _assert_(node && hist && hnum >= 0);
     if (node->size > psiz_ && node->recs.size() > 1) {
       LeafNode* newnode = divide_leaf_node(node);
       if (!newnode) return false;
@@ -1983,19 +2358,14 @@ private:
           InnerNode* inode = create_inner_node(heir);
           add_link_inner_node(inode, child, kbuf, ksiz);
           root_ = inode->id;
-
-          // hoge
-          std::string key(kbuf, ksiz);
-          printf("root?: root=%llX  heir=%llX  child=%llX   %s\n",
-                 (long long)root_, (long long)heir, (long long)child, key.c_str());
-
-
           delete[] kbuf;
           break;
         }
         int64_t parent = hist[--hnum];
         InnerNode* inode = load_inner_node(parent);
         if (!inode) {
+          set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
+          hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)parent);
           delete[] kbuf;
           return false;
         }
@@ -2032,11 +2402,39 @@ private:
         }
         inode->dirty = true;
       }
-    } else if (node->recs.size() < 1) {
-
-      // hoge
-      //printf("kill\n");
-
+    } else if (node->recs.size() < 1 && hnum > 0) {
+      if (!escape_cursors(node->id, node->next)) return false;
+      InnerNode* inode = load_inner_node(hist[--hnum]);
+      if (!inode) {
+        set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
+        hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)hist[hnum]);
+        return false;
+      }
+      if (sub_link_tree(inode, node->id, hist, hnum)) {
+        if (node->prev > 0) {
+          LeafNode* tnode = load_leaf_node(node->prev, false);
+          if (!tnode) {
+            set_error(__FILE__, __LINE__, Error::BROKEN, "missing node");
+            hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)node->prev);
+            return false;
+          }
+          tnode->next = node->next;
+          tnode->dirty = true;
+          if (last_ == node->id) last_ = node->prev;
+        }
+        if (node->next > 0) {
+          LeafNode* tnode = load_leaf_node(node->next, false);
+          if (!tnode) {
+            set_error(__FILE__, __LINE__, Error::BROKEN, "missing node");
+            hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)node->next);
+            return false;
+          }
+          tnode->prev = node->prev;
+          tnode->dirty = true;
+          if (first_ == node->id) first_ = node->next;
+        }
+        node->dead = true;
+      }
     }
     return true;
   }
@@ -2048,6 +2446,7 @@ private:
    * @param ksiz the size of the key region.
    */
   void add_link_inner_node(InnerNode* node, int64_t child, const char* kbuf, size_t ksiz) {
+    _assert_(node && kbuf);
     size_t rsiz = sizeof(Link) + ksiz;
     Link* link = (Link*)xmalloc(rsiz);
     link->child = child;
@@ -2063,10 +2462,72 @@ private:
     cusage_ += rsiz;
   }
   /**
+   * Subtract a link from the B+ tree.
+   * @param node the inner node.
+   * @param child the ID number of the child.
+   * @param hist the array of visiting history.
+   * @param hnum the number of the history.
+   * @return true on success, or false on failure.
+   */
+  bool sub_link_tree(InnerNode* node, int64_t child, int64_t* hist, int32_t hnum) {
+    _assert_(node && hist && hnum >= 0);
+    node->dirty = true;
+    LinkArray& links = node->links;
+    LinkArray::iterator lit = links.begin();
+    LinkArray::iterator litend = links.end();
+    if (node->heir == child) {
+      if (links.size() > 0) {
+        Link* link = *lit;
+        node->heir = link->child;
+        xfree(link);
+        links.erase(lit);
+        return true;
+      } else if (hnum > 0) {
+        InnerNode* pnode = load_inner_node(hist[--hnum]);
+        if (!pnode) {
+          set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
+          hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)hist[hnum]);
+          return false;
+        }
+        node->dead = true;
+        return sub_link_tree(pnode, node->id, hist, hnum);
+      }
+      node->dead = true;
+      root_ = child;
+      while (child > TDBINIDBASE) {
+        node = load_inner_node(child);
+        if (!node) {
+          set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
+          hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)child);
+          return false;
+        }
+        if (node->dead) {
+          child = node->heir;
+          root_ = child;
+        } else {
+          child = 0;
+        }
+      }
+      return false;
+    }
+    while (lit != litend) {
+      Link* link = *lit;
+      if (link->child == child) {
+        xfree(link);
+        links.erase(lit);
+        return true;
+      }
+      lit++;
+    }
+    set_error(__FILE__, __LINE__, Error::BROKEN, "invalid tree");
+    return false;
+  }
+  /**
    * Dump the meta data into the file.
    * @return true on success, or false on failure.
    */
   bool dump_meta() {
+    _assert_(true);
     char head[TDBHEADSIZ];
     std::memset(head, 0, sizeof(head));
     char* wp = head;
@@ -2107,11 +2568,13 @@ private:
    * @return true on success, or false on failure.
    */
   bool load_meta() {
+    _assert_(true);
     char head[TDBHEADSIZ];
     int32_t hsiz = hdb_.get(TDBMETAKEY, sizeof(TDBMETAKEY) - 1, head, sizeof(head));
     if (hsiz < 0) return false;
     if (hsiz != sizeof(head)) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data record");
+      hdb_.report(__FILE__, __LINE__, "info", "hsiz=%d", hsiz);
       return false;
     }
     const char* rp = head;
@@ -2155,6 +2618,7 @@ private:
    * @return the total number of nodes in the leaf cache.
    */
   int64_t calc_leaf_cache_count() {
+    _assert_(true);
     int64_t sum = 0;
     for (int32_t i = 0; i < TDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
@@ -2168,6 +2632,7 @@ private:
    * @return the amount of memory usage of the leaf cache.
    */
   int64_t calc_leaf_cache_size() {
+    _assert_(true);
     int64_t sum = 0;
     for (int32_t i = 0; i < TDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
@@ -2193,6 +2658,7 @@ private:
    * @return the total number of nodes in the inner cache.
    */
   int64_t calc_inner_cache_count() {
+    _assert_(true);
     int64_t sum = 0;
     for (int32_t i = 0; i < TDBSLOTNUM; i++) {
       InnerSlot* slot = islots_ + i;
@@ -2205,6 +2671,7 @@ private:
    * @return the amount of memory usage of the inner cache.
    */
   int64_t calc_inner_cache_size() {
+    _assert_(true);
     int64_t sum = 0;
     for (int32_t i = 0; i < TDBSLOTNUM; i++) {
       InnerSlot* slot = islots_ + i;
@@ -2222,18 +2689,166 @@ private:
    * Disable all cursors.
    */
   void disable_cursors() {
+    _assert_(true);
     if (curs_.size() < 1) return;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {
       Cursor* cur = *cit;
-      if (cur->kbuf_) {
-        if (cur->kbuf_ != cur->stack_) delete[] cur->kbuf_;
-        cur->kbuf_ = NULL;
-        cur->lid_ = 0;
+      if (cur->kbuf_) cur->clear_position();
+      cit++;
+    }
+  }
+  /**
+   * Escape cursors on a divided leaf node.
+   * @param src the ID of the source node.
+   * @param dest the ID of the destination node.
+   * @param rec the pivot record.
+   * @return true on success, or false on failure.
+   */
+  void escape_cursors(int64_t src, int64_t dest, Record* rec) {
+    _assert_(src > 0 && dest >= 0 && rec);
+    if (curs_.size() < 1) return;
+    CursorList::const_iterator cit = curs_.begin();
+    CursorList::const_iterator citend = curs_.end();
+    while (cit != citend) {
+      Cursor* cur = *cit;
+      if (cur->lid_ == src) {
+        char* dbuf = (char*)rec + sizeof(*rec);
+        if (reccomp_.comp->compare(cur->kbuf_, cur->ksiz_, dbuf, rec->ksiz) >= 0)
+          cur->lid_ = dest;
       }
       cit++;
     }
+  }
+  /**
+   * Escape cursors on a removed leaf node.
+   * @param src the ID of the source node.
+   * @param dest the ID of the destination node.
+   * @return true on success, or false on failure.
+   */
+  bool escape_cursors(int64_t src, int64_t dest) {
+    _assert_(src > 0 && dest >= 0);
+    if (curs_.size() < 1) return true;
+    bool err = false;
+    CursorList::const_iterator cit = curs_.begin();
+    CursorList::const_iterator citend = curs_.end();
+    while (cit != citend) {
+      Cursor* cur = *cit;
+      if (cur->lid_ == src) {
+        cur->clear_position();
+        if (!cur->set_position(dest) && hdb_.error().code() != Error::NOREC) err = true;
+      }
+      cit++;
+    }
+    return !err;
+  }
+  /**
+   * Recalculate the count data.
+   * @return true on success, or false on failure.
+   */
+  bool recalc_count() {
+    _assert_(true);
+    if (!load_meta()) return false;
+    bool err = false;
+    create_leaf_cache();
+    create_inner_cache();
+    int64_t count = 0;
+    int64_t id = first_;
+    while (id > 0) {
+      LeafNode* node = load_leaf_node(id, false);
+      if (!node) break;
+      count += node->recs.size();
+      id = node->next;
+      flush_leaf_node(node, false);
+    }
+    hdb_.report(__FILE__, __LINE__, "info", "recalculated the record count from %ld to %ld",
+                (long)count_, (long)count);
+    count_ = count;
+    if (!dump_meta()) err = true;
+    delete_inner_cache();
+    delete_leaf_cache();
+    return !err;
+  }
+  /**
+   * Reorganize the database file.
+   * @return true on success, or false on failure.
+   */
+  bool reorganize_file() {
+    _assert_(true);
+    if (!load_meta()) return false;
+    const std::string& npath = hdb_.path() + File::EXTCHR + BDBTMPPATHEXT;
+    TreeDB tdb;
+    tdb.tune_comparator(reccomp_.comp);
+    if (!tdb.open(npath, OWRITER | OCREATE | OTRUNCATE)) {
+      set_error(__FILE__, __LINE__, tdb.error().code(), "opening the destination failed");
+      return false;
+    }
+    hdb_.report(__FILE__, __LINE__, "info", "reorganizing the database");
+    bool err = false;
+    create_leaf_cache();
+    create_inner_cache();
+    DB::Cursor* cur = hdb_.cursor();
+    cur->jump();
+    char* kbuf;
+    size_t ksiz;
+    while (!err && (kbuf = cur->get_key(&ksiz)) != NULL) {
+      if (*kbuf == TDBLNPREFIX) {
+        int64_t id = std::strtol(kbuf + 1, NULL, 16);
+        if (id > 0 && id < TDBINIDBASE) {
+          LeafNode* node = load_leaf_node(id, false);
+          if (node) {
+            const RecordArray& recs = node->recs;
+            RecordArray::const_iterator rit = recs.begin();
+            RecordArray::const_iterator ritend = recs.end();
+            while (rit != ritend) {
+              Record* rec = *rit;
+              char* dbuf = (char*)rec + sizeof(*rec);
+              if (!tdb.set(dbuf, rec->ksiz, dbuf + rec->ksiz, rec->vsiz)) {
+                set_error(__FILE__, __LINE__, tdb.error().code(),
+                          "opening the destination failed");
+                err = true;
+              }
+              rit++;
+            }
+            flush_leaf_node(node, false);
+          }
+        }
+      }
+      delete[] kbuf;
+      cur->step();
+    }
+    delete cur;
+    delete_inner_cache();
+    delete_leaf_cache();
+    if (!tdb.close()) {
+      set_error(__FILE__, __LINE__, tdb.error().code(), "opening the destination failed");
+      err = true;
+    }
+    HashDB hdb;
+    if (!err && hdb.open(npath, OREADER)) {
+      if (!hdb_.clear()) err = true;
+      cur = hdb.cursor();
+      cur->jump();
+      const char* vbuf;
+      size_t vsiz;
+      while (!err && (kbuf = cur->get(&ksiz, &vbuf, &vsiz)) != NULL) {
+        if (!hdb_.set(kbuf, ksiz, vbuf, vsiz)) err = true;
+        delete[] kbuf;
+        cur->step();
+      }
+      delete cur;
+      if (!hdb_.synchronize(false, NULL)) err = true;
+      if (!hdb.close()) {
+        set_error(__FILE__, __LINE__, hdb.error().code(), "opening the destination failed");
+        err = true;
+      }
+    } else {
+      set_error(__FILE__, __LINE__, hdb.error().code(), "opening the destination failed");
+      err = true;
+    }
+    File::remove(npath);
+    return !err;
   }
   /**
    * Begin transaction.
@@ -2242,16 +2857,16 @@ private:
    * @return true on success, or false on failure.
    */
   bool begin_transaction_impl(bool hard) {
+    _assert_(true);
     if (!clean_leaf_cache()) return false;
     if (!clean_inner_cache()) return false;
-    int32_t idx = trcnt_ % TDBSLOTNUM;
+    int32_t idx = trcnt_++ % TDBSLOTNUM;
     LeafSlot* lslot = lslots_ + idx;
     if (lslot->warm->count() + lslot->hot->count() > 1) flush_leaf_cache_part(lslot);
     InnerSlot* islot = islots_ + idx;
     if (islot->warm->count() > 1) flush_inner_cache_part(islot);
     if (!dump_meta()) return false;
     if (!hdb_.begin_transaction(hard)) return false;
-    trcnt_++;
     return true;
   }
   /**
@@ -2259,6 +2874,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool commit_transaction() {
+    _assert_(true);
     bool err = false;
     if (!clean_leaf_cache()) return false;
     if (!clean_inner_cache()) return false;
@@ -2271,6 +2887,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool abort_transaction() {
+    _assert_(true);
     bool err = false;
     flush_leaf_cache(false);
     flush_inner_cache(false);
@@ -2279,9 +2896,52 @@ private:
     disable_cursors();
     return !err;
   }
-
-
-
+  /**
+   * Fix auto transaction for the B+ tree.
+   * @return true on success, or false on failure.
+   */
+  bool fix_auto_transaction_tree() {
+    _assert_(true);
+    if (!hdb_.begin_transaction(autosync_)) return false;
+    bool err = false;
+    if (!clean_leaf_cache()) err = true;
+    if (!clean_inner_cache()) err = true;
+    size_t cnum = TDBATRANCNUM / TDBSLOTNUM;
+    int32_t idx = trcnt_++ % TDBSLOTNUM;
+    LeafSlot* lslot = lslots_ + idx;
+    if (lslot->warm->count() + lslot->hot->count() > cnum) flush_leaf_cache_part(lslot);
+    InnerSlot* islot = islots_ + idx;
+    if (islot->warm->count() > cnum) flush_inner_cache_part(islot);
+    if (!dump_meta()) err = true;
+    if (!hdb_.end_transaction(true)) err = true;
+    return !err;
+  }
+  /**
+   * Fix auto transaction for a leaf.
+   * @return true on success, or false on failure.
+   */
+  bool fix_auto_transaction_leaf(LeafNode* node) {
+    _assert_(node);
+    if (!hdb_.begin_transaction(autosync_)) return false;
+    bool err = false;
+    if (!save_leaf_node(node)) err = true;
+    if (!dump_meta()) err = true;
+    if (!hdb_.end_transaction(true)) err = true;
+    return !err;
+  }
+  /**
+   * Fix auto synchronization.
+   * @return true on success, or false on failure.
+   */
+  bool fix_auto_synchronization() {
+    _assert_(true);
+    bool err = false;
+    if (!flush_leaf_cache(true)) err = true;
+    if (!flush_inner_cache(true)) err = true;
+    if (!dump_meta()) err = true;
+    if (!hdb_.synchronize(true, NULL)) err = true;
+    return !err;
+  }
   /** Dummy constructor to forbid the use. */
   TreeDB(const TreeDB&);
   /** Dummy Operator to forbid the use. */
@@ -2310,8 +2970,8 @@ private:
   int64_t bnum_;
   /** The page size. */
   int32_t psiz_;
-  /** The capacity of cache memory. */
-  int64_t ccap_;
+  /** The capacity of page cache. */
+  int64_t pccap_;
   /** The root node. */
   int64_t root_;
   /** The first node. */

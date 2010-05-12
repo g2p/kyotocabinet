@@ -1,3 +1,187 @@
+2010-05-06  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kccachetest.cc (procorder): a bug about record counting was fixed.
+
+	- Release: 0.9.18
+
+2010-05-02  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (FileProcessor::process): parameters for meta data was modified.
+
+	- Release: 0.9.17
+
+2010-04-28  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kccommon.h (_yield_, _testyield_, _assert_): new macros.
+
+	* kcfile.h (File::get_current_directory, File::set_current_directory): new functions.
+
+	- Release: 0.9.16
+
+2010-04-21  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcutil.h (inf, chknan, chkinf): new functions.
+
+	* kcfile.h (File::rename, File::read_directory): new function.
+
+	* kcdb.h (FileDB::copy): new function.
+
+	* kccommon.h: FreeBSD and Solaris support was added.
+
+	- Release: 0.9.15
+
+2010-04-20  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcfile.cc (File::close): unlocking operation was added.
+
+	* kcdb.h (FileProcessor::process): the offset parameter was abolished.
+
+	- Release: 0.9.14
+
+2010-04-15  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcutil.h (nan): new function.
+
+	* kcdb.h (File::DB::FileProcessor::process): parameters were added.
+
+	* kclangc.cc (kchashmurmur, kchashfnv): new functions.
+
+	* kcthread.cc: Win32 support was added.
+
+	* kcfile.cc: Win32 support was added.
+
+	* VCmakefile: new file.
+
+	- Release: 0.9.13
+
+2010-04-13  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (DB::typestring): a miscellaneous type was added.
+
+	* kcpolydb.h (PolyDB::PolyDB): a constructor with a database object was added.
+
+	* kcthread.cc (Mutex::lock_try): Mac OS X support was added.
+
+	- Release: 0.9.12
+
+2010-04-06  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kccommon.h: C++0x check was added.
+
+	* kcdb.h (DB::dump_snapshot, DB::load_snapshot): new functions.
+
+	* kcdb.h (DB::Cursor::set_value): new function.
+
+	* kchashmgr.c (procdump, procload): new functions.
+
+	* kctreemgr.c (procdump, procload): new functions.
+
+	* kclangc.cc (kcmalloc, kcdbdumpsnap, kcdbloadsnap): new functions.
+
+	- Release: 0.9.11
+
+2010-04-01  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (DB::accept, DB::iterate): default parameters were added.
+
+	* kcdb.h (DB::Cursor::accept, DB::Cursor::get): default parameters were added.
+
+	- Release: 0.9.10
+
+2010-03-28  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcprotodb.h (ProtoDB::iterate): calls of empty visiting were abolished.
+
+	* kchashdb.h (HashDB::iterate): calls of empty visiting were abolished.
+
+	- Release: 0.9.9
+
+2010-03-18  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (Error::operator_int32_t): new function.
+
+	* kcdb.h (FileDB::begin_transaction_try): new function.
+
+	* kcpolydb.h (PolyDB::Cursor::db): the type of the return value was modified.
+
+	* kcpolydb.h (PolyDB::open): the erstrm option was added.
+
+	* kcpolydb.h (PolyDB::Cursor::accept): life checking was added.
+
+	* kcpolytest (runmisc, procmisc): new functions.
+
+	- Release: 0.9.8
+
+2010-03-14  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kclangc.h, kclangc.cc, kclangctest.c: new files.
+
+	- Release: 0.9.7
+
+2010-03-13  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kctree.h (TreeDB::Cursor::accept_atom): validation check was added.
+
+	* kctree.h (TreeDB::escape_cursors): new function.
+
+	- Release: 0.9.6
+
+2010-03-09  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcfile.cc (File::recovered): new function.
+
+	* kchash.h (HashDB::recovered, HashDB::reorganized): new function.
+
+	* kctree.h (TreeDB::Cursor::accept_spec, TreeDB::Cursor::accept_atom): new functions.
+
+	- Release: 0.9.5
+
+2010-03-06  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kctree.h (TreeDB::sub_link_tree): new function.
+
+	* kctree.h (TreeDB::reorganize_tree): tree trimming mechanism was added.
+
+	- Release: 0.9.4
+
+2010-03-04  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kctree.h (TreeDB::Cursor::accept): a bug related drifted cursor was fixed.
+
+	* kchashtest.cc (runqueue, procqueue): new functions.
+
+	* kctreetest.cc (runqueue, procqueue): new functions.
+
+	- Release: 0.9.3
+
+2010-03-03  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (DB::Error::string): abolished.
+
+	* kcdb.h (DB::Error::name, DB::Error::codename): new functions.
+
+	- Release: 0.9.2
+
+2010-03-01  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kchashdb.h (HashDB::Curosr::jump): a bug of boundary checking was fixed.
+
+	* kchashdb.h (HashDB::report): new function.
+
+	* kcpolydb.h, kcpolydb.cc: new files.
+
+	- Release: 0.9.1
+
+2010-02-16  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kctreedb.h (TreeDB::accept): auto transaction was added.
+
+	* kctreedb.h (TreeDB::Cursor::accept): auto transaction was added.
+
+	* kctreedb.h (TreeDB::fix_auto_transaction_tree): new function.
+
+	- Release: 0.9.0
+
 2010-02-16  Mikio Hirabayashi  <hirarin@gmail.com>
 
 	* kcthread.h (Thread::hash): new function.

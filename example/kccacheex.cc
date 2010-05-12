@@ -3,45 +3,46 @@
 using namespace std;
 using namespace kyotocabinet;
 
+// main routine
 int main(int argc, char** argv) {
 
   // create the database object
   CacheDB db;
 
   // open the database
-  if (!db.open("casket.kch", FileDB::OWRITER | FileDB::OCREATE)) {
-    cout << "open error: " << db.error().string() << endl;
+  if (!db.open("*", CacheDB::OWRITER | CacheDB::OCREATE)) {
+    cerr << "open error: " << db.error().name() << endl;
   }
 
   // store records
   if (!db.set("foo", "hop") ||
-     !db.set("bar", "step") ||
-     !db.set("baz", "jump")) {
-    cout << "set error: " << db.error().string() << endl;
+      !db.set("bar", "step") ||
+      !db.set("baz", "jump")) {
+    cerr << "set error: " << db.error().name() << endl;
   }
 
-  // retrieve records
+  // retrieve a record
   string* value = db.get("foo");
   if (value) {
     cout << *value << endl;
     delete value;
   } else {
-    cout << "get error: " << db.error().string() << endl;
+    cerr << "get error: " << db.error().name() << endl;
   }
 
   // traverse records
-  class Traverser : public DB::Visitor {
-    const char* visit_full(const char* kbuf, size_t ksiz,
-                           const char* vbuf, size_t vsiz, size_t *sp) {
-      cout << string(kbuf, ksiz) << ":" << string(vbuf, vsiz) << endl;
-      return NOP;
-    }
-  } traverser;
-  db.iterate(&traverser, false);
+  DB::Cursor* cur = db.cursor();
+  cur->jump();
+  pair<string, string>* rec;
+  while ((rec = cur->get_pair(true)) != NULL) {
+    cout << rec->first << ":" << rec->second << endl;
+    delete rec;
+  }
+  delete cur;
 
   // close the database
   if (!db.close()) {
-    cout << "close error: " << db.error().string() << endl;
+    cerr << "close error: " << db.error().name() << endl;
   }
 
   return 0;

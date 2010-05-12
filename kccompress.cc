@@ -30,6 +30,7 @@ namespace kyotocabinet {                 // common namespace
  */
 char* Zlib::compress(Mode mode, const void* buf, size_t size, size_t* sp) {
 #if defined(_KC_ZLIB)
+  _assert_(buf && sp);
   z_stream zs;
   zs.zalloc = Z_NULL;
   zs.zfree = Z_NULL;
@@ -68,6 +69,7 @@ char* Zlib::compress(Mode mode, const void* buf, size_t size, size_t* sp) {
   *sp = zsiz;
   return zbuf;
 #else
+  _assert_(buf && sp);
   char* zbuf = new char[size];
   std::memcpy(zbuf, buf, size);
   *sp = size;
@@ -81,6 +83,7 @@ char* Zlib::compress(Mode mode, const void* buf, size_t size, size_t* sp) {
  */
 char* Zlib::decompress(Mode mode, const void* buf, size_t size, size_t* sp) {
 #if defined(_KC_ZLIB)
+  _assert_(buf && sp);
   size_t zsiz = size * 8 + 32;
   while (true) {
     z_stream zs;
@@ -123,6 +126,7 @@ char* Zlib::decompress(Mode mode, const void* buf, size_t size, size_t* sp) {
   }
   return NULL;
 #else
+  _assert_(buf && sp);
   char* zbuf = new char[size+1];
   std::memcpy(zbuf, buf, size);
   zbuf[size] = '\0';

@@ -90,10 +90,10 @@
 
 #endif
 
-#define _KC_VERSION    "0.5.19"
-#define _KC_LIBVER     1
-#define _KC_LIBREV     2
-#define _KC_FMTVER     3
+#define _KC_VERSION    "0.9.18"
+#define _KC_LIBVER     2
+#define _KC_LIBREV     21
+#define _KC_FMTVER     4
 
 #if ! defined(_MYNOATOMIC)
 #if defined(_MYGCCATOMIC)
@@ -164,10 +164,20 @@ extern "C" {
 }
 
 extern "C" {
-#include <inttypes.h>
-#include <stdbool.h>
 #include <stdint.h>
 }
+
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+
+#include <windows.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <direct.h>
+#include <io.h>
+#include <process.h>
+
+#else
 
 extern "C" {
 #include <unistd.h>
@@ -189,6 +199,31 @@ extern "C" {
 #include <pthread.h>
 #include <sched.h>
 }
+
+#endif
+
+#undef VERSION
+#undef LIBVER
+#undef LIBREV
+#undef SYSNAME
+#undef BIGEND
+#undef CLOCKTICK
+#undef PAGESIZE
+
+#if defined(_SYS_FREEBSD_) || defined(_SYS_OPENBSD_) || defined(_SYS_NETBSD_) || \
+  defined(_SYS_MACOSX_)
+#define pthread_spinlock_t       pthread_mutex_t
+#define pthread_spin_init(KC_a, KC_b)           \
+  pthread_mutex_init(KC_a, NULL)
+#define pthread_spin_destroy(KC_a)              \
+  pthread_mutex_destroy(KC_a)
+#define pthread_spin_lock(KC_a)                 \
+  pthread_mutex_lock(KC_a)
+#define pthread_spin_trylock(KC_a)              \
+  pthread_mutex_trylock(KC_a)
+#define pthread_spin_unlock(KC_a)               \
+  pthread_mutex_unlock(KC_a)
+#endif
 
 
 #endif                                   // duplication check

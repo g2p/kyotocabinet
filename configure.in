@@ -7,27 +7,32 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 0.5.19)
+AC_INIT(kyotocabinet, 0.9.18)
 
 # Package information
-MYLIBVER=1
-MYLIBREV=2
-MYFORMATVER=3
+MYLIBVER=2
+MYLIBREV=21
+MYFORMATVER=4
 
 # Targets
 MYHEADERFILES="kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h"
-MYHEADERFILES="$MYHEADERFILES kcprotodb.h kccachedb.h kchashdb.h kctreedb.h"
+MYHEADERFILES="$MYHEADERFILES kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h"
+MYHEADERFILES="$MYHEADERFILES kclangc.h"
 MYLIBRARYFILES="libkyotocabinet.a"
 MYLIBOBJFILES="kcutil.o kcdb.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o"
-MYLIBOBJFILES="$MYLIBOBJFILES kcprotodb.o kccachedb.o kchashdb.o kctreedb.o"
+MYLIBOBJFILES="$MYLIBOBJFILES kcprotodb.o kccachedb.o kchashdb.o kctreedb.o kcpolydb.o"
+MYLIBOBJFILES="$MYLIBOBJFILES kclangc.o"
 MYCOMMANDFILES="kcutiltest kcutilcodec kcprototest kccachetest"
 MYCOMMANDFILES="$MYCOMMANDFILES kchashtest kchashmgr kctreetest kctreemgr"
+MYCOMMANDFILES="$MYCOMMANDFILES kcpolytest kcpolymgr kclangctest"
 MYMAN1FILES="kcutiltest.1 kcutilcodec.1 kcprototest.1 kccachetest.1"
 MYMAN1FILES="$MYMAN1FILES kchashtest.1 kchashmgr.1 kctreetest.1 kctreemgr.1"
+MYMAN1FILES="$MYMAN1FILES kcpolytest.1 kcpolymgr.1 kclangctest.1"
 MYDOCUMENTFILES="COPYING ChangeLog THANKS doc kyotocabinet.idl"
 MYPCFILES="kyotocabinet.pc"
 
 # Building flags
+MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -O2"
 MYCXXFLAGS="-Wall -fPIC -fsigned-char -O2"
 MYCPPFLAGS="-I. -I\$(INCLUDEDIR) -I$HOME/include -I/usr/local/include"
 MYCPPFLAGS="$MYCPPFLAGS -DNDEBUG -D_GNU_SOURCE=1"
@@ -53,7 +58,6 @@ export PATH CPATH LIBRARY_PATH LD_LIBRARY_PATH PKG_CONFIG_PATH
 # Options
 #================================================================
 
-
 # Internal variables
 enables=""
 
@@ -63,7 +67,7 @@ AC_ARG_ENABLE(debug,
 if test "$enable_debug" = "yes"
 then
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O0"
-  MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG"
+  MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
   MYCMDLDFLAGS="$MYCMDLDFLAGS -static"
   enables="$enables (debug)"
 fi
@@ -74,7 +78,7 @@ AC_ARG_ENABLE(devel,
 if test "$enable_devel" = "yes"
 then
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O2 -fno-inline -pipe"
-  MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG"
+  MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
   enables="$enables (devel)"
 fi
 
@@ -94,6 +98,15 @@ if test "$enable_static" = "yes"
 then
   MYCMDLDFLAGS="$MYCMDLDFLAGS -static"
   enables="$enables (static)"
+fi
+
+# Micro yield mode
+AC_ARG_ENABLE(uyield,
+  AC_HELP_STRING([--enable-uyield], [build for detecting race conditions]))
+if test "$enable_uyield" = "yes"
+then
+  MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCUYIELD"
+  enables="$enables (uyield)"
 fi
 
 # Disable shared object
@@ -136,6 +149,7 @@ printf '#================================================================\n'
 # C and C++ compilers
 AC_PROG_CC
 AC_PROG_CXX
+AC_LANG(C++)
 
 # Reset variables
 if test "$GCC" != "yes"
@@ -150,18 +164,38 @@ test -n "$LDFLAGS" && MYLDFLAGS="$LDFLAGS $MYLDFLAGS"
 # Byte order
 AC_C_BIGENDIAN(MYCPPFLAGS="$MYCPPFLAGS -D_MYBIGEND")
 
-# Atomic operations
-if test "$GCC" == "yes"
+# System-depending optimization
+printf 'checking for 64-bit availability... '
+if printf 'main() {}' | $CC -xc -m64 -o /dev/null - >/dev/null 2>&1
 then
-  if uname -a | egrep ' x86_64' >/dev/null
-  then
-    MYCPPFLAGS="$MYCPPFLAGS -D_MYGCCATOMIC"
-  elif uname -a | egrep ' i686' >/dev/null
-  then
-    MYCPPFLAGS="$MYCPPFLAGS -D_MYGCCATOMIC"
-    MYCXXFLAGS="$MYCXXFLAGS -march=i686"
-  fi
+  MYCFLAGS="-m64 $MYCFLAGS"
+  MYCXXFLAGS="-m64 $MYCXXFLAGS"
+  printf 'yes'
+else
+  printf 'no'
 fi
+printf '\n'
+printf 'checking whether the CPU is i686... '
+if uname -a | egrep ' i686' >/dev/null
+then
+  MYCXXFLAGS="-march=i686 $MYCXXFLAGS"
+  printf 'yes'
+else
+  printf 'no'
+fi
+printf '\n'
+
+# Atomic operations
+printf 'checking for atomic operations... '
+AC_TRY_COMPILE([], [return __sync_fetch_and_add], [MYGCCATOMIC=yes], [MYGCCATOMIC=no])
+if test "$MYGCCATOMIC" = "yes"
+then
+  MYCPPFLAGS="$MYCPPFLAGS -D_MYGCCATOMIC"
+  printf 'yes'
+else
+  printf 'no'
+fi
+printf '\n'
 
 # Underlying libraries
 AC_CHECK_LIB(c, main)
@@ -215,6 +249,7 @@ AC_SUBST(MYCOMMANDFILES)
 AC_SUBST(MYMAN1FILES)
 AC_SUBST(MYDOCUMENTFILES)
 AC_SUBST(MYPCFILES)
+AC_SUBST(MYCFLAGS)
 AC_SUBST(MYCXXFLAGS)
 AC_SUBST(MYCPPFLAGS)
 AC_SUBST(MYLDFLAGS)

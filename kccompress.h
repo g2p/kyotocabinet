@@ -106,9 +106,11 @@ public:
  */
 class ZlibRawCompressor : public Compressor {
   char* compress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && sp);
     return Zlib::compress(Zlib::RAW, buf, size, sp);
   }
   char* decompress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && sp);
     return Zlib::decompress(Zlib::RAW, buf, size, sp);
   }
 };
@@ -119,9 +121,11 @@ class ZlibRawCompressor : public Compressor {
  */
 class ZlibDeflateCompressor : public Compressor {
   char* compress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && sp);
     return Zlib::compress(Zlib::DEFLATE, buf, size, sp);
   }
   char* decompress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && sp);
     return Zlib::decompress(Zlib::DEFLATE, buf, size, sp);
   }
 };
@@ -132,9 +136,11 @@ class ZlibDeflateCompressor : public Compressor {
  */
 class ZlibGzipCompressor : public Compressor {
   char* compress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && sp);
     return Zlib::compress(Zlib::GZIP, buf, size, sp);
   }
   char* decompress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && sp);
     return Zlib::decompress(Zlib::GZIP, buf, size, sp);
   }
 };

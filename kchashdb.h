@@ -65,7 +65,7 @@ const uint8_t HDBPADMAGIC = 0xee;        ///< magic data for padding
 const uint8_t HDBFBMAGIC = 0xdd;         ///< magic data for free block
 const int32_t HDBDFRGMAX = 512;          ///< maximum unit of auto defragmentation
 const int32_t HDBDFRGCEF = 2;            ///< coefficient of auto defragmentation
-const char* HDBTMPPATHEXT = "tmp";       ///< extension of the WAL file
+const char* HDBTMPPATHEXT = "tmpkch";    ///< extension of the temporary file
 }
 
 
@@ -98,6 +98,7 @@ public:
      * @param db the container database object.
      */
     explicit Cursor(HashDB* db) : db_(db), off_(0), end_(0) {
+      _assert_(db);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       db_->curs_.push_back(this);
     }
@@ -105,6 +106,8 @@ public:
      * Destructor.
      */
     virtual ~Cursor() {
+      _assert_(true);
+      if (!db_) return;
       ScopedSpinRWLock lock(&db_->mlock_, true);
       db_->curs_.remove(this);
     }
@@ -114,15 +117,18 @@ public:
      * @param writable true for writable operation, or false for read-only operation.
      * @param step true to move the cursor to the next record, or false for no move.
      * @return true on success, or false on failure.
+     * @note the operation for each record is performed atomically and other threads accessing
+     * the same record are blocked.
      */
-    virtual bool accept(Visitor* visitor, bool writable, bool step) {
+    virtual bool accept(Visitor* visitor, bool writable = true, bool step = false) {
+      _assert_(visitor);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
         db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
         return false;
       }
       if (writable && !(db_->writer_)) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+        db_->set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
         return false;
       }
       if (off_ < 1) {
@@ -228,9 +234,15 @@ public:
      * @return true on success, or false on failure.
      */
     virtual bool jump() {
+      _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
         db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        return false;
+      }
+      off_ = 0;
+      if (db_->lsiz_ <= db_->roff_) {
+        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
         return false;
       }
       off_ = db_->roff_;
@@ -244,6 +256,7 @@ public:
      * @return true on success, or false on failure.
      */
     virtual bool jump(const char* kbuf, size_t ksiz) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
         db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -262,6 +275,8 @@ public:
         if (!db_->read_record(&rec, rbuf)) return false;
         if (rec.psiz == UINT16_MAX) {
           db_->set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
+          db_->report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+                      (long)db_->psiz_, (long)rec.off, (long)db_->file_.size());
           return false;
         }
         uint32_t tpivot = db_->linear_ ? pivot :
@@ -297,6 +312,7 @@ public:
      * @note Equal to the original Cursor::jump method except that the parameter is std::string.
      */
     virtual bool jump(const std::string& key) {
+      _assert_(true);
       return jump(key.c_str(), key.size());
     }
     /**
@@ -304,6 +320,7 @@ public:
      * @return true on success, or false on failure.
      */
     virtual bool step() {
+      _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
         db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -323,6 +340,14 @@ public:
       }
       return !err;
     }
+    /**
+     * Get the database object.
+     * @return the database object.
+     */
+    virtual HashDB* db() {
+      _assert_(true);
+      return db_;
+    }
   private:
     /**
      * Step the cursor to the next record.
@@ -332,8 +357,11 @@ public:
      * @return true on success, or false on failure.
      */
     bool step_impl(Record* rec, char* rbuf, int64_t skip) {
+      _assert_(rec && rbuf && skip >= 0);
       if (off_ >= end_) {
         db_->set_error(__FILE__, __LINE__, Error::BROKEN, "cursor after the end");
+        db_->report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+                    (long)db_->psiz_, (long)rec->off, (long)db_->file_.size());
         return false;
       }
       while (off_ < end_) {
@@ -383,7 +411,7 @@ public:
    */
   explicit HashDB() :
     mlock_(), rlock_(), flock_(), atlock_(), error_(), erstrm_(NULL), ervbs_(false),
-    omode_(0), writer_(false), autotran_(false), autosync_(false),
+    omode_(0), writer_(false), autotran_(false), autosync_(false), reorg_(false), trim_(false),
     file_(), fbp_(), curs_(), path_(""),
     libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEHASH),
     apow_(HDBDEFAPOW), fpow_(HDBDEFFPOW), opts_(0), bnum_(HDBDEFBNUM),
@@ -391,13 +419,25 @@ public:
     msiz_(HDBDEFMSIZ), dfunit_(0), embcomp_(&ZLIBRAWCOMP),
     align_(0), fbpnum_(0), width_(0), linear_(false),
     comp_(NULL), rhsiz_(0), boff_(0), roff_(0), dfcur_(0), frgcnt_(0),
-    tran_(false), trhard_(false), trfbp_() {}
+    tran_(false), trhard_(false), trfbp_() {
+    _assert_(true);
+  }
   /**
    * Destructor.
    * @note If the database is not closed, it is closed implicitly.
    */
   virtual ~HashDB() {
+    _assert_(true);
     if (omode_ != 0) close();
+    if (curs_.size() > 0) {
+      CursorList::const_iterator cit = curs_.begin();
+      CursorList::const_iterator citend = curs_.end();
+      while (cit != citend) {
+        Cursor* cur = *cit;
+        cur->db_ = NULL;
+        cit++;
+      }
+    }
   }
   /**
    * Accept a visitor to a record.
@@ -406,8 +446,11 @@ public:
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
+   * @note the operation for each record is performed atomically and other threads accessing the
+   * same record are blocked.
    */
-  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable) {
+  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     mlock_.lock_reader();
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -415,7 +458,7 @@ public:
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
@@ -447,15 +490,17 @@ public:
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
+   * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  virtual bool iterate(Visitor *visitor, bool writable) {
+  virtual bool iterate(Visitor *visitor, bool writable = true) {
+    _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
@@ -467,6 +512,7 @@ public:
    * @return the last happened error.
    */
   virtual Error error() const {
+    _assert_(true);
     return error_;
   }
   /**
@@ -475,25 +521,30 @@ public:
    * @param message a supplement message.
    */
   virtual void set_error(Error::Code code, const char* message) {
+    _assert_(message);
     error_->set(code, message);
     if (code == Error::BROKEN || code == Error::SYSTEM) flags_ |= FFATAL;
   }
   /**
    * Open a database file.
    * @param path the path of a database file.
-   * @param mode the connection mode.  FileDB::OWRITER as a writer, FileDB::OREADER as a reader.
-   * The following may be added to the writer mode by bitwise-or: FileDB::OCREATE, which means
-   * it creates a new database if the file does not exist, FileDB::OTRUNCATE, which means it
-   * creates a new database regardless if the file exists, FileDB::OAUTOTRAN, which means each
-   * updating operation is performed in implicit transaction, FileDB::OAUTOSYNC, which means
-   * each updating operation is followed by implicit synchronization with the file system.  The
-   * following may be added to both of the reader mode and the writer mode by bitwise-or:
-   * FileDB::ONOLOCK, which means it opens the database file without file locking,
-   * FileDB::OTRYLOCK, which means locking is performed without blocking, File::ONOREPAIR, which
-   * means the database file is not repaired implicitly even if file destruction is detected.
+   * @param mode the connection mode.  HashDB::OWRITER as a writer, HashDB::OREADER as a
+   * reader.  The following may be added to the writer mode by bitwise-or: HashDB::OCREATE,
+   * which means it creates a new database if the file does not exist, HashDB::OTRUNCATE, which
+   * means it creates a new database regardless if the file exists, HashDB::OAUTOTRAN, which
+   * means each updating operation is performed in implicit transaction, HashDB::OAUTOSYNC,
+   * which means each updating operation is followed by implicit synchronization with the file
+   * system.  The following may be added to both of the reader mode and the writer mode by
+   * bitwise-or: HashDB::ONOLOCK, which means it opens the database file without file locking,
+   * HashDB::OTRYLOCK, which means locking is performed without blocking, HashDB::ONOREPAIR,
+   * which means the database file is not repaired implicitly even if file destruction is
+   * detected.
    * @return true on success, or false on failure.
+   * @note Every opened database must be closed by the HashDB::close method when it is no
+   * longer in use.
    */
-  virtual bool open(const std::string& path, uint32_t mode) {
+  virtual bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -502,6 +553,8 @@ public:
     writer_ = false;
     autotran_ = false;
     autosync_ = false;
+    reorg_ = false;
+    trim_ = false;
     uint32_t fmode = File::OREADER;
     if (mode & OWRITER) {
       writer_ = true;
@@ -517,6 +570,7 @@ public:
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
       return false;
     }
+    if (file_.recovered()) report(__FILE__, __LINE__, "info", "recovered by the WAL file");
     if ((mode & OWRITER) && file_.size() < 1) {
       calc_meta();
       chksum_ = calc_checksum();
@@ -536,21 +590,35 @@ public:
       return false;
     }
     calc_meta();
-    if (chksum_ != calc_checksum()) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid module checksum");
+    uint8_t chksum = calc_checksum();
+    if (chksum != chksum_) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "invalid module checksum");
+      report(__FILE__, __LINE__, "info", "saved=%02X calculated=%02X",
+             (unsigned)chksum, (unsigned)chksum_);
       file_.close();
       return false;
     }
-    if (((flags_ & FOPEN) || (flags_ & FFATAL)) && !(mode & ONOREPAIR) &&
-        !reorganize_file(path)) return false;
+    if (((flags_ & FOPEN) || (flags_ & FFATAL)) && !(mode & ONOREPAIR) && !(mode & ONOLOCK) &&
+        !reorganize_file(path)) {
+      file_.close();
+      return false;
+    }
     if (type_ == 0 || apow_ > HDBMAXAPOW || fpow_ > HDBMAXFPOW ||
         bnum_ < 1 || count_ < 0 || lsiz_ < roff_) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data");
+      report(__FILE__, __LINE__, "info", "type=0x%02X apow=%d fpow=%d bnum=%ld count=%ld"
+             " lsiz=%ld fsiz=%ld", (unsigned)type_, (int)apow_, (int)fpow_, (long)bnum_,
+             (long)count_, (long)lsiz_, (long)file_.size());
       file_.close();
       return false;
     }
     if (file_.size() < lsiz_) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "inconsistent file size");
+      report(__FILE__, __LINE__, "info", "lsiz=%ld fsiz=%ld", (long)lsiz_, (long)file_.size());
+      file_.close();
+      return false;
+    }
+    if (file_.size() != lsiz_ && !(mode & ONOREPAIR) && !(mode & ONOLOCK) && !trim_file(path)) {
       file_.close();
       return false;
     }
@@ -577,6 +645,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool close() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -605,14 +674,15 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @return true on success, or false on failure.
    */
-  virtual bool synchronize(bool hard, FileProcessor* proc) {
+  virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     rlock_.lock_reader_all();
@@ -627,7 +697,8 @@ public:
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction(bool hard) {
+  virtual bool begin_transaction(bool hard = false) {
+    _assert_(true);
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
       if (omode_ == 0) {
@@ -636,7 +707,7 @@ public:
         return false;
       }
       if (!writer_) {
-        set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+        set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
         mlock_.unlock();
         return false;
       }
@@ -655,11 +726,45 @@ public:
     return true;
   }
   /**
-   * Commit transaction.
+   * Try to begin transaction.
+   * @param hard true for physical synchronization with the device, or false for logical
+   * synchronization with the file system.
+   * @return true on success, or false on failure.
+   */
+  virtual bool begin_transaction_try(bool hard = false) {
+    _assert_(true);
+    mlock_.lock_writer();
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      mlock_.unlock();
+      return false;
+    }
+    if (!writer_) {
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      mlock_.unlock();
+      return false;
+    }
+    if (tran_) {
+      set_error(__FILE__, __LINE__, Error::LOGIC, "competition avoided");
+      mlock_.unlock();
+      return false;
+    }
+    trhard_ = hard;
+    if (!begin_transaction_impl()) {
+      mlock_.unlock();
+      return false;
+    }
+    tran_ = true;
+    mlock_.unlock();
+    return true;
+  }
+  /**
+   * End transaction.
    * @param commit true to commit the transaction, or false to abort the transaction.
    * @return true on success, or false on failure.
    */
-  virtual bool end_transaction(bool commit) {
+  virtual bool end_transaction(bool commit = true) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -683,13 +788,14 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool clear() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     disable_cursors();
@@ -719,6 +825,7 @@ public:
    * @return the number of records, or -1 on failure.
    */
   virtual int64_t count() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -731,6 +838,7 @@ public:
    * @return the size of the database file in bytes, or -1 on failure.
    */
   virtual int64_t size() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -740,9 +848,10 @@ public:
   }
   /**
    * Get the path of the database file.
-   * @return the path of the database file in bytes, or an empty string on failure.
+   * @return the path of the database file, or an empty string on failure.
    */
   virtual std::string path() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -756,6 +865,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool status(std::map<std::string, std::string>* strmap) {
+    _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -767,7 +877,7 @@ public:
     (*strmap)["libver"] = strprintf("%u", libver_);
     (*strmap)["librev"] = strprintf("%u", librev_);
     (*strmap)["fmtver"] = strprintf("%u", fmtver_);
-    (*strmap)["chksum"] = strprintf("0x%02X", chksum_);
+    (*strmap)["chksum"] = strprintf("%u", chksum_);
     (*strmap)["flags"] = strprintf("%u", flags_);
     (*strmap)["apow"] = strprintf("%u", apow_);
     (*strmap)["fpow"] = strprintf("%u", fpow_);
@@ -777,6 +887,8 @@ public:
     (*strmap)["dfunit"] = strprintf("%lld", (long long)dfunit_);
     (*strmap)["frgcnt"] = strprintf("%lld", (long long)(frgcnt_ > 0 ? (int64_t)frgcnt_ : 0));
     (*strmap)["realsize"] = strprintf("%lld", (long long)file_.size());
+    (*strmap)["recovered"] = strprintf("%d", file_.recovered());
+    (*strmap)["reorganized"] = strprintf("%d", reorg_);
     if (strmap->count("fbpnum_used") > 0) {
       if (writer_) {
         (*strmap)["fbpnum_used"] = strprintf("%lld", (long long)fbp_.size());
@@ -801,11 +913,12 @@ public:
   }
   /**
    * Create a cursor object.
-   * @return the return value is the cursor object.
+   * @return the return value is the created cursor object.
    * @note Because the object of the return value is allocated by the constructor, it should be
    * released with the delete operator when it is no longer in use.
    */
   virtual Cursor* cursor() {
+    _assert_(true);
     return new Cursor(this);
   }
   /**
@@ -815,6 +928,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_error_reporter(std::ostream* erstrm, bool ervbs) {
+    _assert_(erstrm);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -830,6 +944,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_alignment(int8_t apow) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -845,6 +960,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_fbp(int8_t fpow) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -856,10 +972,12 @@ public:
   }
   /**
    * Set the optional features.
-   * @param opts the optional features.
+   * @param opts the optional features by bitwise-or: HashDB::TSMALL to use 32-bit addressing,
+   * HashDB::TLINEAR to use linear collision chaining, HashDB::TCOMPRESS to compress each record.
    * @return true on success, or false on failure.
    */
   virtual bool tune_options(int8_t opts) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -874,6 +992,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_buckets(int64_t bnum) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -889,6 +1008,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_map(int64_t msiz) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -903,6 +1023,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_defrag(int64_t dfunit) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -917,6 +1038,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_compressor(Compressor* comp) {
+    _assert_(comp);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -930,6 +1052,7 @@ public:
    * @return the pointer to the opaque data region, whose size is 16 bytes.
    */
   virtual char* opaque() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -942,10 +1065,11 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool synchronize_opaque() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
-      return NULL;
+      return false;
     }
     bool err = false;
     if (!dump_opaque()) err = true;
@@ -957,13 +1081,14 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool defrag(int64_t step) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
@@ -981,6 +1106,7 @@ public:
    * @return the status flags, or 0 on failure.
    */
   virtual uint8_t flags() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -998,11 +1124,48 @@ protected:
    */
   virtual void set_error(const char* file, int32_t line,
                          Error::Code code, const char* message) {
+    _assert_(file && message);
     set_error(code, message);
+    if (ervbs_ || code == Error::BROKEN || code == Error::SYSTEM)
+      report(file, line, "error", "%d: %s: %s", code, Error::codename(code), message);
+  }
+  /**
+   * Report a message for debugging.
+   * @param file the file name of the epicenter.
+   * @param line the line number of the epicenter.
+   * @param type the type string.
+   * @param format the printf-like format string.
+   * @param ... used according to the format string.
+   */
+  virtual void report(const char* file, int32_t line, const char* type,
+                      const char* format, ...) {
+    _assert_(file && line > 0 && type && format);
     if (!erstrm_) return;
-    if (!ervbs_ && code != Error::BROKEN && code != Error::SYSTEM) return;
-    *erstrm_ << "Error: " << path_ << ": " << file << ": " << line;
-    *erstrm_ << ": " << code << ": " << message << std::endl;
+    const std::string& path = path_.size() > 0 ? path_ : "-";
+    std::string message;
+    va_list ap;
+    va_start(ap, format);
+    strprintf(&message, format, ap);
+    va_end(ap);
+    *erstrm_ << "[" << type << "]: " << path << ": " << file << ": " << line;
+    *erstrm_ << ": " << message << std::endl;
+  }
+  /**
+   * Report the content of a binary buffer for debugging.
+   * @param file the file name of the epicenter.
+   * @param line the line number of the epicenter.
+   * @param type the type string.
+   * @param name the name of the information.
+   * @param buf the binary buffer.
+   * @param size the size of the binary buffer
+   */
+  virtual void report_binary(const char* file, int32_t line, const char* type,
+                             const char* name, const char* buf, size_t size) {
+    _assert_(file && line > 0 && type && name && buf && size <= MEMMAXSIZ);
+    if (!erstrm_) return;
+    char* hex = hexencode(buf, size);
+    report(file, line, type, "%s=%s", name, hex);
+    delete[] hex;
   }
   /**
    * Set the database type.
@@ -1010,6 +1173,7 @@ protected:
    * @return true on success, or false on failure.
    */
   virtual bool tune_type(int8_t type) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
@@ -1023,6 +1187,7 @@ protected:
    * @return the library version, or 0 on failure.
    */
   virtual uint8_t libver() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1035,6 +1200,7 @@ protected:
    * @return the library revision, or 0 on failure.
    */
   virtual uint8_t librev() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1047,6 +1213,7 @@ protected:
    * @return the format version, or 0 on failure.
    */
   virtual uint8_t fmtver() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1059,6 +1226,7 @@ protected:
    * @return the module checksum, or 0 on failure.
    */
   virtual uint8_t chksum() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1071,6 +1239,7 @@ protected:
    * @return the database type, or 0 on failure.
    */
   virtual uint8_t type() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1083,6 +1252,7 @@ protected:
    * @return the alignment power, or 0 on failure.
    */
   virtual uint8_t apow() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1095,6 +1265,7 @@ protected:
    * @return the free block pool power, or 0 on failure.
    */
   virtual uint8_t fpow() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1107,6 +1278,7 @@ protected:
    * @return the options, or 0 on failure.
    */
   virtual uint8_t opts() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1119,6 +1291,7 @@ protected:
    * @return the bucket number, or 0 on failure.
    */
   virtual int64_t bnum() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1131,6 +1304,7 @@ protected:
    * @return the size of the internal memory-mapped region, or 0 on failure.
    */
   virtual int64_t msiz() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1143,6 +1317,7 @@ protected:
    * @return the unit step number of auto defragmentation, or 0 on failure.
    */
   virtual int64_t dfunit() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
@@ -1155,12 +1330,39 @@ protected:
    * @return the data compressor, or NULL on failure.
    */
   virtual Compressor *comp() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return NULL;
     }
     return comp_;
+  }
+  /**
+   * Check whether the database was recovered or not.
+   * @return true if recovered, or false if not.
+   */
+  virtual bool recovered() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return false;
+    }
+    return file_.recovered();
+  }
+  /**
+   * Check whether the database was reorganized or not.
+   * @return true if recovered, or false if not.
+   */
+  virtual bool reorganized() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return false;
+    }
+    return reorg_;
   }
 private:
   /**
@@ -1186,7 +1388,8 @@ private:
     int64_t off;                         ///< offset
     size_t rsiz;                         ///< record size
     /** comparing operator */
-    bool operator<(const FreeBlock& obj) const {
+    bool operator <(const FreeBlock& obj) const {
+      _assert_(true);
       if (rsiz < obj.rsiz) return true;
       if (rsiz == obj.rsiz && off > obj.off) return true;
       return false;
@@ -1197,7 +1400,8 @@ private:
    */
   struct FreeBlockComparator {
     /** comparing operator */
-    bool operator()(const FreeBlock& a, const FreeBlock& b) const {
+    bool operator ()(const FreeBlock& a, const FreeBlock& b) const {
+      _assert_(true);
       return a.off < b.off;
     }
   };
@@ -1206,10 +1410,13 @@ private:
    */
   class Repeater : public Visitor {
   public:
-    explicit Repeater(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
+    explicit Repeater(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {
+      _assert_(vbuf);
+    }
   private:
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
+      _assert_(kbuf && vbuf && sp);
       *sp = vsiz_;
       return vbuf_;
     }
@@ -1232,6 +1439,7 @@ private:
    */
   bool accept_impl(const char* kbuf, size_t ksiz, Visitor* visitor,
                    int64_t bidx, uint32_t pivot, bool isiter) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor && bidx >= 0);
     int64_t off = get_bucket(bidx);
     if (off < 0) return false;
     int64_t entoff = 0;
@@ -1242,6 +1450,8 @@ private:
       if (!read_record(&rec, rbuf)) return false;
       if (rec.psiz == UINT16_MAX) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
+        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+               (long)psiz_, (long)rec.off, (long)file_.size());
         return false;
       }
       uint32_t tpivot = linear_ ? pivot : fold_hash(hash_record(rec.kbuf, rec.ksiz));
@@ -1490,8 +1700,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool iterate_impl(Visitor* visitor) {
-    size_t vsiz;
-    const char* vbuf = visitor->visit_empty("", 0, &vsiz);
+    _assert_(visitor);
     int64_t off = roff_;
     int64_t end = lsiz_;
     Record rec;
@@ -1506,8 +1715,8 @@ private:
           delete[] rec.bbuf;
           return false;
         }
-        vbuf = rec.vbuf;
-        vsiz = rec.vsiz;
+        const char* vbuf = rec.vbuf;
+        size_t vsiz = rec.vsiz;
         char* zbuf = NULL;
         size_t zsiz = 0;
         if (comp_) {
@@ -1576,7 +1785,6 @@ private:
         off += rec.rsiz;
       }
     }
-    visitor->visit_empty("", 0, &vsiz);
     return true;
   }
   /**
@@ -1587,6 +1795,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool synchronize_impl(bool hard, FileProcessor* proc) {
+    _assert_(true);
     bool err = false;
     if (hard && !dump_free_blocks()) err = true;
     if (!dump_meta()) err = true;
@@ -1594,7 +1803,7 @@ private:
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
       err = true;
     }
-    if (proc && !proc->process(path_)) {
+    if (proc && !proc->process(path_, count_, lsiz_)) {
       set_error(__FILE__, __LINE__, Error::MISC, "postprocessing failed");
       err = true;
     }
@@ -1605,6 +1814,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool synchronize_meta() {
+    _assert_(true);
     ScopedSpinLock lock(&flock_);
     bool err = false;
     if (!dump_meta()) err = true;
@@ -1620,6 +1830,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool defrag_impl(int64_t step) {
+    _assert_(step >= 0);
     int64_t end = lsiz_;
     Record rec;
     char rbuf[HDBRECBUFSIZ];
@@ -1681,6 +1892,7 @@ private:
    * Calculate meta data with saved ones.
    */
   void calc_meta() {
+    _assert_(true);
     align_ = 1 << apow_;
     fbpnum_ = fpow_ > 0 ? 1 << fpow_ : 0;
     width_ = (opts_ & TSMALL) ? HDBWIDTHSMALL : HDBWIDTHLARGE;
@@ -1701,6 +1913,7 @@ private:
    * Calculate the module checksum.
    */
   uint8_t calc_checksum() {
+    _assert_(true);
     const char* kbuf = HDBCHKSUMSEED;
     size_t ksiz = sizeof(HDBCHKSUMSEED) - 1;
     char* zbuf = NULL;
@@ -1720,6 +1933,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool dump_meta() {
+    _assert_(true);
     char head[HDBHEADSIZ];
     std::memset(head, 0, sizeof(head));
     std::memcpy(head, HDBMAGICDATA, sizeof(HDBMAGICDATA));
@@ -1752,6 +1966,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool dump_auto_meta() {
+    _assert_(true);
     const int64_t hsiz = HDBMOFFOPAQUE - HDBMOFFCOUNT;
     char head[hsiz];
     std::memset(head, 0, hsiz);
@@ -1770,6 +1985,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool dump_opaque() {
+    _assert_(true);
     if (!file_.write_fast(HDBMOFFOPAQUE, opaque_, sizeof(opaque_))) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
       return false;
@@ -1781,13 +1997,20 @@ private:
    * @return true on success, or false on failure.
    */
   bool load_meta() {
+    _assert_(true);
     char head[HDBHEADSIZ];
+    if (file_.size() < (int64_t)sizeof(head)) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "missing magic data of the file");
+      return false;
+    }
     if (!file_.read(0, head, sizeof(head))) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+             (long)psiz_, (long)0, (long)file_.size());
       return false;
     }
     if (std::memcmp(head, HDBMAGICDATA, sizeof(HDBMAGICDATA))) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data of the file");
+      set_error(__FILE__, __LINE__, Error::INVALID, "invalid magic data of the file");
       return false;
     }
     std::memcpy(&libver_, head + HDBMOFFLIBVER, sizeof(libver_));
@@ -1818,9 +2041,12 @@ private:
    * @return true on success, or false on failure.
    */
   bool set_flag(uint8_t flag, bool sign) {
+    _assert_(true);
     uint8_t flags;
     if (!file_.read(HDBMOFFFLAGS, &flags, sizeof(flags))) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+             (long)psiz_, (long)HDBMOFFFLAGS, (long)file_.size());
       return false;
     }
     if (sign) {
@@ -1841,6 +2067,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool reorganize_file(const std::string& path) {
+    _assert_(true);
     bool err = false;
     HashDB db;
     db.tune_type(type_);
@@ -1850,28 +2077,23 @@ private:
     db.tune_buckets(bnum_);
     db.tune_map(msiz_);
     if (embcomp_) db.tune_compressor(embcomp_);
-    std::string npath = path + File::EXTCHR + HDBTMPPATHEXT;
+    const std::string& npath = path + File::EXTCHR + HDBTMPPATHEXT;
     if (db.open(npath, OWRITER | OCREATE | OTRUNCATE)) {
+      report(__FILE__, __LINE__, "info", "reorganizing the database");
       lsiz_ = file_.size();
       psiz_ = lsiz_;
       if (copy_records(&db)) {
         if (db.close()) {
           File src;
-          if (src.open(npath, File::OREADER | File::File::ONOLOCK, 0)) {
+          if (src.open(npath, File::OREADER | File::ONOLOCK, 0)) {
             File* dest = writer_ ? &file_ : new File();
-            if (dest == &file_ || dest->open(path, File::OWRITER | File::File::ONOLOCK, 0)) {
-
-              // hoge
-              std::cerr << "[reorganize]" << std::endl;
-              Thread::sleep(0.5);
-
-
+            if (dest == &file_ || dest->open(path, File::OWRITER | File::ONOLOCK, 0)) {
               int64_t off = 0;
               int64_t size = src.size();
-              char buf[PAGESIZE];
+              char buf[HDBIOBUFSIZ*4];
               while (off < size) {
                 int32_t psiz = size - off;
-                if (psiz > PAGESIZE) psiz = PAGESIZE;
+                if (psiz > (int32_t)sizeof(buf)) psiz = sizeof(buf);
                 if (src.read(off, buf, psiz)) {
                   if (!dest->write(off, buf, psiz)) {
                     set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
@@ -1883,7 +2105,7 @@ private:
                   err = true;
                   break;
                 }
-                off += PAGESIZE;
+                off += psiz;
               }
               if (!dest->truncate(size)) {
                 set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
@@ -1901,6 +2123,7 @@ private:
               }
               if (!load_meta()) err = true;
               calc_meta();
+              reorg_ = true;
               if (dest != &file_) delete dest;
             } else {
               set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
@@ -1932,6 +2155,9 @@ private:
    * @return true on success, or false on failure.
    */
   bool copy_records(HashDB* dest) {
+    _assert_(dest);
+    std::ostream* erstrm = erstrm_;
+    erstrm_ = NULL;
     int64_t off = roff_;
     int64_t end = psiz_;
     Record rec;
@@ -1970,7 +2196,41 @@ private:
         off += rec.rsiz;
       }
     }
+    erstrm_ = erstrm;
     return true;
+  }
+  /**
+   * Trim the file size.
+   * @param path the path of the database file.
+   * @return true on success, or false on failure.
+   */
+  bool trim_file(const std::string& path) {
+    _assert_(true);
+    bool err = false;
+    report(__FILE__, __LINE__, "info", "trimming the database");
+    File* dest = writer_ ? &file_ : new File();
+    if (dest == &file_ || dest->open(path, File::OWRITER | File::ONOLOCK, 0)) {
+      if (!dest->truncate(lsiz_)) {
+        set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+        err = true;
+      }
+      if (dest != &file_) {
+        if (!dest->close()) {
+          set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+          err = true;
+        }
+        if (!file_.refresh()) {
+          set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+          err = true;
+        }
+      }
+      trim_ = true;
+    } else {
+      set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+      err = true;
+    }
+    if (dest != &file_) delete dest;
+    return !err;
   }
   /**
    * Get the hash value of a record.
@@ -1979,6 +2239,7 @@ private:
    * @return the hash value.
    */
   uint64_t hash_record(const char* kbuf, size_t ksiz) {
+    _assert_(kbuf);
     return hashmurmur(kbuf, ksiz);
   }
   /**
@@ -1987,19 +2248,21 @@ private:
    * @return the result number.
    */
   uint32_t fold_hash(uint64_t hash) {
+    _assert_(true);
     return (((hash & 0xffff000000000000ULL) >> 48) | ((hash & 0x0000ffff00000000ULL) >> 16)) ^
       (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
   }
   /**
    * Compare two keys in lexical order.
    * @param abuf one key.
-   * @param abuf the size of the one key.
+   * @param asiz the size of the one key.
    * @param bbuf the other key.
-   * @param bbuf the size of the other key.
+   * @param bsiz the size of the other key.
    * @return positive if the former is big, or negative if the latter is big, or 0 if both are
    * equivalent.
    */
   int32_t compare_keys(const char* abuf, size_t asiz, const char* bbuf, size_t bsiz) {
+    _assert_(abuf && bbuf);
     if (asiz != bsiz) return (int32_t)asiz - (int32_t)bsiz;
     return std::memcmp(abuf, bbuf, asiz);
   }
@@ -2010,6 +2273,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool set_bucket(int64_t bidx, int64_t off) {
+    _assert_(bidx >= 0 && off >= 0);
     char buf[sizeof(uint64_t)];
     writefixnum(buf, off >> apow_, width_);
     if (!file_.write_fast(boff_ + bidx * width_, buf, width_)) {
@@ -2024,9 +2288,12 @@ private:
    * @return the address, or -1 on failure.
    */
   int64_t get_bucket(int64_t bidx) {
+    _assert_(bidx >= 0);
     char buf[sizeof(uint64_t)];
     if (!file_.read_fast(boff_ + bidx * width_, buf, width_)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+             (long)psiz_, (long)boff_ + bidx * width_, (long)file_.size());
       return -1;
     }
     return readfixnum(buf, width_) << apow_;
@@ -2038,6 +2305,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool set_chain(int64_t entoff, int64_t off) {
+    _assert_(entoff >= 0 && off >= 0);
     char buf[sizeof(uint64_t)];
     writefixnum(buf, off >> apow_, width_);
     if (!file_.write_fast(entoff, buf, width_)) {
@@ -2053,8 +2321,11 @@ private:
    * @return true on success, or false on failure.
    */
   bool read_record(Record* rec, char* rbuf) {
+    _assert_(rec && rbuf);
     if (rec->off < roff_) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "invalid record offset");
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+             (long)psiz_, (long)rec->off, (long)file_.size());
       return false;
     }
     size_t rsiz = psiz_ - rec->off;
@@ -2063,12 +2334,16 @@ private:
     } else {
       if (rsiz < rhsiz_) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "too short record region");
+        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
+               (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
         return false;
       }
       rsiz = rhsiz_;
     }
     if (!file_.read_fast(rec->off, rbuf, rsiz)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
+             (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
       return false;
     }
     const char* rp = rbuf;
@@ -2079,16 +2354,25 @@ private:
     } else if (*(uint8_t*)rp >= 0x80) {
       if (*(uint8_t*)(rp++) != HDBFBMAGIC || *(uint8_t*)(rp++) != HDBFBMAGIC) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data of a free block");
+        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
+               (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
+        report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
         return false;
       }
       rec->rsiz = readfixnum(rp, width_) << apow_;
       rp += width_;
       if (*(uint8_t*)(rp++) != HDBPADMAGIC || *(uint8_t*)(rp++) != HDBPADMAGIC) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data of a free block");
+        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
+               (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
+        report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
         return false;
       }
       if (rec->rsiz < rhsiz_) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "invalid size of a free block");
+        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
+               (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
+        report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
         return false;
       }
       rec->psiz = UINT16_MAX;
@@ -2103,17 +2387,9 @@ private:
       return true;
     } else if (*rp == 0) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "nullified region");
-
-
-      // hoge
-      printf("psiz=%d  off=%d  rsiz=%d  fsiz=%d  snum=%04X\n",
-             (int)psiz_, (int)rec->off, (int)rsiz, (int)file_.size(), snum);
-      for (size_t i = 0; i < rsiz; i++) {
-        printf(" %02X", ((uint8_t*)rp)[i]);
-      }
-      printf("\n");
-
-
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
+             (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
+      report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
       return false;
     } else {
       std::memcpy(&snum, rp, sizeof(snum));
@@ -2135,6 +2411,9 @@ private:
     size_t step = readvarnum(rp, rsiz, &num);
     if (step < 1) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "invalid key length");
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld snum=%04X",
+             (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size(), snum);
+      report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
       return false;
     }
     rec->ksiz = num;
@@ -2143,6 +2422,9 @@ private:
     step = readvarnum(rp, rsiz, &num);
     if (step < 1) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "invalid value length");
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld snum=%04X",
+             (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size(), snum);
+      report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
       return false;
     }
     rec->vsiz = num;
@@ -2165,6 +2447,9 @@ private:
           rsiz -= rec->vsiz;
           if (rsiz > 0 && *(uint8_t*)rp != HDBPADMAGIC) {
             set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data of a record");
+            report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld snum=%04X",
+                   (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size(), snum);
+            report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
             return false;
           }
         }
@@ -2180,10 +2465,13 @@ private:
    * @return true on success, or false on failure.
    */
   bool read_record_body(Record* rec) {
+    _assert_(rec);
     size_t bsiz = rec->ksiz + rec->vsiz;
     char* bbuf = new char[bsiz];
     if (!file_.read_fast(rec->boff, bbuf, bsiz)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+             (long)psiz_, (long)rec->boff, (long)file_.size());
       delete[] bbuf;
       return false;
     }
@@ -2199,6 +2487,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool write_record(Record* rec, bool over) {
+    _assert_(rec);
     char stack[HDBIOBUFSIZ];
     char* rbuf = rec->rsiz > sizeof(stack) ? new char[rec->rsiz] : stack;
     char* wp = rbuf;
@@ -2244,6 +2533,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool adjust_record(Record* rec) {
+    _assert_(rec);
     if (rec->psiz > INT16_MAX || rec->psiz > rec->rsiz / 2) {
       size_t nsiz = (rec->psiz >> apow_) << apow_;
       if (nsiz < rhsiz_) return true;
@@ -2263,6 +2553,7 @@ private:
    * @return the size of the record.
    */
   size_t calc_record_size(size_t ksiz, size_t vsiz) {
+    _assert_(true);
     size_t rsiz = sizeof(uint16_t) + width_;
     if (!linear_) rsiz += width_;
     if (ksiz < (1ULL << 7)) {
@@ -2297,6 +2588,7 @@ private:
    * @return the size of the padding.
    */
   size_t calc_record_padding(size_t rsiz) {
+    _assert_(true);
     size_t diff = rsiz & (align_ - 1);
     return diff > 0 ? align_ - diff : 0;
   }
@@ -2307,6 +2599,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool shift_record(Record* orec, int64_t dest) {
+    _assert_(orec && dest >= 0);
     uint64_t hash = hash_record(orec->kbuf, orec->ksiz);
     uint32_t pivot = fold_hash(hash);
     int64_t bidx = hash % bnum_;
@@ -2326,6 +2619,8 @@ private:
       if (!read_record(&rec, rbuf)) return false;
       if (rec.psiz == UINT16_MAX) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
+        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+               (long)psiz_, (long)rec.off, (long)file_.size());
         return false;
       }
       uint32_t tpivot = linear_ ? pivot : fold_hash(hash_record(rec.kbuf, rec.ksiz));
@@ -2362,6 +2657,7 @@ private:
       }
     }
     set_error(__FILE__, __LINE__, Error::BROKEN, "no record to shift");
+    report(__FILE__, __LINE__, "info", "psiz=%ld fsiz=%ld", (long)psiz_, (long)file_.size());
     return false;
   }
   /**
@@ -2372,6 +2668,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool write_free_block(int64_t off, size_t rsiz, char* rbuf) {
+    _assert_(off >= 0 && rbuf);
     char* wp = rbuf;
     *(wp++) = HDBFBMAGIC;
     *(wp++) = HDBFBMAGIC;
@@ -2391,6 +2688,7 @@ private:
    * @param rsiz the size of the free block.
    */
   void insert_free_block(int64_t off, size_t rsiz) {
+    _assert_(off >= 0);
     ScopedSpinLock lock(&flock_);
     escape_cursors(off, off + rsiz);
     if (fbpnum_ < 1) return;
@@ -2409,6 +2707,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool fetch_free_block(size_t rsiz, FreeBlock* res) {
+    _assert_(res);
     if (fbpnum_ < 1) return false;
     ScopedSpinLock lock(&flock_);
     FreeBlock fb = { INT64_MAX, rsiz };
@@ -2426,6 +2725,7 @@ private:
    * @param end the end offset.
    */
   void trim_free_blocks(int64_t begin, int64_t end) {
+    _assert_(begin >= 0 && end >= 0);
     FBP::const_iterator it = fbp_.begin();
     FBP::const_iterator itend = fbp_.end();
     while (it != itend) {
@@ -2438,11 +2738,10 @@ private:
   }
   /**
    * Dump all free blocks into the file.
-   * @param rsiz the minimum size of the block.
-   * @param res the structure for the result.
    * @return true on success, or false on failure.
    */
   bool dump_free_blocks() {
+    _assert_(true);
     if (fbpnum_ < 1) return true;
     size_t size = boff_ - HDBHEADSIZ;
     char* rbuf = new char[size];
@@ -2483,6 +2782,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool dump_empty_free_blocks() {
+    _assert_(true);
     if (fbpnum_ < 1) return true;
     char rbuf[2];
     char* wp = rbuf;
@@ -2500,11 +2800,14 @@ private:
    * @return true on success, or false on failure.
    */
   bool load_free_blocks() {
+    _assert_(true);
     if (fbpnum_ < 1) return true;
     size_t size = boff_ - HDBHEADSIZ;
     char* rbuf = new char[size];
     if (!file_.read(HDBHEADSIZ, rbuf, size)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+             (long)psiz_, (long)HDBHEADSIZ, (long)file_.size());
       delete[] rbuf;
       return false;
     }
@@ -2516,6 +2819,8 @@ private:
       size_t step = readvarnum(rp, size, &off);
       if (step < 1 || off < 1) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "invalid free block offset");
+        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+               (long)psiz_, (long)off, (long)file_.size());
         delete[] rbuf;
         delete[] blocks;
         return false;
@@ -2526,6 +2831,8 @@ private:
       step = readvarnum(rp, size, &rsiz);
       if (step < 1 || rsiz < 1) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "invalid free block size");
+        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
+               (long)psiz_, (long)off, (long)rsiz, (long)file_.size());
         delete[] rbuf;
         delete[] blocks;
         return false;
@@ -2551,6 +2858,7 @@ private:
    * Disable all cursors.
    */
   void disable_cursors() {
+    _assert_(true);
     if (curs_.size() < 1) return;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
@@ -2566,6 +2874,7 @@ private:
    * @param dest the destination offset.
    */
   void escape_cursors(int64_t off, int64_t dest) {
+    _assert_(off >= 0 && dest >= 0);
     if (curs_.size() < 1) return;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
@@ -2586,6 +2895,7 @@ private:
    * Trim invalid cursors.
    */
   void trim_cursors() {
+    _assert_(true);
     if (curs_.size() < 1) return;
     int64_t end = lsiz_;
     CursorList::const_iterator cit = curs_.begin();
@@ -2609,6 +2919,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool cut_chain(Record* rec, char* rbuf, int64_t bidx, int64_t entoff) {
+    _assert_(rec && rbuf && bidx >= 0 && entoff >= 0);
     int64_t child;
     if (rec->left > 0 && rec->right < 1) {
       child = rec->left;
@@ -2622,6 +2933,9 @@ private:
       if (!read_record(&prec, rbuf)) return false;
       if (prec.psiz == UINT16_MAX) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
+        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+               (long)psiz_, (long)prec.off, (long)file_.size());
+        report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rhsiz_);
         return false;
       }
       delete[] prec.bbuf;
@@ -2633,6 +2947,9 @@ private:
           if (!read_record(&prec, rbuf)) return false;
           if (prec.psiz == UINT16_MAX) {
             set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
+            report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
+                   (long)psiz_, (long)prec.off, (long)file_.size());
+            report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rhsiz_);
             return false;
           }
           delete[] prec.bbuf;
@@ -2661,12 +2978,20 @@ private:
    * @return true on success, or false on failure.
    */
   bool begin_transaction_impl() {
+    _assert_(true);
     if (!dump_meta()) return false;
+
+
+    // TBD: hoge: really?
+    /*
     if (!file_.truncate(lsiz_)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
       return false;
     }
     psiz_ = lsiz_;
+    */
+
+
     if (!file_.begin_transaction(trhard_, boff_)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
       return false;
@@ -2692,6 +3017,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool begin_auto_transaction() {
+    _assert_(true);
     atlock_.lock();
     if (!file_.begin_transaction(autosync_, boff_)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
@@ -2711,6 +3037,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool commit_transaction() {
+    _assert_(true);
     bool err = false;
     if (!dump_meta()) err = true;
     if (!file_.end_transaction(true)) {
@@ -2725,6 +3052,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool commit_auto_transaction() {
+    _assert_(true);
     bool err = false;
     if (!dump_auto_meta()) err = true;
     if (!file_.end_transaction(true)) {
@@ -2739,6 +3067,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool abort_transaction() {
+    _assert_(true);
     bool err = false;
     if (!file_.end_transaction(false)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
@@ -2756,6 +3085,7 @@ private:
    * @return true on success, or false on failure.
    */
   bool abort_auto_transaction() {
+    _assert_(true);
     bool err = false;
     if (!file_.end_transaction(false)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
@@ -2790,6 +3120,10 @@ private:
   bool autotran_;
   /** The flag for auto synchronization. */
   bool autosync_;
+  /** The flag for reorganized. */
+  bool reorg_;
+  /** The flag for trimmed. */
+  bool trim_;
   /** The file for data. */
   File file_;
   /** The free block pool. */

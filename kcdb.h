@@ -23,6 +23,15 @@ namespace kyotocabinet {                 // common namespace
 
 
 /**
+ * Constants for implementation.
+ */
+namespace {
+const char DBSSMAGICDATA[] = "KCSS\n";   ///< magic data of the file
+const size_t DBIOBUFSIZ = 8192;          ///< size of the IO buffer
+}
+
+
+/**
  * Interface of database abstraction.
  */
 class DB {
@@ -31,10 +40,14 @@ public:
    * Database types.
    */
   enum Type {
-    TYPEPROTO = 0x01,                    ///< prototype database
-    TYPECACHE = 0x02,                    ///< cache database
+    TYPEVOID = 0x00,                     ///< void database
+    TYPEPHASH = 0x01,                    ///< prototype hash database
+    TYPEPTREE = 0x02,                    ///< prototype tree database
+    TYPEPMISC = 0x08,                    ///< miscellaneous prototype database
+    TYPECACHE = 0x09,                    ///< cache database
     TYPEHASH = 0x11,                     ///< file hash database
-    TYPETREE = 0x12                      ///< file tree database
+    TYPETREE = 0x12,                     ///< file tree database
+    TYPEMISC = 0x20                      ///< miscellaneous database
   };
   /**
    * Get the string of a database type.
@@ -42,11 +55,16 @@ public:
    * @return the string of the type name.
    */
   static const char* typestring(uint32_t type) {
+    _assert_(true);
     switch (type) {
-      case TYPEPROTO: return "prototype database";
+      case TYPEVOID: return "void";
+      case TYPEPHASH: return "prototype hash database";
+      case TYPEPTREE: return "prototype tree database";
+      case TYPEPMISC: return "miscellaneous prototype database";
       case TYPECACHE: return "cache database";
       case TYPEHASH: return "file hash database";
       case TYPETREE: return "file tree database";
+      case TYPEMISC: return "miscellaneous database";
     }
     return "unknown";
   }
@@ -62,7 +80,9 @@ public:
     /**
      * Destructor.
      */
-    virtual ~Visitor() {}
+    virtual ~Visitor() {
+      _assert_(true);
+    }
     /**
      * Visit a record.
      * @param kbuf the pointer to the key region.
@@ -76,6 +96,7 @@ public:
      */
     virtual const char* visit_full(const char* kbuf, size_t ksiz,
                                    const char* vbuf, size_t vsiz, size_t* sp) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
       return NOP;
     }
     /**
@@ -88,6 +109,7 @@ public:
      * is Visitor::NOP or Visitor::REMOVE, nothing is modified.
      */
     virtual const char* visit_empty(const char* kbuf, size_t ksiz, size_t* sp) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ && sp);
       return NOP;
     }
   };
@@ -99,7 +121,9 @@ public:
     /**
      * Destructor.
      */
-    virtual ~Cursor() {}
+    virtual ~Cursor() {
+      _assert_(true);
+    }
     /**
      * Accept a visitor to the current record.
      * @param visitor a visitor object.
@@ -107,11 +131,33 @@ public:
      * @param step true to move the cursor to the next record, or false for no move.
      * @return true on success, or false on failure.
      */
-    virtual bool accept(Visitor* visitor, bool writable, bool step) = 0;
+    virtual bool accept(Visitor* visitor, bool writable = true, bool step = false) = 0;
+    /**
+     * Set the value of the current record.
+     * @param vbuf the pointer to the value region.
+     * @param vsiz the size of the value region.
+     * @param step true to move the cursor to the next record, or false for no move.
+     * @return true on success, or false on failure.
+     */
+    virtual bool set_value(const char* vbuf, size_t vsiz, bool step = false) = 0;
+    /**
+     * Set the value of the current record.
+     * @note Equal to the original Cursor::set_value method except that the parameter is
+     * std::string.
+     */
+    virtual bool set_value(const std::string& value, bool step = false) = 0;
+    /**
+     * Remove the current record.
+     * @return true on success, or false on failure.
+     * @note If no record corresponds to the key, false is returned.  The cursor is moved to the
+     * next record implicitly.
+     */
+    virtual bool remove() = 0;
     /**
      * Get the key of the current record.
      * @param sp the pointer to the variable into which the size of the region of the return
      * value is assigned.
+     * @param step true to move the cursor to the next record, or false for no move.
      * @return the pointer to the key region of the current record, or NULL on failure.
      * @note If the cursor is invalidated, NULL is returned.  Because an additional zero
      * code is appended at the end of the region of the return value, the return value can be
@@ -119,18 +165,19 @@ public:
      * the new[] operator, it should be released with the delete[] operator when it is no longer
      * in use.
      */
-    virtual char* get_key(size_t* sp) = 0;
+    virtual char* get_key(size_t* sp, bool step = false) = 0;
     /**
      * Get the key of the current record.
      * @note Equal to the original Cursor::get_key method except that the parameter and the
      * return value are std::string.  The return value should be deleted explicitly by the
      * caller.
      */
-    virtual std::string* get_key() = 0;
+    virtual std::string* get_key(bool step = false) = 0;
     /**
      * Get the value of the current record.
      * @param sp the pointer to the variable into which the size of the region of the return
      * value is assigned.
+     * @param step true to move the cursor to the next record, or false for no move.
      * @return the pointer to the value region of the current record, or NULL on failure.
      * @note If the cursor is invalidated, NULL is returned.  Because an additional zero
      * code is appended at the end of the region of the return value, the return value can be
@@ -138,14 +185,14 @@ public:
      * the new[] operator, it should be released with the delete[] operator when it is no longer
      * in use.
      */
-    virtual char* get_value(size_t* sp) = 0;
+    virtual char* get_value(size_t* sp, bool step = false) = 0;
     /**
      * Get the value of the current record.
      * @note Equal to the original Cursor::get_value method except that the parameter and the
      * return value are std::string.  The return value should be deleted explicitly by the
      * caller.
      */
-    virtual std::string* get_value() = 0;
+    virtual std::string* get_value(bool step = false) = 0;
     /**
      * Get a pair of the key and the value of the current record.
      * @param ksp the pointer to the variable into which the size of the region of the return
@@ -154,13 +201,14 @@ public:
      * assigned.
      * @param vsp the pointer to the variable into which the size of the value region is
      * assigned.
+     * @param step true to move the cursor to the next record, or false for no move.
      * @return the pointer to the pair of the key region, or NULL on failure.
      * @note If the cursor is invalidated, NULL is returned.  Because an additional zero code is
      * appended at the end of each region of the key and the value, each region can be treated
      * as a C-style string.  The return value should be deleted explicitly by the caller with
      * the detele[] operator.
      */
-    virtual char* get(size_t* ksp, const char** vbp, size_t* vsp) = 0;
+    virtual char* get(size_t* ksp, const char** vbp, size_t* vsp, bool step = false) = 0;
     /**
      * Get a pair of the key and the value of the current record.
      * @return the pointer to the pair of the key and the value, or NULL on failure.
@@ -169,14 +217,7 @@ public:
      * @note If the cursor is invalidated, NULL is returned.  The return value should be deleted
      * explicitly by the caller.
      */
-    virtual std::pair<std::string, std::string>* get_pair() = 0;
-    /**
-     * Remove the current record.
-     * @return true on success, or false on failure.
-     * @note If no record corresponds to the key, false is returned.  The cursor is moved to the
-     * next record implicitly.
-     */
-    virtual bool remove() = 0;
+    virtual std::pair<std::string, std::string>* get_pair(bool step = false) = 0;
     /**
      * Jump the cursor to the first record.
      * @return true on success, or false on failure.
@@ -199,15 +240,18 @@ public:
      * @return true on success, or false on failure.
      */
     virtual bool step() = 0;
+    /**
+     * Get the database object.
+     * @return the database object.
+     */
+    virtual DB* db() = 0;
   };
-  /**
-   * Default constructor.
-   */
-  explicit DB() {}
   /**
    * Destructor.
    */
-  virtual ~DB() {}
+  virtual ~DB() {
+    _assert_(true);
+  }
   /**
    * Accept a visitor to a record.
    * @param kbuf the pointer to the key region.
@@ -215,15 +259,18 @@ public:
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
+   * @note the operation for each record is performed atomically and other threads accessing the
+   * same record are blocked.
    */
-  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable) = 0;
+  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) = 0;
   /**
    * Iterate to accept a visitor for each record.
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
+   * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  virtual bool iterate(Visitor *visitor, bool writable) = 0;
+  virtual bool iterate(Visitor *visitor, bool writable = true) = 0;
   /**
    * Set the value of a record.
    * @param kbuf the pointer to the key region.
@@ -288,13 +335,13 @@ public:
   /**
    * Add a number to the numeric value of a record.
    * @note Equal to the original DB::increment method except that the parameter and the return
-   * value are double.
+   * value are double.  Not-a-number is returned on failure.
    */
   virtual double increment(const char* kbuf, size_t ksiz, double num) = 0;
   /**
    * Add a number to the numeric value of a record.
    * @note Equal to the original DB::increment method except that the parameter is std::string
-   * and the return value is double.
+   * and the return value is double.  Not-a-number is returned on failure.
    */
   virtual double increment(const std::string& key, double num) = 0;
   /**
@@ -370,7 +417,7 @@ public:
   virtual int64_t count() = 0;
   /**
    * Create a cursor object.
-   * @return the return value is the cursor object.
+   * @return the return value is the created cursor object.
    * @note Because the object of the return value is allocated by the constructor, it should be
    * released with the delete operator when it is no longer in use.
    */
@@ -380,13 +427,16 @@ public:
 
 /**
  * Basic implementation for file database.
- * @note Before every database operation, it is necessary to call the open method in order to
- * open a database file and connect the database object to it.  To avoid data missing or
- * corruption, it is important to close every database file by the close method when the
- * database is no longer in use.  It is forbidden for multible database objects in a process
+ * @note Before every database operation, it is necessary to call the FileDB::open method in
+ * order to open a database file and connect the database object to it.  To avoid data missing
+ * or corruption, it is important to close every database file by the FileDB::close method when
+ * the database is no longer in use.  It is forbidden for multible database objects in a process
  * to open the same database at the same time.
  */
 class FileDB : public DB {
+public:
+  class Error;
+  class Cursor;
 public:
   /**
    * Interface of cursor to indicate a record.
@@ -396,11 +446,82 @@ public:
     /**
      * Destructor.
      */
-    virtual ~Cursor() {}
+    virtual ~Cursor() {
+      _assert_(true);
+    }
+    /**
+     * Set the value of the current record.
+     * @param vbuf the pointer to the value region.
+     * @param vsiz the size of the value region.
+     * @param step true to move the cursor to the next record, or false for no move.
+     * @return true on success, or false on failure.
+     */
+    virtual bool set_value(const char* vbuf, size_t vsiz, bool step = false) {
+      _assert_(vbuf && vsiz <= MEMMAXSIZ);
+      class VisitorImpl : public Visitor {
+      public:
+        explicit VisitorImpl(const char* vbuf, size_t vsiz) :
+          vbuf_(vbuf), vsiz_(vsiz), ok_(false) {}
+        bool ok() const {
+          return ok_;
+        }
+      private:
+        const char* visit_full(const char* kbuf, size_t ksiz,
+                               const char* vbuf, size_t vsiz, size_t* sp) {
+          ok_ = true;
+          *sp = vsiz_;
+          return vbuf_;
+        }
+        const char* vbuf_;
+        size_t vsiz_;
+        bool ok_;
+      };
+      VisitorImpl visitor(vbuf, vsiz);
+      if (!accept(&visitor, true, step)) return false;
+      if (!visitor.ok()) return false;
+      return true;
+    }
+    /**
+     * Set the value of the current record.
+     * @note Equal to the original Cursor::set_value method except that the parameter is
+     * std::string.
+     */
+    virtual bool set_value(const std::string& value, bool step = false) {
+      _assert_(true);
+      return set_value(value.c_str(), value.size(), step);
+    }
+    /**
+     * Remove the current record.
+     * @return true on success, or false on failure.
+     * @note If no record corresponds to the key, false is returned.  The cursor is moved to the
+     * next record implicitly.
+     */
+    virtual bool remove() {
+      _assert_(true);
+      class VisitorImpl : public Visitor {
+      public:
+        explicit VisitorImpl() : ok_(false) {}
+        bool ok() const {
+          return ok_;
+        }
+      private:
+        const char* visit_full(const char* kbuf, size_t ksiz,
+                               const char* vbuf, size_t vsiz, size_t* sp) {
+          ok_ = true;
+          return REMOVE;
+        }
+        bool ok_;
+      };
+      VisitorImpl visitor;
+      if (!accept(&visitor, true, false)) return false;
+      if (!visitor.ok()) return false;
+      return true;
+    }
     /**
      * Get the key of the current record.
      * @param sp the pointer to the variable into which the size of the region of the return
      * value is assigned.
+     * @param step true to move the cursor to the next record, or false for no move.
      * @return the pointer to the key region of the current record, or NULL on failure.
      * @note If the cursor is invalidated, NULL is returned.  Because an additional zero
      * code is appended at the end of the region of the return value, the return value can be
@@ -408,7 +529,8 @@ public:
      * the new[] operator, it should be released with the delete[] operator when it is no longer
      * in use.
      */
-    virtual char* get_key(size_t* sp) {
+    virtual char* get_key(size_t* sp, bool step = false) {
+      _assert_(sp);
       class VisitorImpl : public Visitor {
       public:
         explicit VisitorImpl() : kbuf_(NULL), ksiz_(0) {}
@@ -432,7 +554,7 @@ public:
         size_t ksiz_;
       };
       VisitorImpl visitor;
-      if (!accept(&visitor, false, false)) {
+      if (!accept(&visitor, false, step)) {
         visitor.clear();
         *sp = 0;
         return NULL;
@@ -451,9 +573,10 @@ public:
      * @note Equal to the original Cursor::key method except that the parameter and the return
      * value are std::string.
      */
-    virtual std::string* get_key() {
+    virtual std::string* get_key(bool step = false) {
+      _assert_(true);
       size_t ksiz;
-      char* kbuf = get_key(&ksiz);
+      char* kbuf = get_key(&ksiz, step);
       if (!kbuf) return NULL;
       std::string* key = new std::string(kbuf, ksiz);
       delete[] kbuf;
@@ -463,6 +586,7 @@ public:
      * Get the value of the current record.
      * @param sp the pointer to the variable into which the size of the region of the return
      * value is assigned.
+     * @param step true to move the cursor to the next record, or false for no move.
      * @return the pointer to the value region of the current record, or NULL on failure.
      * @note If the cursor is invalidated, NULL is returned.  Because an additional zero
      * code is appended at the end of the region of the return value, the return value can be
@@ -470,7 +594,8 @@ public:
      * the new[] operator, it should be released with the delete[] operator when it is no longer
      * in use.
      */
-    virtual char* get_value(size_t* sp) {
+    virtual char* get_value(size_t* sp, bool step = false) {
+      _assert_(sp);
       class VisitorImpl : public Visitor {
       public:
         explicit VisitorImpl() : vbuf_(NULL), vsiz_(0) {}
@@ -494,7 +619,7 @@ public:
         size_t vsiz_;
       };
       VisitorImpl visitor;
-      if (!accept(&visitor, false, false)) {
+      if (!accept(&visitor, false, step)) {
         visitor.clear();
         *sp = 0;
         return NULL;
@@ -513,9 +638,10 @@ public:
      * @note Equal to the original Cursor::value method except that the parameter and the return
      * value are std::string.
      */
-    virtual std::string* get_value() {
+    virtual std::string* get_value(bool step = false) {
+      _assert_(true);
       size_t vsiz;
-      char* vbuf = get_value(&vsiz);
+      char* vbuf = get_value(&vsiz, step);
       if (!vbuf) return NULL;
       std::string* value = new std::string(vbuf, vsiz);
       delete[] vbuf;
@@ -529,14 +655,15 @@ public:
      * assigned.
      * @param vsp the pointer to the variable into which the size of the value region is
      * assigned.
-     * @return the pointer to the pair of the key region, or NULL on failure.
+     * @param step true to move the cursor to the next record, or false for no move.
      * @return the pointer to the pair of the key region, or NULL on failure.
      * @note If the cursor is invalidated, NULL is returned.  Because an additional zero code is
      * appended at the end of each region of the key and the value, each region can be treated
      * as a C-style string.  The return value should be deleted explicitly by the caller with
      * the detele[] operator.
      */
-    virtual char* get(size_t* ksp, const char** vbp, size_t* vsp) {
+    virtual char* get(size_t* ksp, const char** vbp, size_t* vsp, bool step = false) {
+      _assert_(ksp && vbp && vsp);
       class VisitorImpl : public Visitor {
       public:
         explicit VisitorImpl() : kbuf_(NULL), ksiz_(0), vbuf_(NULL), vsiz_(0) {}
@@ -569,7 +696,7 @@ public:
         size_t vsiz_;
       };
       VisitorImpl visitor;
-      if (!accept(&visitor, false, false)) {
+      if (!accept(&visitor, false, step)) {
         visitor.clear();
         *ksp = 0;
         *vbp = NULL;
@@ -584,7 +711,8 @@ public:
      * @note If the cursor is invalidated, NULL is returned.  The return value should be deleted
      * explicitly by the caller.
      */
-    virtual std::pair<std::string, std::string>* get_pair() {
+    virtual std::pair<std::string, std::string>* get_pair(bool step = false) {
+      _assert_(true);
       typedef std::pair<std::string, std::string> Record;
       class VisitorImpl : public Visitor {
       public:
@@ -603,34 +731,21 @@ public:
         Record* rec_;
       };
       VisitorImpl visitor;
-      if (!accept(&visitor, false, false)) return NULL;
+      if (!accept(&visitor, false, step)) return NULL;
       return visitor.pop();
     }
     /**
-     * Remove the current record.
-     * @return true on success, or false on failure.
-     * @note If no record corresponds to the key, false is returned.  The cursor is moved to the
-     * next record implicitly.
+     * Get the database object.
+     * @return the database object.
      */
-    virtual bool remove() {
-      class VisitorImpl : public Visitor {
-      public:
-        explicit VisitorImpl() : ok_(false) {}
-        bool ok() const {
-          return ok_;
-        }
-      private:
-        const char* visit_full(const char* kbuf, size_t ksiz,
-                               const char* vbuf, size_t vsiz, size_t* sp) {
-          ok_ = true;
-          return REMOVE;
-        }
-        bool ok_;
-      };
-      VisitorImpl visitor;
-      if (!accept(&visitor, true, false)) return false;
-      if (!visitor.ok()) return false;
-      return true;
+    virtual FileDB* db() = 0;
+    /**
+     * Get the last happened error.
+     * @return the last happened error.
+     */
+    virtual Error error() {
+      _assert_(true);
+      return db()->error();
     }
   };
   /**
@@ -657,17 +772,23 @@ public:
     /**
      * Default constructor.
      */
-    explicit Error() : code_(SUCCESS), message_("no error") {}
+    explicit Error() : code_(SUCCESS), message_("no error") {
+      _assert_(true);
+    }
     /**
      * Constructor.
      * @param code an error code.
      * @param message a supplement message.
      */
-    explicit Error(Code code, const char* message) : code_(code), message_(message) {}
+    explicit Error(Code code, const char* message) : code_(code), message_(message) {
+      _assert_(message);
+    }
     /**
      * Destructor.
      */
-    ~Error() {}
+    ~Error() {
+      _assert_(true);
+    }
     /**
      * Set the error information.
      * @param code an error code.
@@ -685,29 +806,51 @@ public:
       return code_;
     }
     /**
-     * Get the error message string.
-     * @return the error message string.
+     * Get the readable string of the code.
+     * @return the readable string of the code.
      */
-    std::string string() const {
-      switch (code_) {
-        case SUCCESS: return std::string("success: ").append(message_);
-        case NOIMPL: return std::string("not implemented: ").append(message_);
-        case INVALID: return std::string("invalid operation: ").append(message_);
-        case NOFILE: return std::string("file not found: ").append(message_);
-        case NOPERM: return std::string("no permission: ").append(message_);
-        case BROKEN: return std::string("broken file: ").append(message_);
-        case DUPREC: return std::string("record duplication: ").append(message_);
-        case NOREC: return std::string("no record: ").append(message_);
-        case LOGIC: return std::string("logical inconsistency: ").append(message_);
-        case SYSTEM: return std::string("system error: ").append(message_);
+    const char* name() const {
+      return codename(code_);
+    }
+    /**
+     * Get the supplement message.
+     * @return the supplement message.
+     */
+    const char* message() const {
+      return message_;
+    }
+    /**
+     * Get the readable string of an error code.
+     * @param code the error code.
+     * @return the readable string of the error code.
+     */
+    static const char* codename(Code code) {
+      switch (code) {
+        case SUCCESS: return "success";
+        case NOIMPL: return "not implemented";
+        case INVALID: return "invalid operation";
+        case NOFILE: return "file not found";
+        case NOPERM: return "no permission";
+        case BROKEN: return "broken file";
+        case DUPREC: return "record duplication";
+        case NOREC: return "no record";
+        case LOGIC: return "logical inconsistency";
+        case SYSTEM: return "system error";
         default: break;
       }
-      return std::string("miscellaneous error: ").append(message_);
+      return "miscellaneous error";
+    }
+    /**
+     * Cast operator to integer.
+     * @return the error code.
+     */
+    operator int32_t() {
+      return code_;
     }
   private:
-    /** Error code. */
+    /** The error code. */
     Code code_;
-    /** Supplement message. */
+    /** The supplement message. */
     const char* message_;
   };
   /**
@@ -718,13 +861,17 @@ public:
     /**
      * Destructor.
      */
-    virtual ~FileProcessor() {}
+    virtual ~FileProcessor() {
+      _assert_(true);
+    }
     /**
      * Process the database file.
      * @param path the path of the database file.
+     * @param count the number of records.
+     * @param size the size of the available region.
      * @return true on success, or false on failure.
      */
-    virtual bool process(const std::string& path) = 0;
+    virtual bool process(const std::string& path, int64_t count, int64_t size) = 0;
   };
   /**
    * Open modes.
@@ -744,7 +891,9 @@ public:
    * Destructor.
    * @note If the database is not closed, it is closed implicitly.
    */
-  virtual ~FileDB() {}
+  virtual ~FileDB() {
+    _assert_(true);
+  }
   /**
    * Get the last happened error.
    * @return the last happened error.
@@ -770,8 +919,10 @@ public:
    * FileDB::OTRYLOCK, which means locking is performed without blocking, File::ONOREPAIR, which
    * means the database file is not repaired implicitly even if file destruction is detected.
    * @return true on success, or false on failure.
+   * @note Every opened database must be closed by the FileDB::close method when it is no longer
+   * in use.
    */
-  virtual bool open(const std::string& path, uint32_t mode) = 0;
+  virtual bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) = 0;
   /**
    * Close the database file.
    * @return true on success, or false on failure.
@@ -784,20 +935,72 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @return true on success, or false on failure.
    */
-  virtual bool synchronize(bool hard, FileProcessor* proc) = 0;
+  virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL) = 0;
+  /**
+   * Create a copy of the database file.
+   * @param dest the path of the destination file.
+   * @return true on success, or false on failure.
+   */
+  virtual bool copy(const std::string& dest) {
+    _assert_(true);
+    class FileProcessorImpl : public FileProcessor {
+    public:
+      FileProcessorImpl(const std::string& dest) : dest_(dest) {}
+    private:
+      bool process(const std::string& path, int64_t count, int64_t size) {
+        std::ofstream ofs;
+        ofs.open(dest_.c_str(),
+                 std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+        if (!ofs) return false;
+        bool err = false;
+        std::ifstream ifs;
+        ifs.open(path.c_str(), std::ios_base::in | std::ios_base::binary);
+        if (ifs) {
+          char buf[DBIOBUFSIZ];
+          while (!ifs.eof()) {
+            size_t n = ifs.read(buf, sizeof(buf)).gcount();
+            if (n > 0) {
+              ofs.write(buf, n);
+              if (!ofs) {
+                err = true;
+                break;
+              }
+            }
+          }
+          ifs.close();
+          if (ifs.bad()) err = true;
+        } else {
+          err = true;
+        }
+        ofs.close();
+        if (!ofs) err = true;
+        return !err;
+      }
+      const std::string& dest_;
+    };
+    FileProcessorImpl proc(dest);
+    return synchronize(false, &proc);
+  }
   /**
    * Begin transaction.
    * @param hard true for physical synchronization with the device, or false for logical
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction(bool hard) = 0;
+  virtual bool begin_transaction(bool hard = false) = 0;
   /**
-   * Commit transaction.
+   * Try to begin transaction.
+   * @param hard true for physical synchronization with the device, or false for logical
+   * synchronization with the file system.
+   * @return true on success, or false on failure.
+   */
+  virtual bool begin_transaction_try(bool hard = false) = 0;
+  /**
+   * End transaction.
    * @param commit true to commit the transaction, or false to abort the transaction.
    * @return true on success, or false on failure.
    */
-  virtual bool end_transaction(bool commit) = 0;
+  virtual bool end_transaction(bool commit = true) = 0;
   /**
    * Get the size of the database file.
    * @return the size of the database file in bytes, or -1 on failure.
@@ -805,7 +1008,7 @@ public:
   virtual int64_t size() = 0;
   /**
    * Get the path of the database file.
-   * @return the path of the database file in bytes, or an empty string on failure.
+   * @return the path of the database file, or an empty string on failure.
    */
   virtual std::string path() = 0;
   /**
@@ -825,6 +1028,7 @@ public:
    * record exists, the value is overwritten.
    */
   virtual bool set(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
     public:
       explicit VisitorImpl(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
@@ -850,6 +1054,7 @@ public:
    * @note Equal to the original DB::set method except that the parameters are std::string.
    */
   virtual bool set(const std::string& key, const std::string& value) {
+    _assert_(true);
     return set(key.c_str(), key.size(), value.c_str(), value.size());
   }
   /**
@@ -863,6 +1068,7 @@ public:
    * record exists, the record is not modified and false is returned.
    */
   virtual bool add(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
     public:
       explicit VisitorImpl(const char* vbuf, size_t vsiz) :
@@ -893,6 +1099,7 @@ public:
    * @note Equal to the original DB::add method except that the parameters are std::string.
    */
   virtual bool add(const std::string& key, const std::string& value) {
+    _assert_(true);
     return add(key.c_str(), key.size(), value.c_str(), value.size());
   }
   /**
@@ -906,6 +1113,7 @@ public:
    * record exists, the given value is appended at the end of the existing value.
    */
   virtual bool append(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
     public:
       explicit VisitorImpl(const char* vbuf, size_t vsiz) :
@@ -940,6 +1148,7 @@ public:
    * @note Equal to the original DB::append method except that the parameters are std::string.
    */
   virtual bool append(const std::string& key, const std::string& value) {
+    _assert_(true);
     return append(key.c_str(), key.size(), value.c_str(), value.size());
   }
   /**
@@ -950,6 +1159,7 @@ public:
    * @return the result value, or INT64_MIN on failure.
    */
   virtual int64_t increment(const char* kbuf, size_t ksiz, int64_t num) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
     public:
       explicit VisitorImpl(int64_t num) : num_(num), big_(0) {}
@@ -997,6 +1207,7 @@ public:
    * @note Equal to the original DB::increment method except that the parameter is std::string.
    */
   virtual int64_t increment(const std::string& key, int64_t num) {
+    _assert_(true);
     return increment(key.c_str(), key.size(), num);
   }
   /**
@@ -1005,6 +1216,7 @@ public:
    * value are double.
    */
   virtual double increment(const char* kbuf, size_t ksiz, double num) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
     public:
       explicit VisitorImpl(double num) : DECUNIT(1000000000000000LL), num_(num), buf_() {}
@@ -1015,7 +1227,7 @@ public:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         if (vsiz != sizeof(buf_)) {
-          num_ = std::nan("");
+          num_ = nan();
           return NOP;
         }
         int64_t linteg, lfract;
@@ -1024,7 +1236,7 @@ public:
         std::memcpy(&lfract, vbuf + sizeof(linteg), sizeof(lfract));
         lfract = ntoh64(lfract);
         if (lfract == INT64_MIN && linteg == INT64_MIN) {
-          num_ = std::nan("");
+          num_ = nan();
           return NOP;
         } else if (linteg == INT64_MAX) {
           num_ = HUGE_VAL;
@@ -1039,22 +1251,22 @@ public:
         }
         long double dinteg;
         long double dfract = std::modfl(num_, &dinteg);
-        if (std::isnormal(dinteg) || dinteg == 0) {
-          linteg += dinteg;
-          lfract += dfract * DECUNIT;
+        if (chknan(dinteg)) {
+          linteg = INT64_MIN;
+          lfract = INT64_MIN;
+          num_ = nan();
+        } else if (chkinf(dinteg)) {
+          linteg = dinteg > 0 ? INT64_MAX : INT64_MIN;
+          lfract = 0;
+          num_ = dinteg;
+        } else {
+          linteg += (int64_t)dinteg;
+          lfract += (int64_t)(dfract * DECUNIT);
           if (lfract >= DECUNIT) {
             linteg += 1;
             lfract -= DECUNIT;
           }
           num_ = linteg + (double)lfract / DECUNIT;
-        } else if (std::isinf(dinteg)) {
-          linteg = dinteg > 0 ? INT64_MAX : INT64_MIN;
-          lfract = 0;
-          num_ = dinteg;
-        } else {
-          linteg = INT64_MIN;
-          lfract = INT64_MIN;
-          num_ = std::nan("");
         }
         linteg = hton64(linteg);
         std::memcpy(buf_, &linteg, sizeof(linteg));
@@ -1067,15 +1279,15 @@ public:
         long double dinteg;
         long double dfract = std::modfl(num_, &dinteg);
         int64_t linteg, lfract;
-        if (std::isnormal(dinteg) || dinteg == 0) {
-          linteg = dinteg;
-          lfract = dfract * DECUNIT;
-        } else if (std::isinf(dinteg)) {
+        if (chknan(dinteg)) {
+          linteg = INT64_MIN;
+          lfract = INT64_MIN;
+        } else if (chkinf(dinteg)) {
           linteg = dinteg > 0 ? INT64_MAX : INT64_MIN;
           lfract = 0;
         } else {
-          linteg = INT64_MIN;
-          lfract = INT64_MIN;
+          linteg = (int64_t)dinteg;
+          lfract = (int64_t)(dfract * DECUNIT);
         }
         linteg = hton64(linteg);
         std::memcpy(buf_, &linteg, sizeof(linteg));
@@ -1089,11 +1301,11 @@ public:
       char buf_[sizeof(int64_t)*2];
     };
     VisitorImpl visitor(num);
-    if (!accept(kbuf, ksiz, &visitor, true)) return std::nan("");
+    if (!accept(kbuf, ksiz, &visitor, true)) return nan();
     num = visitor.num();
-    if (std::isnan(num)) {
+    if (chknan(num)) {
       set_error(Error::LOGIC, "logical inconsistency");
-      return std::nan("");
+      return nan();
     }
     return num;
   }
@@ -1103,6 +1315,7 @@ public:
    * and the return value is double.
    */
   virtual double increment(const std::string& key, double num) {
+    _assert_(true);
     return increment(key.c_str(), key.size(), num);
   }
   /**
@@ -1117,6 +1330,7 @@ public:
    */
   virtual bool cas(const char* kbuf, size_t ksiz,
                    const char* ovbuf, size_t ovsiz, const char* nvbuf, size_t nvsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
     public:
       explicit VisitorImpl(const char* ovbuf, size_t ovsiz, const char* nvbuf, size_t nvsiz) :
@@ -1160,6 +1374,7 @@ public:
    */
   virtual bool cas(const std::string& key,
                    const std::string& ovalue, const std::string& nvalue) {
+    _assert_(true);
     return cas(key.c_str(), key.size(),
                ovalue.c_str(), ovalue.size(), nvalue.c_str(), nvalue.size());
   }
@@ -1171,6 +1386,7 @@ public:
    * @note If no record corresponds to the key, false is returned.
    */
   virtual bool remove(const char* kbuf, size_t ksiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
     public:
       explicit VisitorImpl() : ok_(false) {}
@@ -1198,6 +1414,7 @@ public:
    * @note Equal to the original DB::remove method except that the parameter is std::string.
    */
   virtual bool remove(const std::string& key) {
+    _assert_(true);
     return remove(key.c_str(), key.size());
   }
   /**
@@ -1214,6 +1431,7 @@ public:
    * in use.
    */
   virtual char* get(const char* kbuf, size_t ksiz, size_t* sp) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && sp);
     class VisitorImpl : public Visitor {
     public:
       explicit VisitorImpl() : vbuf_(NULL), vsiz_(0) {}
@@ -1254,6 +1472,7 @@ public:
    * are std::string.  The return value should be deleted explicitly by the caller.
    */
   virtual std::string* get(const std::string& key) {
+    _assert_(true);
     size_t vsiz;
     char* vbuf = get(key.c_str(), key.size(), &vsiz);
     if (!vbuf) return NULL;
@@ -1271,6 +1490,7 @@ public:
    * @return the size of the value, or -1 on failure.
    */
   virtual int32_t get(const char* kbuf, size_t ksiz, char* vbuf, size_t max) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf);
     class VisitorImpl : public Visitor {
     public:
       explicit VisitorImpl(char* vbuf, size_t max) : vbuf_(vbuf), max_(max), vsiz_(-1) {}
@@ -1298,6 +1518,165 @@ public:
     }
     return vsiz;
   }
+  /**
+   * Dump records into a data stream.
+   * @param dest the destination stream.
+   * @return true on success, or false on failure.
+   */
+  virtual bool dump_snapshot(std::ostream* dest) {
+    _assert_(dest);
+    if (dest->fail()) {
+      set_error(Error::MISC, "invalid stream");
+      return false;
+    }
+    class VisitorImpl : public Visitor {
+    public:
+      explicit VisitorImpl(std::ostream* dest) : dest_(dest), stack_() {}
+    private:
+      const char* visit_full(const char* kbuf, size_t ksiz,
+                             const char* vbuf, size_t vsiz, size_t* sp) {
+        char* wp = stack_;
+        *(wp++) = 0x00;
+        wp += writevarnum(wp, ksiz);
+        wp += writevarnum(wp, vsiz);
+        dest_->write(stack_, wp - stack_);
+        dest_->write(kbuf, ksiz);
+        dest_->write(vbuf, vsiz);
+        return NOP;
+      }
+      std::ostream* dest_;
+      char stack_[NUMBUFSIZ*2];
+    };
+    VisitorImpl visitor(dest);
+    bool err = false;
+    dest->write(DBSSMAGICDATA, sizeof(DBSSMAGICDATA));
+    if (iterate(&visitor, false)) {
+      unsigned char c = 0xff;
+      dest->write((char*)&c, 1);
+      if (dest->fail()) {
+        set_error(Error::MISC, "stream output error");
+        err = true;
+      }
+    } else {
+      err = true;
+    }
+    return !err;
+  }
+  /**
+   * Dump records into a file.
+   * @param dest the path of the destination file.
+   * @return true on success, or false on failure.
+   */
+  virtual bool dump_snapshot(const std::string& dest) {
+    _assert_(true);
+    std::ofstream ofs;
+    ofs.open(dest.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+    if (!ofs) {
+      set_error(Error::MISC, "open failed");
+      return false;
+    }
+    bool err = false;
+    if (!dump_snapshot(&ofs)) err = true;
+    ofs.close();
+    if (!ofs) {
+      set_error(Error::MISC, "close failed");
+      err = true;
+    }
+    return !err;
+  }
+  /**
+   * Load records from a data stream.
+   * @param src the source stream.
+   * @return true on success, or false on failure.
+   */
+  virtual bool load_snapshot(std::istream* src) {
+    _assert_(src);
+    if (src->fail()) {
+      set_error(Error::MISC, "invalid stream");
+      return false;
+    }
+    char buf[DBIOBUFSIZ];
+    src->read(buf, sizeof(DBSSMAGICDATA));
+    if (src->fail()) {
+      set_error(Error::MISC, "stream input error");
+      return false;
+    }
+    if (std::memcmp(buf, DBSSMAGICDATA, sizeof(DBSSMAGICDATA))) {
+      set_error(Error::MISC, "invalid magic data of input stream");
+      return false;
+    }
+    bool err = false;
+    while (true) {
+      int32_t c = src->get();
+      if (src->fail()) {
+        set_error(Error::MISC, "stream input error");
+        err = true;
+        break;
+      }
+      if (c == 0xff) break;
+      if (c == 0x00) {
+        size_t ksiz = 0;
+        do {
+          c = src->get();
+          ksiz = (ksiz << 7) + (c & 0x7f);
+        } while (c >= 0x80);
+        size_t vsiz = 0;
+        do {
+          c = src->get();
+          vsiz = (vsiz << 7) + (c & 0x7f);
+        } while (c >= 0x80);
+        size_t rsiz = ksiz + vsiz;
+        char* rbuf = rsiz > sizeof(buf) ? new char[rsiz] : buf;
+        src->read(rbuf, ksiz + vsiz);
+        if (src->fail()) {
+          set_error(Error::MISC, "stream input error");
+          err = true;
+          if (rbuf != buf) delete[] rbuf;
+          break;
+        }
+        if (!set(rbuf, ksiz, rbuf + ksiz, vsiz)) {
+          err = true;
+          if (rbuf != buf) delete[] rbuf;
+          break;
+        }
+        if (rbuf != buf) delete[] rbuf;
+      } else {
+        set_error(Error::MISC, "invalid magic data of input stream");
+        err = true;
+        break;
+      }
+    }
+    return !err;
+  }
+  /**
+   * Load records from a file.
+   * @param src the path of the source file.
+   * @return true on success, or false on failure.
+   */
+  virtual bool load_snapshot(const std::string& src) {
+    _assert_(true);
+    std::ifstream ifs;
+    ifs.open(src.c_str(), std::ios_base::in | std::ios_base::binary);
+    if (!ifs) {
+      set_error(Error::MISC, "open failed");
+      return false;
+    }
+    bool err = false;
+    if (!load_snapshot(&ifs)) err = true;
+    ifs.close();
+    if (ifs.bad()) {
+      set_error(Error::MISC, "close failed");
+      return false;
+    }
+    return !err;
+  }
+  /**
+   * Create a cursor object.
+   * @return the return value is the created cursor object.
+   * @note Because the object of the return value is allocated by the constructor, it should be
+   * released with the delete operator when it is no longer in use.
+   */
+  virtual Cursor* cursor() = 0;
 };
 
 

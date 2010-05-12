@@ -85,7 +85,7 @@ public:
    * @param msiz the size of the internal memory-mapped region.
    * @return true on success, or false on failure.
    */
-  bool open(const std::string& path, uint32_t mode, int64_t msiz);
+  bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE, int64_t msiz = 0);
   /**
    * Close the file.
    * @return true on success, or false on failure.
@@ -104,6 +104,7 @@ public:
    * @note Equal to the original File::write method except that the sigunature is different.
    */
   bool write(int64_t off, const std::string& str) {
+    _assert_(off >= 0);
     return write(off, str.c_str(), str.size());
   }
   /**
@@ -119,6 +120,7 @@ public:
    * @note Equal to the original File::write_fast method except that the sigunature is different.
    */
   bool write_fast(int64_t off, const std::string& str) {
+    _assert_(off >= 0);
     return write_fast(off, str.c_str(), str.size());
   }
   /**
@@ -133,6 +135,7 @@ public:
    * @note Equal to the original File::append method except that the sigunature is different.
    */
   bool append(const std::string& str) {
+    _assert_(true);
     return append(str.c_str(), str.size());
   }
   /**
@@ -148,6 +151,7 @@ public:
    * @note Equal to the original File::read method except that the sigunature is different.
    */
   bool read(int64_t off, std::string* buf, size_t size) {
+    _assert_(off >= 0 && buf);
     char* tbuf = new char[size];
     if (!read(off, tbuf, size)) {
       delete tbuf;
@@ -170,6 +174,7 @@ public:
    * @note Equal to the original File::read method except that the sigunature is different.
    */
   bool read_fast(int64_t off, std::string* buf, size_t size) {
+    _assert_(off >= 0 && buf);
     char* tbuf = new char[size];
     if (!read_fast(off, tbuf, size)) {
       delete tbuf;
@@ -206,7 +211,7 @@ public:
    */
   bool begin_transaction(bool hard, int64_t off);
   /**
-   * Commit transaction.
+   * End transaction.
    * @param commit true to commit the transaction, or false to abort the transaction.
    * @return true on success, or false on failure.
    */
@@ -229,6 +234,11 @@ public:
    */
   std::string path() const;
   /**
+   * Check whether the file was recovered or not.
+   * @return true if recovered, or false if not.
+   */
+  bool recovered() const;
+  /**
    * Get the status information of a file.
    * @param path the path of a file.
    * @param buf a structure of status information.
@@ -236,11 +246,54 @@ public:
    */
   static bool status(const std::string& path, Status* buf);
   /**
+   * Get the absolute path of a file.
+   * @param path the path of a file.
+   * @return the absolute path of the file, or an empty string on failure.
+   */
+  static std::string absolute_path(const std::string& path);
+  /**
    * Remove a file.
    * @param path the path of a file.
    * @return true on success, or false on failure.
    */
   static bool remove(const std::string& path);
+  /**
+   * Change the name or location of a file.
+   * @param opath the old path of a file.
+   * @param npath the new path of a file.
+   * @return true on success, or false on failure.
+   */
+  static bool rename(const std::string& opath, const std::string& npath);
+  /**
+   * Read a directory.
+   * @param path the path of a directory.
+   * @param strvec a string list to contain the result.
+   * @return true on success, or false on failure.
+   */
+  static bool read_directory(const std::string& path, std::vector<std::string>* strvec);
+  /**
+   * Make a directory.
+   * @param path the path of a directory.
+   * @return true on success, or false on failure.
+   */
+  static bool make_directory(const std::string& path);
+  /**
+   * Remove a directory.
+   * @param path the path of a directory.
+   * @return true on success, or false on failure.
+   */
+  static bool remove_directory(const std::string& path);
+  /**
+   * Get the path of the current working directory.
+   * @return the path of the current working directory, or an empty string on failure.
+   */
+  static std::string get_current_directory();
+  /**
+   * Set the current working directory.
+   * @param path the path of a directory.
+   * @return true on success, or false on failure.
+   */
+  static bool set_current_directory(const std::string& path);
 private:
   /** Dummy constructor to forbid the use. */
   File(const File&);

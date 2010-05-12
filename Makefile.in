@@ -42,11 +42,13 @@ PCDIR = @libdir@/pkgconfig
 DESTDIR =
 
 # Building configuration
+CC = @CC@
 CXX = @CXX@
 CPPFLAGS = @MYCPPFLAGS@ \
   -D_KC_PREFIX="\"$(prefix)\"" -D_KC_INCLUDEDIR="\"$(INCLUDEDIR)\"" \
   -D_KC_LIBDIR="\"$(LIBDIR)\"" -D_KC_BINDIR="\"$(BINDIR)\"" -D_KC_LIBEXECDIR="\"$(LIBEXECDIR)\"" \
   -D_KC_APPINC="\"-I$(INCLUDEDIR)\"" -D_KC_APPLIBS="\"-L$(LIBDIR) -lkyotocabinet @LIBS@\""
+CFLAGS = @MYCFLAGS@
 CXXFLAGS = @MYCXXFLAGS@
 LDFLAGS = @MYLDFLAGS@
 CMDLDFLAGS = @MYCMDLDFLAGS@
@@ -63,7 +65,10 @@ POSTCMD = @MYPOSTCMD@
 
 
 .SUFFIXES :
-.SUFFIXES : .cc .o
+.SUFFIXES : .c .cc .o
+
+.c.o :
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $<
 
 .cc.o :
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $<
@@ -86,7 +91,7 @@ all : $(LIBRARYFILES) $(COMMANDFILES)
 clean :
 	rm -rf $(LIBRARYFILES) $(LIBOBJFILES) $(COMMANDFILES) $(CGIFILES) \
 	  *.o a.out check.in check.out gmon.out *.vlog words.tsv \
-	  casket* *.kch *.wal *.tmp *~ hoge moge tako ika
+	  casket* *.kch *.wal *.tmpkc* *.kcss *~ hoge moge tako ika
 
 
 version :
@@ -118,7 +123,7 @@ install :
 	cd man && cp -Rf $(MAN1FILES) $(DESTDIR)$(MAN1DIR)
 	mkdir -p $(DESTDIR)$(PCDIR)
 	cp -Rf $(PCFILES) $(DESTDIR)$(PCDIR)
-	[ "$$UID" == 0 ] && ldconfig || true
+	[ "$$UID" = 0 ] && ldconfig || true
 	@printf '\n'
 	@printf '#================================================================\n'
 	@printf '# Thanks for using Kyoto Cabinet.\n'
@@ -126,7 +131,7 @@ install :
 
 
 install-strip :
-	make DESTDIR=$(DESTDIR) install
+	$(MAKE) DESTDIR=$(DESTDIR) install
 	cd $(DESTDIR)$(BINDIR) && strip $(COMMANDFILES)
 
 
@@ -137,28 +142,30 @@ uninstall :
 	cd $(DESTDIR)$(MAN1DIR) && rm -f $(MAN1FILES)
 	rm -rf $(DESTDIR)$(DATADIR)
 	cd $(DESTDIR)$(PCDIR) && rm -f $(PCFILES)
-	[ "$$UID" == 0 ] && ldconfig || true
+	[ "$$UID" = 0 ] && ldconfig || true
 
 
 dist :
-	make version
-	make untabify
-	make distclean
+	$(MAKE) version
+	$(MAKE) untabify
+	$(MAKE) distclean
 	cd .. && tar cvf - $(PACKAGEDIR) | gzip -c > $(PACKAGETGZ)
 	sync ; sync
 
 
 distclean : clean
-	cd example && make clean
+	cd example && $(MAKE) clean
 	rm -rf Makefile kyotocabinet.pc config.cache config.log config.status autom4te.cache
 
 
 check :
-	make check-util
-	make check-proto
-	make check-cache
-	make check-hash
-	make check-tree
+	$(MAKE) check-util
+	$(MAKE) check-proto
+	$(MAKE) check-cache
+	$(MAKE) check-hash
+	$(MAKE) check-tree
+	$(MAKE) check-poly
+	$(MAKE) check-langc
 	rm -rf casket*
 	@printf '\n'
 	@printf '#================================================================\n'
@@ -240,7 +247,10 @@ check-hash :
 	$(RUNENV) $(RUNCMD) ./kchashmgr get casket ryu
 	$(RUNENV) $(RUNCMD) ./kchashmgr import casket lab/numbers.tsv
 	$(RUNENV) $(RUNCMD) ./kchashmgr list -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kchashmgr dump casket check.out
+	$(RUNENV) $(RUNCMD) ./kchashmgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kchashmgr defrag -onl casket
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashmgr inform -st casket
 	$(RUNENV) $(RUNCMD) ./kchashmgr create -otr -otl -onr -apow 1 -fpow 3 \
 	  -ts -tl -tc -bnum 1 casket
@@ -251,6 +261,7 @@ check-hash :
 	$(RUNENV) $(RUNCMD) ./kchashmgr set -app casket mikio kyotodystopia
 	$(RUNENV) $(RUNCMD) ./kchashmgr get -px casket mikio > check.out
 	$(RUNENV) $(RUNCMD) ./kchashmgr list casket > check.out
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kchashtest order -set -bnum 5000 -msiz 50000 casket 10000
 	$(RUNENV) $(RUNCMD) ./kchashtest order -get -msiz 50000 casket 10000
@@ -263,19 +274,39 @@ check-hash :
 	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
 	$(RUNENV) $(RUNCMD) ./kchashtest order -th 4 -rnd -etc \
 	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashtest order -th 4 -rnd -etc -tran \
 	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashtest order -th 4 -rnd -etc -oat \
 	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashtest order -th 4 -rnd -etc \
 	  -apow 2 -fpow 3 -ts -tl -tc -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kchashtest queue \
+	  -bnum 5000 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kchashtest queue -rnd \
+	  -bnum 5000 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kchashtest queue -th 4 -it 4 \
+	  -bnum 5000 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kchashtest queue -th 4 -it 4 -rnd \
+	  -bnum 5000 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashtest wicked -bnum 5000 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashtest wicked -th 4 -it 4 \
 	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashtest wicked -th 4 -it 4 -oat \
 	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashtest wicked -th 4 -it 4 \
 	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashtest tran casket 10000
 	$(RUNENV) $(RUNCMD) ./kchashtest tran -th 2 -it 4 casket 10000
 	$(RUNENV) $(RUNCMD) ./kchashtest tran -th 2 -it 4 \
@@ -308,7 +339,10 @@ check-tree :
 	$(RUNENV) $(RUNCMD) ./kctreemgr get casket ryu
 	$(RUNENV) $(RUNCMD) ./kctreemgr import casket lab/numbers.tsv
 	$(RUNENV) $(RUNCMD) ./kctreemgr list -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kctreemgr dump casket check.out
+	$(RUNENV) $(RUNCMD) ./kctreemgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr defrag -onl casket
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreemgr inform -st casket
 	$(RUNENV) $(RUNCMD) ./kctreemgr create -otr -otl -onr -apow 1 -fpow 3 \
 	  -ts -tl -tc -bnum 1 casket
@@ -319,117 +353,297 @@ check-tree :
 	$(RUNENV) $(RUNCMD) ./kctreemgr set -app casket mikio kyotodystopia
 	$(RUNENV) $(RUNCMD) ./kctreemgr get -px casket mikio > check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr list casket > check.out
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kctreetest order -set \
-	  -psiz 100 -bnum 5000 -msiz 50000 -ccap 100k casket 10000
+	  -psiz 100 -bnum 5000 -msiz 50000 -pccap 100k casket 10000
 	$(RUNENV) $(RUNCMD) ./kctreetest order -get \
-	  -msiz 50000 -ccap 100k casket 10000
+	  -msiz 50000 -pccap 100k casket 10000
 	$(RUNENV) $(RUNCMD) ./kctreetest order -getw \
-	  -msiz 5000 -ccap 100k casket 10000
+	  -msiz 5000 -pccap 100k casket 10000
 	$(RUNENV) $(RUNCMD) ./kctreetest order -rem \
-	  -msiz 50000 -ccap 100k casket 10000
+	  -msiz 50000 -pccap 100k casket 10000
 	$(RUNENV) $(RUNCMD) ./kctreetest order \
-	  -bnum 5000 -psiz 100 -msiz 50000 -ccap 100k casket 10000
+	  -bnum 5000 -psiz 100 -msiz 50000 -pccap 100k casket 10000
 	$(RUNENV) $(RUNCMD) ./kctreetest order -etc \
-	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k casket 10000
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k casket 10000
 	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 \
-	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k casket 10000
-	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 -ccap 100k -rnd -etc \
-	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k -rcd casket 10000
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 -pccap 100k -rnd -etc \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k -rcd casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 -rnd -etc -tran \
-	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k casket 1000
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k casket 1000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 -rnd -etc -oat \
-	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -ccap 100k casket 5000
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k casket 1000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreetest order -th 4 -rnd -etc \
 	  -apow 2 -fpow 3 -ts -tl -tc -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kctreetest queue \
+	  -bnum 5000 -psiz 500 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kctreetest queue -rnd \
+	  -bnum 5000 -psiz 500 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kctreetest queue -th 4 -it 4 \
+	  -bnum 5000 -psiz 500 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kctreetest queue -th 4 -it 4 -rnd \
+	  -bnum 5000 -psiz 500 -msiz 50000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreetest wicked \
-	  -bnum 5000 -psiz 1000 -msiz 50000 -ccap 100k casket 10000
+	  -bnum 5000 -psiz 1000 -msiz 50000 -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreetest wicked -th 4 -it 4 \
-	  -bnum 5000 -msiz 50000 -dfunit 4 -ccap 100k -rcd casket 10000
+	  -bnum 5000 -msiz 50000 -dfunit 4 -pccap 100k -rcd casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreetest wicked -th 4 -it 4 -oat \
-	  -bnum 5000 -msiz 50000 -dfunit 4 -ccap 100k casket 5000
+	  -bnum 5000 -msiz 50000 -dfunit 4 -pccap 100k casket 1000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreetest wicked -th 4 -it 4 \
 	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 casket 1000
+	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreetest tran casket 10000
-	$(RUNENV) $(RUNCMD) ./kctreetest tran -th 2 -it 4 -ccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kctreetest tran -th 2 -it 4 -pccap 100k casket 10000
 	$(RUNENV) $(RUNCMD) ./kctreetest tran -th 2 -it 4 \
 	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 -rcd casket 10000
 
 
+check-poly :
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcpolymgr create -otr "casket.kch#apow=1#fpow=2#bnum=3"
+	$(RUNENV) $(RUNCMD) ./kcpolymgr inform -st casket.kch
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -add casket.kch duffy 1231
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -add casket.kch micky 0101
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kch fal 1007
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kch mikio 0211
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kch natsuki 0810
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kch micky ""
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -app casket.kch duffy kukuku
+	$(RUNENV) $(RUNCMD) ./kcpolymgr remove casket.kch micky
+	$(RUNENV) $(RUNCMD) ./kcpolymgr list -pv casket.kch > check.out
+	$(RUNENV) $(RUNCMD) ./kcpolymgr dump casket.kch check.out
+	$(RUNENV) $(RUNCMD) ./kcpolymgr load -otr casket.kch check.out
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kch ryu 1
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kch ken 2
+	$(RUNENV) $(RUNCMD) ./kcpolymgr remove casket.kch duffy
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kch ryu syo-ryu-ken
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kch ken tatsumaki-senpu-kyaku
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -inci casket.kch int 1234
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -inci casket.kch int 5678
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -incd casket.kch double 1234.5678
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -incd casket.kch double 8765.4321
+	$(RUNENV) $(RUNCMD) ./kcpolymgr get "casket.kch" mikio
+	$(RUNENV) $(RUNCMD) ./kcpolymgr get "casket.kch" ryu
+	$(RUNENV) $(RUNCMD) ./kcpolymgr import casket.kch lab/numbers.tsv
+	$(RUNENV) $(RUNCMD) ./kcpolymgr list -pv -px "casket.kch#mode=r" > check.out
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kch
+	$(RUNENV) $(RUNCMD) ./kcpolymgr inform -st casket.kch
+	$(RUNENV) $(RUNCMD) ./kcpolymgr create -otr -otl -onr \
+	  "casket.kct#apow=1#fpow=3#opts=slc#bnum=1"
+	$(RUNENV) $(RUNCMD) ./kcpolymgr import casket.kct < lab/numbers.tsv
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kct mikio kyotocabinet
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -app casket.kct tako ikaunini
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -app casket.kct mikio kyototyrant
+	$(RUNENV) $(RUNCMD) ./kcpolymgr set -app casket.kct mikio kyotodystopia
+	$(RUNENV) $(RUNCMD) ./kcpolymgr get -px casket.kct mikio > check.out
+	$(RUNENV) $(RUNCMD) ./kcpolymgr list casket.kct > check.out
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -set "casket.kct#bnum=5000#msiz=50000" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -get "casket.kct#msiz=50000" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -getw "casket.kct#msiz=5000" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -rem "casket.kct#msiz=50000" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order "casket.kct#bnum=5000#msiz=50000" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -etc \
+	  "casket.kct#bnum=5000#msiz=50000#dfunit=4" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -th 4 \
+	  "casket.kct#bnum=5000#msiz=50000#dfunit=4" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -th 4 -rnd -etc \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=1" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -th 4 -rnd -etc -tran \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=2" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -th 4 -rnd -etc -oat \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=3" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -th 4 -rnd -etc \
+	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=5000#msiz=0#dfunit=4" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest queue \
+	  "casket.kct#bnum=5000#msiz=0" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest queue -rnd \
+	  "casket.kct#bnum=5000#msiz=0" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest queue -th 4 -it 4 \
+	  "casket.kct#bnum=5000#msiz=0" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest queue -th 4 -it 4 -rnd \
+	  "casket.kct#bnum=5000#msiz=0" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest wicked "casket.kct#bnum=5000#msiz=0" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest wicked -th 4 -it 4 \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=1" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest wicked -th 4 -it 4 -oat \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=1" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest wicked -th 4 -it 4 \
+	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=10000#msiz=0#dfunit=1" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolytest tran casket.kct 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest tran -th 2 -it 4 casket.kct 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest tran -th 2 -it 4 \
+	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=10000#msiz=0#dfunit=1" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=-"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=+"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=*"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kch"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kct"
+
+
+check-langc :
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcpolytest order "casket.kch#bnum=5000#msiz=50000" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -etc \
+	  "casket.kch#bnum=5000#msiz=50000#dfunit=2" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd -etc \
+	  "casket.kch#bnum=5000#msiz=50000#dfunit=2" 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd -etc -oat -tran \
+	  "casket.kch#bnum=5000#msiz=50000#dfunit=2" 10000
+
+
 check-valgrind :
-	make RUNCMD="valgrind --tool=memcheck --log-file=%p.vlog" check
+	$(MAKE) RUNCMD="valgrind --tool=memcheck --log-file=%p.vlog" check
 	grep ERROR *.vlog | grep -v ' 0 errors' ; true
 	grep 'at exit' *.vlog | grep -v ' 0 bytes' ; true
 
 
 check-heavy :
-	make check-hash-heavy
-	make check-tree-heavy
+	$(MAKE) check-hash-heavy
+	$(MAKE) check-tree-heavy
 
 
 check-hash-heavy :
 	./kchashtest order -th 4 \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashmgr check -onr casket
 	./kchashtest order -th 4 -rnd \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashmgr check -onr casket
 	./kchashtest order -th 4 -etc \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashmgr check -onr casket
 	./kchashtest order -th 4 -etc -rnd \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashmgr check -onr casket
 	./kchashtest order -th 4 -etc -rnd \
 	  -ts -tl -tc -dfunit 2 casket 25000
+	./kchashmgr check -onr casket
+	./kchashtest queue -th 4 -it 10 \
+	  -bnum 1000000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 casket 250000
+	./kchashmgr check -onr casket
+	./kchashtest queue -th 4 -it 5 -rnd \
+	  -ts -tl -tc -dfunit 2 casket 25000
+	./kchashmgr check -onr casket
+	./kchashtest queue -th 4 -it 2 -oat -rnd \
+	  -bnum 1000 -dfunit 8 casket 25000
+	./kchashmgr check -onr casket
+	./kchashtest queue -th 4 -it 2 -oas -rnd \
+	  -bnum 1000 -dfunit 8 casket 2500
+	./kchashmgr check -onr casket
 	./kchashtest wicked -th 4 -it 10 \
 	  -bnum 1000000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 casket 250000
+	./kchashmgr check -onr casket
 	./kchashtest wicked -th 4 -it 5 \
 	  -ts -tl -tc -dfunit 2 casket 25000
+	./kchashmgr check -onr casket
 	./kchashtest wicked -th 4 -it 2 -oat \
 	  -bnum 1000 -dfunit 8 casket 25000
+	./kchashmgr check -onr casket
 	./kchashtest wicked -th 4 -it 2 -oas \
 	  -bnum 1000 -dfunit 8 casket 2500
+	./kchashmgr check -onr casket
 	./kchashtest tran -th 4 -it 10 \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
+	./kchashmgr check -onr casket
 	./kchashtest tran -th 4 -it 5 \
 	  -ts -tl -tc -dfunit 2 casket 250000
+	./kchashmgr check -onr casket
 
 
 check-tree-heavy :
 	./kctreetest order -th 4 \
-	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
+	./kctreemgr check -onr casket
 	./kctreetest order -th 4 -rnd \
-	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
+	./kctreemgr check -onr casket
 	./kctreetest order -th 4 -etc \
-	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
+	./kctreemgr check -onr casket
 	./kctreetest order -th 4 -etc -rnd \
-	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
+	./kctreemgr check -onr casket
 	./kctreetest order -th 4 -etc -rnd \
 	  -ts -tl -tc -dfunit 2 casket 25000
+	./kctreemgr check -onr casket
+	./kctreetest queue -th 4 -it 10 \
+	  -bnum 1000000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 -pccap 10m casket 250000
+	./kctreemgr check -onr casket
+	./kctreetest queue -th 4 -it 5 -rnd \
+	  -ts -tl -tc -dfunit 2 -pccap 10m casket 25000
+	./kctreemgr check -onr casket
+	./kctreetest queue -th 4 -it 2 -oat -rnd \
+	  -bnum 1000 -dfunit 8 -pccap 10m casket 25000
+	./kctreemgr check -onr casket
+	./kctreetest queue -th 4 -it 2 -oas -rnd \
+	  -bnum 1000 -dfunit 8 -pccap 10m casket 2500
+	./kctreemgr check -onr casket
 	./kctreetest wicked -th 4 -it 5 \
-	  -bnum 100000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 -ccap 10m casket 250000
+	  -bnum 100000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 -pccap 10m casket 250000
+	./kctreemgr check -onr casket
 	./kctreetest wicked -th 4 -it 2 \
-	  -ts -tl -tc -dfunit 2 -ccap 10m casket 25000
+	  -ts -tl -tc -dfunit 2 -pccap 10m casket 25000
+	./kctreemgr check -onr casket
 	./kctreetest wicked -th 4 -it 2 -oat \
-	  -bnum 1000 -dfunit 8 -ccap 10m casket 25000
+	  -bnum 1000 -dfunit 8 -pccap 10m casket 25000
+	./kctreemgr check -onr casket
 	./kctreetest wicked -th 4 -it 2 -oas \
-	  -bnum 1000 -dfunit 8 -ccap 10m casket 2500
+	  -bnum 1000 -dfunit 8 -pccap 10m casket 2500
+	./kctreemgr check -onr casket
 	./kctreetest tran -th 4 -it 5 \
-	  -apow 2 -fpow 2 -bnum 50000 -msiz 50m -dfunit 2 -ccap 10m casket 250000
+	  -apow 2 -fpow 2 -bnum 50000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
+	./kctreemgr check -onr casket
 	./kctreetest tran -th 4 -it 2 \
-	  -ts -tl -tc -dfunit 2 -ccap 10m casket 250000
+	  -ts -tl -tc -dfunit 2 -pccap 10m casket 250000
+	./kctreemgr check -onr casket
 
 
 check-forever :
 	while true ; \
 	  do \
-	    make check || break ; \
-	    make check || break ; \
-	    make check || break ; \
-	    make check || break ; \
-	    make check-heavy || break ; \
+	    $(MAKE) check || break ; \
+	    $(MAKE) check || break ; \
+	    $(MAKE) check || break ; \
+	    $(MAKE) check || break ; \
+	    $(MAKE) check-heavy || break ; \
 	  done
 
 
+check-sussy :
+	while ./kctreetest order -th 4 -etc -apow 2 -fpow 2 -bnum 50000 \
+	  -psiz 1000 -msiz 50m -dfunit 2 -pccap 10m casket 250000 ; \
+	  do true ; done
+
+
 doc :
-	make docclean
+	$(MAKE) docclean
 	mkdir -p doc/api
 	doxygen
 
@@ -442,6 +656,10 @@ words.tsv :
 	cat /usr/share/dict/words | \
 	  tr '\t\r' '  ' | grep -v '^ *$$' | cat -n | sort | \
 	  LC_ALL=C sed -e 's/^ *//' -e 's/\(^[0-9]*\)\t\(.*\)/\2\t\1/' > words.tsv
+
+
+def : libkyotocabinet.a
+	./lab/makevcdef libkyotocabinet.a > kyotocabinet.def
 
 
 .PHONY : all clean install check doc
@@ -523,6 +741,18 @@ kctreemgr : kctreemgr.o $(LIBRARYFILES)
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
 
 
+kcpolytest : kcpolytest.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kcpolymgr : kcpolymgr.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kclangctest : kclangctest.o $(LIBRARYFILES)
+	$(LDENV) $(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
 kcutil.o : kccommon.h kcutil.h myconf.h
 
 kcdb.o : kccommon.h kcutil.h kcdb.h myconf.h
@@ -549,6 +779,12 @@ kchashdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompa
 kctreedb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
   kchashdb.h kctreedb.h
 
+kcpolydb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h
+
+kclangc.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h kclangc.h
+
 kcutiltest.o kcutilcodec.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
   cmdcommon.h
@@ -568,6 +804,14 @@ kchashtest.o kchashmgr.o : \
 kctreetest.o kctreemgr.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
   kchashdb.h kctreedb.h cmdcommon.h
+
+kcpolytest.o kcpolymgr.o : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h cmdcommon.h
+
+kclangctest.o : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h kclangc.h
 
 
 

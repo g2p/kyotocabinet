@@ -30,7 +30,7 @@ typedef std::map<std::string, std::string> StringTreeMap;
 
 
 /** The package version. */
-extern const char* VERSION;
+extern const char* const VERSION;
 
 
 /** The library version. */
@@ -65,12 +65,16 @@ extern const int32_t PAGESIZE;
 const size_t NUMBUFSIZ = 32;
 
 
+/** The maximum memory size for debugging. */
+const size_t MEMMAXSIZ = INT32_MAX / 2;
+
+
 /**
  * Convert a string to an integer.
  * @param str specifies the string.
  * @return the integer.  If the string does not contain numeric expression, 0 is returned.
  */
-int64_t atoi(const std::string& str);
+int64_t atoi(const char* str);
 
 
 /**
@@ -81,7 +85,7 @@ int64_t atoi(const std::string& str);
  * the integer overflows the domain, INT64_MAX or INT64_MIN is returned according to the
  * sign.
  */
-int64_t atoix(const std::string& str);
+int64_t atoix(const char* str);
 
 
 /**
@@ -90,7 +94,7 @@ int64_t atoix(const std::string& str);
  * @return the real number.  If the string does not contain numeric expression, 0.0 is
  * returned.
  */
-double atof(const std::string& str);
+double atof(const char* str);
 
 
 /**
@@ -205,6 +209,34 @@ uint64_t nearbyprime(uint64_t num);
 
 
 /**
+ * Get the quiet Not-a-Number value.
+ * @return the quiet Not-a-Number value.
+ */
+double nan();
+
+
+/**
+ * Get the positive infinity value.
+ * @return the positive infinity value.
+ */
+double inf();
+
+
+/**
+ * Check a number is a Not-a-Number value.
+ * @return true for the number is a Not-a-Number value, or false if not.
+ */
+bool chknan(double num);
+
+
+/**
+ * Check a number is an infinity value.
+ * @return true for the number is an infinity value, or false if not.
+ */
+bool chkinf(double num);
+
+
+/**
  * Append a formatted string at the end of a string.
  * @param dest the destination string.
  * @param format the printf-like format string.  The conversion character `%' can be used with
@@ -223,7 +255,7 @@ void strprintf(std::string* dest, const char* format, va_list ap);
  * `S' treats the pointer to a std::string object.
  * @param ... used according to the format string.
  */
-void strprintf(std::string* dest, const std::string& format, ...);
+void strprintf(std::string* dest, const char* format, ...);
 
 
 /**
@@ -234,7 +266,17 @@ void strprintf(std::string* dest, const std::string& format, ...);
  * @param ... used according to the format string.
  * @return the result string.
  */
-std::string strprintf(const std::string& format, ...);
+std::string strprintf(const char* format, ...);
+
+
+/**
+ * Split a string with a delimiter
+ * @param str the string.
+ * @param delim the delimiter.
+ * @param elems a vector object into which the result elements are pushed.
+ * @return the number of result elements.
+ */
+size_t strsplit(const std::string& str, char delim, std::vector<std::string>* elems);
 
 
 /**
@@ -318,25 +360,39 @@ double time();
 
 
 /**
+ * Get the process ID.
+ * @return the process ID.
+ */
+int64_t getpid();
+
+
+/**
+ * Get the value of an environment variable.
+ * @return the value of the environment variable, or NULL on failure.
+ */
+const char* getenv(const char* name);
+
+
+/**
  * Convert a string to an integer.
  */
-inline int64_t atoi(const std::string& str) {
-  const char* rp = str.c_str();
-  while (*rp > '\0' && *rp <= ' ') {
-    rp++;
+inline int64_t atoi(const char* str) {
+  _assert_(str);
+  while (*str > '\0' && *str <= ' ') {
+    str++;
   }
   int32_t sign = 1;
   int64_t num = 0;
-  if (*rp == '-') {
-    rp++;
+  if (*str == '-') {
+    str++;
     sign = -1;
-  } else if (*rp == '+') {
-    rp++;
+  } else if (*str == '+') {
+    str++;
   }
-  while (*rp != '\0') {
-    if (*rp < '0' || *rp > '9') break;
-    num = num * 10 + *rp - '0';
-    rp++;
+  while (*str != '\0') {
+    if (*str < '0' || *str > '9') break;
+    num = num * 10 + *str - '0';
+    str++;
   }
   return num * sign;
 }
@@ -345,100 +401,100 @@ inline int64_t atoi(const std::string& str) {
 /**
  * Convert a string with a metric prefix to an integer.
  */
-inline int64_t atoix(const std::string& str) {
-  const char* rp = str.c_str();
-  while (*rp > '\0' && *rp <= ' ') {
-    rp++;
+inline int64_t atoix(const char* str) {
+  _assert_(str);
+  while (*str > '\0' && *str <= ' ') {
+    str++;
   }
   int32_t sign = 1;
-  if (*rp == '-') {
-    rp++;
+  if (*str == '-') {
+    str++;
     sign = -1;
-  } else if (*rp == '+') {
-    rp++;
+  } else if (*str == '+') {
+    str++;
   }
   long double num = 0;
-  while (*rp != '\0') {
-    if (*rp < '0' || *rp > '9') break;
-    num = num * 10 + *rp - '0';
-    rp++;
+  while (*str != '\0') {
+    if (*str < '0' || *str > '9') break;
+    num = num * 10 + *str - '0';
+    str++;
   }
-  if (*rp == '.') {
-    rp++;
+  if (*str == '.') {
+    str++;
     long double base = 10;
-    while (*rp != '\0') {
-      if (*rp < '0' || *rp > '9') break;
-      num += (*rp - '0') / base;
-      rp++;
+    while (*str != '\0') {
+      if (*str < '0' || *str > '9') break;
+      num += (*str - '0') / base;
+      str++;
       base *= 10;
     }
   }
   num *= sign;
-  while (*rp > '\0' && *rp <= ' ') {
-    rp++;
+  while (*str > '\0' && *str <= ' ') {
+    str++;
   }
-  if (*rp == 'k' || *rp == 'K') {
+  if (*str == 'k' || *str == 'K') {
     num *= 1LL << 10;
-  } else if (*rp == 'm' || *rp == 'M') {
+  } else if (*str == 'm' || *str == 'M') {
     num *= 1LL << 20;
-  } else if (*rp == 'g' || *rp == 'G') {
+  } else if (*str == 'g' || *str == 'G') {
     num *= 1LL << 30;
-  } else if (*rp == 't' || *rp == 'T') {
+  } else if (*str == 't' || *str == 'T') {
     num *= 1LL << 40;
-  } else if (*rp == 'p' || *rp == 'P') {
+  } else if (*str == 'p' || *str == 'P') {
     num *= 1LL << 50;
-  } else if (*rp == 'e' || *rp == 'E') {
+  } else if (*str == 'e' || *str == 'E') {
     num *= 1LL << 60;
   }
   if (num > INT64_MAX) return INT64_MAX;
   if (num < INT64_MIN) return INT64_MIN;
-  return num;
+  return (int64_t)num;
 }
 
 
 /**
  * Convert a string to a real number.
  */
-inline double atof(const std::string& str) {
-  const char* rp = str.c_str();
-  while (*rp > '\0' && *rp <= ' ') {
-    rp++;
+inline double atof(const char* str) {
+  _assert_(str);
+  while (*str > '\0' && *str <= ' ') {
+    str++;
   }
   int32_t sign = 1;
-  if (*rp == '-') {
-    rp++;
+  if (*str == '-') {
+    str++;
     sign = -1;
-  } else if (*rp == '+') {
-    rp++;
+  } else if (*str == '+') {
+    str++;
   }
-  if ((rp[0] == 'i' || rp[0] == 'I') && (rp[1] == 'n' || rp[1] == 'N') &&
-      (rp[2] == 'f' || rp[2] == 'F')) return HUGE_VAL * sign;
-  if ((rp[0] == 'n' || rp[0] == 'N') && (rp[1] == 'a' || rp[1] == 'A') &&
-      (rp[2] == 'n' || rp[2] == 'N')) return std::nan("");
+  if ((str[0] == 'i' || str[0] == 'I') && (str[1] == 'n' || str[1] == 'N') &&
+      (str[2] == 'f' || str[2] == 'F')) return HUGE_VAL * sign;
+  if ((str[0] == 'n' || str[0] == 'N') && (str[1] == 'a' || str[1] == 'A') &&
+      (str[2] == 'n' || str[2] == 'N')) return nan();
   long double num = 0;
   int32_t col = 0;
-  while (*rp != '\0') {
-    if (*rp < '0' || *rp > '9') break;
-    num = num * 10 + *rp - '0';
-    rp++;
+  while (*str != '\0') {
+    if (*str < '0' || *str > '9') break;
+    num = num * 10 + *str - '0';
+    str++;
     if (num > 0) col++;
   }
-  if (*rp == '.') {
-    rp++;
+  if (*str == '.') {
+    str++;
     long double fract = 0.0;
     long double base = 10;
-    while (col < 16 && *rp != '\0') {
-      if (*rp < '0' || *rp > '9') break;
-      fract += (*rp - '0') / base;
-      rp++;
+    while (col < 16 && *str != '\0') {
+      if (*str < '0' || *str > '9') break;
+      fract += (*str - '0') / base;
+      str++;
       col++;
       base *= 10;
     }
     num += fract;
   }
-  if (*rp == 'e' || *rp == 'E') {
-    rp++;
-    num *= std::pow((long double)10, (long double)atoi(rp));
+  if (*str == 'e' || *str == 'E') {
+    str++;
+    num *= std::pow((long double)10, (long double)atoi(str));
   }
   return num * sign;
 }
@@ -448,6 +504,7 @@ inline double atof(const std::string& str) {
  * Normalize a 16-bit number in the native order into the network byte order.
  */
 inline uint16_t hton16(uint16_t num) {
+  _assert_(true);
   if (BIGEND) return num;
   return ((num & 0x00ffU) << 8) | ((num & 0xff00U) >> 8);
 }
@@ -457,6 +514,7 @@ inline uint16_t hton16(uint16_t num) {
  * Normalize a 32-bit number in the native order into the network byte order.
  */
 inline uint32_t hton32(uint32_t num) {
+  _assert_(true);
   if (BIGEND) return num;
   return ((num & 0x000000ffUL) << 24) | ((num & 0x0000ff00UL) << 8) | \
     ((num & 0x00ff0000UL) >> 8) | ((num & 0xff000000UL) >> 24);
@@ -467,6 +525,7 @@ inline uint32_t hton32(uint32_t num) {
  * Normalize a 64-bit number in the native order into the network byte order.
  */
 inline uint64_t hton64(uint64_t num) {
+  _assert_(true);
   if (BIGEND) return num;
   return ((num & 0x00000000000000ffULL) << 56) | ((num & 0x000000000000ff00ULL) << 40) |
     ((num & 0x0000000000ff0000ULL) << 24) | ((num & 0x00000000ff000000ULL) << 8) |
@@ -479,6 +538,7 @@ inline uint64_t hton64(uint64_t num) {
  * Denormalize a 16-bit number in the network byte order into the native order.
  */
 inline uint16_t ntoh16(uint16_t num) {
+  _assert_(true);
   return hton16(num);
 }
 
@@ -487,6 +547,7 @@ inline uint16_t ntoh16(uint16_t num) {
  * Denormalize a 32-bit number in the network byte order into the native order.
  */
 inline uint32_t ntoh32(uint32_t num) {
+  _assert_(true);
   return hton32(num);
 }
 
@@ -495,6 +556,7 @@ inline uint32_t ntoh32(uint32_t num) {
  * Denormalize a 64-bit number in the network byte order into the native order.
  */
 inline uint64_t ntoh64(uint64_t num) {
+  _assert_(true);
   return hton64(num);
 }
 
@@ -503,6 +565,7 @@ inline uint64_t ntoh64(uint64_t num) {
  * Write a number in fixed length format into a buffer.
  */
 inline void writefixnum(void* buf, uint64_t num, size_t width) {
+  _assert_(buf && width <= sizeof(int64_t));
   num = hton64(num);
   std::memcpy(buf, (const char*)&num + sizeof(num) - width, width);
 }
@@ -512,6 +575,7 @@ inline void writefixnum(void* buf, uint64_t num, size_t width) {
  * Read a number in fixed length format from a buffer.
  */
 inline uint64_t readfixnum(const void* buf, size_t width) {
+  _assert_(buf && width <= sizeof(int64_t));
   uint64_t num = 0;
   std::memcpy(&num, buf, width);
   return ntoh64(num) >> ((sizeof(num) - width) * 8);
@@ -522,6 +586,7 @@ inline uint64_t readfixnum(const void* buf, size_t width) {
  * Write a number in variable length format into a buffer.
  */
 inline size_t writevarnum(void* buf, uint64_t num) {
+  _assert_(buf);
   unsigned char* wp = (unsigned char*)buf;
   if (num < (1ULL << 7)) {
     *(wp++) = num;
@@ -597,6 +662,7 @@ inline size_t writevarnum(void* buf, uint64_t num) {
  * Read a number in variable length format from a buffer.
  */
 inline size_t readvarnum(const void* buf, size_t size, uint64_t* np) {
+  _assert_(buf && size <= MEMMAXSIZ && np);
   const unsigned char* rp = (const unsigned char*)buf;
   const unsigned char* ep = rp + size;
   uint64_t num = 0;
@@ -619,6 +685,7 @@ inline size_t readvarnum(const void* buf, size_t size, uint64_t* np) {
  * Get the hash value by MurMur hashing.
  */
 inline uint64_t hashmurmur(const void* buf, size_t size) {
+  _assert_(buf && size <= MEMMAXSIZ);
   const uint64_t mul = 0xc6a4a7935bd1e995ULL;
   const int32_t rtt = 47;
   uint64_t hash = 19780211ULL ^ (size * mul);
@@ -657,6 +724,7 @@ inline uint64_t hashmurmur(const void* buf, size_t size) {
  * Get the hash value by FNV hashing.
  */
 inline uint64_t hashfnv(const void* buf, size_t size) {
+  _assert_(buf && size <= MEMMAXSIZ);
   uint64_t hash = 14695981039346656037ULL;
   const unsigned char* rp = (unsigned char*)buf;
   const unsigned char* ep = rp + size;
@@ -671,6 +739,7 @@ inline uint64_t hashfnv(const void* buf, size_t size) {
  * Get a prime number nearby a number.
  */
 inline uint64_t nearbyprime(uint64_t num) {
+  _assert_(true);
   static uint64_t table[] = {
     2ULL, 3ULL, 5ULL, 7ULL, 11ULL, 13ULL, 17ULL, 19ULL, 23ULL, 29ULL, 31ULL, 37ULL, 41ULL,
     43ULL, 47ULL, 53ULL, 59ULL, 61ULL, 67ULL, 71ULL, 79ULL, 97ULL, 107ULL, 131ULL, 157ULL,
@@ -714,9 +783,46 @@ inline uint64_t nearbyprime(uint64_t num) {
 
 
 /**
+ * Get the quiet Not-a-Number value.
+ */
+inline double nan() {
+  _assert_(true);
+  return std::numeric_limits<double>::quiet_NaN();
+}
+
+
+/**
+ * Get the positive infinity value.
+ */
+inline double inf() {
+  _assert_(true);
+  return std::numeric_limits<double>::infinity();
+}
+
+
+/**
+ * Check a number is a Not-a-Number value.
+ */
+inline bool chknan(double num) {
+  _assert_(true);
+  return num != num;
+}
+
+
+/**
+ * Check a number is an infinity value.
+ */
+inline bool chkinf(double num) {
+  _assert_(true);
+  return num == inf() || num == -inf();
+}
+
+
+/**
  * Append a formatted string at the end of a string.
  */
 inline void strprintf(std::string* dest, const char* format, va_list ap) {
+  _assert_(dest && format);
   while (*format != '\0') {
     if (*format == '%') {
       char cbuf[NUMBUFSIZ];
@@ -813,10 +919,11 @@ inline void strprintf(std::string* dest, const char* format, va_list ap) {
 /**
  * Append a formatted string at the end of a string.
  */
-inline void strprintf(std::string* dest, const std::string& format, ...) {
+inline void strprintf(std::string* dest, const char* format, ...) {
+  _assert_(dest && format);
   va_list ap;
   va_start(ap, format);
-  strprintf(dest, format.c_str(), ap);
+  strprintf(dest, format, ap);
   va_end(ap);
 }
 
@@ -824,13 +931,36 @@ inline void strprintf(std::string* dest, const std::string& format, ...) {
 /**
  * Generate a formatted string on memory.
  */
-inline std::string strprintf(const std::string& format, ...) {
+inline std::string strprintf(const char* format, ...) {
+  _assert_(format);
   std::string str;
   va_list ap;
   va_start(ap, format);
-  strprintf(&str, format.c_str(), ap);
+  strprintf(&str, format, ap);
   va_end(ap);
   return str;
+}
+
+
+/**
+ * Split a string with a delimiter
+ */
+inline size_t strsplit(const std::string& str, char delim, std::vector<std::string>* elems) {
+  _assert_(elems);
+  elems->clear();
+  std::string::const_iterator it = str.begin();
+  std::string field;
+  while (it != str.end()) {
+    if (*it == delim) {
+      elems->push_back(field);
+      field.clear();
+    } else {
+      field.append(1, *it);
+    }
+    it++;
+  }
+  elems->push_back(field);
+  return elems->size();
 }
 
 
@@ -838,6 +968,7 @@ inline std::string strprintf(const std::string& format, ...) {
  * Encode a serial object with hexadecimal encoding.
  */
 inline char* hexencode(const char* buf, size_t size) {
+  _assert_(buf && size <= MEMMAXSIZ);
   const unsigned char* rp = (const unsigned char* )buf;
   char* zbuf = new char[size*2+1];
   char* wp = zbuf;
@@ -853,6 +984,7 @@ inline char* hexencode(const char* buf, size_t size) {
  * Decode a string encoded with hexadecimal encoding.
  */
 inline char* hexdecode(const char* str, size_t* sp) {
+  _assert_(str && sp);
   size_t zsiz = std::strlen(str);
   char* zbuf = new char[zsiz+1];
   char* wp = zbuf;
@@ -894,6 +1026,7 @@ inline char* hexdecode(const char* str, size_t* sp) {
  * Allocate a region on memory.
  */
 inline void* xmalloc(size_t size) {
+  _assert_(size <= MEMMAXSIZ);
   void* ptr = std::malloc(size);
   if (!ptr) throw std::bad_alloc();
   return ptr;
@@ -904,6 +1037,7 @@ inline void* xmalloc(size_t size) {
  * Allocate a nullified region on memory.
  */
 inline void* xcalloc(size_t nmemb, size_t size) {
+  _assert_(nmemb <= MEMMAXSIZ && size <= MEMMAXSIZ);
   void* ptr = std::calloc(nmemb, size);
   if (!ptr) throw std::bad_alloc();
   return ptr;
@@ -914,6 +1048,7 @@ inline void* xcalloc(size_t nmemb, size_t size) {
  * Re-allocate a region on memory.
  */
 inline void* xrealloc(void* ptr, size_t size) {
+  _assert_(size <= MEMMAXSIZ);
   ptr = std::realloc(ptr, size);
   if (!ptr) throw std::bad_alloc();
   return ptr;
@@ -924,6 +1059,7 @@ inline void* xrealloc(void* ptr, size_t size) {
  * Free a region on memory.
  */
 inline void xfree(void* ptr) {
+  _assert_(true);
   std::free(ptr);
 }
 

@@ -1,0 +1,548 @@
+# Makefile for Kyoto Cabinet for Win32
+
+
+
+#================================================================
+# Setting Variables
+#================================================================
+
+
+# VC++ directory
+VCPATH = C:\Program Files\Microsoft Visual Studio 10.0\VC
+SDKPATH = C:\Program Files\Microsoft SDKs\Windows\v7.0A
+
+
+# Targets
+LIBRARYFILES = kyotocabinet.lib
+LIBOBJFILES = kcutil.obj kcdb.obj kcthread.obj kcfile.obj \
+  kccompress.obj kccompare.obj kcmap.obj \
+  kcprotodb.obj kccachedb.obj kchashdb.obj kctreedb.obj kcpolydb.obj kclangc.obj
+COMMANDFILES = kcutiltest.exe kcutilcodec.exe kcprototest.exe kccachetest.exe \
+  kchashtest.exe kchashmgr.exe kctreetest.exe kctreemgr.exe \
+  kcpolytest.exe kcpolymgr.exe kclangctest.exe
+
+
+# Building configuration
+CL = cl
+LIB = lib
+LINK = link
+CLFLAGS = /nologo \
+  /I "$(VCPATH)\Include" /I "$(VCPATH)\PlatformSDK\Include" /I "$(SDKPATH)\Include" \
+  /I "." \
+  /DNDEBUG /D_CRT_SECURE_NO_WARNINGS /D_MYNOZLIB \
+  /O2 /EHsc /W3 /wd4244 /wd4351 /wd4800 /MT
+LIBFLAGS = /nologo \
+  /libpath:"$(VCPATH)\lib" /libpath:"$(VCPATH)\PlatformSDK\Lib" /libpath:"$(SDKPATH)\Lib" \
+  /libpath:"."
+LINKFLAGS = /nologo \
+  /libpath:"$(VCPATH)\lib" /libpath:"$(VCPATH)\PlatformSDK\Lib" /libpath:"$(SDKPATH)\Lib" \
+  /libpath:"."
+
+
+
+#================================================================
+# Suffix rules
+#================================================================
+
+
+.SUFFIXES :
+.SUFFIXES : .cc .c .obj .exe
+
+.c.obj :
+	$(CL) /c $(CLFLAGS) $<
+
+.cc.obj :
+	$(CL) /c $(CLFLAGS) $<
+
+
+
+#================================================================
+# Actions
+#================================================================
+
+
+all : $(LIBRARYFILES) $(COMMANDFILES)
+	@echo #
+	@echo #================================================================
+	@echo # Ready to install.
+	@echo #================================================================
+
+
+clean :
+	-del *.obj *.lib *.dll *.exp *.exe /F /Q > NUL: 2>&1
+
+
+check : check-util check-proto check-cache check-hash check-tree check-poly check-langc
+	-del casket* /F /Q > NUL: 2>&1
+	@echo #
+	@echo #================================================================
+	@echo # Checking completed.
+	@echo #================================================================
+
+
+check-util :
+	-del casket* /F /Q > NUL: 2>&1
+	kcutilcodec --version
+	kcutilcodec conf
+	-del casket* /F /Q > NUL: 2>&1
+	kcutiltest mutex -th 4 -iv -1 10000
+	kcutiltest file -th 4 casket 10000
+	kcutiltest file -th 4 -rnd -msiz 1m casket 10000
+	kcutiltest map -bnum 1000 10000
+	kcutiltest map -rnd -bnum 1000 10000
+	kcutiltest misc 10000
+
+
+check-proto :
+	-del casket* /F /Q > NUL: 2>&1
+	kcprototest order -etc 10000
+	kcprototest order -th 4 10000
+	kcprototest order -th 4 -rnd -etc 10000
+	kcprototest order -th 4 -rnd -etc -tran 10000
+	kcprototest wicked 10000
+	kcprototest wicked -th 4 -it 4 10000
+	kcprototest tran 10000
+	kcprototest tran -th 2 -it 4 10000
+	-del casket* /F /Q > NUL: 2>&1
+	kcprototest order -tree -etc 10000
+	kcprototest order -tree -th 4 10000
+	kcprototest order -tree -th 4 -rnd -etc 10000
+	kcprototest order -tree -th 4 -rnd -etc -tran 10000
+	kcprototest wicked -tree 10000
+	kcprototest wicked -tree -th 4 -it 4 10000
+	kcprototest tran -tree 10000
+	kcprototest tran -tree -th 2 -it 4 10000
+
+
+check-cache :
+	-del casket* /F /Q > NUL: 2>&1
+	kccachetest order -etc -bnum 5000 10000
+	kccachetest order -th 4 -bnum 5000 10000
+	kccachetest order -th 4 -rnd -etc -bnum 5000 -capcnt 10000 10000
+	kccachetest order -th 4 -rnd -etc -bnum 5000 -capsiz 10000 10000
+	kccachetest order -th 4 -rnd -etc -tran \
+	  -bnum 5000 -capcnt 10000 10000
+	kccachetest wicked -bnum 5000 10000
+	kccachetest wicked -th 4 -it 4 -bnum 5000 -capcnt 10000 10000
+	kccachetest tran -bnum 5000 10000
+	kccachetest tran -th 2 -it 4 -bnum 5000 10000
+
+
+check-hash :
+	-del casket* /F /Q > NUL: 2>&1
+	kchashmgr create -otr -apow 1 -fpow 2 -bnum 3 casket
+	kchashmgr inform -st casket
+	kchashmgr set -add casket duffy 1231
+	kchashmgr set -add casket micky 0101
+	kchashmgr set casket fal 1007
+	kchashmgr set casket mikio 0211
+	kchashmgr set casket natsuki 0810
+	kchashmgr set casket micky ""
+	kchashmgr set -app casket duffy kukuku
+	kchashmgr remove casket micky
+	kchashmgr list -pv casket > check.out
+	kchashmgr set casket ryu 1
+	kchashmgr set casket ken 2
+	kchashmgr remove casket duffy
+	kchashmgr set casket ryu syo-ryu-ken
+	kchashmgr set casket ken tatsumaki-senpu-kyaku
+	kchashmgr set -inci casket int 1234
+	kchashmgr set -inci casket int 5678
+	kchashmgr set -incd casket double 1234.5678
+	kchashmgr set -incd casket double 8765.4321
+	kchashmgr get casket mikio
+	kchashmgr get casket ryu
+	kchashmgr import casket lab/numbers.tsv
+	kchashmgr list -pv -px casket > check.out
+	kchashmgr dump casket check.out
+	kchashmgr load -otr casket check.out
+	kchashmgr defrag -onl casket
+	kchashmgr check -onr casket
+	kchashmgr inform -st casket
+	kchashmgr create -otr -otl -onr -apow 1 -fpow 3 \
+	  -ts -tl -tc -bnum 1 casket
+	kchashmgr import casket < lab/numbers.tsv
+	kchashmgr set casket mikio kyotocabinet
+	kchashmgr set -app casket tako ikaunini
+	kchashmgr set -app casket mikio kyototyrant
+	kchashmgr set -app casket mikio kyotodystopia
+	kchashmgr get -px casket mikio > check.out
+	kchashmgr list casket > check.out
+	kchashmgr check -onr casket
+	-del casket* /F /Q > NUL: 2>&1
+	kchashtest order -set -bnum 5000 -msiz 50000 casket 10000
+	kchashtest order -get -msiz 50000 casket 10000
+	kchashtest order -getw -msiz 5000 casket 10000
+	kchashtest order -rem -msiz 50000 casket 10000
+	kchashtest order -bnum 5000 -msiz 50000 casket 10000
+	kchashtest order -etc \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	kchashtest order -th 4 \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	kchashtest order -th 4 -rnd -etc \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	kchashmgr check -onr casket
+	kchashtest order -th 4 -rnd -etc -tran \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	kchashmgr check -onr casket
+	kchashtest order -th 4 -rnd -etc -oat \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	kchashmgr check -onr casket
+	kchashtest order -th 4 -rnd -etc \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	kchashmgr check -onr casket
+	kchashtest queue \
+	  -bnum 5000 -msiz 50000 casket 10000
+	kchashmgr check -onr casket
+	kchashtest queue -rnd \
+	  -bnum 5000 -msiz 50000 casket 10000
+	kchashmgr check -onr casket
+	kchashtest queue -th 4 -it 4 \
+	  -bnum 5000 -msiz 50000 casket 10000
+	kchashmgr check -onr casket
+	kchashtest queue -th 4 -it 4 -rnd \
+	  -bnum 5000 -msiz 50000 casket 10000
+	kchashmgr check -onr casket
+	kchashtest wicked -bnum 5000 -msiz 50000 casket 10000
+	kchashmgr check -onr casket
+	kchashtest wicked -th 4 -it 4 \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	kchashmgr check -onr casket
+	kchashtest wicked -th 4 -it 4 -oat \
+	  -bnum 5000 -msiz 50000 -dfunit 4 casket 10000
+	kchashmgr check -onr casket
+	kchashtest wicked -th 4 -it 4 \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 casket 10000
+	kchashmgr check -onr casket
+	kchashtest tran casket 10000
+	kchashtest tran -th 2 -it 4 casket 10000
+	kchashtest tran -th 2 -it 4 \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 casket 10000
+
+
+check-tree :
+	-del casket* /F /Q > NUL: 2>&1
+	kctreemgr create -otr -apow 1 -fpow 2 -bnum 3 casket
+	kctreemgr inform -st casket
+	kctreemgr set -add casket duffy 1231
+	kctreemgr set -add casket micky 0101
+	kctreemgr set casket fal 1007
+	kctreemgr set casket mikio 0211
+	kctreemgr set casket natsuki 0810
+	kctreemgr set casket micky ""
+	kctreemgr set -app casket duffy kukuku
+	kctreemgr remove casket micky
+	kctreemgr list -pv casket > check.out
+	kctreemgr set casket ryu 1
+	kctreemgr set casket ken 2
+	kctreemgr remove casket duffy
+	kctreemgr set casket ryu syo-ryu-ken
+	kctreemgr set casket ken tatsumaki-senpu-kyaku
+	kctreemgr set -inci casket int 1234
+	kctreemgr set -inci casket int 5678
+	kctreemgr set -incd casket double 1234.5678
+	kctreemgr set -incd casket double 8765.4321
+	kctreemgr get casket mikio
+	kctreemgr get casket ryu
+	kctreemgr import casket lab/numbers.tsv
+	kctreemgr list -pv -px casket > check.out
+	kctreemgr dump casket check.out
+	kctreemgr load -otr casket check.out
+	kctreemgr defrag -onl casket
+	kctreemgr check -onr casket
+	kctreemgr inform -st casket
+	kctreemgr create -otr -otl -onr -apow 1 -fpow 3 \
+	  -ts -tl -tc -bnum 1 casket
+	kctreemgr import casket < lab/numbers.tsv
+	kctreemgr set casket mikio kyotocabinet
+	kctreemgr set -app casket tako ikaunini
+	kctreemgr set -app casket mikio kyototyrant
+	kctreemgr set -app casket mikio kyotodystopia
+	kctreemgr get -px casket mikio > check.out
+	kctreemgr list casket > check.out
+	kctreemgr check -onr casket
+	-del casket* /F /Q > NUL: 2>&1
+	kctreetest order -set \
+	  -psiz 100 -bnum 5000 -msiz 50000 -pccap 100k casket 10000
+	kctreetest order -get \
+	  -msiz 50000 -pccap 100k casket 10000
+	kctreetest order -getw \
+	  -msiz 5000 -pccap 100k casket 10000
+	kctreetest order -rem \
+	  -msiz 50000 -pccap 100k casket 10000
+	kctreetest order \
+	  -bnum 5000 -psiz 100 -msiz 50000 -pccap 100k casket 10000
+	kctreetest order -etc \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k casket 10000
+	kctreetest order -th 4 \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k casket 10000
+	kctreetest order -th 4 -pccap 100k -rnd -etc \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k -rcd casket 10000
+	kctreemgr check -onr casket
+	kctreetest order -th 4 -rnd -etc -tran \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k casket 1000
+	kctreemgr check -onr casket
+	kctreetest order -th 4 -rnd -etc -oat \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 -pccap 100k casket 1000
+	kctreemgr check -onr casket
+	kctreetest order -th 4 -rnd -etc \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 5000 -psiz 1000 -msiz 50000 -dfunit 4 casket 10000
+	kctreemgr check -onr casket
+	kctreetest queue \
+	  -bnum 5000 -psiz 500 -msiz 50000 casket 10000
+	kctreemgr check -onr casket
+	kctreetest queue -rnd \
+	  -bnum 5000 -psiz 500 -msiz 50000 casket 10000
+	kctreemgr check -onr casket
+	kctreetest queue -th 4 -it 4 \
+	  -bnum 5000 -psiz 500 -msiz 50000 casket 10000
+	kctreemgr check -onr casket
+	kctreetest queue -th 4 -it 4 -rnd \
+	  -bnum 5000 -psiz 500 -msiz 50000 casket 10000
+	kctreemgr check -onr casket
+	kctreetest wicked \
+	  -bnum 5000 -psiz 1000 -msiz 50000 -pccap 100k casket 10000
+	kctreemgr check -onr casket
+	kctreetest wicked -th 4 -it 4 \
+	  -bnum 5000 -msiz 50000 -dfunit 4 -pccap 100k -rcd casket 10000
+	kctreemgr check -onr casket
+	kctreetest wicked -th 4 -it 4 -oat \
+	  -bnum 5000 -msiz 50000 -dfunit 4 -pccap 100k casket 1000
+	kctreemgr check -onr casket
+	kctreetest wicked -th 4 -it 4 \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 casket 1000
+	kctreemgr check -onr casket
+	kctreetest tran casket 10000
+	kctreetest tran -th 2 -it 4 -pccap 100k casket 10000
+	kctreetest tran -th 2 -it 4 \
+	  -apow 2 -fpow 3 -ts -tl -tc -bnum 10000 -msiz 50000 -dfunit 4 -rcd casket 10000
+
+
+check-poly :
+	-del casket* /F /Q > NUL: 2>&1
+	kcpolymgr create -otr "casket.kch#apow=1#fpow=2#bnum=3"
+	kcpolymgr inform -st casket.kch
+	kcpolymgr set -add casket.kch duffy 1231
+	kcpolymgr set -add casket.kch micky 0101
+	kcpolymgr set casket.kch fal 1007
+	kcpolymgr set casket.kch mikio 0211
+	kcpolymgr set casket.kch natsuki 0810
+	kcpolymgr set casket.kch micky ""
+	kcpolymgr set -app casket.kch duffy kukuku
+	kcpolymgr remove casket.kch micky
+	kcpolymgr list -pv casket.kch > check.out
+	kcpolymgr dump casket.kch check.out
+	kcpolymgr load -otr casket.kch check.out
+	kcpolymgr set casket.kch ryu 1
+	kcpolymgr set casket.kch ken 2
+	kcpolymgr remove casket.kch duffy
+	kcpolymgr set casket.kch ryu syo-ryu-ken
+	kcpolymgr set casket.kch ken tatsumaki-senpu-kyaku
+	kcpolymgr set -inci casket.kch int 1234
+	kcpolymgr set -inci casket.kch int 5678
+	kcpolymgr set -incd casket.kch double 1234.5678
+	kcpolymgr set -incd casket.kch double 8765.4321
+	kcpolymgr get "casket.kch" mikio
+	kcpolymgr get "casket.kch" ryu
+	kcpolymgr import casket.kch lab/numbers.tsv
+	kcpolymgr list -pv -px "casket.kch#mode=r" > check.out
+	kcpolymgr check -onr casket.kch
+	kcpolymgr inform -st casket.kch
+	kcpolymgr create -otr -otl -onr \
+	  "casket.kct#apow=1#fpow=3#opts=slc#bnum=1"
+	kcpolymgr import casket.kct < lab/numbers.tsv
+	kcpolymgr set casket.kct mikio kyotocabinet
+	kcpolymgr set -app casket.kct tako ikaunini
+	kcpolymgr set -app casket.kct mikio kyototyrant
+	kcpolymgr set -app casket.kct mikio kyotodystopia
+	kcpolymgr get -px casket.kct mikio > check.out
+	kcpolymgr list casket.kct > check.out
+	kcpolymgr check -onr casket.kct
+	-del casket* /F /Q > NUL: 2>&1
+	kcpolytest order -set "casket.kct#bnum=5000#msiz=50000" 10000
+	kcpolytest order -get "casket.kct#msiz=50000" 10000
+	kcpolytest order -getw "casket.kct#msiz=5000" 10000
+	kcpolytest order -rem "casket.kct#msiz=50000" 10000
+	kcpolytest order "casket.kct#bnum=5000#msiz=50000" 10000
+	kcpolytest order -etc \
+	  "casket.kct#bnum=5000#msiz=50000#dfunit=4" 10000
+	kcpolytest order -th 4 \
+	  "casket.kct#bnum=5000#msiz=50000#dfunit=4" 10000
+	kcpolytest order -th 4 -rnd -etc \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=1" 1000
+	kcpolymgr check -onr casket.kct
+	kcpolytest order -th 4 -rnd -etc -tran \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=2" 1000
+	kcpolymgr check -onr casket.kct
+	kcpolytest order -th 4 -rnd -etc -oat \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=3" 1000
+	kcpolymgr check -onr casket.kct
+	kcpolytest order -th 4 -rnd -etc \
+	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=5000#msiz=0#dfunit=4" 1000
+	kcpolymgr check -onr casket.kct
+	kcpolytest queue \
+	  "casket.kct#bnum=5000#msiz=0" 10000
+	kcpolymgr check -onr casket.kct
+	kcpolytest queue -rnd \
+	  "casket.kct#bnum=5000#msiz=0" 10000
+	kcpolymgr check -onr casket.kct
+	kcpolytest queue -th 4 -it 4 \
+	  "casket.kct#bnum=5000#msiz=0" 10000
+	kcpolymgr check -onr casket.kct
+	kcpolytest queue -th 4 -it 4 -rnd \
+	  "casket.kct#bnum=5000#msiz=0" 10000
+	kcpolymgr check -onr casket.kct
+	kcpolytest wicked "casket.kct#bnum=5000#msiz=0" 1000
+	kcpolymgr check -onr casket.kct
+	kcpolytest wicked -th 4 -it 4 \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=1" 1000
+	kcpolymgr check -onr casket.kct
+	kcpolytest wicked -th 4 -it 4 -oat \
+	  "casket.kct#bnum=5000#msiz=0#dfunit=1" 1000
+	kcpolymgr check -onr casket.kct
+	kcpolytest wicked -th 4 -it 4 \
+	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=10000#msiz=0#dfunit=1" 10000
+	kcpolymgr check -onr casket.kct
+	kcpolytest tran casket.kct 10000
+	kcpolytest tran -th 2 -it 4 casket.kct 10000
+	kcpolytest tran -th 2 -it 4 \
+	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=10000#msiz=0#dfunit=1" 1000
+	kcpolytest misc "casket#type=-"
+	kcpolytest misc "casket#type=+"
+	kcpolytest misc "casket#type=*"
+	kcpolytest misc "casket#type=kch"
+	kcpolytest misc "casket#type=kct"
+
+
+check-langc :
+	-del casket* /F /Q > NUL: 2>&1
+	kcpolytest order "casket.kch#bnum=5000#msiz=50000" 10000
+	kcpolytest order -etc \
+	  "casket.kch#bnum=5000#msiz=50000#dfunit=2" 10000
+	kcpolytest order -rnd -etc \
+	  "casket.kch#bnum=5000#msiz=50000#dfunit=2" 10000
+	kcpolytest order -rnd -etc -oat -tran \
+	  "casket.kch#bnum=5000#msiz=50000#dfunit=2" 10000
+
+
+check-forever :
+	lab\vcmakecheck
+
+
+
+#================================================================
+# Building binaries
+#================================================================
+
+
+kyotocabinet.lib : $(LIBOBJFILES)
+	$(LIB) $(LIBFLAGS) /OUT:$@ $(LIBOBJFILES)
+
+
+kcutiltest.exe : kcutiltest.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kcutiltest.obj kyotocabinet.lib
+
+
+kcutilcodec.exe : kcutilcodec.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kcutilcodec.obj kyotocabinet.lib
+
+
+kcprototest.exe : kcprototest.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kcprototest.obj kyotocabinet.lib
+
+
+kccachetest.exe : kccachetest.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kccachetest.obj kyotocabinet.lib
+
+
+kchashtest.exe : kchashtest.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kchashtest.obj kyotocabinet.lib
+
+
+kchashmgr.exe : kchashmgr.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kchashmgr.obj kyotocabinet.lib
+
+
+kctreetest.exe : kctreetest.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kctreetest.obj kyotocabinet.lib
+
+
+kctreemgr.exe : kctreemgr.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kctreemgr.obj kyotocabinet.lib
+
+
+kcpolytest.exe : kcpolytest.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kcpolytest.obj kyotocabinet.lib
+
+
+kcpolymgr.exe : kcpolymgr.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kcpolymgr.obj kyotocabinet.lib
+
+
+kclangctest.exe : kclangctest.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kclangctest.obj kyotocabinet.lib
+
+
+kcutil.obj : kccommon.h kcutil.h myconf.h
+
+kcdb.obj : kccommon.h kcutil.h kcdb.h myconf.h
+
+kcthread.obj : kccommon.h kcutil.h kcthread.h myconf.h
+
+kcfile.obj : kccommon.h kcutil.h kcthread.h kcfile.h myconf.h
+
+kccompress.obj : kccommon.h kcutil.h kccompress.h myconf.h
+
+kccompare.obj : kccommon.h kcutil.h kccompare.h myconf.h
+
+kcmap.obj : kccommon.h kcutil.h kcmap.h myconf.h
+
+kcprotodb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h
+
+kccachedb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccachedb.h
+
+kchashdb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kchashdb.h
+
+kctreedb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kchashdb.h kctreedb.h
+
+kcpolydb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h
+
+kclangc.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h kclangc.h
+
+kcutiltest.obj kcutilcodec.obj : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  cmdcommon.h
+
+kcprototest.obj : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h cmdcommon.h
+
+kccachetest.obj : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccachedb.h cmdcommon.h
+
+kchashtest.obj kchashmgr.obj : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kchashdb.h cmdcommon.h
+
+kctreetest.obj kctreemgr.obj : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kchashdb.h kctreedb.h cmdcommon.h
+
+kcpolytest.obj kcpolymgr.obj : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h cmdcommon.h
+
+kclangctest.obj : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h kclangc.h
+
+
+
+# END OF FILE

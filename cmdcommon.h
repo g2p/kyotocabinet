@@ -25,6 +25,28 @@
 #include <kccompare.h>
 #include <kcmap.h>
 
+#if !defined(_KC_PREFIX)
+#define _KC_PREFIX       "*"
+#endif
+#if !defined(_KC_INCLUDEDIR)
+#define _KC_INCLUDEDIR   "*"
+#endif
+#if !defined(_KC_LIBDIR)
+#define _KC_LIBDIR       "*"
+#endif
+#if !defined(_KC_BINDIR)
+#define _KC_BINDIR       "*"
+#endif
+#if !defined(_KC_LIBEXECDIR)
+#define _KC_LIBEXECDIR   "*"
+#endif
+#if !defined(_KC_APPINC)
+#define _KC_APPINC       "*"
+#endif
+#if !defined(_KC_APPLIBS)
+#define _KC_APPLIBS      "*"
+#endif
+
 namespace kc = kyotocabinet;
 
 
@@ -42,7 +64,7 @@ void eprintf(const char* format, ...);
 void printversion();
 void printdata(const char* buf, int size, bool px);
 bool getline(std::istream* is, std::string* str);
-inline void splitstr(const std::string& str, char delim, std::vector<std::string>* elems);
+void splitstr(const std::string& str, char delim, std::vector<std::string>* elems);
 std::string unitnumstr(int64_t num);
 std::string unitnumstrbyte(int64_t num);
 
@@ -50,7 +72,7 @@ std::string unitnumstrbyte(int64_t num);
 // get a random number
 int64_t myrand(int64_t range) {
   if (range < 2) return 0;
-  uint64_t base = range * (rand() / (RAND_MAX + 1.0));
+  uint64_t base = (int64_t)(range * (rand() / (RAND_MAX + 1.0)));
   uint64_t mask = (uint64_t)rand() << 30;
   mask += (uint64_t)rand() >> 2;
   return (base ^ mask) % range;
@@ -127,39 +149,20 @@ inline bool getline(std::istream* is, std::string* str) {
 }
 
 
-// split a string with a delimiter
-inline void splitstr(const std::string& str, char delim, std::vector<std::string>* elems) {
-  elems->clear();
-  std::string::const_iterator it = str.begin();
-  std::string field;
-  while (it != str.end()) {
-    if (*it == delim) {
-      elems->push_back(field);
-      field.clear();
-    } else {
-      field.append(1, *it);
-    }
-    it++;
-  }
-  elems->push_back(field);
-}
-
-
-
 // convert a number into the string with the decimal unit
 inline std::string unitnumstr(int64_t num) {
-  if (num >= pow(1000, 6)) {
-    return kc::strprintf("%.3Lf quintillion", (long double)num / pow(1000, 6));
-  } else if (num >= pow(1000, 5)) {
-    return kc::strprintf("%.3Lf quadrillion", (long double)num / pow(1000, 5));
-  } else if (num >= pow(1000, 4)) {
-    return kc::strprintf("%.3Lf trillion", (long double)num / pow(1000, 4));
-  } else if (num >= pow(1000, 3)) {
-    return kc::strprintf("%.3Lf billion", (long double)num / pow(1000, 3));
-  } else if (num >= pow(1000, 2)) {
-    return kc::strprintf("%.3Lf million", (long double)num / pow(1000, 2));
-  } else if (num >= pow(1000, 1)) {
-    return kc::strprintf("%.3Lf thousand", (long double)num / pow(1000, 1));
+  if (num >= pow(1000.0, 6)) {
+    return kc::strprintf("%.3Lf quintillion", (long double)num / pow(1000.0, 6));
+  } else if (num >= pow(1000.0, 5)) {
+    return kc::strprintf("%.3Lf quadrillion", (long double)num / pow(1000.0, 5));
+  } else if (num >= pow(1000.0, 4)) {
+    return kc::strprintf("%.3Lf trillion", (long double)num / pow(1000.0, 4));
+  } else if (num >= pow(1000.0, 3)) {
+    return kc::strprintf("%.3Lf billion", (long double)num / pow(1000.0, 3));
+  } else if (num >= pow(1000.0, 2)) {
+    return kc::strprintf("%.3Lf million", (long double)num / pow(1000.0, 2));
+  } else if (num >= pow(1000.0, 1)) {
+    return kc::strprintf("%.3Lf thousand", (long double)num / pow(1000.0, 1));
   }
   return kc::strprintf("%lld", (long long)num);
 }

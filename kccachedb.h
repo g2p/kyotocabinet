@@ -69,6 +69,7 @@ public:
      * @param db the container database object.
      */
     explicit Cursor(CacheDB* db) : db_(db), sidx_(-1), rec_(NULL) {
+      _assert_(db);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       db_->curs_.push_back(this);
     }
@@ -76,6 +77,8 @@ public:
      * Destructor.
      */
     virtual ~Cursor() {
+      _assert_(true);
+      if (!db_) return;
       ScopedSpinRWLock lock(&db_->mlock_, true);
       db_->curs_.remove(this);
     }
@@ -85,15 +88,18 @@ public:
      * @param writable true for writable operation, or false for read-only operation.
      * @param step true to move the cursor to the next record, or false for no move.
      * @return true on success, or false on failure.
+     * @note the operation for each record is performed atomically and other threads accessing
+     * the same record are blocked.
      */
-    virtual bool accept(Visitor* visitor, bool writable, bool step) {
+    virtual bool accept(Visitor* visitor, bool writable = true, bool step = false) {
+      _assert_(visitor);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
         db_->set_error(Error::INVALID, "not opened");
         return false;
       }
       if (writable && !(db_->omode_ & OWRITER)) {
-        db_->set_error(Error::INVALID, "permission denied");
+        db_->set_error(Error::NOPERM, "permission denied");
         return false;
       }
       if (sidx_ < 0 || !rec_) {
@@ -125,6 +131,7 @@ public:
      * @return true on success, or false on failure.
      */
     virtual bool jump() {
+      _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
         db_->set_error(Error::INVALID, "not opened");
@@ -141,7 +148,7 @@ public:
       db_->set_error(Error::NOREC, "no record");
       sidx_ = -1;
       rec_ = NULL;
-      return true;
+      return false;
     }
     /**
      * Jump the cursor onto a record.
@@ -150,6 +157,7 @@ public:
      * @return true on success, or false on failure.
      */
     virtual bool jump(const char* kbuf, size_t ksiz) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
         db_->set_error(Error::INVALID, "not opened");
@@ -199,6 +207,7 @@ public:
      * @note Equal to the original Cursor::jump method except that the parameter is std::string.
      */
     virtual bool jump(const std::string& key) {
+      _assert_(true);
       return jump(key.c_str(), key.size());
     }
     /**
@@ -206,6 +215,7 @@ public:
      * @return true on success, or false on failure.
      */
     virtual bool step() {
+      _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
         db_->set_error(Error::INVALID, "not opened");
@@ -218,6 +228,14 @@ public:
       bool err = false;
       if (!step_impl()) err = true;
       return !err;
+    }
+    /**
+     * Get the database object.
+     * @return the database object.
+     */
+    virtual CacheDB* db() {
+      _assert_(true);
+      return db_;
     }
   private:
     /** Dummy constructor to forbid the use. */
@@ -256,15 +274,27 @@ public:
   /**
    * Default constructor.
    */
-  CacheDB() :
+  explicit CacheDB() :
     mlock_(), flock_(), error_(), omode_(0), curs_(), path_(""),
-    bnum_(CDBDEFBNUM), capcnt_(-1), capsiz_(-1), slots_(), tran_(false) {}
+    bnum_(CDBDEFBNUM), capcnt_(-1), capsiz_(-1), slots_(), tran_(false) {
+    _assert_(true);
+  }
   /**
    * Destructor.
    * @note If the database is not closed, it is closed implicitly.
    */
   virtual ~CacheDB() {
+    _assert_(true);
     if (omode_ != 0) close();
+    if (curs_.size() > 0) {
+      CursorList::const_iterator cit = curs_.begin();
+      CursorList::const_iterator citend = curs_.end();
+      while (cit != citend) {
+        Cursor* cur = *cit;
+        cur->db_ = NULL;
+        cit++;
+      }
+    }
   }
   /**
    * Accept a visitor to a record.
@@ -273,15 +303,18 @@ public:
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
+   * @note the operation for each record is performed atomically and other threads accessing the
+   * same record are blocked.
    */
-  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable) {
+  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
       return false;
     }
     if (writable && !(omode_ & OWRITER)) {
-      set_error(Error::INVALID, "permission denied");
+      set_error(Error::NOPERM, "permission denied");
       return false;
     }
     if (ksiz > CDBKSIZMAX) ksiz = CDBKSIZMAX;
@@ -299,15 +332,17 @@ public:
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
+   * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  virtual bool iterate(Visitor *visitor, bool writable) {
+  virtual bool iterate(Visitor *visitor, bool writable = true) {
+    _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
       return false;
     }
     if (writable && !(omode_ & OWRITER)) {
-      set_error(Error::INVALID, "permission denied");
+      set_error(Error::NOPERM, "permission denied");
       return false;
     }
     for (int32_t i = 0; i < CDBSLOTNUM; i++) {
@@ -338,6 +373,7 @@ public:
    * @return the last happened error.
    */
   virtual Error error() const {
+    _assert_(true);
     return error_;
   }
   /**
@@ -346,24 +382,29 @@ public:
    * @param message a supplement message.
    */
   virtual void set_error(Error::Code code, const char* message) {
+    _assert_(message);
     error_->set(code, message);
   }
   /**
    * Open a database file.
    * @param path the path of a database file.
-   * @param mode the connection mode.  FileDB::OWRITER as a writer, FileDB::OREADER as a reader.
-   * The following may be added to the writer mode by bitwise-or: FileDB::OCREATE, which means
-   * it creates a new database if the file does not exist, FileDB::OTRUNCATE, which means it
-   * creates a new database regardless if the file exists, FileDB::OAUTOTRAN, which means each
-   * updating operation is performed in implicit transaction, FileDB::OAUTOSYNC, which means
-   * each updating operation is followed by implicit synchronization with the file system.  The
-   * following may be added to both of the reader mode and the writer mode by bitwise-or:
-   * FileDB::ONOLOCK, which means it opens the database file without file locking,
-   * FileDB::OTRYLOCK, which means locking is performed without blocking, File::ONOREPAIR, which
-   * means the database file is not repaired implicitly even if file destruction is detected.
+   * @param mode the connection mode.  CacheDB::OWRITER as a writer, CacheDB::OREADER as a
+   * reader.  The following may be added to the writer mode by bitwise-or: CacheDB::OCREATE,
+   * which means it creates a new database if the file does not exist, CacheDB::OTRUNCATE, which
+   * means it creates a new database regardless if the file exists, CacheDB::OAUTOTRAN, which
+   * means each updating operation is performed in implicit transaction, CacheDB::OAUTOSYNC,
+   * which means each updating operation is followed by implicit synchronization with the file
+   * system.  The following may be added to both of the reader mode and the writer mode by
+   * bitwise-or: CacheDB::ONOLOCK, which means it opens the database file without file locking,
+   * CacheDB::OTRYLOCK, which means locking is performed without blocking, CacheDB::ONOREPAIR,
+   * which means the database file is not repaired implicitly even if file destruction is
+   * detected.
    * @return true on success, or false on failure.
+   * @note Every opened database must be closed by the CacheDB::close method when it is no
+   * longer in use.
    */
-  virtual bool open(const std::string& path, uint32_t mode) {
+  virtual bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(Error::INVALID, "already opened");
@@ -386,6 +427,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool close() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
@@ -406,18 +448,19 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @return true on success, or false on failure.
    */
-  virtual bool synchronize(bool hard, FileProcessor* proc) {
+  virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
       return false;
     }
     if (!(omode_ & OWRITER)) {
-      set_error(Error::INVALID, "permission denied");
+      set_error(Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
-    if (proc && !proc->process(path_)) {
+    if (proc && !proc->process(path_, count_impl(), size_impl())) {
       set_error(Error::MISC, "postprocessing failed");
       err = true;
     }
@@ -429,7 +472,8 @@ public:
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction(bool hard) {
+  virtual bool begin_transaction(bool hard = false) {
+    _assert_(true);
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
       if (omode_ == 0) {
@@ -438,7 +482,7 @@ public:
         return false;
       }
       if (!(omode_ & OWRITER)) {
-        set_error(Error::INVALID, "permission denied");
+        set_error(Error::NOPERM, "permission denied");
         mlock_.unlock();
         return false;
       }
@@ -452,11 +496,40 @@ public:
     return true;
   }
   /**
-   * Commit transaction.
+   * Try to begin transaction.
+   * @param hard true for physical synchronization with the device, or false for logical
+   * synchronization with the file system.
+   * @return true on success, or false on failure.
+   */
+  virtual bool begin_transaction_try(bool hard = false) {
+    _assert_(true);
+    mlock_.lock_writer();
+    if (omode_ == 0) {
+      set_error(Error::INVALID, "not opened");
+      mlock_.unlock();
+      return false;
+    }
+    if (!(omode_ & OWRITER)) {
+      set_error(Error::NOPERM, "permission denied");
+      mlock_.unlock();
+      return false;
+    }
+    if (tran_) {
+      set_error(Error::LOGIC, "competition avoided");
+      mlock_.unlock();
+      return false;
+    }
+    tran_ = true;
+    mlock_.unlock();
+    return true;
+  }
+  /**
+   * End transaction.
    * @param commit true to commit the transaction, or false to abort the transaction.
    * @return true on success, or false on failure.
    */
-  virtual bool end_transaction(bool commit) {
+  virtual bool end_transaction(bool commit = true) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
@@ -480,6 +553,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool clear() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
@@ -497,6 +571,7 @@ public:
    * @return the number of records, or -1 on failure.
    */
   virtual int64_t count() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
@@ -509,6 +584,7 @@ public:
    * @return the size of the database file in bytes, or -1 on failure.
    */
   virtual int64_t size() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
@@ -518,9 +594,10 @@ public:
   }
   /**
    * Get the path of the database file.
-   * @return the path of the database file in bytes, or an empty string on failure.
+   * @return the path of the database file, or an empty string on failure.
    */
   virtual std::string path() {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
@@ -534,12 +611,14 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool status(std::map<std::string, std::string>* strmap) {
+    _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(Error::INVALID, "not opened");
       return false;
     }
     (*strmap)["type"] = "CacheDB";
+    (*strmap)["realtype"] = strprintf("%u", (unsigned)TYPECACHE);
     (*strmap)["path"] = path_;
     (*strmap)["count"] = strprintf("%lld", (long long)count_impl());
     (*strmap)["size"] = strprintf("%lld", (long long)size_impl());
@@ -547,11 +626,12 @@ public:
   }
   /**
    * Create a cursor object.
-   * @return the return value is the cursor object.
+   * @return the return value is the created cursor object.
    * @note Because the object of the return value is allocated by the constructor, it should be
    * released with the delete operator when it is no longer in use.
    */
   virtual Cursor* cursor() {
+    _assert_(true);
     return new Cursor(this);
   }
   /**
@@ -560,6 +640,7 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_buckets(int64_t bnum) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(Error::INVALID, "already opened");
@@ -569,11 +650,12 @@ public:
     return true;
   }
   /**
-   * Set the cap of record number.
-   * @param count the muximum number of records.
+   * Set the capacity by record number.
+   * @param count the maximum number of records.
    * @return true on success, or false on failure.
    */
   virtual bool cap_count(int64_t count) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(Error::INVALID, "already opened");
@@ -583,11 +665,12 @@ public:
     return true;
   }
   /**
-   * Set the cap of memory usage.
-   * @param size the muximum size of memory usage.
+   * Set the capacity by memory usage.
+   * @param size the maximum size of memory usage.
    * @return true on success, or false on failure.
    */
   virtual bool cap_size(int64_t size) {
+    _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
       set_error(Error::INVALID, "already opened");
@@ -616,10 +699,10 @@ private:
     std::string key;                     ///< old key
     std::string value;                   ///< old value
     /** constructor for a full record */
-    TranLog(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) :
+    explicit TranLog(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) :
       full(true), key(kbuf, ksiz), value(vbuf, vsiz) {}
     /** constructor for an empty record */
-    TranLog(const char* kbuf, size_t ksiz) : full(false), key(kbuf, ksiz) {}
+    explicit TranLog(const char* kbuf, size_t ksiz) : full(false), key(kbuf, ksiz) {}
   };
   /**
    * Slot table.
@@ -852,10 +935,10 @@ private:
   }
   /**
    * Initialize a slot table.
-   * @param the slot table.
+   * @param slot the slot table.
    * @param bnum the number of buckets.
-   * @param capcnt the cap of record number.
-   * @param capsiz the cap of memory usage.
+   * @param capcnt the capacity of record number.
+   * @param capsiz the capacity of memory usage.
    */
   void initialize_slot(Slot* slot, size_t bnum, size_t capcnt, size_t capsiz) {
     Record** buckets;
@@ -878,7 +961,7 @@ private:
   }
   /**
    * Destroy a slot table.
-   * @param the slot table.
+   * @param slot the slot table.
    */
   void destroy_slot(Slot* slot) {
     slot->trlogs.clear();
@@ -896,7 +979,7 @@ private:
   }
   /**
    * Clear a slot table.
-   * @param the slot table.
+   * @param slot the slot table.
    */
   void clear_slot(Slot* slot) {
     Record* rec = slot->last;
@@ -917,7 +1000,7 @@ private:
   }
   /**
    * Apply transaction logs of a slot table.
-   * @param the slot table.
+   * @param slot the slot table.
    */
   void apply_slot_trlogs(Slot* slot) {
     const TranLogList& logs = slot->trlogs;
@@ -941,7 +1024,7 @@ private:
   }
   /**
    * Addjust a slot table to the capacity.
-   * @param the slot table.
+   * @param slot the slot table.
    */
   void adjust_slot_capacity(Slot* slot) {
     if ((slot->count > slot->capcnt || slot->size > slot->capsiz) && slot->first) {
@@ -978,9 +1061,9 @@ private:
   /**
    * Compare two keys in lexical order.
    * @param abuf one key.
-   * @param abuf the size of the one key.
+   * @param asiz the size of the one key.
    * @param bbuf the other key.
-   * @param bbuf the size of the other key.
+   * @param bsiz the size of the other key.
    * @return positive if the former is big, or negative if the latter is big, or 0 if both are
    * equivalent.
    */
@@ -1051,9 +1134,9 @@ private:
   std::string path_;
   /** The bucket number. */
   int64_t bnum_;
-  /** The cap of record number. */
+  /** The capacity of record number. */
   int64_t capcnt_;
-  /** The cap of memory usage. */
+  /** The capacity of memory usage. */
   int64_t capsiz_;
   /** The slot tables. */
   Slot slots_[CDBSLOTNUM];

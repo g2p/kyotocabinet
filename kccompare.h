@@ -1,5 +1,5 @@
 /*************************************************************************************************
- * Data mapping structures
+ * Comparator functions
  *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
@@ -50,6 +50,7 @@ public:
 class LexicalComparator : public Comparator {
 public:
   int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
+    _assert_(akbuf && bkbuf);
     size_t msiz = aksiz < bksiz ? aksiz : bksiz;
     for (size_t i = 0; i < msiz; i++) {
       if (((uint8_t*)akbuf)[i] != ((uint8_t*)bkbuf)[i])
@@ -65,6 +66,7 @@ public:
  */
 class DecimalComparator : public Comparator {
   int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
+    _assert_(akbuf && bkbuf);
     const int32_t LDBLCOLMAX = 16;
     const unsigned char* arp = (unsigned char*)akbuf;
     int32_t alen = aksiz;
