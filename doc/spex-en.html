@@ -45,17 +45,17 @@
 
 <p>Kyoto Cabinet is a library of routines for managing a database.  The database is a simple data file containing records, each is a pair of a key and a value.  Every key and value is serial bytes with variable length.  Both binary data and character string can be used as a key and a value.  Each key must be unique within a database.  There is neither concept of data tables nor data types.  Records are organized in hash table or B+ tree.</p>
 
-<p>The following access methods are provided to the database: storing a record with a key and a value, deleting a record by a key, retrieving a record by a key.  Moreover, traversal access to every key are provided.  These access methods are similar to ones of DBM (or its followers: NDBM and GDBM) library defined in the UNIX standard.  Kyoto Cabinet is an alternative for DBM because of its higher performance.</p>
+<p>The following access methods are provided to the database: storing a record with a key and a value, deleting a record by a key, retrieving a record by a key.  Moreover, traversal access to every key are provided.  These access methods are similar to ones of the original DBM (and its followers: NDBM and GDBM) library defined in the UNIX standard.  Kyoto Cabinet is an alternative for the DBM because of its higher performance.</p>
 
-<p>Each operation of hash database has the time complexity of "O(1)".  Therefore, in theory, the performance is constant regardless of the scale of the database.  In practice, the performance is determined by the speed of the main memory or the storage device.  If the size of the database is less than the capacity of the main memory, the performance will seem on-memory speed which is faster than std::map of STL.  Of course, the database size can be greater than the capacity of the main memory and the upper limit is 8 exabytes.  Even in that case, each operation needs only one or two seeking of the storage device.</p>
+<p>Each operation of the hash database has the time complexity of "O(1)".  Therefore, in theory, the performance is constant regardless of the scale of the database.  In practice, the performance is determined by the speed of the main memory or the storage device.  If the size of the database is less than the capacity of the main memory, the performance will seem on-memory speed, which is faster than std::map of STL.  Of course, the database size can be greater than the capacity of the main memory and the upper limit is 8 exabytes.  Even in that case, each operation needs only one or two seeking of the storage device.</p>
 
-<p>Each operation of B+ tree has the time complexity of "O(log N)".  Therefore, in theory, the performance is logarithmic to the scale of the database.  Although the performance of random access of B+ tree is slower than that of hash database, B+ tree supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers.  The performance of sequential access is much faster than that of random access.</p>
+<p>Each operation of the B+ tree database has the time complexity of "O(log N)".  Therefore, in theory, the performance is logarithmic to the scale of the database.  Although the performance of random access of the B+ tree database is slower than that of the hash database, the B+ tree database supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers.  The performance of sequential access is much faster than that of random access.</p>
 
-<p>As the API is based on object-oriented design, hash database and B+ tree database have same methods which inherited from the upper abstract class.  Prototype database by containers of STL and cache database with LRU deletion algorithm are also provided under the same base class.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.</p>
+<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class.  Beside them, two kinds of databases are provided under the same base class.  The prototype database is powered by the standard containers of STL.  The cache database is powered by the original implementation of double-linked hash map with LRU deletion algorithm.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.</p>
 
-<p>Kyoto Cabinet runs very fast.  For example, elapsed time to store one million records is 0.9 seconds for hash database, and 1.1 seconds for B+ tree database.  Moreover, the size of database of Kyoto Cabinet is very small.  For example, overhead for a record is 16 bytes for hash database, and 4 bytes for B+ tree database.  Furthermore, scalability of Kyoto Cabinet is great.  The database size can be up to 8EB (9.22e18 bytes).</p>
+<p>Kyoto Cabinet runs very fast.  For example, elapsed time to store one million records is 0.9 seconds for the hash database, and 1.1 seconds for the B+ tree database.  Moreover, the size of database is very small.  For example, overhead for a record is 16 bytes for the hash database, and 4 bytes for the B+ tree database.  Furthermore, scalability of Kyoto Cabinet is great.  The database size can be up to 8EB (9.22e18 bytes).</p>
 
-<p>Kyoto Cabinet is written in the C++ language, and provided as API of C++, C, Java, Python, and Ruby.  Kyoto Cabinet is available on platforms which have API conforming to C++03 with the TR1 library extensions.  Kyoto Cabinet is a free software licensed under the GNU General Public License.</p>
+<p>Kyoto Cabinet is written in the C++ language, and provided as API of C++, C, Java, Python, Ruby, Perl, and Lua.  Kyoto Cabinet is available on platforms which have API conforming to C++03 with the TR1 library extensions.  Kyoto Cabinet is a free software licensed under the GNU General Public License.</p>
 
 <hr />
 
@@ -67,7 +67,7 @@
 
 <p>The original DBM was developed by Kenneth Thompson as a part of the original AT&amp;T UNIX.  After that, a lot of followers developed such DBM-like products as NDBM, SDBM, GDBM, TDB, and BerkeleyDB.  In 2003, I developed QDBM to replace GDBM for performance reason.</p>
 
-<p>In 2007, Tokyo Cabinet was developed as the successor of QDBM on the following purposes.  They were achieved and Tokyo Cabinet could replace conventional DBM products.</p>
+<p>In 2007, Tokyo Cabinet was developed as the successor to QDBM on the following purposes.  They were achieved and Tokyo Cabinet could replace conventional DBM products.</p>
 
 <ul>
 <li>improves <strong>space efficiency</strong> : smaller size of database file.</li>
@@ -78,7 +78,7 @@
 <li>supports <strong>64-bit architecture</strong> : enormous memory space and database file are available.</li>
 </ul>
 
-<p>In 2009, Kyoto Cabinet was developed as another successor of QDBM.  Compared with the sibling product (Tokyo Cabinet), the following advantages were pursued.  However, the performance of Tokyo Cabinet is higher than Kyoto Cabinet, at least in single thread operations.</p>
+<p>In 2009, Kyoto Cabinet was developed as another successor to QDBM.  Compared with the sibling product (Tokyo Cabinet), the following advantages were pursued.  However, the performance of Tokyo Cabinet is higher than Kyoto Cabinet, at least in single thread operations.</p>
 
 <ul>
 <li>improves <strong>space efficiency</strong> : smaller size of database file.</li>
@@ -92,45 +92,45 @@
 
 <h3 id="features_hash">Effective Implementation of Hash Database</h3>
 
-<p>Kyoto Cabinet uses hash algorithm to retrieve records.  If a bucket array has sufficient number of elements, the time complexity of retrieval is "O(1)".  That is, time required for retrieving a record is constant, regardless of the scale of a database.  It is also the same about storing and deleting.  Collision of hash values is managed by separate chaining.  Data structure of the chains is binary search tree.  Even if a bucket array has unusually scarce elements, the time complexity of retrieval is "O(log n)".</p>
+<p>Kyoto Cabinet uses hash algorithm to retrieve records.  If a bucket array has sufficient number of elements, the time complexity of retrieval is "O(1)".  That is, the time required for retrieving a record is constant, regardless of the scale of a database.  It is also the same about storing and deleting.  Collision of hash values is managed by separate chaining.  Data structure of the chains is binary search tree.  Even if a bucket array has unusually scarce elements, the time complexity of retrieval is "O(log n)".</p>
 
-<p>Kyoto Cabinet attains improvement in retrieval by loading RAM with the whole of the bucket array.  If the bucket array is on RAM, it is possible to access a region of a target record by about one set of file operations such as `lseek', `read', and `write'.  The bucket array saved in a file is not read into RAM with the `read' call but directly mapped to RAM with the `mmap' call.  Therefore, preparation time on connecting to a database is very short, and two or more processes can share the same memory map.</p>
+<p>Kyoto Cabinet attains performance improvement in retrieval by loading the whole of the bucket array onto the RAM.  If the bucket array is on RAM, it is possible to access a region of a target record by about one set of file operations such as `lseek', `read', and `write'.  The bucket array saved in a file is not read into RAM with the `read' call but directly mapped to RAM with the `mmap' call.  Therefore, preparation time on connecting to a database is very short, and two or more processes can share the same memory map.</p>
 
-<p>The hash function used for hash table is MurMurHash 2.0.  If the number of elements of the bucket array is about half of records stored within a database, although it depends on characteristic of the input, the probability of collision of hash values is about 55.3% (35.5% if the same, 20.4% if twice, 11.0% if four times, 5.7% if eight times).  In that case, it is possible to retrieve a record by two or less sets of file operations.  If it is made into a performance index, in order to handle a database containing one million of records, a bucket array with half a million of elements is required.  The size of each element is 4 bytes.  That is, if 2M bytes of RAM is available, a database containing one million records can be handled.</p>
+<p>The hash function used for hash table is MurMurHash 2.0.  If the number of elements of the bucket array is about a half of records stored within a database, although it depends on characteristic of the input, the probability of collision of hash values is about 55.3% (35.5% if the same, 20.4% if twice, 11.0% if four times, 5.7% if eight times).  In that case, it is possible to retrieve a record by two or less sets of file operations.  If it is made into a performance index, in order to handle a database containing one million of records, a bucket array with half a million of elements is required.  The size of each element is 6 bytes.  That is, if 3M bytes of RAM is available, a database containing one million records can be handled.</p>
 
-<p>When overwriting a record with a value whose size is greater than the existing one, it is necessary to move the region to another position of the file.  Because the time complexity of the operation depends on the size of the region of a record, extending values successively is inefficient.  However, Kyoto Cabinet deal with this problem by alignment.  If increment can be put in padding, it is not necessary to move the region.</p>
+<p>When overwriting a record with a value whose size is greater than the existing one, it is necessary to move the region to another position of the file.  Because the time complexity of the operation depends on the size of the region of a record, extending values successively is inefficient.  However, Kyoto Cabinet deals with this problem by alignment.  If the incremental data can be placed in the padding region trailing the records, it is not necessary to move the region of the record.</p>
 
 <p>Generally speaking, while succession of updating, fragmentation of available regions occurs, and the size of a database grows rapidly.  Kyoto Cabinet deals with this problem by the free block pool and the auto defragmentation mechanism.  If a record is removed or shifted to another position, the region will be treated as a free block.  The free block pool manages free blocks and reuses the best fit region for a new record.  The auto defragmentation is to shift records and free blocks separately.  Successive free blocks coalesce into one.</p>
 
 <h3 id="features_tree">Useful Implementation of B+ Tree Database</h3>
 
-<p>Although B+ tree database is slower than hash database, it features ordering access to each record.  The order can be assigned by users.  Records of B+ tree are sorted and arranged in logical pages.  Sparse index organized in B tree that is multiway balanced tree are maintained for each page.  Thus, the time complexity of retrieval and so on is "O(log n)".  Cursor is provided to access each record in order.  The cursor can jump to a position specified by a key and can step forward or backward from the current position.  Because each page is arranged as double linked list, the time complexity of stepping cursor is "O(1)".</p>
+<p>Although the B+ tree database is slower than the hash database, it features ordering access to each record.  The order can be assigned by users.  Records in the B+ tree database are sorted and arranged in logical pages.  Sparse index organized in B tree that is multiway balanced tree are maintained for each page.  Thus, the time complexity of retrieval and so on is "O(log n)".  Cursor is provided to access each record in order.  The cursor can jump to a position specified by a key and can step forward or backward from the current position.  Because each page is arranged as double linked list, the time complexity of stepping cursor is "O(1)".</p>
 
-<p>B+ tree database is implemented, based on the above hash database.  Because each page of B+ tree is stored as each record of hash database, B+ tree database inherits efficiency of storage management of hash database.  Because the header of each record is smaller and alignment of each page is adjusted according to the page size, in most cases, the size of database file is cut by half compared to one of hash database.</p>
+<p>The B+ tree database is implemented based on the above the hash database.  Because each page of the B+ tree database is stored as each record in the hash database, the B+ tree database inherits efficiency of storage management of the hash database.  Because the header of each record is smaller and alignment of each page is adjusted according to the page size, in most cases, the size of database file is cut by half compared to one of the hash database.</p>
 
-<p>Although operations of many pages are required to update B+ tree, Kyoto Cabinet expedites the process by the page cache and reducing file operations.  The page cache is implemented with double layered LRU list, which realizes that frequently accessed pages are cached in the "hot" list and recently accessed pages are cached in the "warm" LRU list.  If the page cache works efficiently and the whole of the sparse index is cached on memory, it is possible to retrieve a record by one or less set of file operations.</p>
+<p>Although operations of many pages are required to update the B+ tree database, Kyoto Cabinet expedites the process by the page cache and reducing file operations.  The page cache is implemented with double layered LRU list, which realizes that frequently accessed pages are cached in the "hot" list and recently accessed pages are cached in the "warm" LRU list.  If the page cache works efficiently and the whole of the sparse index is cached on memory, it is possible to retrieve a record by one or less set of file operations.</p>
 
-<p>Each page of B+ tree can be stored with compressed.  The default compression method is "Deflate" by ZLIB.  Because records in a page has similar patterns, high efficiency of compression is expected due to the Lempel-Ziv algorithm.  In case of handling text data, the size of a database is reduced to about 50% or less.  If the scale of a database is large and disk I/O is the bottleneck, featuring compression makes the processing speed improved to a large extent.  Moreover, you can specify such external compression algorithms as LZO and LZMA.</p>
+<p>Each page of the B+ tree database can be stored with compressed.  The default compression method is "Deflate" by ZLIB.  Because records in a page has similar patterns, high efficiency of compression is expected due to the Lempel-Ziv algorithm.  In case of handling text data, the size of a database is reduced to about 50% or less.  If the scale of a database is large and disk I/O is the bottleneck, featuring compression makes the processing speed improved to a large extent.  Moreover, you can specify such external compression algorithms as LZO and LZMA.</p>
 
 <h3 id="features_practical">Practical Functionality</h3>
 
-<p>Kyoto Cabinet features transaction mechanisms.  It is possible to commit a series of operations between the beginning and the end of the transaction in a lump, or to abort the transaction and perform rollback to the state before the transaction.  Two isolation levels are supported; "serializable" and "read uncommitted".  Durability is secured by write ahead logging and shadow paging.</p>
+<p>Kyoto Cabinet features transaction mechanisms.  It is possible to commit a series of operations between the beginning and the end of the transaction in a lump, or to abort the transaction and perform rollback to the state before the transaction.  Two isolation levels are supported: "serializable" and "read uncommitted".  Durability is secured by write ahead logging and shadow paging.</p>
 
 <p>Auto transaction and auto recovery mechanisms are also supported.  If the auto transaction option is specified when opening the database, every updating operation is guarded by transaction which is committed implicitly.  Therefore, durability can be assured without explicit transaction operations.  The auto recovery mechanism works after the database is crashed outside transaction.  If inconsistency of the database is detected when opening the database, all regions are scanned as with "fsck" and the database is reconstructed with surviving records implicitly.</p>
 
 <p>Kyoto Cabinet provides two modes to connect to a database: "reader" and "writer".  A reader can perform retrieving but neither storing nor deleting.  A writer can perform all access methods.  Exclusion control between processes is performed when connecting to a database by file locking.  While a writer is connected to a database, neither readers nor writers can be connected.  While a reader is connected to a database, other readers can be connect, but writers can not.  According to this mechanism, data consistency is guaranteed with simultaneous connections in multitasking environment.</p>
 
-<p>Functions of API are reentrant and available in multi-thread environment.  Different database objects can be operated in parallel entirely.  For simultaneous operations against the same database object, rwlock (reader-writer lock) is used for exclusion control.  That is, while a writing thread is operating an object, other reading threads and writing threads are blocked.  However, while a reading thread is operating an object, reading threads are not blocked.  Locking granularity depends on data structures.  Hash database uses record locking.  B+ tree database uses page locking.</p>
+<p>Functions of API are reentrant and available in multi-thread environment.  Different database objects can be operated in parallel entirely.  For simultaneous operations against the same database object, rwlock (reader-writer lock) is used for exclusion control.  That is, while a writing thread is operating an object, other reading threads and writing threads are blocked.  However, while a reading thread is operating an object, reading threads are not blocked.  Locking granularity depends on data structures.  The hash database uses record locking.  The B+ tree database uses page locking.</p>
 
 <p>In order to improve performance and concurrency, Kyoto Cabinet uses such atomic operations built in popular CPUs as atomic-increment and CAS (compare-and-swap).  Lock primitives provided by the native environment such as the POSIX thread package are alternated by own primitives using CAS.</p>
 
 <h3 id="features_simple">Simple but Flexible Interfaces</h3>
 
-<p>Kyoto Cabinet provides simple APIs based on object-oriented design.  Every operation for database is encapsulated and published as lucid methods as `open', `close', `set', `remove', `get', and so on.  The classes of hash database and B+ tree database are derived class of the common abstract class which defines the interface.  Porting an application from one database to another is easy.  Moreover, the polymorphic database API is provided to assign a database in run-time.</p>
+<p>Kyoto Cabinet provides simple APIs based on object-oriented design.  Every operation for database is encapsulated and published as lucid methods as `open', `close', `set', `remove', `get', and so on.  The classes of the hash database and the B+ tree database are derived class of the common abstract class which defines the interface.  Porting an application from one database to another is easy.  Moreover, the polymorphic database API is provided to assign a database in run-time.</p>
 
 <p>Kyoto Cabinet supports the "visitor" pattern.  You can define arbitrary database operations with call back functions.  The visitor class encapsulates that call back functions and their state data.  The database class has the "accept" method, which accepts an instance of the visitor class and calls its functions with a record data.  The return value of the call back function is reflected as the new state of the record.</p>
 
-<p>While the core API is provided for C++, bindings for other languages such as C, Java, Python, and Ruby are also provided.  Command line interfaces are also provided corresponding to each API.  They are useful for prototyping, test, and debugging.</p>
+<p>While the core API is provided for C++, bindings for other languages such as C, Java, Python, Ruby, Perl, and Lua are also provided.  Command line interfaces are also provided corresponding to each API.  They are useful for prototyping, test, and debugging.</p>
 
 <hr />
 
@@ -549,7 +549,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td>kchashdb.h</td>
 <td>
 <div>file hash database.</div>
-<div>file database of hash table; typical DBM.</div>
+<div>file database of hash table: typical DBM.</div>
 </td>
 </tr>
 <tr>
@@ -557,7 +557,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td>kctreedb.h</td>
 <td>
 <div>file tree database.</div>
-<div>file database of B+ tree; DBM with order.</div>
+<div>file database of B+ tree: DBM with order.</div>
 </td>
 </tr>
 <tr>
@@ -642,7 +642,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 <dd>Performs test of lock primitives.</dd>
 <dt><code>kcutiltest file [-th <var>num</var>] [-rnd] [-msiz <var>num</var>] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of the filesystem abstraction.</dd>
-<dt><code>kcutiltest map [-rnd] <var>rnum</var></code></dt>
+<dt><code>kcutiltest map [-rnd] [-bnum <var>num</var>] <var>rnum</var></code></dt>
 <dd>Performs test of data mapping structures.</dd>
 <dt><code>kcutiltest misc <var>rnum</var></code></dt>
 <dd>Performs test of miscellaneous mechanisms.</dd>
@@ -655,6 +655,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 <li><code>-iv <var>num</var></code> : specifies the interval between iterations.</li>
 <li><code>-rnd</code> : performs random test.</li>
 <li><code>-msiz <var>num</var></code> : specifies the size of the memory-mapped region.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
 </ul>
 
 <p>This command returns 0 on success, another on failure.</p>
@@ -1135,7 +1136,7 @@ db.open(...);
 
 <h3 id="tips_tuningtree">Tuning the File Tree Database</h3>
 
-<p>The file tree database is file database of B+ tree.  Because each node of B+ tree is serialized as a page buffer and stored as a record of the file hash database, all tuning parameters of the file hash database is inherited to the file tree database.  Moreover, the following tuning methods are added.</p>
+<p>The file tree database is file database of B+ tree.  Because each node of B+ tree is serialized as a page buffer and stored as a record in the file hash database, all tuning parameters of the file hash database is inherited to the file tree database.  Moreover, the following tuning methods are added.</p>
 
 <ul>
 <li><code>tune_page</code> : sets the size of each page.</li>
@@ -1147,7 +1148,7 @@ db.open(...);
 
 <p>The default tuning of the capacity size of the page cache is 64MB.  If your machine has abundant RAM, call `<code>tune_page</code>' to load all nodes on the page cache.  If the RAM is not abundant, it is better to keep the default page cache size and assign the RAM for the internal memory-mapped region by `<code>tune_map</code>'.</p>
 
-<p>The default record comparator is the lexical ordering function.  That is, records in the B+ tree are placed in the lexical order of each key.  If you want to use another ordering, call `<code>tune_comparator</code>' to set a functor which implements the ordering function.</p>
+<p>The default record comparator is the lexical ordering function.  That is, records in the B+ tree database are placed in the lexical order of each key.  If you want to use another ordering, call `<code>tune_comparator</code>' to set a functor which implements the ordering function.</p>
 
 <p>The default alignment of the file tree database is 256 (1&lt;&lt;8).  The default bucket number of the file tree database is about 65536.  Other default tuning parameters are the same to the file hash database.  Note that the bucket number should be calculated by the number of pages.  The suggested ratio of the bucket number is about 10% of the number of records.  If the compression option is specified, all records in each page are compressed at once.  Therefore, compression is more effective for the file tree database rather than for the file hash database.</p>
 

@@ -1,4 +1,4 @@
-#include <kchashdb.h>
+#include <kcpolydb.h>
 
 using namespace std;
 using namespace kyotocabinet;
@@ -7,10 +7,10 @@ using namespace kyotocabinet;
 int main(int argc, char** argv) {
 
   // create the database object
-  HashDB db;
+  PolyDB db;
 
   // open the database
-  if (!db.open("casket.kch", HashDB::OREADER)) {
+  if (!db.open("casket.kch", PolyDB::OREADER)) {
     cerr << "open error: " << db.error().name() << endl;
   }
 

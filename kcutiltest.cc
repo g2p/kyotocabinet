@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   g_progname = argv[0];
   const char* ebuf = kc::getenv("KCRNDSEED");
   g_randseed = ebuf ? (uint32_t)kc::atoi(ebuf) : (uint32_t)(kc::time() * 1000);
-  srand(g_randseed);
+  mysrand(g_randseed);
   if (argc < 2) usage();
   int32_t rv = 0;
   if (!std::strcmp(argv[1], "mutex")) {
@@ -79,7 +79,7 @@ static void usage() {
   eprintf("usage:\n");
   eprintf("  %s mutex [-th num] [-iv num] rnum\n", g_progname);
   eprintf("  %s file [-th num] [-rnd] [-msiz num] path rnum\n", g_progname);
-  eprintf("  %s map [-rnd] rnum\n", g_progname);
+  eprintf("  %s map [-rnd] [-bnum num] rnum\n", g_progname);
   eprintf("  %s misc rnum\n", g_progname);
   eprintf("\n");
   std::exit(1);

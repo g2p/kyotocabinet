@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 0.9.18)
+AC_INIT(kyotocabinet, 1.0.4)
 
 # Package information
-MYLIBVER=2
-MYLIBREV=21
+MYLIBVER=3
+MYLIBREV=2
 MYFORMATVER=4
 
 # Targets
@@ -28,7 +28,7 @@ MYCOMMANDFILES="$MYCOMMANDFILES kcpolytest kcpolymgr kclangctest"
 MYMAN1FILES="kcutiltest.1 kcutilcodec.1 kcprototest.1 kccachetest.1"
 MYMAN1FILES="$MYMAN1FILES kchashtest.1 kchashmgr.1 kctreetest.1 kctreemgr.1"
 MYMAN1FILES="$MYMAN1FILES kcpolytest.1 kcpolymgr.1 kclangctest.1"
-MYDOCUMENTFILES="COPYING ChangeLog THANKS doc kyotocabinet.idl"
+MYDOCUMENTFILES="COPYING ChangeLog doc kyotocabinet.idl"
 MYPCFILES="kyotocabinet.pc"
 
 # Building flags

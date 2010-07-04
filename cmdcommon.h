@@ -56,6 +56,13 @@ const size_t RECBUFSIZ = 64;             // buffer size for a record
 const size_t RECBUFSIZL = 1024;          // buffer size for a long record
 
 
+// global variables
+uint64_t g_rnd_x = 123456789;
+uint64_t g_rnd_y = 362436069;
+uint64_t g_rnd_z = 521288629;
+uint64_t g_rnd_w = 88675123;
+
+
 // function prototypes
 int64_t myrand(int64_t range);
 void iprintf(const char* format, ...);
@@ -69,13 +76,23 @@ std::string unitnumstr(int64_t num);
 std::string unitnumstrbyte(int64_t num);
 
 
+// get the random seed
+void mysrand(int64_t seed) {
+  g_rnd_x = seed;
+  for (int32_t i = 0; i < 16; i++) {
+    myrand(1);
+  }
+}
+
+
 // get a random number
 int64_t myrand(int64_t range) {
-  if (range < 2) return 0;
-  uint64_t base = (int64_t)(range * (rand() / (RAND_MAX + 1.0)));
-  uint64_t mask = (uint64_t)rand() << 30;
-  mask += (uint64_t)rand() >> 2;
-  return (base ^ mask) % range;
+  uint64_t t = g_rnd_x ^ (g_rnd_x << 11);
+  g_rnd_x = g_rnd_y;
+  g_rnd_y = g_rnd_z;
+  g_rnd_z = g_rnd_w;
+  g_rnd_w = (g_rnd_w ^ (g_rnd_w >> 19)) ^ (t ^ (t >> 8));
+  return (g_rnd_w & INT64_MAX) % range;
 }
 
 

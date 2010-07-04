@@ -42,18 +42,18 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Constructor.  <a href="#a16ece54af55b0e514e08582fe3383b8a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a879108e5460ec684520e4313b136118a">~Cursor</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a879108e5460ec684520e4313b136118a"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a1355cf63e951ac32b5791689ffda0ed7">accept</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, bool step=false)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to the current record.  <a href="#a1355cf63e951ac32b5791689ffda0ed7"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a334cf20add8e37d5f6a95ac2b950d2bf">jump</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record.  <a href="#a334cf20add8e37d5f6a95ac2b950d2bf"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a687859e21debf4ecac184c85210df1b6">jump</a> (const char *kbuf, size_t ksiz)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor onto a record.  <a href="#a687859e21debf4ecac184c85210df1b6"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#afcbe4ec1b174cdb94dd0a7adec4efe77">jump</a> (const std::string &amp;key)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record.  <a href="#afcbe4ec1b174cdb94dd0a7adec4efe77"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a95723459cc5f821598dd98f901aa1fe1">step</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the next record.  <a href="#a95723459cc5f821598dd98f901aa1fe1"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classkyotocabinet_1_1TreeDB.html">TreeDB</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a0cbb855cb31f833beeffb3baeb876d3a">db</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the database object.  <a href="#a0cbb855cb31f833beeffb3baeb876d3a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a9321afd3465165ae1f56bc9684eaf779">accept</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, bool step=false)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to the current record.  <a href="#a9321afd3465165ae1f56bc9684eaf779"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a92fb6455518bb1a9ea59e352ac99b9a8">jump</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record.  <a href="#a92fb6455518bb1a9ea59e352ac99b9a8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a7ed7b592e5cbaa02d8c075544af54261">jump</a> (const char *kbuf, size_t ksiz)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor onto a record.  <a href="#a7ed7b592e5cbaa02d8c075544af54261"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a8196cdf03d4a9bbcd5ec40a861e1f295">jump</a> (const std::string &amp;key)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record.  <a href="#a8196cdf03d4a9bbcd5ec40a861e1f295"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a8efc4c60fc1facf91d9630df51c499a8">step</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the next record.  <a href="#a8efc4c60fc1facf91d9630df51c499a8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1TreeDB.html">TreeDB</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#ac06d123a8332639ccb0c636b60704277">db</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the database object.  <a href="#ac06d123a8332639ccb0c636b60704277"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Friends</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9026b09f1d912f17fff7f1f62f15fae7"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::TreeDB" ref="a9026b09f1d912f17fff7f1f62f15fae7" args="" -->
 class&nbsp;</td><td class="memItemRight" valign="bottom"><b>TreeDB</b></td></tr>
@@ -109,12 +109,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>TreeDB</b></td></tr>
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="a1355cf63e951ac32b5791689ffda0ed7"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::accept" ref="a1355cf63e951ac32b5791689ffda0ed7" args="(Visitor *visitor, bool writable=true, bool step=false)" -->
+<a class="anchor" id="a9321afd3465165ae1f56bc9684eaf779"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::accept" ref="a9321afd3465165ae1f56bc9684eaf779" args="(Visitor *visitor, bool writable=true, bool step=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::Cursor::accept </td>
+          <td class="memname">bool kyotocabinet::TreeDB::Cursor::accept </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *&nbsp;</td>
           <td class="paramname"> <em>visitor</em>, </td>
@@ -156,12 +156,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>TreeDB</b></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a334cf20add8e37d5f6a95ac2b950d2bf"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::jump" ref="a334cf20add8e37d5f6a95ac2b950d2bf" args="()" -->
+<a class="anchor" id="a92fb6455518bb1a9ea59e352ac99b9a8"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::jump" ref="a92fb6455518bb1a9ea59e352ac99b9a8" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::Cursor::jump </td>
+          <td class="memname">bool kyotocabinet::TreeDB::Cursor::jump </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -178,12 +178,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>TreeDB</b></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a687859e21debf4ecac184c85210df1b6"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::jump" ref="a687859e21debf4ecac184c85210df1b6" args="(const char *kbuf, size_t ksiz)" -->
+<a class="anchor" id="a7ed7b592e5cbaa02d8c075544af54261"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::jump" ref="a7ed7b592e5cbaa02d8c075544af54261" args="(const char *kbuf, size_t ksiz)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::Cursor::jump </td>
+          <td class="memname">bool kyotocabinet::TreeDB::Cursor::jump </td>
           <td>(</td>
           <td class="paramtype">const char *&nbsp;</td>
           <td class="paramname"> <em>kbuf</em>, </td>
@@ -217,12 +217,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>TreeDB</b></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="afcbe4ec1b174cdb94dd0a7adec4efe77"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::jump" ref="afcbe4ec1b174cdb94dd0a7adec4efe77" args="(const std::string &amp;key)" -->
+<a class="anchor" id="a8196cdf03d4a9bbcd5ec40a861e1f295"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::jump" ref="a8196cdf03d4a9bbcd5ec40a861e1f295" args="(const std::string &amp;key)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::Cursor::jump </td>
+          <td class="memname">bool kyotocabinet::TreeDB::Cursor::jump </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
           <td class="paramname"> <em>key</em></td>
@@ -234,18 +234,18 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>TreeDB</b></td></tr>
 <div class="memdoc">
 
 <p>Jump the cursor to a record. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a334cf20add8e37d5f6a95ac2b950d2bf" title="Jump the cursor to the first record.">Cursor::jump</a> method except that the parameter is std::string. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1TreeDB_1_1Cursor.html#a92fb6455518bb1a9ea59e352ac99b9a8" title="Jump the cursor to the first record.">Cursor::jump</a> method except that the parameter is std::string. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a3b38a11631f37d104209e5feade154b4">kyotocabinet::DB::Cursor</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a95723459cc5f821598dd98f901aa1fe1"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::step" ref="a95723459cc5f821598dd98f901aa1fe1" args="()" -->
+<a class="anchor" id="a8efc4c60fc1facf91d9630df51c499a8"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::step" ref="a8efc4c60fc1facf91d9630df51c499a8" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::Cursor::step </td>
+          <td class="memname">bool kyotocabinet::TreeDB::Cursor::step </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -262,12 +262,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>TreeDB</b></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a0cbb855cb31f833beeffb3baeb876d3a"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::db" ref="a0cbb855cb31f833beeffb3baeb876d3a" args="()" -->
+<a class="anchor" id="ac06d123a8332639ccb0c636b60704277"></a><!-- doxytag: member="kyotocabinet::TreeDB::Cursor::db" ref="ac06d123a8332639ccb0c636b60704277" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual <a class="el" href="classkyotocabinet_1_1TreeDB.html">TreeDB</a>* kyotocabinet::TreeDB::Cursor::db </td>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1TreeDB.html">TreeDB</a>* kyotocabinet::TreeDB::Cursor::db </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -285,7 +285,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>TreeDB</b></td></tr>
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun May 9 12:35:29 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

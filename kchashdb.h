@@ -71,6 +71,13 @@ const char* HDBTMPPATHEXT = "tmpkch";    ///< extension of the temporary file
 
 /**
  * File hash database.
+ * @note This class is a concrete class to operate a hash database on a file.  This class can be
+ * inherited but overwriting methods is forbidden.  Before every database operation, it is
+ * necessary to call the HashDB::open method in order to open a database file and connect the
+ * database object to it.  To avoid data missing or corruption, it is important to close every
+ * database file by the HashDB::close method when the database is no longer in use.  It is
+ * forbidden for multible database objects in a process to open the same database at the same
+ * time.
  */
 class HashDB : public FileDB {
 public:
@@ -120,7 +127,7 @@ public:
      * @note the operation for each record is performed atomically and other threads accessing
      * the same record are blocked.
      */
-    virtual bool accept(Visitor* visitor, bool writable = true, bool step = false) {
+    bool accept(Visitor* visitor, bool writable = true, bool step = false) {
       _assert_(visitor);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
@@ -233,7 +240,7 @@ public:
      * Jump the cursor to the first record.
      * @return true on success, or false on failure.
      */
-    virtual bool jump() {
+    bool jump() {
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
@@ -255,7 +262,7 @@ public:
      * @param ksiz the size of the key region.
      * @return true on success, or false on failure.
      */
-    virtual bool jump(const char* kbuf, size_t ksiz) {
+    bool jump(const char* kbuf, size_t ksiz) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
@@ -311,7 +318,7 @@ public:
      * Jump the cursor to a record.
      * @note Equal to the original Cursor::jump method except that the parameter is std::string.
      */
-    virtual bool jump(const std::string& key) {
+    bool jump(const std::string& key) {
       _assert_(true);
       return jump(key.c_str(), key.size());
     }
@@ -319,7 +326,7 @@ public:
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
-    virtual bool step() {
+    bool step() {
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
@@ -344,7 +351,7 @@ public:
      * Get the database object.
      * @return the database object.
      */
-    virtual HashDB* db() {
+    HashDB* db() {
       _assert_(true);
       return db_;
     }
@@ -449,7 +456,7 @@ public:
    * @note the operation for each record is performed atomically and other threads accessing the
    * same record are blocked.
    */
-  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
+  bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     mlock_.lock_reader();
     if (omode_ == 0) {
@@ -492,7 +499,7 @@ public:
    * @return true on success, or false on failure.
    * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  virtual bool iterate(Visitor *visitor, bool writable = true) {
+  bool iterate(Visitor *visitor, bool writable = true) {
     _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -511,7 +518,7 @@ public:
    * Get the last happened error.
    * @return the last happened error.
    */
-  virtual Error error() const {
+  Error error() const {
     _assert_(true);
     return error_;
   }
@@ -520,7 +527,7 @@ public:
    * @param code an error code.
    * @param message a supplement message.
    */
-  virtual void set_error(Error::Code code, const char* message) {
+  void set_error(Error::Code code, const char* message) {
     _assert_(message);
     error_->set(code, message);
     if (code == Error::BROKEN || code == Error::SYSTEM) flags_ |= FFATAL;
@@ -541,9 +548,10 @@ public:
    * detected.
    * @return true on success, or false on failure.
    * @note Every opened database must be closed by the HashDB::close method when it is no
-   * longer in use.
+   * longer in use.  It is not allowed for two or more database objects in the same process to
+   * keep their connections to the same database file at the same time.
    */
-  virtual bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
+  bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -567,7 +575,14 @@ public:
     if (mode & ONOLOCK) fmode |= File::ONOLOCK;
     if (mode & OTRYLOCK) fmode |= File::OTRYLOCK;
     if (!file_.open(path, fmode, msiz_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      const char* emsg = file_.error();
+      Error::Code code = Error::SYSTEM;
+      if (std::strstr(emsg, "(permission denied)") || std::strstr(emsg, "(directory)")) {
+        code = Error::NOPERM;
+      } else if (std::strstr(emsg, "(file not found)") || std::strstr(emsg, "(invalid path)")) {
+        code = Error::NOFILE;
+      }
+      set_error(__FILE__, __LINE__, code, emsg);
       return false;
     }
     if (file_.recovered()) report(__FILE__, __LINE__, "info", "recovered by the WAL file");
@@ -644,7 +659,7 @@ public:
    * Close the database file.
    * @return true on success, or false on failure.
    */
-  virtual bool close() {
+  bool close() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -674,7 +689,7 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @return true on success, or false on failure.
    */
-  virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+  bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -697,7 +712,7 @@ public:
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction(bool hard = false) {
+  bool begin_transaction(bool hard = false) {
     _assert_(true);
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
@@ -731,7 +746,7 @@ public:
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction_try(bool hard = false) {
+  bool begin_transaction_try(bool hard = false) {
     _assert_(true);
     mlock_.lock_writer();
     if (omode_ == 0) {
@@ -763,7 +778,7 @@ public:
    * @param commit true to commit the transaction, or false to abort the transaction.
    * @return true on success, or false on failure.
    */
-  virtual bool end_transaction(bool commit = true) {
+  bool end_transaction(bool commit = true) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -787,7 +802,7 @@ public:
    * Remove all records.
    * @return true on success, or false on failure.
    */
-  virtual bool clear() {
+  bool clear() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -824,7 +839,7 @@ public:
    * Get the number of records.
    * @return the number of records, or -1 on failure.
    */
-  virtual int64_t count() {
+  int64_t count() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -837,7 +852,7 @@ public:
    * Get the size of the database file.
    * @return the size of the database file in bytes, or -1 on failure.
    */
-  virtual int64_t size() {
+  int64_t size() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -850,7 +865,7 @@ public:
    * Get the path of the database file.
    * @return the path of the database file, or an empty string on failure.
    */
-  virtual std::string path() {
+  std::string path() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -864,7 +879,7 @@ public:
    * @param strmap a string map to contain the result.
    * @return true on success, or false on failure.
    */
-  virtual bool status(std::map<std::string, std::string>* strmap) {
+  bool status(std::map<std::string, std::string>* strmap) {
     _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -917,7 +932,7 @@ public:
    * @note Because the object of the return value is allocated by the constructor, it should be
    * released with the delete operator when it is no longer in use.
    */
-  virtual Cursor* cursor() {
+  Cursor* cursor() {
     _assert_(true);
     return new Cursor(this);
   }
@@ -927,7 +942,7 @@ public:
    * @param ervbs true to report all errors, or false to report fatal errors only.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_error_reporter(std::ostream* erstrm, bool ervbs) {
+  bool tune_error_reporter(std::ostream* erstrm, bool ervbs) {
     _assert_(erstrm);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -943,7 +958,7 @@ public:
    * @param apow the power of the alignment of record size.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_alignment(int8_t apow) {
+  bool tune_alignment(int8_t apow) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -959,7 +974,7 @@ public:
    * @param fpow the power of the capacity of the free block pool.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_fbp(int8_t fpow) {
+  bool tune_fbp(int8_t fpow) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -976,7 +991,7 @@ public:
    * HashDB::TLINEAR to use linear collision chaining, HashDB::TCOMPRESS to compress each record.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_options(int8_t opts) {
+  bool tune_options(int8_t opts) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -991,7 +1006,7 @@ public:
    * @param bnum the number of buckets of the hash table.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_buckets(int64_t bnum) {
+  bool tune_buckets(int64_t bnum) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -1007,7 +1022,7 @@ public:
    * @param msiz the size of the internal memory-mapped region.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_map(int64_t msiz) {
+  bool tune_map(int64_t msiz) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -1022,7 +1037,7 @@ public:
    * @param dfunit the unit step number of auto defragmentation.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_defrag(int64_t dfunit) {
+  bool tune_defrag(int64_t dfunit) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -1037,7 +1052,7 @@ public:
    * @param comp the data compressor object.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_compressor(Compressor* comp) {
+  bool tune_compressor(Compressor* comp) {
     _assert_(comp);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -1051,7 +1066,7 @@ public:
    * Get the opaque data.
    * @return the pointer to the opaque data region, whose size is 16 bytes.
    */
-  virtual char* opaque() {
+  char* opaque() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1064,7 +1079,7 @@ public:
    * Synchronize the opaque data.
    * @return true on success, or false on failure.
    */
-  virtual bool synchronize_opaque() {
+  bool synchronize_opaque() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -1080,7 +1095,7 @@ public:
    * @param step the number of steps.  If it is not more than 0, the whole region is defraged.
    * @return true on success, or false on failure.
    */
-  virtual bool defrag(int64_t step) {
+  bool defrag(int64_t step) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -1105,7 +1120,7 @@ public:
    * Get the status flags.
    * @return the status flags, or 0 on failure.
    */
-  virtual uint8_t flags() {
+  uint8_t flags() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1122,8 +1137,8 @@ protected:
    * @param code an error code.
    * @param message a supplement message.
    */
-  virtual void set_error(const char* file, int32_t line,
-                         Error::Code code, const char* message) {
+  void set_error(const char* file, int32_t line,
+                 Error::Code code, const char* message) {
     _assert_(file && message);
     set_error(code, message);
     if (ervbs_ || code == Error::BROKEN || code == Error::SYSTEM)
@@ -1137,8 +1152,8 @@ protected:
    * @param format the printf-like format string.
    * @param ... used according to the format string.
    */
-  virtual void report(const char* file, int32_t line, const char* type,
-                      const char* format, ...) {
+  void report(const char* file, int32_t line, const char* type,
+              const char* format, ...) {
     _assert_(file && line > 0 && type && format);
     if (!erstrm_) return;
     const std::string& path = path_.size() > 0 ? path_ : "-";
@@ -1159,8 +1174,8 @@ protected:
    * @param buf the binary buffer.
    * @param size the size of the binary buffer
    */
-  virtual void report_binary(const char* file, int32_t line, const char* type,
-                             const char* name, const char* buf, size_t size) {
+  void report_binary(const char* file, int32_t line, const char* type,
+                     const char* name, const char* buf, size_t size) {
     _assert_(file && line > 0 && type && name && buf && size <= MEMMAXSIZ);
     if (!erstrm_) return;
     char* hex = hexencode(buf, size);
@@ -1172,7 +1187,7 @@ protected:
    * @param type the database type.
    * @return true on success, or false on failure.
    */
-  virtual bool tune_type(int8_t type) {
+  bool tune_type(int8_t type) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -1186,7 +1201,7 @@ protected:
    * Get the library version.
    * @return the library version, or 0 on failure.
    */
-  virtual uint8_t libver() {
+  uint8_t libver() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1199,7 +1214,7 @@ protected:
    * Get the library revision.
    * @return the library revision, or 0 on failure.
    */
-  virtual uint8_t librev() {
+  uint8_t librev() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1212,7 +1227,7 @@ protected:
    * Get the format version.
    * @return the format version, or 0 on failure.
    */
-  virtual uint8_t fmtver() {
+  uint8_t fmtver() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1225,7 +1240,7 @@ protected:
    * Get the module checksum.
    * @return the module checksum, or 0 on failure.
    */
-  virtual uint8_t chksum() {
+  uint8_t chksum() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1238,7 +1253,7 @@ protected:
    * Get the database type.
    * @return the database type, or 0 on failure.
    */
-  virtual uint8_t type() {
+  uint8_t type() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1251,7 +1266,7 @@ protected:
    * Get the alignment power.
    * @return the alignment power, or 0 on failure.
    */
-  virtual uint8_t apow() {
+  uint8_t apow() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1264,7 +1279,7 @@ protected:
    * Get the free block pool power.
    * @return the free block pool power, or 0 on failure.
    */
-  virtual uint8_t fpow() {
+  uint8_t fpow() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1277,7 +1292,7 @@ protected:
    * Get the options.
    * @return the options, or 0 on failure.
    */
-  virtual uint8_t opts() {
+  uint8_t opts() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1290,7 +1305,7 @@ protected:
    * Get the bucket number.
    * @return the bucket number, or 0 on failure.
    */
-  virtual int64_t bnum() {
+  int64_t bnum() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1303,7 +1318,7 @@ protected:
    * Get the size of the internal memory-mapped region.
    * @return the size of the internal memory-mapped region, or 0 on failure.
    */
-  virtual int64_t msiz() {
+  int64_t msiz() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1316,7 +1331,7 @@ protected:
    * Get the unit step number of auto defragmentation.
    * @return the unit step number of auto defragmentation, or 0 on failure.
    */
-  virtual int64_t dfunit() {
+  int64_t dfunit() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1329,7 +1344,7 @@ protected:
    * Get the data compressor.
    * @return the data compressor, or NULL on failure.
    */
-  virtual Compressor *comp() {
+  Compressor *comp() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1342,7 +1357,7 @@ protected:
    * Check whether the database was recovered or not.
    * @return true if recovered, or false if not.
    */
-  virtual bool recovered() {
+  bool recovered() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1355,7 +1370,7 @@ protected:
    * Check whether the database was reorganized or not.
    * @return true if recovered, or false if not.
    */
-  virtual bool reorganized() {
+  bool reorganized() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -1804,7 +1819,7 @@ private:
       err = true;
     }
     if (proc && !proc->process(path_, count_, lsiz_)) {
-      set_error(__FILE__, __LINE__, Error::MISC, "postprocessing failed");
+      set_error(__FILE__, __LINE__, Error::LOGIC, "postprocessing failed");
       err = true;
     }
     return !err;
@@ -2980,18 +2995,6 @@ private:
   bool begin_transaction_impl() {
     _assert_(true);
     if (!dump_meta()) return false;
-
-
-    // TBD: hoge: really?
-    /*
-    if (!file_.truncate(lsiz_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
-      return false;
-    }
-    psiz_ = lsiz_;
-    */
-
-
     if (!file_.begin_transaction(trhard_, boff_)) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
       return false;

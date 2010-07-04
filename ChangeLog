@@ -1,3 +1,49 @@
+2010-07-04  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h (typestring): refactored.
+
+	- Release: 1.0.4
+
+2010-06-19  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcdb.h: useless virtual attributes of some functions were abolished.
+
+	* kctreedb.h (synchronize): a bug related to a call back parameter was fixed.
+
+	* kcpolytest.cc (procqueue): a bug related to a log message was fixed.
+
+	- Release: 1.0.3
+
+2010-06-05  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* cmdcommon.h (mysrand): new function.
+
+	* cmdcommon.h (myrand): algorithm was changed.
+
+	- Release: 1.0.2
+
+2010-05-25  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kcfile.cc (File::open): error messages were added.
+
+	* kcdb.h (DB::dump_snapshot, DB::load_snapshot): error codes were modified.
+
+	* kchashdb.h (HashDB::open): error codes were modified.
+
+	- Release: 1.0.1
+
+2010-05-19  Mikio Hirabayashi  <hirarin@gmail.com>
+
+	* kccommon.h: built-in macros with confliction were voided.
+
+	* kclangc.cc (kcdbcopy, kccursetvalue): new functions.
+
+	* kclangc.cc (kcatoi, kcatoix, kcatof): new functions.
+
+	* kclang.cc (kcnan, kcinf, kcchknan, kcchkinf): new functions.
+
+	- Release: 1.0.0
+
 2010-05-06  Mikio Hirabayashi  <hirarin@gmail.com>
 
 	* kccachetest.cc (procorder): a bug about record counting was fixed.

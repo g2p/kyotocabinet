@@ -73,74 +73,75 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Default constructor.  <a href="#a8fe703ac1f76c0d175a81be1097425dc"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a82006ff275c396e3ad95f345a8fa5a07">~TreeDB</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a82006ff275c396e3ad95f345a8fa5a07"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a29c6db4c8e3f4366aa2744032fd7d0cc">accept</a> (const char *kbuf, size_t ksiz, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to a record.  <a href="#a29c6db4c8e3f4366aa2744032fd7d0cc"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#aa865771989b5f66bd9a688b412c7df8c">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#aa865771989b5f66bd9a688b412c7df8c"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a02ecad0eb89b280aed76a91e37d7e5c9">error</a> () const </td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the last happened error.  <a href="#a02ecad0eb89b280aed76a91e37d7e5c9"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a68d8ce0b77136c46edd5c37da79cd93b">set_error</a> (<a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a> code, const char *message)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a68d8ce0b77136c46edd5c37da79cd93b"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a69c6826e132a867e920a549043c9438b">open</a> (const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#a69c6826e132a867e920a549043c9438b"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a9fffb9a4ffb0b68232ed6614ba033631">close</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#a9fffb9a4ffb0b68232ed6614ba033631"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#af3952478452612f0cc5518390af58fe4">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1FileDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#af3952478452612f0cc5518390af58fe4"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#adc85c62ded273447125fab5310ea80bc">begin_transaction</a> (bool hard=false)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#adc85c62ded273447125fab5310ea80bc"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a0c278efe26593c01e13ae01c591debe2">begin_transaction_try</a> (bool hard=false)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Try to begin transaction.  <a href="#a0c278efe26593c01e13ae01c591debe2"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a90f17d746579495bd132023e7999e932">end_transaction</a> (bool commit=true)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">End transaction.  <a href="#a90f17d746579495bd132023e7999e932"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a918d92fccec10b01e5fa9f0791bd4ed1">clear</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove all records.  <a href="#a918d92fccec10b01e5fa9f0791bd4ed1"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a7884ed154a04a7c666d50e54099f3926">count</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the number of records.  <a href="#a7884ed154a04a7c666d50e54099f3926"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a9b73407e1f0ae57f7c5c2474d71d5585">size</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the size of the database file.  <a href="#a9b73407e1f0ae57f7c5c2474d71d5585"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual std::string&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a36cacfd0fd32ade488de7a186bf03b8f">path</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the path of the database file.  <a href="#a36cacfd0fd32ade488de7a186bf03b8f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a6c2142958e7d3d74cb096ea07ac2d94d">status</a> (std::map&lt; std::string, std::string &gt; *strmap)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#a6c2142958e7d3d74cb096ea07ac2d94d"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a3aa8a1f0f7d66ee8d1ea01b762257352">cursor</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#a3aa8a1f0f7d66ee8d1ea01b762257352"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#ad0ede14a89c095599045908366e622a6">tune_error_reporter</a> (std::ostream *erstrm, bool ervbs)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal error reporter.  <a href="#ad0ede14a89c095599045908366e622a6"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#abeaf67d1c6443a1defff75734d0b5559">tune_alignment</a> (int8_t apow)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the power of the alignment of record size.  <a href="#abeaf67d1c6443a1defff75734d0b5559"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a1223d4ccd9957d66f5aa42e84318c5f6">tune_fbp</a> (int8_t fpow)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the power of the capacity of the free block pool.  <a href="#a1223d4ccd9957d66f5aa42e84318c5f6"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a53a575023af9bf1ac02cccca9ae2856a">tune_options</a> (int8_t opts)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the optional features.  <a href="#a53a575023af9bf1ac02cccca9ae2856a"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a316f1c3ca1e30f8990324a855226959e">tune_buckets</a> (int64_t bnum)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the number of buckets of the hash table.  <a href="#a316f1c3ca1e30f8990324a855226959e"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#ac3321d7f76d9b91d24d764e213d067b9">tune_page</a> (int32_t psiz)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the size of each page.  <a href="#ac3321d7f76d9b91d24d764e213d067b9"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a540d50cf68abd7f5a931579680f3b301">tune_map</a> (int64_t msiz)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the size of the internal memory-mapped region.  <a href="#a540d50cf68abd7f5a931579680f3b301"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#af49e2955c3bf27bb6b68c03aa05bfef9">tune_defrag</a> (int64_t dfunit)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the unit step number of auto defragmentation.  <a href="#af49e2955c3bf27bb6b68c03aa05bfef9"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a37084870f84fec2872c07aa813bbce6f">tune_page_cache</a> (int64_t pccap)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the capacity size of the page cache.  <a href="#a37084870f84fec2872c07aa813bbce6f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a2ab2a6a2eb8781b067435ff946a8b28a">tune_compressor</a> (<a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a> *comp)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the data compressor.  <a href="#a2ab2a6a2eb8781b067435ff946a8b28a"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a2c01dda07cb26999c42376e107d64cc7">tune_comparator</a> (<a class="el" href="classkyotocabinet_1_1Comparator.html">Comparator</a> *rcomp)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the record comparator.  <a href="#a2c01dda07cb26999c42376e107d64cc7"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a486ac0e35ab7a445008841e937453a9c">opaque</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the opaque data.  <a href="#a486ac0e35ab7a445008841e937453a9c"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a9247917fe4ba872c3c2759fcfed9a914">synchronize_opaque</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize the opaque data.  <a href="#a9247917fe4ba872c3c2759fcfed9a914"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a3d8592166e7c83f5bda3e4db58d8dcc0">defrag</a> (int64_t step)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Perform defragmentation of the file.  <a href="#a3d8592166e7c83f5bda3e4db58d8dcc0"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#aa038cbb2f30117dd04d45d84071b30cc">flags</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the status flags.  <a href="#aa038cbb2f30117dd04d45d84071b30cc"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a65408da85a1223c01bca9af521c7ef88">accept</a> (const char *kbuf, size_t ksiz, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to a record.  <a href="#a65408da85a1223c01bca9af521c7ef88"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a174bf8f9853befe45abcb52f5202f663">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#a174bf8f9853befe45abcb52f5202f663"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a2f9fea830f9cfa51549e0be9d5397421">error</a> () const </td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the last happened error.  <a href="#a2f9fea830f9cfa51549e0be9d5397421"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a8ef7a3531cbb9ec77e348055a0c3166e">set_error</a> (<a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a> code, const char *message)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a8ef7a3531cbb9ec77e348055a0c3166e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a3a8dca51b4b139c973a0f2084c96c03f">open</a> (const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#a3a8dca51b4b139c973a0f2084c96c03f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a75a9b4863392262a91c169d7a115fc9a">close</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#a75a9b4863392262a91c169d7a115fc9a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#ac68cb7ef9e814a8d0cc0038e190f1829">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1FileDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#ac68cb7ef9e814a8d0cc0038e190f1829"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a9fb2f30b5cf5e896122a5bc280b5938e">begin_transaction</a> (bool hard=false)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#a9fb2f30b5cf5e896122a5bc280b5938e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#aac5d4c1cf2ae7f4dc01473f071dbe949">begin_transaction_try</a> (bool hard=false)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Try to begin transaction.  <a href="#aac5d4c1cf2ae7f4dc01473f071dbe949"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a08bb76cad3dade67ef4c15d6bc162e3e">end_transaction</a> (bool commit=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">End transaction.  <a href="#a08bb76cad3dade67ef4c15d6bc162e3e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a2f5fe20f07abe25455484dc3086fd4b4">clear</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove all records.  <a href="#a2f5fe20f07abe25455484dc3086fd4b4"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#ad2abfba978402786ace1b2cb4f353abb">count</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the number of records.  <a href="#ad2abfba978402786ace1b2cb4f353abb"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a0c19fdf7b14a3ffa35598ee83382322f">size</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the size of the database file.  <a href="#a0c19fdf7b14a3ffa35598ee83382322f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">std::string&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a88ebce8344b16339de40daa2b81511a6">path</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the path of the database file.  <a href="#a88ebce8344b16339de40daa2b81511a6"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a98cf5efe12d2dc359c244bf6332b7220">status</a> (std::map&lt; std::string, std::string &gt; *strmap)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#a98cf5efe12d2dc359c244bf6332b7220"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#abaf1dc0a398f5d8ae00f7e2cdb3cbf2d">cursor</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#abaf1dc0a398f5d8ae00f7e2cdb3cbf2d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a756246c171517fff6d37f300544d7dc5">tune_error_reporter</a> (std::ostream *erstrm, bool ervbs)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal error reporter.  <a href="#a756246c171517fff6d37f300544d7dc5"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#adec43e6aa9c5b3b5c9f844535877d557">tune_alignment</a> (int8_t apow)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the power of the alignment of record size.  <a href="#adec43e6aa9c5b3b5c9f844535877d557"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a8a8e98f43d0cfb2edbe1ecca42b660f1">tune_fbp</a> (int8_t fpow)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the power of the capacity of the free block pool.  <a href="#a8a8e98f43d0cfb2edbe1ecca42b660f1"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a5ebb3a9c8a30cd20529412ead2e01288">tune_options</a> (int8_t opts)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the optional features.  <a href="#a5ebb3a9c8a30cd20529412ead2e01288"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a3994a4580177bb2c07f04a8913fbb220">tune_buckets</a> (int64_t bnum)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the number of buckets of the hash table.  <a href="#a3994a4580177bb2c07f04a8913fbb220"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a8b8e3d4bb1e7a5cd4c76c2efd23018e9">tune_page</a> (int32_t psiz)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the size of each page.  <a href="#a8b8e3d4bb1e7a5cd4c76c2efd23018e9"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a1adf493456b27aa0251c998b6f2a26b8">tune_map</a> (int64_t msiz)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the size of the internal memory-mapped region.  <a href="#a1adf493456b27aa0251c998b6f2a26b8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#ac34e5781338626cc627bb66b7b4204d5">tune_defrag</a> (int64_t dfunit)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the unit step number of auto defragmentation.  <a href="#ac34e5781338626cc627bb66b7b4204d5"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a6d9c3471a075e91c45ab8146f2231830">tune_page_cache</a> (int64_t pccap)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the capacity size of the page cache.  <a href="#a6d9c3471a075e91c45ab8146f2231830"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#afcc12fbcc2219ca78fcb0e551ade3649">tune_compressor</a> (<a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a> *comp)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the data compressor.  <a href="#afcc12fbcc2219ca78fcb0e551ade3649"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a3c29d6faee897d471cb800cec361e6c8">tune_comparator</a> (<a class="el" href="classkyotocabinet_1_1Comparator.html">Comparator</a> *rcomp)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the record comparator.  <a href="#a3c29d6faee897d471cb800cec361e6c8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#ac6136bb0479e1995183e022e8f958f4c">opaque</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the opaque data.  <a href="#ac6136bb0479e1995183e022e8f958f4c"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a97898b04e411379abfc988e1e7cc72b9">synchronize_opaque</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize the opaque data.  <a href="#a97898b04e411379abfc988e1e7cc72b9"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#ab5ba7bfaddf42ba595fd53a91621073e">defrag</a> (int64_t step)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Perform defragmentation of the file.  <a href="#ab5ba7bfaddf42ba595fd53a91621073e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a34a13c7a4956fe041e5db3e019117307">flags</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the status flags.  <a href="#a34a13c7a4956fe041e5db3e019117307"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Protected Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#a6c54ddc718d771808afcaeed06e242e5">set_error</a> (const char *file, int32_t line, <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a> code, const char *message)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a6c54ddc718d771808afcaeed06e242e5"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TreeDB.html#abbd2514ce26fdc30bd2371b50cecda05">set_error</a> (const char *file, int32_t line, <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a> code, const char *message)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#abbd2514ce26fdc30bd2371b50cecda05"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p><a class="el" href="classkyotocabinet_1_1File.html" title="Filesystem abstraction.">File</a> tree database. </p>
+<dl class="note"><dt><b>Note:</b></dt><dd>This class is a concrete class to operate a tree database on a file. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1TreeDB.html#a3a8dca51b4b139c973a0f2084c96c03f" title="Open a database file.">TreeDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1TreeDB.html#a75a9b4863392262a91c169d7a115fc9a" title="Close the database file.">TreeDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. </dd></dl>
 <hr/><h2>Member Enumeration Documentation</h2>
 <a class="anchor" id="a6dee1bf91806a6e264115d7a2aa66771"></a><!-- doxytag: member="kyotocabinet::TreeDB::Option" ref="a6dee1bf91806a6e264115d7a2aa66771" args="" -->
 <div class="memitem">
@@ -236,12 +237,12 @@
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="a29c6db4c8e3f4366aa2744032fd7d0cc"></a><!-- doxytag: member="kyotocabinet::TreeDB::accept" ref="a29c6db4c8e3f4366aa2744032fd7d0cc" args="(const char *kbuf, size_t ksiz, Visitor *visitor, bool writable=true)" -->
+<a class="anchor" id="a65408da85a1223c01bca9af521c7ef88"></a><!-- doxytag: member="kyotocabinet::TreeDB::accept" ref="a65408da85a1223c01bca9af521c7ef88" args="(const char *kbuf, size_t ksiz, Visitor *visitor, bool writable=true)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::accept </td>
+          <td class="memname">bool kyotocabinet::TreeDB::accept </td>
           <td>(</td>
           <td class="paramtype">const char *&nbsp;</td>
           <td class="paramname"> <em>kbuf</em>, </td>
@@ -290,12 +291,12 @@
 
 </div>
 </div>
-<a class="anchor" id="aa865771989b5f66bd9a688b412c7df8c"></a><!-- doxytag: member="kyotocabinet::TreeDB::iterate" ref="aa865771989b5f66bd9a688b412c7df8c" args="(Visitor *visitor, bool writable=true)" -->
+<a class="anchor" id="a174bf8f9853befe45abcb52f5202f663"></a><!-- doxytag: member="kyotocabinet::TreeDB::iterate" ref="a174bf8f9853befe45abcb52f5202f663" args="(Visitor *visitor, bool writable=true)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::iterate </td>
+          <td class="memname">bool kyotocabinet::TreeDB::iterate </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *&nbsp;</td>
           <td class="paramname"> <em>visitor</em>, </td>
@@ -330,12 +331,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a02ecad0eb89b280aed76a91e37d7e5c9"></a><!-- doxytag: member="kyotocabinet::TreeDB::error" ref="a02ecad0eb89b280aed76a91e37d7e5c9" args="() const " -->
+<a class="anchor" id="a2f9fea830f9cfa51549e0be9d5397421"></a><!-- doxytag: member="kyotocabinet::TreeDB::error" ref="a2f9fea830f9cfa51549e0be9d5397421" args="() const " -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> kyotocabinet::TreeDB::error </td>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> kyotocabinet::TreeDB::error </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -352,12 +353,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a68d8ce0b77136c46edd5c37da79cd93b"></a><!-- doxytag: member="kyotocabinet::TreeDB::set_error" ref="a68d8ce0b77136c46edd5c37da79cd93b" args="(Error::Code code, const char *message)" -->
+<a class="anchor" id="a8ef7a3531cbb9ec77e348055a0c3166e"></a><!-- doxytag: member="kyotocabinet::TreeDB::set_error" ref="a8ef7a3531cbb9ec77e348055a0c3166e" args="(Error::Code code, const char *message)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual void kyotocabinet::TreeDB::set_error </td>
+          <td class="memname">void kyotocabinet::TreeDB::set_error </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a>&nbsp;</td>
           <td class="paramname"> <em>code</em>, </td>
@@ -371,7 +372,7 @@
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td><code> [virtual]</code></td>
+          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
@@ -388,12 +389,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a69c6826e132a867e920a549043c9438b"></a><!-- doxytag: member="kyotocabinet::TreeDB::open" ref="a69c6826e132a867e920a549043c9438b" args="(const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)" -->
+<a class="anchor" id="a3a8dca51b4b139c973a0f2084c96c03f"></a><!-- doxytag: member="kyotocabinet::TreeDB::open" ref="a3a8dca51b4b139c973a0f2084c96c03f" args="(const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::open </td>
+          <td class="memname">bool kyotocabinet::TreeDB::open </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
           <td class="paramname"> <em>path</em>, </td>
@@ -422,18 +423,18 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>Every opened database must be closed by the <a class="el" href="classkyotocabinet_1_1TreeDB.html#a9fffb9a4ffb0b68232ed6614ba033631" title="Close the database file.">TreeDB::close</a> method when it is no longer in use. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Every opened database must be closed by the <a class="el" href="classkyotocabinet_1_1TreeDB.html#a75a9b4863392262a91c169d7a115fc9a" title="Close the database file.">TreeDB::close</a> method when it is no longer in use. It is not allowed for two or more database objects in the same process to keep their connections to the same database file at the same time. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#aec3eee613bc7028b50fd230852800bbb">kyotocabinet::FileDB</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a9fffb9a4ffb0b68232ed6614ba033631"></a><!-- doxytag: member="kyotocabinet::TreeDB::close" ref="a9fffb9a4ffb0b68232ed6614ba033631" args="()" -->
+<a class="anchor" id="a75a9b4863392262a91c169d7a115fc9a"></a><!-- doxytag: member="kyotocabinet::TreeDB::close" ref="a75a9b4863392262a91c169d7a115fc9a" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::close </td>
+          <td class="memname">bool kyotocabinet::TreeDB::close </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -450,12 +451,12 @@
 
 </div>
 </div>
-<a class="anchor" id="af3952478452612f0cc5518390af58fe4"></a><!-- doxytag: member="kyotocabinet::TreeDB::synchronize" ref="af3952478452612f0cc5518390af58fe4" args="(bool hard=false, FileProcessor *proc=NULL)" -->
+<a class="anchor" id="ac68cb7ef9e814a8d0cc0038e190f1829"></a><!-- doxytag: member="kyotocabinet::TreeDB::synchronize" ref="ac68cb7ef9e814a8d0cc0038e190f1829" args="(bool hard=false, FileProcessor *proc=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::synchronize </td>
+          <td class="memname">bool kyotocabinet::TreeDB::synchronize </td>
           <td>(</td>
           <td class="paramtype">bool&nbsp;</td>
           <td class="paramname"> <em>hard</em> = <code>false</code>, </td>
@@ -489,12 +490,12 @@
 
 </div>
 </div>
-<a class="anchor" id="adc85c62ded273447125fab5310ea80bc"></a><!-- doxytag: member="kyotocabinet::TreeDB::begin_transaction" ref="adc85c62ded273447125fab5310ea80bc" args="(bool hard=false)" -->
+<a class="anchor" id="a9fb2f30b5cf5e896122a5bc280b5938e"></a><!-- doxytag: member="kyotocabinet::TreeDB::begin_transaction" ref="a9fb2f30b5cf5e896122a5bc280b5938e" args="(bool hard=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::begin_transaction </td>
+          <td class="memname">bool kyotocabinet::TreeDB::begin_transaction </td>
           <td>(</td>
           <td class="paramtype">bool&nbsp;</td>
           <td class="paramname"> <em>hard</em> = <code>false</code></td>
@@ -518,12 +519,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a0c278efe26593c01e13ae01c591debe2"></a><!-- doxytag: member="kyotocabinet::TreeDB::begin_transaction_try" ref="a0c278efe26593c01e13ae01c591debe2" args="(bool hard=false)" -->
+<a class="anchor" id="aac5d4c1cf2ae7f4dc01473f071dbe949"></a><!-- doxytag: member="kyotocabinet::TreeDB::begin_transaction_try" ref="aac5d4c1cf2ae7f4dc01473f071dbe949" args="(bool hard=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::begin_transaction_try </td>
+          <td class="memname">bool kyotocabinet::TreeDB::begin_transaction_try </td>
           <td>(</td>
           <td class="paramtype">bool&nbsp;</td>
           <td class="paramname"> <em>hard</em> = <code>false</code></td>
@@ -547,12 +548,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a90f17d746579495bd132023e7999e932"></a><!-- doxytag: member="kyotocabinet::TreeDB::end_transaction" ref="a90f17d746579495bd132023e7999e932" args="(bool commit=true)" -->
+<a class="anchor" id="a08bb76cad3dade67ef4c15d6bc162e3e"></a><!-- doxytag: member="kyotocabinet::TreeDB::end_transaction" ref="a08bb76cad3dade67ef4c15d6bc162e3e" args="(bool commit=true)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::end_transaction </td>
+          <td class="memname">bool kyotocabinet::TreeDB::end_transaction </td>
           <td>(</td>
           <td class="paramtype">bool&nbsp;</td>
           <td class="paramname"> <em>commit</em> = <code>true</code></td>
@@ -576,12 +577,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a918d92fccec10b01e5fa9f0791bd4ed1"></a><!-- doxytag: member="kyotocabinet::TreeDB::clear" ref="a918d92fccec10b01e5fa9f0791bd4ed1" args="()" -->
+<a class="anchor" id="a2f5fe20f07abe25455484dc3086fd4b4"></a><!-- doxytag: member="kyotocabinet::TreeDB::clear" ref="a2f5fe20f07abe25455484dc3086fd4b4" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::clear </td>
+          <td class="memname">bool kyotocabinet::TreeDB::clear </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -598,12 +599,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a7884ed154a04a7c666d50e54099f3926"></a><!-- doxytag: member="kyotocabinet::TreeDB::count" ref="a7884ed154a04a7c666d50e54099f3926" args="()" -->
+<a class="anchor" id="ad2abfba978402786ace1b2cb4f353abb"></a><!-- doxytag: member="kyotocabinet::TreeDB::count" ref="ad2abfba978402786ace1b2cb4f353abb" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual int64_t kyotocabinet::TreeDB::count </td>
+          <td class="memname">int64_t kyotocabinet::TreeDB::count </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -620,12 +621,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a9b73407e1f0ae57f7c5c2474d71d5585"></a><!-- doxytag: member="kyotocabinet::TreeDB::size" ref="a9b73407e1f0ae57f7c5c2474d71d5585" args="()" -->
+<a class="anchor" id="a0c19fdf7b14a3ffa35598ee83382322f"></a><!-- doxytag: member="kyotocabinet::TreeDB::size" ref="a0c19fdf7b14a3ffa35598ee83382322f" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual int64_t kyotocabinet::TreeDB::size </td>
+          <td class="memname">int64_t kyotocabinet::TreeDB::size </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -642,12 +643,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a36cacfd0fd32ade488de7a186bf03b8f"></a><!-- doxytag: member="kyotocabinet::TreeDB::path" ref="a36cacfd0fd32ade488de7a186bf03b8f" args="()" -->
+<a class="anchor" id="a88ebce8344b16339de40daa2b81511a6"></a><!-- doxytag: member="kyotocabinet::TreeDB::path" ref="a88ebce8344b16339de40daa2b81511a6" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual std::string kyotocabinet::TreeDB::path </td>
+          <td class="memname">std::string kyotocabinet::TreeDB::path </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -664,12 +665,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a6c2142958e7d3d74cb096ea07ac2d94d"></a><!-- doxytag: member="kyotocabinet::TreeDB::status" ref="a6c2142958e7d3d74cb096ea07ac2d94d" args="(std::map&lt; std::string, std::string &gt; *strmap)" -->
+<a class="anchor" id="a98cf5efe12d2dc359c244bf6332b7220"></a><!-- doxytag: member="kyotocabinet::TreeDB::status" ref="a98cf5efe12d2dc359c244bf6332b7220" args="(std::map&lt; std::string, std::string &gt; *strmap)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::status </td>
+          <td class="memname">bool kyotocabinet::TreeDB::status </td>
           <td>(</td>
           <td class="paramtype">std::map&lt; std::string, std::string &gt; *&nbsp;</td>
           <td class="paramname"> <em>strmap</em></td>
@@ -693,12 +694,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a3aa8a1f0f7d66ee8d1ea01b762257352"></a><!-- doxytag: member="kyotocabinet::TreeDB::cursor" ref="a3aa8a1f0f7d66ee8d1ea01b762257352" args="()" -->
+<a class="anchor" id="abaf1dc0a398f5d8ae00f7e2cdb3cbf2d"></a><!-- doxytag: member="kyotocabinet::TreeDB::cursor" ref="abaf1dc0a398f5d8ae00f7e2cdb3cbf2d" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a>* kyotocabinet::TreeDB::cursor </td>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a>* kyotocabinet::TreeDB::cursor </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -716,12 +717,12 @@
 
 </div>
 </div>
-<a class="anchor" id="ad0ede14a89c095599045908366e622a6"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_error_reporter" ref="ad0ede14a89c095599045908366e622a6" args="(std::ostream *erstrm, bool ervbs)" -->
+<a class="anchor" id="a756246c171517fff6d37f300544d7dc5"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_error_reporter" ref="a756246c171517fff6d37f300544d7dc5" args="(std::ostream *erstrm, bool ervbs)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_error_reporter </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_error_reporter </td>
           <td>(</td>
           <td class="paramtype">std::ostream *&nbsp;</td>
           <td class="paramname"> <em>erstrm</em>, </td>
@@ -735,7 +736,7 @@
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td><code> [virtual]</code></td>
+          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
@@ -753,17 +754,17 @@
 
 </div>
 </div>
-<a class="anchor" id="abeaf67d1c6443a1defff75734d0b5559"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_alignment" ref="abeaf67d1c6443a1defff75734d0b5559" args="(int8_t apow)" -->
+<a class="anchor" id="adec43e6aa9c5b3b5c9f844535877d557"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_alignment" ref="adec43e6aa9c5b3b5c9f844535877d557" args="(int8_t apow)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_alignment </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_alignment </td>
           <td>(</td>
           <td class="paramtype">int8_t&nbsp;</td>
           <td class="paramname"> <em>apow</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -780,17 +781,17 @@
 
 </div>
 </div>
-<a class="anchor" id="a1223d4ccd9957d66f5aa42e84318c5f6"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_fbp" ref="a1223d4ccd9957d66f5aa42e84318c5f6" args="(int8_t fpow)" -->
+<a class="anchor" id="a8a8e98f43d0cfb2edbe1ecca42b660f1"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_fbp" ref="a8a8e98f43d0cfb2edbe1ecca42b660f1" args="(int8_t fpow)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_fbp </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_fbp </td>
           <td>(</td>
           <td class="paramtype">int8_t&nbsp;</td>
           <td class="paramname"> <em>fpow</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -807,17 +808,17 @@
 
 </div>
 </div>
-<a class="anchor" id="a53a575023af9bf1ac02cccca9ae2856a"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_options" ref="a53a575023af9bf1ac02cccca9ae2856a" args="(int8_t opts)" -->
+<a class="anchor" id="a5ebb3a9c8a30cd20529412ead2e01288"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_options" ref="a5ebb3a9c8a30cd20529412ead2e01288" args="(int8_t opts)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_options </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_options </td>
           <td>(</td>
           <td class="paramtype">int8_t&nbsp;</td>
           <td class="paramname"> <em>opts</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -834,17 +835,17 @@
 
 </div>
 </div>
-<a class="anchor" id="a316f1c3ca1e30f8990324a855226959e"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_buckets" ref="a316f1c3ca1e30f8990324a855226959e" args="(int64_t bnum)" -->
+<a class="anchor" id="a3994a4580177bb2c07f04a8913fbb220"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_buckets" ref="a3994a4580177bb2c07f04a8913fbb220" args="(int64_t bnum)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_buckets </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_buckets </td>
           <td>(</td>
           <td class="paramtype">int64_t&nbsp;</td>
           <td class="paramname"> <em>bnum</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -861,17 +862,17 @@
 
 </div>
 </div>
-<a class="anchor" id="ac3321d7f76d9b91d24d764e213d067b9"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_page" ref="ac3321d7f76d9b91d24d764e213d067b9" args="(int32_t psiz)" -->
+<a class="anchor" id="a8b8e3d4bb1e7a5cd4c76c2efd23018e9"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_page" ref="a8b8e3d4bb1e7a5cd4c76c2efd23018e9" args="(int32_t psiz)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_page </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_page </td>
           <td>(</td>
           <td class="paramtype">int32_t&nbsp;</td>
           <td class="paramname"> <em>psiz</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -888,17 +889,17 @@
 
 </div>
 </div>
-<a class="anchor" id="a540d50cf68abd7f5a931579680f3b301"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_map" ref="a540d50cf68abd7f5a931579680f3b301" args="(int64_t msiz)" -->
+<a class="anchor" id="a1adf493456b27aa0251c998b6f2a26b8"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_map" ref="a1adf493456b27aa0251c998b6f2a26b8" args="(int64_t msiz)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_map </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_map </td>
           <td>(</td>
           <td class="paramtype">int64_t&nbsp;</td>
           <td class="paramname"> <em>msiz</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -915,17 +916,17 @@
 
 </div>
 </div>
-<a class="anchor" id="af49e2955c3bf27bb6b68c03aa05bfef9"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_defrag" ref="af49e2955c3bf27bb6b68c03aa05bfef9" args="(int64_t dfunit)" -->
+<a class="anchor" id="ac34e5781338626cc627bb66b7b4204d5"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_defrag" ref="ac34e5781338626cc627bb66b7b4204d5" args="(int64_t dfunit)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_defrag </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_defrag </td>
           <td>(</td>
           <td class="paramtype">int64_t&nbsp;</td>
           <td class="paramname"> <em>dfunit</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -942,17 +943,17 @@
 
 </div>
 </div>
-<a class="anchor" id="a37084870f84fec2872c07aa813bbce6f"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_page_cache" ref="a37084870f84fec2872c07aa813bbce6f" args="(int64_t pccap)" -->
+<a class="anchor" id="a6d9c3471a075e91c45ab8146f2231830"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_page_cache" ref="a6d9c3471a075e91c45ab8146f2231830" args="(int64_t pccap)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_page_cache </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_page_cache </td>
           <td>(</td>
           <td class="paramtype">int64_t&nbsp;</td>
           <td class="paramname"> <em>pccap</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -969,17 +970,17 @@
 
 </div>
 </div>
-<a class="anchor" id="a2ab2a6a2eb8781b067435ff946a8b28a"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_compressor" ref="a2ab2a6a2eb8781b067435ff946a8b28a" args="(Compressor *comp)" -->
+<a class="anchor" id="afcc12fbcc2219ca78fcb0e551ade3649"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_compressor" ref="afcc12fbcc2219ca78fcb0e551ade3649" args="(Compressor *comp)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_compressor </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_compressor </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a> *&nbsp;</td>
           <td class="paramname"> <em>comp</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -996,17 +997,17 @@
 
 </div>
 </div>
-<a class="anchor" id="a2c01dda07cb26999c42376e107d64cc7"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_comparator" ref="a2c01dda07cb26999c42376e107d64cc7" args="(Comparator *rcomp)" -->
+<a class="anchor" id="a3c29d6faee897d471cb800cec361e6c8"></a><!-- doxytag: member="kyotocabinet::TreeDB::tune_comparator" ref="a3c29d6faee897d471cb800cec361e6c8" args="(Comparator *rcomp)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::tune_comparator </td>
+          <td class="memname">bool kyotocabinet::TreeDB::tune_comparator </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1Comparator.html">Comparator</a> *&nbsp;</td>
           <td class="paramname"> <em>rcomp</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -1023,16 +1024,16 @@
 
 </div>
 </div>
-<a class="anchor" id="a486ac0e35ab7a445008841e937453a9c"></a><!-- doxytag: member="kyotocabinet::TreeDB::opaque" ref="a486ac0e35ab7a445008841e937453a9c" args="()" -->
+<a class="anchor" id="ac6136bb0479e1995183e022e8f958f4c"></a><!-- doxytag: member="kyotocabinet::TreeDB::opaque" ref="ac6136bb0479e1995183e022e8f958f4c" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual char* kyotocabinet::TreeDB::opaque </td>
+          <td class="memname">char* kyotocabinet::TreeDB::opaque </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -1043,16 +1044,16 @@
 
 </div>
 </div>
-<a class="anchor" id="a9247917fe4ba872c3c2759fcfed9a914"></a><!-- doxytag: member="kyotocabinet::TreeDB::synchronize_opaque" ref="a9247917fe4ba872c3c2759fcfed9a914" args="()" -->
+<a class="anchor" id="a97898b04e411379abfc988e1e7cc72b9"></a><!-- doxytag: member="kyotocabinet::TreeDB::synchronize_opaque" ref="a97898b04e411379abfc988e1e7cc72b9" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::synchronize_opaque </td>
+          <td class="memname">bool kyotocabinet::TreeDB::synchronize_opaque </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -1063,17 +1064,17 @@
 
 </div>
 </div>
-<a class="anchor" id="a3d8592166e7c83f5bda3e4db58d8dcc0"></a><!-- doxytag: member="kyotocabinet::TreeDB::defrag" ref="a3d8592166e7c83f5bda3e4db58d8dcc0" args="(int64_t step)" -->
+<a class="anchor" id="ab5ba7bfaddf42ba595fd53a91621073e"></a><!-- doxytag: member="kyotocabinet::TreeDB::defrag" ref="ab5ba7bfaddf42ba595fd53a91621073e" args="(int64_t step)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::TreeDB::defrag </td>
+          <td class="memname">bool kyotocabinet::TreeDB::defrag </td>
           <td>(</td>
           <td class="paramtype">int64_t&nbsp;</td>
           <td class="paramname"> <em>step</em></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -1090,16 +1091,16 @@
 
 </div>
 </div>
-<a class="anchor" id="aa038cbb2f30117dd04d45d84071b30cc"></a><!-- doxytag: member="kyotocabinet::TreeDB::flags" ref="aa038cbb2f30117dd04d45d84071b30cc" args="()" -->
+<a class="anchor" id="a34a13c7a4956fe041e5db3e019117307"></a><!-- doxytag: member="kyotocabinet::TreeDB::flags" ref="a34a13c7a4956fe041e5db3e019117307" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual uint8_t kyotocabinet::TreeDB::flags </td>
+          <td class="memname">uint8_t kyotocabinet::TreeDB::flags </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td></td>
         </tr>
       </table>
 </div>
@@ -1110,12 +1111,12 @@
 
 </div>
 </div>
-<a class="anchor" id="a6c54ddc718d771808afcaeed06e242e5"></a><!-- doxytag: member="kyotocabinet::TreeDB::set_error" ref="a6c54ddc718d771808afcaeed06e242e5" args="(const char *file, int32_t line, Error::Code code, const char *message)" -->
+<a class="anchor" id="abbd2514ce26fdc30bd2371b50cecda05"></a><!-- doxytag: member="kyotocabinet::TreeDB::set_error" ref="abbd2514ce26fdc30bd2371b50cecda05" args="(const char *file, int32_t line, Error::Code code, const char *message)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual void kyotocabinet::TreeDB::set_error </td>
+          <td class="memname">void kyotocabinet::TreeDB::set_error </td>
           <td>(</td>
           <td class="paramtype">const char *&nbsp;</td>
           <td class="paramname"> <em>file</em>, </td>
@@ -1141,7 +1142,7 @@
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td><code> [protected, virtual]</code></td>
+          <td></td><td></td><td><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -1161,7 +1162,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun May 9 12:35:29 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

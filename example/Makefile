@@ -11,7 +11,7 @@
 SHELL = /bin/sh
 
 # Targets
-MYBINS = kccacheex kchashex kctreeex kcvisex kclangcex
+MYBINS = kcprotoex kccacheex kchashex kctreeex kcpolyex kcvisex kclangcex
 
 # Building binaries
 CC = gcc
@@ -21,6 +21,7 @@ CXXFLAGS = -I. -I.. -Wall -fsigned-char -O2
 LDFLAGS =
 LIBS = -L. -L.. -lkyotocabinet -lstdc++ -lz -lrt -lpthread -lm -lc
 LDENV = LD_RUN_PATH=/lib:/usr/lib:$(HOME)/lib:/usr/local/lib:.:..
+RUNENV = LD_LIBRARY_PATH=/lib:/usr/lib:$(HOME)/lib:/usr/local/lib:.:..
 
 
 
@@ -56,6 +57,16 @@ static :
 	make LDFLAGS="$(LDFLAGS) -static"
 
 
+check :
+	rm -rf casket*
+	$(RUNENV) ./kcprotoex
+	$(RUNENV) ./kccacheex
+	$(RUNENV) ./kchashex
+	$(RUNENV) ./kctreeex
+	$(RUNENV) ./kcpolyex
+	$(RUNENV) ./kclangcex
+
+
 .PHONY : all clean static
 
 
@@ -63,6 +74,10 @@ static :
 #================================================================
 # Building binaries
 #================================================================
+
+
+kcprotoex : kcprotoex.o
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
 
 
 kccacheex : kccacheex.o
@@ -74,6 +89,10 @@ kchashex : kchashex.o
 
 
 kctreeex : kctreeex.o
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
+
+
+kcpolyex : kcpolyex.o
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
 
 

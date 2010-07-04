@@ -244,7 +244,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
   KCDB* db;
   KCCUR* cur, *paracur;
   int32_t err;
-  char kbuf[RECBUFSIZ], *vbuf, wbuf[RECBUFSIZ], *corepath, *snappath;
+  char kbuf[RECBUFSIZ], *vbuf, wbuf[RECBUFSIZ], *corepath, *copypath, *snappath;
   size_t ksiz, vsiz, psiz;
   int32_t wsiz;
   int64_t i, cnt;
@@ -506,12 +506,26 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
     corepath = kcdbpath(db);
     psiz = strlen(corepath);
     if (strstr(corepath, ".kch") || strstr(corepath, ".kct")) {
+      copypath = kcmalloc(psiz + 256);
+      sprintf(copypath, "%s.tmp", corepath);
       snappath = kcmalloc(psiz + 256);
       sprintf(snappath, "%s.kcss", corepath);
     } else {
+      copypath = kcmalloc(256);
+      sprintf(copypath, "kclangctest.tmp");
       snappath = kcmalloc(256);
       sprintf(snappath, "kclangctest.kcss");
     }
+    iprintf("copying the database file:\n");
+    stime = kctime();
+    if (!kcdbcopy(db, copypath)) {
+      dberrprint(db, __LINE__, "kcdbcopy");
+      err = TRUE;
+    }
+    etime = kctime();
+    dbmetaprint(db, FALSE);
+    iprintf("time: %.3f\n", etime - stime);
+    remove(copypath);
     iprintf("dumping records into snapshot:\n");
     stime = kctime();
     if (!kcdbdumpsnap(db, snappath)) {
@@ -536,6 +550,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
     dbmetaprint(db, FALSE);
     iprintf("time: %.3f\n", etime - stime);
     remove(snappath);
+    kcfree(copypath);
     kcfree(snappath);
     kcfree(corepath);
   }

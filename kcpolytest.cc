@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
   g_progname = argv[0];
   const char* ebuf = kc::getenv("KCRNDSEED");
   g_randseed = ebuf ? (uint32_t)kc::atoi(ebuf) : (uint32_t)(kc::time() * 1000);
-  srand(g_randseed);
+  mysrand(g_randseed);
   if (argc < 2) usage();
   int32_t rv = 0;
   if (!std::strcmp(argv[1], "order")) {
@@ -1342,7 +1342,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
 static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
                          int32_t oflags) {
   iprintf("<Queue Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d  rnd=%d"
-          "  oflags=%d\n\n", g_randseed, path, (long long)rnum, thnum, itnum, oflags);
+          "  oflags=%d\n\n", g_randseed, path, (long long)rnum, thnum, itnum, rnd, oflags);
   bool err = false;
   kc::PolyDB db;
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {

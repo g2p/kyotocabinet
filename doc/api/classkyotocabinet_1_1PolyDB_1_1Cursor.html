@@ -42,18 +42,18 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Constructor.  <a href="#a37c6ba8b79d5b3d121cdb57586062234"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#af937f24b8e80a33a5766f82cf4711aff">~Cursor</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#af937f24b8e80a33a5766f82cf4711aff"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#ac03c4d6e8f18c25217ed9ae99ab2d6dd">accept</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, bool step=false)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to the current record.  <a href="#ac03c4d6e8f18c25217ed9ae99ab2d6dd"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a985999d0c83fadba711c36d1e2019b0e">jump</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record.  <a href="#a985999d0c83fadba711c36d1e2019b0e"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a0949b255a3c2d007b32772d73a78901d">jump</a> (const char *kbuf, size_t ksiz)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor onto a record.  <a href="#a0949b255a3c2d007b32772d73a78901d"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a0b3fc20b86c9404375b7c32113b632b5">jump</a> (const std::string &amp;key)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record.  <a href="#a0b3fc20b86c9404375b7c32113b632b5"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a07890661b37df47cca5109d4cb22ee25">step</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the next record.  <a href="#a07890661b37df47cca5109d4cb22ee25"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classkyotocabinet_1_1PolyDB.html">PolyDB</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#ac0b6e37cfbae57cbe47f60e97b2420c1">db</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the database object.  <a href="#ac0b6e37cfbae57cbe47f60e97b2420c1"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#af6b39a3fef57170ddd67f32073406878">accept</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, bool step=false)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to the current record.  <a href="#af6b39a3fef57170ddd67f32073406878"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a118a79dd4d4e89cf146cfb14907f60ec">jump</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record.  <a href="#a118a79dd4d4e89cf146cfb14907f60ec"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a169e9d0c536fe894f980be8aaf6ffe41">jump</a> (const char *kbuf, size_t ksiz)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor onto a record.  <a href="#a169e9d0c536fe894f980be8aaf6ffe41"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a68d2a137e3119605ec11c42f1e54b19f">jump</a> (const std::string &amp;key)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record.  <a href="#a68d2a137e3119605ec11c42f1e54b19f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a1ee17261d64b6833d6c6f8c1bb56cbd5">step</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the next record.  <a href="#a1ee17261d64b6833d6c6f8c1bb56cbd5"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1PolyDB.html">PolyDB</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a9adb3e84f317deba37effc1ddc6bf9fd">db</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the database object.  <a href="#a9adb3e84f317deba37effc1ddc6bf9fd"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Friends</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a36e52300aa1e5b9f1adee4fd06024a0c"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::PolyDB" ref="a36e52300aa1e5b9f1adee4fd06024a0c" args="" -->
 class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
@@ -109,12 +109,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="ac03c4d6e8f18c25217ed9ae99ab2d6dd"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::accept" ref="ac03c4d6e8f18c25217ed9ae99ab2d6dd" args="(Visitor *visitor, bool writable=true, bool step=false)" -->
+<a class="anchor" id="af6b39a3fef57170ddd67f32073406878"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::accept" ref="af6b39a3fef57170ddd67f32073406878" args="(Visitor *visitor, bool writable=true, bool step=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::PolyDB::Cursor::accept </td>
+          <td class="memname">bool kyotocabinet::PolyDB::Cursor::accept </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *&nbsp;</td>
           <td class="paramname"> <em>visitor</em>, </td>
@@ -156,12 +156,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a985999d0c83fadba711c36d1e2019b0e"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump" ref="a985999d0c83fadba711c36d1e2019b0e" args="()" -->
+<a class="anchor" id="a118a79dd4d4e89cf146cfb14907f60ec"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump" ref="a118a79dd4d4e89cf146cfb14907f60ec" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::PolyDB::Cursor::jump </td>
+          <td class="memname">bool kyotocabinet::PolyDB::Cursor::jump </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -178,12 +178,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a0949b255a3c2d007b32772d73a78901d"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump" ref="a0949b255a3c2d007b32772d73a78901d" args="(const char *kbuf, size_t ksiz)" -->
+<a class="anchor" id="a169e9d0c536fe894f980be8aaf6ffe41"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump" ref="a169e9d0c536fe894f980be8aaf6ffe41" args="(const char *kbuf, size_t ksiz)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::PolyDB::Cursor::jump </td>
+          <td class="memname">bool kyotocabinet::PolyDB::Cursor::jump </td>
           <td>(</td>
           <td class="paramtype">const char *&nbsp;</td>
           <td class="paramname"> <em>kbuf</em>, </td>
@@ -217,12 +217,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a0b3fc20b86c9404375b7c32113b632b5"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump" ref="a0b3fc20b86c9404375b7c32113b632b5" args="(const std::string &amp;key)" -->
+<a class="anchor" id="a68d2a137e3119605ec11c42f1e54b19f"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump" ref="a68d2a137e3119605ec11c42f1e54b19f" args="(const std::string &amp;key)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::PolyDB::Cursor::jump </td>
+          <td class="memname">bool kyotocabinet::PolyDB::Cursor::jump </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
           <td class="paramname"> <em>key</em></td>
@@ -234,18 +234,18 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 <div class="memdoc">
 
 <p>Jump the cursor to a record. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a985999d0c83fadba711c36d1e2019b0e" title="Jump the cursor to the first record.">Cursor::jump</a> method except that the parameter is std::string. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a118a79dd4d4e89cf146cfb14907f60ec" title="Jump the cursor to the first record.">Cursor::jump</a> method except that the parameter is std::string. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a3b38a11631f37d104209e5feade154b4">kyotocabinet::DB::Cursor</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a07890661b37df47cca5109d4cb22ee25"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::step" ref="a07890661b37df47cca5109d4cb22ee25" args="()" -->
+<a class="anchor" id="a1ee17261d64b6833d6c6f8c1bb56cbd5"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::step" ref="a1ee17261d64b6833d6c6f8c1bb56cbd5" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::PolyDB::Cursor::step </td>
+          <td class="memname">bool kyotocabinet::PolyDB::Cursor::step </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -262,12 +262,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ac0b6e37cfbae57cbe47f60e97b2420c1"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::db" ref="ac0b6e37cfbae57cbe47f60e97b2420c1" args="()" -->
+<a class="anchor" id="a9adb3e84f317deba37effc1ddc6bf9fd"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::db" ref="a9adb3e84f317deba37effc1ddc6bf9fd" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual <a class="el" href="classkyotocabinet_1_1PolyDB.html">PolyDB</a>* kyotocabinet::PolyDB::Cursor::db </td>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1PolyDB.html">PolyDB</a>* kyotocabinet::PolyDB::Cursor::db </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -285,7 +285,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun May 9 12:35:29 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

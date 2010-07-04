@@ -405,8 +405,10 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
   if (fd < 0) {
     switch (errno) {
       case EACCES: seterrmsg(core, "open failed (permission denied)"); break;
+      case EISDIR: seterrmsg(core, "open failed (directory)"); break;
       case ENOENT: seterrmsg(core, "open failed (file not found)"); break;
       case ENOTDIR: seterrmsg(core, "open failed (invalid path)"); break;
+      case ENOSPC: seterrmsg(core, "open failed (no space)"); break;
       default: seterrmsg(core, "open failed"); break;
     }
     return false;

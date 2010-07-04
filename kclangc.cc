@@ -57,7 +57,34 @@ void kcfree(char* ptr) {
  */
 double kctime(void) {
   _assert_(true);
-  return time();
+  return kyotocabinet::time();
+}
+
+
+/**
+ * Convert a string to an integer.
+ */
+int64_t kcatoi(const char* str) {
+  _assert_(str);
+  return kyotocabinet::atoi(str);
+}
+
+
+/**
+ * Convert a string with a metric prefix to an integer.
+ */
+int64_t kcatoix(const char* str) {
+  _assert_(str);
+  return kyotocabinet::atoix(str);
+}
+
+
+/**
+ * Convert a string to a real number.
+ */
+double kcatof(const char* str) {
+  _assert_(str);
+  return kyotocabinet::atof(str);
 }
 
 
@@ -66,7 +93,7 @@ double kctime(void) {
  */
 uint64_t kchashmurmur(const void* buf, size_t size) {
   _assert_(buf && size <= MEMMAXSIZ);
-  return hashmurmur(buf, size);
+  return kyotocabinet::hashmurmur(buf, size);
 }
 
 
@@ -75,7 +102,43 @@ uint64_t kchashmurmur(const void* buf, size_t size) {
  */
 uint64_t kchashfnv(const void* buf, size_t size) {
   _assert_(buf && size <= MEMMAXSIZ);
-  return hashfnv(buf, size);
+  return kyotocabinet::hashfnv(buf, size);
+}
+
+
+/**
+ * Get the quiet Not-a-Number value.
+ */
+double kcnan() {
+  _assert_(true);
+  return kyotocabinet::nan();
+}
+
+
+/**
+ * Get the positive infinity value.
+ */
+double kcinf() {
+  _assert_(true);
+  return kyotocabinet::inf();
+}
+
+
+/**
+ * Check a number is a Not-a-Number value.
+ */
+int32_t kcchknan(double num) {
+  _assert_(true);
+  return kyotocabinet::chknan(num);
+}
+
+
+/**
+ * Check a number is an infinity value.
+ */
+int32_t kcchkinf(double num) {
+  _assert_(true);
+  return kyotocabinet::chkinf(num);
 }
 
 
@@ -324,6 +387,16 @@ int32_t kcdbsync(KCDB* db, int32_t hard, KCFILEPROC proc, void* opq) {
 
 
 /**
+ * Create a copy of the database file.
+ */
+int32_t kcdbcopy(KCDB* db, const char* dest) {
+  _assert_(db && dest);
+  PolyDB* pdb = (PolyDB*)db;
+  return pdb->copy(dest);
+}
+
+
+/**
  * Begin transaction.
  */
 int32_t kcdbbegintran(KCDB* db, int32_t hard) {
@@ -475,6 +548,26 @@ int32_t kccuraccept(KCCUR* cur, KCVISITFULL fullproc, void* opq,
 
 
 /**
+ * Set the value of the current record.
+ */
+int32_t kccursetvalue(KCCUR* cur, const char* vbuf, size_t vsiz, int32_t step) {
+  _assert_(cur && vbuf && vsiz <= MEMMAXSIZ);
+  PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
+  return pcur->set_value(vbuf, vsiz, step);
+}
+
+
+/**
+ * Remove the current record.
+ */
+int32_t kccurremove(KCCUR* cur) {
+  _assert_(cur);
+  PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
+  return pcur->remove();
+}
+
+
+/**
  * Get the key of the current record.
  */
 char* kccurgetkey(KCCUR* cur, size_t* sp, int32_t step) {
@@ -501,16 +594,6 @@ char* kccurget(KCCUR* cur, size_t* ksp, const char** vbp, size_t* vsp, int32_t s
   _assert_(cur && ksp && vbp && vsp);
   PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
   return pcur->get(ksp, vbp, vsp, step);
-}
-
-
-/**
- * Remove the current record.
- */
-int32_t kccurremove(KCCUR* cur) {
-  _assert_(cur);
-  PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
-  return pcur->remove();
 }
 
 

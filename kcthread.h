@@ -833,7 +833,7 @@ public:
   /**
    * Default constructor.
    */
-  AtomicInt64() : value_(0), lock_() {
+  explicit AtomicInt64() : value_(0), lock_() {
     _assert_(true);
   }
   /**
@@ -887,6 +887,7 @@ public:
    */
   AtomicInt64& operator =(const AtomicInt64& right) {
     _assert_(true);
+    if (&right == this) return *this;
     set(right.get());
     return *this;
   }

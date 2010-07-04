@@ -74,7 +74,7 @@ public:
      * @note the operation for each record is performed atomically and other threads accessing
      * the same record are blocked.
      */
-    virtual bool accept(Visitor* visitor, bool writable = true, bool step = false) {
+    bool accept(Visitor* visitor, bool writable = true, bool step = false) {
       _assert_(visitor);
       if (db_->type_ == TYPEVOID) {
         db_->set_error(Error::INVALID, "not opened");
@@ -86,7 +86,7 @@ public:
      * Jump the cursor to the first record.
      * @return true on success, or false on failure.
      */
-    virtual bool jump() {
+    bool jump() {
       _assert_(true);
       if (db_->type_ == TYPEVOID) {
         db_->set_error(Error::INVALID, "not opened");
@@ -100,7 +100,7 @@ public:
      * @param ksiz the size of the key region.
      * @return true on success, or false on failure.
      */
-    virtual bool jump(const char* kbuf, size_t ksiz) {
+    bool jump(const char* kbuf, size_t ksiz) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       if (db_->type_ == TYPEVOID) {
         db_->set_error(Error::INVALID, "not opened");
@@ -112,7 +112,7 @@ public:
      * Jump the cursor to a record.
      * @note Equal to the original Cursor::jump method except that the parameter is std::string.
      */
-    virtual bool jump(const std::string& key) {
+    bool jump(const std::string& key) {
       _assert_(true);
       if (db_->type_ == TYPEVOID) {
         db_->set_error(Error::INVALID, "not opened");
@@ -124,7 +124,7 @@ public:
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
-    virtual bool step() {
+    bool step() {
       _assert_(true);
       if (db_->type_ == TYPEVOID) {
         db_->set_error(Error::INVALID, "not opened");
@@ -136,7 +136,7 @@ public:
      * Get the database object.
      * @return the database object.
      */
-    virtual PolyDB* db() {
+    PolyDB* db() {
       _assert_(true);
       return db_;
     }
@@ -182,7 +182,7 @@ public:
    * @note the operation for each record is performed atomically and other threads accessing the
    * same record are blocked.
    */
-  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
+  bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -197,7 +197,7 @@ public:
    * @return true on success, or false on failure.
    * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  virtual bool iterate(Visitor *visitor, bool writable = true) {
+  bool iterate(Visitor *visitor, bool writable = true) {
     _assert_(visitor);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -209,7 +209,7 @@ public:
    * Get the last happened error.
    * @return the last happened error.
    */
-  virtual Error error() const {
+  Error error() const {
     _assert_(true);
     if (type_ == TYPEVOID) return error_;
     return db_->error();
@@ -219,7 +219,7 @@ public:
    * @param code an error code.
    * @param message a supplement message.
    */
-  virtual void set_error(Error::Code code, const char* message) {
+  void set_error(Error::Code code, const char* message) {
     _assert_(message);
     if (type_ == TYPEVOID) {
       error_->set(code, message);
@@ -262,9 +262,11 @@ public:
    * latter value can be "true" or "false".  "psiz" is for "tune_page".  "rcomp" is for
    * "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for the
    * decimal comparator.  "pccap" is for "tune_page_cache".  Every opened database must be
-   * closed by the PolyDB::close method when it is no longer in use.
+   * closed by the PolyDB::close method when it is no longer in use.  It is not allowed for two
+   * or more database objects in the same process to keep their connections to the same
+   * database file at the same time.
    */
-  virtual bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
+  bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
     _assert_(true);
     if (type_ == TYPEMISC) return db_->open(path, mode);
     if (type_ != TYPEVOID) {
@@ -451,7 +453,7 @@ public:
    * Close the database file.
    * @return true on success, or false on failure.
    */
-  virtual bool close() {
+  bool close() {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -475,7 +477,7 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @return true on success, or false on failure.
    */
-  virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+  bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -489,7 +491,7 @@ public:
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction(bool hard = false) {
+  bool begin_transaction(bool hard = false) {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -503,7 +505,7 @@ public:
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction_try(bool hard = false) {
+  bool begin_transaction_try(bool hard = false) {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -516,7 +518,7 @@ public:
    * @param commit true to commit the transaction, or false to abort the transaction.
    * @return true on success, or false on failure.
    */
-  virtual bool end_transaction(bool commit = true) {
+  bool end_transaction(bool commit = true) {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -528,7 +530,7 @@ public:
    * Remove all records.
    * @return true on success, or false on failure.
    */
-  virtual bool clear() {
+  bool clear() {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -540,7 +542,7 @@ public:
    * Get the number of records.
    * @return the number of records, or -1 on failure.
    */
-  virtual int64_t count() {
+  int64_t count() {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -552,7 +554,7 @@ public:
    * Get the size of the database file.
    * @return the size of the database file in bytes, or -1 on failure.
    */
-  virtual int64_t size() {
+  int64_t size() {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -564,7 +566,7 @@ public:
    * Get the path of the database file.
    * @return the path of the database file, or an empty string on failure.
    */
-  virtual std::string path() {
+  std::string path() {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -577,7 +579,7 @@ public:
    * @param strmap a string map to contain the result.
    * @return true on success, or false on failure.
    */
-  virtual bool status(std::map<std::string, std::string>* strmap) {
+  bool status(std::map<std::string, std::string>* strmap) {
     _assert_(strmap);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -591,7 +593,7 @@ public:
    * @note Because the object of the return value is allocated by the constructor, it should be
    * released with the delete operator when it is no longer in use.
    */
-  virtual Cursor* cursor() {
+  Cursor* cursor() {
     _assert_(true);
     return new Cursor(this);
   }
@@ -599,7 +601,7 @@ public:
    * Reveal the inner database object.
    * @return the inner database object, or NULL on failure.
    */
-  virtual FileDB* reveal_inner_db() {
+  FileDB* reveal_inner_db() {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -608,6 +610,10 @@ public:
     return db_;
   }
 private:
+  /** Dummy constructor to forbid the use. */
+  PolyDB(const PolyDB&);
+  /** Dummy Operator to forbid the use. */
+  PolyDB& operator =(const PolyDB&);
   /** The database type. */
   Type type_;
   /** The internal database. */

@@ -123,7 +123,7 @@ install :
 	cd man && cp -Rf $(MAN1FILES) $(DESTDIR)$(MAN1DIR)
 	mkdir -p $(DESTDIR)$(PCDIR)
 	cp -Rf $(PCFILES) $(DESTDIR)$(PCDIR)
-	[ "$$UID" = 0 ] && ldconfig || true
+	-[ "$$UID" = 0 ] && PATH=/sbin:/usr/sbin:$(PATH) ldconfig || true
 	@printf '\n'
 	@printf '#================================================================\n'
 	@printf '# Thanks for using Kyoto Cabinet.\n'
@@ -136,13 +136,13 @@ install-strip :
 
 
 uninstall :
-	cd $(DESTDIR)$(INCLUDEDIR) && rm -f $(HEADERFILES)
-	cd $(DESTDIR)$(LIBDIR) && rm -f $(LIBRARYFILES)
-	cd $(DESTDIR)$(BINDIR) && rm -f $(COMMANDFILES)
-	cd $(DESTDIR)$(MAN1DIR) && rm -f $(MAN1FILES)
-	rm -rf $(DESTDIR)$(DATADIR)
-	cd $(DESTDIR)$(PCDIR) && rm -f $(PCFILES)
-	[ "$$UID" = 0 ] && ldconfig || true
+	-cd $(DESTDIR)$(INCLUDEDIR) && rm -f $(HEADERFILES)
+	-cd $(DESTDIR)$(LIBDIR) && rm -f $(LIBRARYFILES)
+	-cd $(DESTDIR)$(BINDIR) && rm -f $(COMMANDFILES)
+	-cd $(DESTDIR)$(MAN1DIR) && rm -f $(MAN1FILES)
+	-rm -rf $(DESTDIR)$(DATADIR)
+	-cd $(DESTDIR)$(PCDIR) && rm -f $(PCFILES)
+	-[ "$$UID" = 0 ] && ldconfig || true
 
 
 dist :

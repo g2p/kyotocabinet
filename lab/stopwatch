@@ -19,16 +19,23 @@ use constant {
 
 my $rnum = RECORDNUM;
 my $bnum = $rnum * 2;
+my $tbnum = $rnum / 8;
 my $msiz = $rnum * 50;
 my $tnum = THREADNUM;
 my $rtnum = $rnum / $tnum;
 my @commands = (
                 "./kchashtest order -set -bnum $bnum -msiz $msiz casket $rnum",
-                "./kchashtest order -set -oat -bnum $bnum -msiz $msiz casket $rnum",
+#                "./kchashtest order -set -oat -bnum $bnum -msiz $msiz casket $rnum",
                 "./kchashtest order -get -msiz $msiz casket $rnum",
                 "./kchashtest order -th $tnum -set -bnum $bnum -msiz $msiz casket $rtnum",
-                "./kchashtest order -th $tnum -set -oat -bnum $bnum -msiz $msiz casket $rtnum",
+#                "./kchashtest order -th $tnum -set -oat -bnum $bnum -msiz $msiz casket $rtnum",
                 "./kchashtest order -th $tnum -get -msiz $msiz casket $rtnum",
+                "./kctreetest order -set -bnum $tbnum -msiz $msiz casket $rnum",
+#                "./kctreetest order -set -oat -bnum $tbnum -msiz $msiz casket $rnum",
+                "./kctreetest order -get -msiz $msiz casket $rnum",
+                "./kctreetest order -th $tnum -set -bnum $tbnum -msiz $msiz casket $rtnum",
+#                "./kctreetest order -th $tnum -set -oat -bnum $tbnum -msiz $msiz casket $rtnum",
+                "./kctreetest order -th $tnum -get -msiz $msiz casket $rtnum",
                 );
 
 my @table;

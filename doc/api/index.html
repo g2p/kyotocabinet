@@ -22,10 +22,10 @@
 <h1>Kyoto Cabinet: a straightforward implementation of DBM </h1><h2><a class="anchor" id="Introduction">
 Introduction</a></h2>
 <p>Kyoto Cabinet is a library of routines for managing a database. The database is a simple data file containing records, each is a pair of a key and a value. Every key and value is serial bytes with variable length. Both binary data and character string can be used as a key and a value. Each key must be unique within a database. There is neither concept of data tables nor data types. Records are organized in hash table or B+ tree.</p>
-<p>The following access methods are provided to the database: storing a record with a key and a value, deleting a record by a key, retrieving a record by a key. Moreover, traversal access to every key are provided. These access methods are similar to ones of DBM (or its followers: NDBM and GDBM) library defined in the UNIX standard. Kyoto Cabinet is an alternative for DBM because of its higher performance.</p>
-<p>Each operation of hash database has the time complexity of O(1). So, in theory, the performance is consant regardless of the scale of the database. In practice, the performance is determined by the speed of the main memory or the storage device. If the size of the database is less than the capacity of the main memory, the performance will seem on-memory speed which is fastar than std::map of STL. Of cource, the database size can be greater than the capacity of the main memory and the upper limit is 8 exabytes. Even in that case, each operation needs only one or two seeking of the storage device.</p>
-<p>Each operation of B+ tree has the time complexity of O(log N). So, in theory, the performance is logarithmic about the scale of the database. Although the performance of random access of B+ tree is slower than that of hash database, B+ tree supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers. The performance of sequential access is much faster than that of random access.</p>
-<p>As the API is based on object-oriented design, hash database and B+ tree database have same methods which inherited from the upper abstract class. Prototype database by containers of STL and cache database with LRU deletion algorithm are also provided under the same base class. All databases have practical utility methods related to transaction and cursor. Programs for command line interface are also included in the package.</p>
+<p>The following access methods are provided to the database: storing a record with a key and a value, deleting a record by a key, retrieving a record by a key. Moreover, traversal access to every key are provided. These access methods are similar to ones of the original DBM (and its followers: NDBM and GDBM) library defined in the UNIX standard. Kyoto Cabinet is an alternative for the DBM because of its higher performance.</p>
+<p>Each operation of the hash database has the time complexity of "O(1)". Therefore, in theory, the performance is constant regardless of the scale of the database. In practice, the performance is determined by the speed of the main memory or the storage device. If the size of the database is less than the capacity of the main memory, the performance will seem on-memory speed, which is faster than std::map of STL. Of course, the database size can be greater than the capacity of the main memory and the upper limit is 8 exabytes. Even in that case, each operation needs only one or two seeking of the storage device.</p>
+<p>Each operation of the B+ tree database has the time complexity of "O(log N)". Therefore, in theory, the performance is logarithmic to the scale of the database. Although the performance of random access of the B+ tree database is slower than that of the hash database, the B+ tree database supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers. The performance of sequential access is much faster than that of random access.</p>
+<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class. Beside them, two kinds of databases are provided under the same base class. The prototype database is powered by the standard containers of STL. The cache database is powered by the original implementation of double-linked hash map with LRU deletion algorithm. All databases have practical utility methods related to transaction and cursor. Programs for command line interface are also included in the package.</p>
 <p>The following classes are most important.</p>
 <ul>
 <li><a class="el" href="classkyotocabinet_1_1FileDB.html" title="Basic implementation for file database.">kyotocabinet::FileDB</a> -- common interface of concrete databases </li>
@@ -41,8 +41,8 @@ Introduction</a></h2>
 <p>See the project homepage ( <a href="http://1978th.net/kyotocabinet/">http://1978th.net/kyotocabinet/</a> ) for detail.</p>
 <h2><a class="anchor" id="Example">
 Example</a></h2>
-<p>The following code is an example to use a file hash database.</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="kchashdb_8h.html" title="file hash database">kchashdb.h</a>&gt;</span>
+<p>The following code is an example to use a polymorphic database.</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="kcpolydb_8h.html" title="polymorphic database">kcpolydb.h</a>&gt;</span>
 
 <span class="keyword">using namespace </span>std;
 <span class="keyword">using namespace </span>kyotocabinet;
@@ -51,10 +51,10 @@ Example</a></h2>
 <span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>** argv) {
 
   <span class="comment">// create the database object</span>
-  HashDB db;
+  PolyDB db;
 
   <span class="comment">// open the database</span>
-  <span class="keywordflow">if</span> (!db.open(<span class="stringliteral">&quot;casket.kch&quot;</span>, HashDB::OWRITER | HashDB::OCREATE)) {
+  <span class="keywordflow">if</span> (!db.open(<span class="stringliteral">&quot;casket.kch&quot;</span>, PolyDB::OWRITER | PolyDB::OCREATE)) {
     cerr &lt;&lt; <span class="stringliteral">&quot;open error: &quot;</span> &lt;&lt; db.error().name() &lt;&lt; endl;
   }
 
@@ -92,7 +92,7 @@ Example</a></h2>
   <span class="keywordflow">return</span> 0;
 }
 </pre></div><p>The following code is a more complex example, which uses the Visitor pattern.</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="kchashdb_8h.html" title="file hash database">kchashdb.h</a>&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="kcpolydb_8h.html" title="polymorphic database">kcpolydb.h</a>&gt;</span>
 
 <span class="keyword">using namespace </span>std;
 <span class="keyword">using namespace </span>kyotocabinet;
@@ -101,10 +101,10 @@ Example</a></h2>
 <span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>** argv) {
 
   <span class="comment">// create the database object</span>
-  HashDB db;
+  PolyDB db;
 
   <span class="comment">// open the database</span>
-  <span class="keywordflow">if</span> (!db.open(<span class="stringliteral">&quot;casket.kch&quot;</span>, HashDB::OREADER)) {
+  <span class="keywordflow">if</span> (!db.open(<span class="stringliteral">&quot;casket.kch&quot;</span>, PolyDB::OREADER)) {
     cerr &lt;&lt; <span class="stringliteral">&quot;open error: &quot;</span> &lt;&lt; db.error().name() &lt;&lt; endl;
   }
 
@@ -224,7 +224,7 @@ Example</a></h2>
   <span class="keywordflow">return</span> 0;
 }
 </pre></div> </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun May 9 12:35:29 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

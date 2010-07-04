@@ -99,10 +99,24 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release a region allocated in the library.  <a href="#aefcd68bc9b902c7968223e471c9ec38e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#acf8a78ec339dbdacb7451d7eaa2abb45">kctime</a> (void)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the time of day in seconds.  <a href="#acf8a78ec339dbdacb7451d7eaa2abb45"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a937d5246c18410ed598d9c061b04504a">kcatoi</a> (const char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a string to an integer.  <a href="#a937d5246c18410ed598d9c061b04504a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a585366f65f8332aa439e6b640823894f">kcatoix</a> (const char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a string with a metric prefix to an integer.  <a href="#a585366f65f8332aa439e6b640823894f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#ac89ecc6c9417a0f38ada1417b84adf04">kcatof</a> (const char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a string to a real number.  <a href="#ac89ecc6c9417a0f38ada1417b84adf04"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a943ec205ec42c2ec60b7823f0b0769da">kchashmurmur</a> (const void *buf, size_t size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the hash value by MurMur hashing.  <a href="#a943ec205ec42c2ec60b7823f0b0769da"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a7a6541052e2e0810b11ef7e51a80da3f">kchashfnv</a> (const void *buf, size_t size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the hash value by FNV hashing.  <a href="#a7a6541052e2e0810b11ef7e51a80da3f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#ad1e7b041ebb62e5e08166d091c90b3e3">kcnan</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the quiet Not-a-Number value.  <a href="#ad1e7b041ebb62e5e08166d091c90b3e3"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a304f691cdbf2d9bb1cd14c789973c56a">kcinf</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the positive infinity value.  <a href="#a304f691cdbf2d9bb1cd14c789973c56a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a0b7d3cfd745e92ee2d9fe43f058b68c3">kcchknan</a> (double num)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check a number is a Not-a-Number value.  <a href="#a0b7d3cfd745e92ee2d9fe43f058b68c3"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#ad237cdbe33ea8b918979bfbbb78b7d64">kcchkinf</a> (double num)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check a number is an infinity value.  <a href="#ad237cdbe33ea8b918979bfbbb78b7d64"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a7c345d19eb7072e55e54091467d269d7">kcecodename</a> (int32_t code)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the readable string of an error code.  <a href="#a7c345d19eb7072e55e54091467d269d7"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="unionKCDB.html">KCDB</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a485c6993061575b14c4615988e694a15">kcdbnew</a> (void)</td></tr>
@@ -143,6 +157,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove all records.  <a href="#a853dea5181512c82535be1c0e32f765f"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a8013c2ac28dcbde074cd2aa9a58aa72f">kcdbsync</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, int32_t hard, <a class="el" href="kclangc_8h.html#a55e9f27415a9ee1d641cef35cc518b8f">KCFILEPROC</a> proc, void *opq)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#a8013c2ac28dcbde074cd2aa9a58aa72f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a9876214275221936d62b620f49b34570">kcdbcopy</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, const char *dest)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a copy of the database file.  <a href="#a9876214275221936d62b620f49b34570"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a531f94f519cd35a5fc7bc1e0ef04ece8">kcdbbegintran</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, int32_t hard)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#a531f94f519cd35a5fc7bc1e0ef04ece8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#af00b9f2ed98722be9399d492e6c33a64">kcdbbegintrantry</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, int32_t hard)</td></tr>
@@ -167,14 +183,16 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destroy a cursor object.  <a href="#a88d85075827598fa94c6fd4c3430389f"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a7ca1819141a1554397bbfede6d6f325e">kccuraccept</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur, <a class="el" href="kclangc_8h.html#ad5322730d6c138c6c32bd501fc2c09e3">KCVISITFULL</a> fullproc, void *opq, int32_t writable, int32_t step)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to the current record.  <a href="#a7ca1819141a1554397bbfede6d6f325e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#abf07e20809ce5927f81ed055e0c8c637">kccursetvalue</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur, const char *vbuf, size_t vsiz, int32_t step)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the value of the current record.  <a href="#abf07e20809ce5927f81ed055e0c8c637"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a0867dbd783e2a23c1a6be653d8e41bdd">kccurremove</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove the current record.  <a href="#a0867dbd783e2a23c1a6be653d8e41bdd"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a1f15ef59f87b34eeeb4374c847d67b4b">kccurgetkey</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur, size_t *sp, int32_t step)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the key of the current record.  <a href="#a1f15ef59f87b34eeeb4374c847d67b4b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a5ebbb378e935cd773107503d7d4d466c">kccurgetvalue</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur, size_t *sp, int32_t step)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the value of the current record.  <a href="#a5ebbb378e935cd773107503d7d4d466c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a543b0095fb011f3ae42424460190d25a">kccurget</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur, size_t *ksp, const char **vbp, size_t *vsp, int32_t step)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get a pair of the key and the value of the current record.  <a href="#a543b0095fb011f3ae42424460190d25a"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a0867dbd783e2a23c1a6be653d8e41bdd">kccurremove</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove the current record.  <a href="#a0867dbd783e2a23c1a6be653d8e41bdd"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a086c2e825133e414430ebd9fa010c9e0">kccurjump</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record.  <a href="#a086c2e825133e414430ebd9fa010c9e0"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a6b02b505678f971be270e3ba9a1b4d76">kccurjumpkey</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur, const char *kbuf, size_t ksiz)</td></tr>
@@ -449,6 +467,87 @@
 
 </div>
 </div>
+<a class="anchor" id="a937d5246c18410ed598d9c061b04504a"></a><!-- doxytag: member="kclangc.h::kcatoi" ref="a937d5246c18410ed598d9c061b04504a" args="(const char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kcatoi </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Convert a string to an integer. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>specifies the string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the integer. If the string does not contain numeric expression, 0 is returned. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a585366f65f8332aa439e6b640823894f"></a><!-- doxytag: member="kclangc.h::kcatoix" ref="a585366f65f8332aa439e6b640823894f" args="(const char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kcatoix </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Convert a string with a metric prefix to an integer. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string, which can be trailed by a binary metric prefix. "K", "M", "G", "T", "P", and "E" are supported. They are case-insensitive. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the integer. If the string does not contain numeric expression, 0 is returned. If the integer overflows the domain, INT64_MAX or INT64_MIN is returned according to the sign. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ac89ecc6c9417a0f38ada1417b84adf04"></a><!-- doxytag: member="kclangc.h::kcatof" ref="ac89ecc6c9417a0f38ada1417b84adf04" args="(const char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double kcatof </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Convert a string to a real number. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>specifies the string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the real number. If the string does not contain numeric expression, 0.0 is returned. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a943ec205ec42c2ec60b7823f0b0769da"></a><!-- doxytag: member="kclangc.h::kchashmurmur" ref="a943ec205ec42c2ec60b7823f0b0769da" args="(const void *buf, size_t size)" -->
 <div class="memitem">
 <div class="memproto">
@@ -520,6 +619,88 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the hash value. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ad1e7b041ebb62e5e08166d091c90b3e3"></a><!-- doxytag: member="kclangc.h::kcnan" ref="ad1e7b041ebb62e5e08166d091c90b3e3" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double kcnan </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the quiet Not-a-Number value. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the quiet Not-a-Number value. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a304f691cdbf2d9bb1cd14c789973c56a"></a><!-- doxytag: member="kclangc.h::kcinf" ref="a304f691cdbf2d9bb1cd14c789973c56a" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double kcinf </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the positive infinity value. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the positive infinity value. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a0b7d3cfd745e92ee2d9fe43f058b68c3"></a><!-- doxytag: member="kclangc.h::kcchknan" ref="a0b7d3cfd745e92ee2d9fe43f058b68c3" args="(double num)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kcchknan </td>
+          <td>(</td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>num</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Check a number is a Not-a-Number value. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true for the number is a Not-a-Number value, or false if not. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ad237cdbe33ea8b918979bfbbb78b7d64"></a><!-- doxytag: member="kclangc.h::kcchkinf" ref="ad237cdbe33ea8b918979bfbbb78b7d64" args="(double num)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kcchkinf </td>
+          <td>(</td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>num</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Check a number is an infinity value. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true for the number is an infinity value, or false if not. </dd></dl>
 
 </div>
 </div>
@@ -639,7 +820,7 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The tuning parameter "bnum" corresponds to the original "tune_bucket" method. "capcount" is for "cap_count". "capsize" is for "cap_size". "apow" is for "tune_alignment". "fpow" is for "tune_fbp". "opts" is for "tune_options" and the value can contain "s" for the small option, "l" for the linear option, and "c" for the copmress option. "msiz" is for "tune_map". "dfunit" is for "tune_defrag". "erstrm" and "ervbs" are for "tune_error_reporter" and the formar value can be "stdout" or "stderr" and the latter value can be "true" or "false". "psiz" is for "tune_page". "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for the decimal comparator. "pccap" is for "tune_page_cache". Every opened database must be closed by the kcdbclose function when it is no longer in use. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The tuning parameter "bnum" corresponds to the original "tune_bucket" method. "capcount" is for "cap_count". "capsize" is for "cap_size". "apow" is for "tune_alignment". "fpow" is for "tune_fbp". "opts" is for "tune_options" and the value can contain "s" for the small option, "l" for the linear option, and "c" for the copmress option. "msiz" is for "tune_map". "dfunit" is for "tune_defrag". "erstrm" and "ervbs" are for "tune_error_reporter" and the formar value can be "stdout" or "stderr" and the latter value can be "true" or "false". "psiz" is for "tune_page". "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for the decimal comparator. "pccap" is for "tune_page_cache". Every opened database must be closed by the kcdbclose function when it is no longer in use. It is not allowed for two or more database objects in the same process to keep their connections to the same database file at the same time. </dd></dl>
 
 </div>
 </div>
@@ -1433,6 +1614,43 @@
 
 </div>
 </div>
+<a class="anchor" id="a9876214275221936d62b620f49b34570"></a><!-- doxytag: member="kclangc.h::kcdbcopy" ref="a9876214275221936d62b620f49b34570" args="(KCDB *db, const char *dest)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kcdbcopy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="unionKCDB.html">KCDB</a> *&nbsp;</td>
+          <td class="paramname"> <em>db</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>dest</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Create a copy of the database file. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>db</em>&nbsp;</td><td>a database object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the path of the destination file. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a531f94f519cd35a5fc7bc1e0ef04ece8"></a><!-- doxytag: member="kclangc.h::kcdbbegintran" ref="a531f94f519cd35a5fc7bc1e0ef04ece8" args="(KCDB *db, int32_t hard)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1840,6 +2058,85 @@
 
 </div>
 </div>
+<a class="anchor" id="abf07e20809ce5927f81ed055e0c8c637"></a><!-- doxytag: member="kclangc.h::kccursetvalue" ref="abf07e20809ce5927f81ed055e0c8c637" args="(KCCUR *cur, const char *vbuf, size_t vsiz, int32_t step)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kccursetvalue </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="unionKCCUR.html">KCCUR</a> *&nbsp;</td>
+          <td class="paramname"> <em>cur</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>vbuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>vsiz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramname"> <em>step</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set the value of the current record. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>cur</em>&nbsp;</td><td>a cursor object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>vbuf</em>&nbsp;</td><td>the pointer to the value region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>vsiz</em>&nbsp;</td><td>the size of the value region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>step</em>&nbsp;</td><td>true to move the cursor to the next record, or false for no move. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a0867dbd783e2a23c1a6be653d8e41bdd"></a><!-- doxytag: member="kclangc.h::kccurremove" ref="a0867dbd783e2a23c1a6be653d8e41bdd" args="(KCCUR *cur)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kccurremove </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="unionKCCUR.html">KCCUR</a> *&nbsp;</td>
+          <td class="paramname"> <em>cur</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Remove the current record. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>cur</em>&nbsp;</td><td>a cursor object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, false is returned. The cursor is moved to the next record implicitly. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a1f15ef59f87b34eeeb4374c847d67b4b"></a><!-- doxytag: member="kclangc.h::kccurgetkey" ref="a1f15ef59f87b34eeeb4374c847d67b4b" args="(KCCUR *cur, size_t *sp, int32_t step)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1986,34 +2283,6 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the pointer to the pair of the key region, or NULL on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>If the cursor is invalidated, NULL is returned. Because an additional zero code is appended at the end of each region of the key and the value, each region can be treated as a C-style string. The region of the return value should be released with the kcfree function when it is no longer in use. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a0867dbd783e2a23c1a6be653d8e41bdd"></a><!-- doxytag: member="kclangc.h::kccurremove" ref="a0867dbd783e2a23c1a6be653d8e41bdd" args="(KCCUR *cur)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int32_t kccurremove </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="unionKCCUR.html">KCCUR</a> *&nbsp;</td>
-          <td class="paramname"> <em>cur</em></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>Remove the current record. </p>
-<dl><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>cur</em>&nbsp;</td><td>a cursor object. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, false is returned. The cursor is moved to the next record implicitly. </dd></dl>
 
 </div>
 </div>
@@ -2243,7 +2512,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun May 9 12:35:29 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

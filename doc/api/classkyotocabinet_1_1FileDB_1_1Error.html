@@ -59,6 +59,8 @@
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a2216da0373be2b16087710d9a4925509">Error</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Default constructor.  <a href="#a2216da0373be2b16087710d9a4925509"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a0e64a217e129a049762ba6afc4d40c9d">Error</a> (const <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> &amp;src)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Copy constructor.  <a href="#a0e64a217e129a049762ba6afc4d40c9d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a152931c6616a059f81aca3efee747c43">Error</a> (<a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Code</a> code, const char *message)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Constructor.  <a href="#a152931c6616a059f81aca3efee747c43"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a34749f40cc8f6b18b3ccb63eac09a040">~Error</a> ()</td></tr>
@@ -71,6 +73,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the readable string of the code.  <a href="#a3b71384476c0afe481a774779c96c26b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a9c4795fe032f231c75a6e2c319b46d99">message</a> () const </td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the supplement message.  <a href="#a9c4795fe032f231c75a6e2c319b46d99"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> &amp;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a7484aa98d7d4796010c9250d75e89a9d">operator=</a> (const <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> &amp;right)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Assignment operator from the self type.  <a href="#a7484aa98d7d4796010c9250d75e89a9d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#af28deca859c1df3237144cdab7eafb51">operator int32_t</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Cast operator to integer.  <a href="#af28deca859c1df3237144cdab7eafb51"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Static Public Member Functions</h2></td></tr>
@@ -149,6 +153,32 @@
 <div class="memdoc">
 
 <p>Default constructor. </p>
+
+</div>
+</div>
+<a class="anchor" id="a0e64a217e129a049762ba6afc4d40c9d"></a><!-- doxytag: member="kyotocabinet::FileDB::Error::Error" ref="a0e64a217e129a049762ba6afc4d40c9d" args="(const Error &amp;src)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">kyotocabinet::FileDB::Error::Error </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> &amp;&nbsp;</td>
+          <td class="paramname"> <em>src</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Copy constructor. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>src</em>&nbsp;</td><td>the source object. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -331,6 +361,33 @@
 
 </div>
 </div>
+<a class="anchor" id="a7484aa98d7d4796010c9250d75e89a9d"></a><!-- doxytag: member="kyotocabinet::FileDB::Error::operator=" ref="a7484aa98d7d4796010c9250d75e89a9d" args="(const Error &amp;right)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a>&amp; kyotocabinet::FileDB::Error::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> &amp;&nbsp;</td>
+          <td class="paramname"> <em>right</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Assignment operator from the self type. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>right</em>&nbsp;</td><td>the right operand. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the reference to itself. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="af28deca859c1df3237144cdab7eafb51"></a><!-- doxytag: member="kyotocabinet::FileDB::Error::operator int32_t" ref="af28deca859c1df3237144cdab7eafb51" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -352,7 +409,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun May 9 12:35:29 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

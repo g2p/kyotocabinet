@@ -165,6 +165,34 @@ double kctime(void);
 
 
 /**
+ * Convert a string to an integer.
+ * @param str specifies the string.
+ * @return the integer.  If the string does not contain numeric expression, 0 is returned.
+ */
+int64_t kcatoi(const char* str);
+
+
+/**
+ * Convert a string with a metric prefix to an integer.
+ * @param str the string, which can be trailed by a binary metric prefix.  "K", "M", "G", "T",
+ * "P", and "E" are supported.  They are case-insensitive.
+ * @return the integer.  If the string does not contain numeric expression, 0 is returned.  If
+ * the integer overflows the domain, INT64_MAX or INT64_MIN is returned according to the
+ * sign.
+ */
+int64_t kcatoix(const char* str);
+
+
+/**
+ * Convert a string to a real number.
+ * @param str specifies the string.
+ * @return the real number.  If the string does not contain numeric expression, 0.0 is
+ * returned.
+ */
+double kcatof(const char* str);
+
+
+/**
  * Get the hash value by MurMur hashing.
  * @param buf the source buffer.
  * @param size the size of the source buffer.
@@ -180,6 +208,34 @@ uint64_t kchashmurmur(const void* buf, size_t size);
  * @return the hash value.
  */
 uint64_t kchashfnv(const void* buf, size_t size);
+
+
+/**
+ * Get the quiet Not-a-Number value.
+ * @return the quiet Not-a-Number value.
+ */
+double kcnan();
+
+
+/**
+ * Get the positive infinity value.
+ * @return the positive infinity value.
+ */
+double kcinf();
+
+
+/**
+ * Check a number is a Not-a-Number value.
+ * @return true for the number is a Not-a-Number value, or false if not.
+ */
+int32_t kcchknan(double num);
+
+
+/**
+ * Check a number is an infinity value.
+ * @return true for the number is an infinity value, or false if not.
+ */
+int32_t kcchkinf(double num);
 
 
 /**
@@ -241,7 +297,8 @@ void kcdbdel(KCDB* db);
  * can be "true" or "false".  "psiz" is for "tune_page".  "rcomp" is for "tune_comparator" and
  * the value can be "lex" for the lexical comparator or "dec" for the decimal comparator.
  * "pccap" is for "tune_page_cache".  Every opened database must be closed by the kcdbclose
- * function when it is no longer in use.
+ * function when it is no longer in use.  It is not allowed for two or more database objects in
+ * the same process to keep their connections to the same database file at the same time.
  */
 int32_t kcdbopen(KCDB* db, const char* path, uint32_t mode);
 
@@ -440,6 +497,15 @@ int32_t kcdbsync(KCDB* db, int32_t hard, KCFILEPROC proc, void* opq);
 
 
 /**
+ * Create a copy of the database file.
+ * @param db a database object.
+ * @param dest the path of the destination file.
+ * @return true on success, or false on failure.
+ */
+int32_t kcdbcopy(KCDB* db, const char* dest);
+
+
+/**
  * Begin transaction.
  * @param db a database object.
  * @param hard true for physical synchronization with the device, or false for logical
@@ -554,6 +620,27 @@ int32_t kccuraccept(KCCUR* cur, KCVISITFULL fullproc, void* opq,
 
 
 /**
+ * Set the value of the current record.
+ * @param cur a cursor object.
+ * @param vbuf the pointer to the value region.
+ * @param vsiz the size of the value region.
+ * @param step true to move the cursor to the next record, or false for no move.
+ * @return true on success, or false on failure.
+ */
+int32_t kccursetvalue(KCCUR* cur, const char* vbuf, size_t vsiz, int32_t step);
+
+
+/**
+ * Remove the current record.
+ * @param cur a cursor object.
+ * @return true on success, or false on failure.
+ * @note If no record corresponds to the key, false is returned.  The cursor is moved to the
+ * next record implicitly.
+ */
+int32_t kccurremove(KCCUR* cur);
+
+
+/**
  * Get the key of the current record.
  * @param cur a cursor object.
  * @param sp the pointer to the variable into which the size of the region of the return value
@@ -600,16 +687,6 @@ char* kccurgetvalue(KCCUR* cur, size_t* sp, int32_t step);
  * function when it is no longer in use.
  */
 char* kccurget(KCCUR* cur, size_t* ksp, const char** vbp, size_t* vsp, int32_t step);
-
-
-/**
- * Remove the current record.
- * @param cur a cursor object.
- * @return true on success, or false on failure.
- * @note If no record corresponds to the key, false is returned.  The cursor is moved to the
- * next record implicitly.
- */
-int32_t kccurremove(KCCUR* cur);
 
 
 /**

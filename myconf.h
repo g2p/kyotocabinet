@@ -90,9 +90,9 @@
 
 #endif
 
-#define _KC_VERSION    "0.9.18"
-#define _KC_LIBVER     2
-#define _KC_LIBREV     21
+#define _KC_VERSION    "1.0.4"
+#define _KC_LIBVER     3
+#define _KC_LIBREV     2
 #define _KC_FMTVER     4
 
 #if ! defined(_MYNOATOMIC)
@@ -201,14 +201,6 @@ extern "C" {
 }
 
 #endif
-
-#undef VERSION
-#undef LIBVER
-#undef LIBREV
-#undef SYSNAME
-#undef BIGEND
-#undef CLOCKTICK
-#undef PAGESIZE
 
 #if defined(_SYS_FREEBSD_) || defined(_SYS_OPENBSD_) || defined(_SYS_NETBSD_) || \
   defined(_SYS_MACOSX_)

@@ -47,38 +47,38 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Default constructor.  <a href="#a7845155f138d66eb1a5d328b88d80e69"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a85a0bf69ab4effe611951f52f187d93a">~ProtoDB</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a85a0bf69ab4effe611951f52f187d93a"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#ae22f22bd16c435deac330f8655afee8f">accept</a> (const char *kbuf, size_t ksiz, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to a record.  <a href="#ae22f22bd16c435deac330f8655afee8f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a3c60928ec7dedf2ea9dd2854e6f5df3f">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#a3c60928ec7dedf2ea9dd2854e6f5df3f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a4570955e6b81a8b9efe4bd0baf35c70b">error</a> () const </td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the last happened error.  <a href="#a4570955e6b81a8b9efe4bd0baf35c70b"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a9a4589627fda66229045ca84dc598b4c">set_error</a> (<a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a> code, const char *message)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a9a4589627fda66229045ca84dc598b4c"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a85e6228479c7eda939a767819dfc8e1f">open</a> (const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#a85e6228479c7eda939a767819dfc8e1f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a5d737edc9a853fe687c78070acaa7c43">close</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#a5d737edc9a853fe687c78070acaa7c43"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a509887261a7a6945eede6dcdb094fa6f">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1FileDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#a509887261a7a6945eede6dcdb094fa6f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a309cae63f1f29b5d507e12372bdb0cdf">begin_transaction</a> (bool hard=false)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#a309cae63f1f29b5d507e12372bdb0cdf"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#aa9b84fba03fbbce847a0086826cc6192">begin_transaction_try</a> (bool hard=false)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Try to begin transaction.  <a href="#aa9b84fba03fbbce847a0086826cc6192"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#ab02706db6e6858e4d93adec7aeb90222">end_transaction</a> (bool commit=true)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">End transaction.  <a href="#ab02706db6e6858e4d93adec7aeb90222"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a4b9bc9e163abc1f408dc01aaf149c8f3">clear</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove all records.  <a href="#a4b9bc9e163abc1f408dc01aaf149c8f3"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a5a3846b7c05e777a830eee3c3a12bd65">count</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the number of records.  <a href="#a5a3846b7c05e777a830eee3c3a12bd65"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#aa8db9d30d1227744aa9c572fa08a1dde">size</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the size of the database file.  <a href="#aa8db9d30d1227744aa9c572fa08a1dde"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual std::string&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a2a0592a0730743296aedfd400a36a31e">path</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the path of the database file.  <a href="#a2a0592a0730743296aedfd400a36a31e"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a65c7dbe5826ed82b54fa04677ff47104">status</a> (std::map&lt; std::string, std::string &gt; *strmap)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#a65c7dbe5826ed82b54fa04677ff47104"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#ae1921efacf2055e56c040291c4de7e5b">cursor</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#ae1921efacf2055e56c040291c4de7e5b"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a583a623b1770d4217d49e289cb8ad909">accept</a> (const char *kbuf, size_t ksiz, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to a record.  <a href="#a583a623b1770d4217d49e289cb8ad909"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a6ffe7542f3973d43af95c9c7ee471f87">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#a6ffe7542f3973d43af95c9c7ee471f87"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a73789b15c228c2be916de00f4ae20ee8">error</a> () const </td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the last happened error.  <a href="#a73789b15c228c2be916de00f4ae20ee8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#ae8e1def2bccb9de0b3c6fa6e1fa30d89">set_error</a> (<a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a> code, const char *message)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#ae8e1def2bccb9de0b3c6fa6e1fa30d89"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a2625ed435b53c3aee1ab3e3395bdf2f6">open</a> (const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#a2625ed435b53c3aee1ab3e3395bdf2f6"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#acfdb63fa59462ae365c2cf573d960996">close</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#acfdb63fa59462ae365c2cf573d960996"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a1df230ae3a59114d5cbd27a78c09eb60">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1FileDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#a1df230ae3a59114d5cbd27a78c09eb60"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#ad9a6179523896ff4f6c3c870bd9a849e">begin_transaction</a> (bool hard=false)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#ad9a6179523896ff4f6c3c870bd9a849e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a6f829ca673310f5e7b02b5594aeb774c">begin_transaction_try</a> (bool hard=false)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Try to begin transaction.  <a href="#a6f829ca673310f5e7b02b5594aeb774c"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#af3dacb68277b5317f3f71b95eb639769">end_transaction</a> (bool commit=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">End transaction.  <a href="#af3dacb68277b5317f3f71b95eb639769"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a111d91f2ae3dccbdd4c8a64e09b7b7e1">clear</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove all records.  <a href="#a111d91f2ae3dccbdd4c8a64e09b7b7e1"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#abbff998c3df5cee414d75304523790e3">count</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the number of records.  <a href="#abbff998c3df5cee414d75304523790e3"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a6664c26a5671eee8aeea2c4eac86ebcc">size</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the size of the database file.  <a href="#a6664c26a5671eee8aeea2c4eac86ebcc"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">std::string&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a5ddb536724d141465f070478099ba4b6">path</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the path of the database file.  <a href="#a5ddb536724d141465f070478099ba4b6"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#ab820a72293fe2ad2c38372befc91a911">status</a> (std::map&lt; std::string, std::string &gt; *strmap)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#ab820a72293fe2ad2c38372befc91a911"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ProtoDB.html#a5c6c6f62782d6732e30aa9db7c7a270b">cursor</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#a5c6c6f62782d6732e30aa9db7c7a270b"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <h3>template&lt;class STRMAP&gt;<br/>
@@ -91,7 +91,7 @@
   </table>
   </dd>
 </dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The class ProtoHashDB is the instance using std::unordered_map. The class ProtoTreeDB is the instance using std::map. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This class template is a template for concrete classes which wrap data structures compatible with std::map. Template instance classes can be inherited but overwriting methods is forbidden. The class ProtoHashDB is the instance using std::unordered_map. The class ProtoTreeDB is the instance using std::map. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1CacheDB.html#aff8d30ef3cd6990348c47a88983548bf" title="Open a database file.">CacheDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0" title="Close the database file.">CacheDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. </dd></dl>
 <hr/><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a7845155f138d66eb1a5d328b88d80e69"></a><!-- doxytag: member="kyotocabinet::ProtoDB::ProtoDB" ref="a7845155f138d66eb1a5d328b88d80e69" args="()" -->
 <div class="memitem">
@@ -137,14 +137,14 @@ template&lt;class STRMAP &gt; </div>
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="ae22f22bd16c435deac330f8655afee8f"></a><!-- doxytag: member="kyotocabinet::ProtoDB::accept" ref="ae22f22bd16c435deac330f8655afee8f" args="(const char *kbuf, size_t ksiz, Visitor *visitor, bool writable=true)" -->
+<a class="anchor" id="a583a623b1770d4217d49e289cb8ad909"></a><!-- doxytag: member="kyotocabinet::ProtoDB::accept" ref="a583a623b1770d4217d49e289cb8ad909" args="(const char *kbuf, size_t ksiz, Visitor *visitor, bool writable=true)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::accept </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::accept </td>
           <td>(</td>
           <td class="paramtype">const char *&nbsp;</td>
           <td class="paramname"> <em>kbuf</em>, </td>
@@ -193,14 +193,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a3c60928ec7dedf2ea9dd2854e6f5df3f"></a><!-- doxytag: member="kyotocabinet::ProtoDB::iterate" ref="a3c60928ec7dedf2ea9dd2854e6f5df3f" args="(Visitor *visitor, bool writable=true)" -->
+<a class="anchor" id="a6ffe7542f3973d43af95c9c7ee471f87"></a><!-- doxytag: member="kyotocabinet::ProtoDB::iterate" ref="a6ffe7542f3973d43af95c9c7ee471f87" args="(Visitor *visitor, bool writable=true)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::iterate </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::iterate </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *&nbsp;</td>
           <td class="paramname"> <em>visitor</em>, </td>
@@ -235,14 +235,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a4570955e6b81a8b9efe4bd0baf35c70b"></a><!-- doxytag: member="kyotocabinet::ProtoDB::error" ref="a4570955e6b81a8b9efe4bd0baf35c70b" args="() const " -->
+<a class="anchor" id="a73789b15c228c2be916de00f4ae20ee8"></a><!-- doxytag: member="kyotocabinet::ProtoDB::error" ref="a73789b15c228c2be916de00f4ae20ee8" args="() const " -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::error </td>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::error </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -259,14 +259,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a9a4589627fda66229045ca84dc598b4c"></a><!-- doxytag: member="kyotocabinet::ProtoDB::set_error" ref="a9a4589627fda66229045ca84dc598b4c" args="(Error::Code code, const char *message)" -->
+<a class="anchor" id="ae8e1def2bccb9de0b3c6fa6e1fa30d89"></a><!-- doxytag: member="kyotocabinet::ProtoDB::set_error" ref="ae8e1def2bccb9de0b3c6fa6e1fa30d89" args="(Error::Code code, const char *message)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual void <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::set_error </td>
+          <td class="memname">void <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::set_error </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a>&nbsp;</td>
           <td class="paramname"> <em>code</em>, </td>
@@ -280,7 +280,7 @@ template&lt;class STRMAP &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td><code> [virtual]</code></td>
+          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
@@ -297,14 +297,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a85e6228479c7eda939a767819dfc8e1f"></a><!-- doxytag: member="kyotocabinet::ProtoDB::open" ref="a85e6228479c7eda939a767819dfc8e1f" args="(const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)" -->
+<a class="anchor" id="a2625ed435b53c3aee1ab3e3395bdf2f6"></a><!-- doxytag: member="kyotocabinet::ProtoDB::open" ref="a2625ed435b53c3aee1ab3e3395bdf2f6" args="(const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::open </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::open </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
           <td class="paramname"> <em>path</em>, </td>
@@ -333,20 +333,20 @@ template&lt;class STRMAP &gt; </div>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>Every opened database must be closed by the <a class="el" href="classkyotocabinet_1_1FileDB.html#aea6a3ded9a4eafd270b4385bd8c32ca7" title="Close the database file.">FileDB::close</a> method when it is no longer in use. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Every opened database must be closed by the <a class="el" href="classkyotocabinet_1_1FileDB.html#aea6a3ded9a4eafd270b4385bd8c32ca7" title="Close the database file.">FileDB::close</a> method when it is no longer in use. It is not allowed for two or more database objects in the same process to keep their connections to the same database file at the same time. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#aec3eee613bc7028b50fd230852800bbb">kyotocabinet::FileDB</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a5d737edc9a853fe687c78070acaa7c43"></a><!-- doxytag: member="kyotocabinet::ProtoDB::close" ref="a5d737edc9a853fe687c78070acaa7c43" args="()" -->
+<a class="anchor" id="acfdb63fa59462ae365c2cf573d960996"></a><!-- doxytag: member="kyotocabinet::ProtoDB::close" ref="acfdb63fa59462ae365c2cf573d960996" args="()" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::close </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::close </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -363,14 +363,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a509887261a7a6945eede6dcdb094fa6f"></a><!-- doxytag: member="kyotocabinet::ProtoDB::synchronize" ref="a509887261a7a6945eede6dcdb094fa6f" args="(bool hard=false, FileProcessor *proc=NULL)" -->
+<a class="anchor" id="a1df230ae3a59114d5cbd27a78c09eb60"></a><!-- doxytag: member="kyotocabinet::ProtoDB::synchronize" ref="a1df230ae3a59114d5cbd27a78c09eb60" args="(bool hard=false, FileProcessor *proc=NULL)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::synchronize </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::synchronize </td>
           <td>(</td>
           <td class="paramtype">bool&nbsp;</td>
           <td class="paramname"> <em>hard</em> = <code>false</code>, </td>
@@ -404,14 +404,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a309cae63f1f29b5d507e12372bdb0cdf"></a><!-- doxytag: member="kyotocabinet::ProtoDB::begin_transaction" ref="a309cae63f1f29b5d507e12372bdb0cdf" args="(bool hard=false)" -->
+<a class="anchor" id="ad9a6179523896ff4f6c3c870bd9a849e"></a><!-- doxytag: member="kyotocabinet::ProtoDB::begin_transaction" ref="ad9a6179523896ff4f6c3c870bd9a849e" args="(bool hard=false)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::begin_transaction </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::begin_transaction </td>
           <td>(</td>
           <td class="paramtype">bool&nbsp;</td>
           <td class="paramname"> <em>hard</em> = <code>false</code></td>
@@ -435,14 +435,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="aa9b84fba03fbbce847a0086826cc6192"></a><!-- doxytag: member="kyotocabinet::ProtoDB::begin_transaction_try" ref="aa9b84fba03fbbce847a0086826cc6192" args="(bool hard=false)" -->
+<a class="anchor" id="a6f829ca673310f5e7b02b5594aeb774c"></a><!-- doxytag: member="kyotocabinet::ProtoDB::begin_transaction_try" ref="a6f829ca673310f5e7b02b5594aeb774c" args="(bool hard=false)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::begin_transaction_try </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::begin_transaction_try </td>
           <td>(</td>
           <td class="paramtype">bool&nbsp;</td>
           <td class="paramname"> <em>hard</em> = <code>false</code></td>
@@ -466,14 +466,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ab02706db6e6858e4d93adec7aeb90222"></a><!-- doxytag: member="kyotocabinet::ProtoDB::end_transaction" ref="ab02706db6e6858e4d93adec7aeb90222" args="(bool commit=true)" -->
+<a class="anchor" id="af3dacb68277b5317f3f71b95eb639769"></a><!-- doxytag: member="kyotocabinet::ProtoDB::end_transaction" ref="af3dacb68277b5317f3f71b95eb639769" args="(bool commit=true)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::end_transaction </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::end_transaction </td>
           <td>(</td>
           <td class="paramtype">bool&nbsp;</td>
           <td class="paramname"> <em>commit</em> = <code>true</code></td>
@@ -497,14 +497,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a4b9bc9e163abc1f408dc01aaf149c8f3"></a><!-- doxytag: member="kyotocabinet::ProtoDB::clear" ref="a4b9bc9e163abc1f408dc01aaf149c8f3" args="()" -->
+<a class="anchor" id="a111d91f2ae3dccbdd4c8a64e09b7b7e1"></a><!-- doxytag: member="kyotocabinet::ProtoDB::clear" ref="a111d91f2ae3dccbdd4c8a64e09b7b7e1" args="()" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::clear </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::clear </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -521,14 +521,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a5a3846b7c05e777a830eee3c3a12bd65"></a><!-- doxytag: member="kyotocabinet::ProtoDB::count" ref="a5a3846b7c05e777a830eee3c3a12bd65" args="()" -->
+<a class="anchor" id="abbff998c3df5cee414d75304523790e3"></a><!-- doxytag: member="kyotocabinet::ProtoDB::count" ref="abbff998c3df5cee414d75304523790e3" args="()" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual int64_t <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::count </td>
+          <td class="memname">int64_t <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::count </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -545,14 +545,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="aa8db9d30d1227744aa9c572fa08a1dde"></a><!-- doxytag: member="kyotocabinet::ProtoDB::size" ref="aa8db9d30d1227744aa9c572fa08a1dde" args="()" -->
+<a class="anchor" id="a6664c26a5671eee8aeea2c4eac86ebcc"></a><!-- doxytag: member="kyotocabinet::ProtoDB::size" ref="a6664c26a5671eee8aeea2c4eac86ebcc" args="()" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual int64_t <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::size </td>
+          <td class="memname">int64_t <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::size </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -569,14 +569,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a2a0592a0730743296aedfd400a36a31e"></a><!-- doxytag: member="kyotocabinet::ProtoDB::path" ref="a2a0592a0730743296aedfd400a36a31e" args="()" -->
+<a class="anchor" id="a5ddb536724d141465f070478099ba4b6"></a><!-- doxytag: member="kyotocabinet::ProtoDB::path" ref="a5ddb536724d141465f070478099ba4b6" args="()" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual std::string <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::path </td>
+          <td class="memname">std::string <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::path </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -593,14 +593,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a65c7dbe5826ed82b54fa04677ff47104"></a><!-- doxytag: member="kyotocabinet::ProtoDB::status" ref="a65c7dbe5826ed82b54fa04677ff47104" args="(std::map&lt; std::string, std::string &gt; *strmap)" -->
+<a class="anchor" id="ab820a72293fe2ad2c38372befc91a911"></a><!-- doxytag: member="kyotocabinet::ProtoDB::status" ref="ab820a72293fe2ad2c38372befc91a911" args="(std::map&lt; std::string, std::string &gt; *strmap)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::status </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::status </td>
           <td>(</td>
           <td class="paramtype">std::map&lt; std::string, std::string &gt; *&nbsp;</td>
           <td class="paramname"> <em>strmap</em></td>
@@ -624,14 +624,14 @@ template&lt;class STRMAP &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ae1921efacf2055e56c040291c4de7e5b"></a><!-- doxytag: member="kyotocabinet::ProtoDB::cursor" ref="ae1921efacf2055e56c040291c4de7e5b" args="()" -->
+<a class="anchor" id="a5c6c6f62782d6732e30aa9db7c7a270b"></a><!-- doxytag: member="kyotocabinet::ProtoDB::cursor" ref="a5c6c6f62782d6732e30aa9db7c7a270b" args="()" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class STRMAP &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">virtual <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a>* <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::cursor </td>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a>* <a class="el" href="classkyotocabinet_1_1ProtoDB.html">kyotocabinet::ProtoDB</a>&lt; STRMAP &gt;::cursor </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -650,7 +650,7 @@ template&lt;class STRMAP &gt; </div>
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun May 9 12:35:29 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

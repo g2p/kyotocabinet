@@ -90,7 +90,7 @@ int64_t atoix(const char* str);
 
 /**
  * Convert a string to a real number.
- * @param str' specifies the string.
+ * @param str specifies the string.
  * @return the real number.  If the string does not contain numeric expression, 0.0 is
  * returned.
  */

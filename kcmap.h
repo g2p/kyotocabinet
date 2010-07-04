@@ -79,6 +79,7 @@ public:
      */
     Iterator& operator =(const Iterator& right) {
       _assert_(true);
+      if (&right == this) return *this;
       map_ = right.map_;
       rec_ = right.rec_;
       return *this;

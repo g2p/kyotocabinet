@@ -58,16 +58,16 @@ void map_tune(StringHashMap* map) {
   map->max_load_factor(FLT_MAX);
 }
 template <class STRMAP>
-DB::Type map_type(STRMAP* map) {
-  return DB::TYPEPMISC;
+FileDB::Type map_type(STRMAP* map) {
+  return FileDB::TYPEPMISC;
 }
 template <>
-DB::Type map_type(StringHashMap* map) {
-  return DB::TYPEPHASH;
+FileDB::Type map_type(StringHashMap* map) {
+  return FileDB::TYPEPHASH;
 }
 template <>
-DB::Type map_type(StringTreeMap* map) {
-  return DB::TYPEPTREE;
+FileDB::Type map_type(StringTreeMap* map) {
+  return FileDB::TYPEPTREE;
 }
 }
 
@@ -75,8 +75,14 @@ DB::Type map_type(StringTreeMap* map) {
 /**
  * Prototype implementation of file database with STL.
  * @param STRMAP a map compatible class of STL.
- * @note The class ProtoHashDB is the instance using std::unordered_map.  The class ProtoTreeDB
- * is the instance using std::map.
+ * @note This class template is a template for concrete classes which wrap data structures
+ * compatible with std::map.  Template instance classes can be inherited but overwriting methods
+ * is forbidden.  The class ProtoHashDB is the instance using std::unordered_map.  The class
+ * ProtoTreeDB is the instance using std::map.  Before every database operation, it is necessary
+ * to call the CacheDB::open method in order to open a database file and connect the database
+ * object to it.  To avoid data missing or corruption, it is important to close every database
+ * file by the CacheDB::close method when the database is no longer in use.  It is forbidden for
+ * multible database objects in a process to open the same database at the same time.
  */
 template <class STRMAP>
 class ProtoDB : public FileDB {
@@ -122,7 +128,7 @@ public:
      * @note the operation for each record is performed atomically and other threads accessing
      * the same record are blocked.
      */
-    virtual bool accept(Visitor* visitor, bool writable = true, bool step = false) {
+    bool accept(Visitor* visitor, bool writable = true, bool step = false) {
       _assert_(visitor);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
@@ -176,7 +182,7 @@ public:
      * Jump the cursor to the first record.
      * @return true on success, or false on failure.
      */
-    virtual bool jump() {
+    bool jump() {
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
@@ -196,7 +202,7 @@ public:
      * @param ksiz the size of the key region.
      * @return true on success, or false on failure.
      */
-    virtual bool jump(const char* kbuf, size_t ksiz) {
+    bool jump(const char* kbuf, size_t ksiz) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
@@ -215,7 +221,7 @@ public:
      * Jump the cursor to a record.
      * @note Equal to the original Cursor::jump method except that the parameter is std::string.
      */
-    virtual bool jump(const std::string& key) {
+    bool jump(const std::string& key) {
       _assert_(true);
       return jump(key.c_str(), key.size());
     }
@@ -223,7 +229,7 @@ public:
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
-    virtual bool step() {
+    bool step() {
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
@@ -241,7 +247,7 @@ public:
      * Get the database object.
      * @return the database object.
      */
-    virtual ProtoDB* db() {
+    ProtoDB* db() {
       _assert_(true);
       return db_;
     }
@@ -290,7 +296,7 @@ public:
    * @note the operation for each record is performed atomically and other threads accessing the
    * same record are blocked.
    */
-  virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
+  bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     if (writable) {
       ScopedSpinRWLock lock(&mlock_, true);
@@ -380,7 +386,7 @@ public:
    * @return true on success, or false on failure.
    * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  virtual bool iterate(Visitor *visitor, bool writable = true) {
+  bool iterate(Visitor *visitor, bool writable = true) {
     _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -417,7 +423,7 @@ public:
    * Get the last happened error.
    * @return the last happened error.
    */
-  virtual Error error() const {
+  Error error() const {
     _assert_(true);
     return error_;
   }
@@ -426,7 +432,7 @@ public:
    * @param code an error code.
    * @param message a supplement message.
    */
-  virtual void set_error(Error::Code code, const char* message) {
+  void set_error(Error::Code code, const char* message) {
     _assert_(message);
     error_->set(code, message);
   }
@@ -446,9 +452,10 @@ public:
    * detected.
    * @return true on success, or false on failure.
    * @note Every opened database must be closed by the FileDB::close method when it is no
-   * longer in use.
+   * longer in use.  It is not allowed for two or more database objects in the same process to
+   * keep their connections to the same database file at the same time.
    */
-  virtual bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
+  bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
@@ -463,7 +470,7 @@ public:
    * Close the database file.
    * @return true on success, or false on failure.
    */
-  virtual bool close() {
+  bool close() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -493,7 +500,7 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @return true on success, or false on failure.
    */
-  virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+  bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -506,7 +513,7 @@ public:
     }
     bool err = false;
     if (proc && !proc->process(path_, recs_.size(), size_)) {
-      set_error(Error::MISC, "postprocessing failed");
+      set_error(Error::LOGIC, "postprocessing failed");
       err = true;
     }
     return !err;
@@ -517,7 +524,7 @@ public:
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction(bool hard = false) {
+  bool begin_transaction(bool hard = false) {
     _assert_(true);
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
@@ -547,7 +554,7 @@ public:
    * synchronization with the file system.
    * @return true on success, or false on failure.
    */
-  virtual bool begin_transaction_try(bool hard = false) {
+  bool begin_transaction_try(bool hard = false) {
     _assert_(true);
     mlock_.lock_writer();
     if (omode_ == 0) {
@@ -575,7 +582,7 @@ public:
    * @param commit true to commit the transaction, or false to abort the transaction.
    * @return true on success, or false on failure.
    */
-  virtual bool end_transaction(bool commit = true) {
+  bool end_transaction(bool commit = true) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -617,7 +624,7 @@ public:
    * Remove all records.
    * @return true on success, or false on failure.
    */
-  virtual bool clear() {
+  bool clear() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -640,7 +647,7 @@ public:
    * Get the number of records.
    * @return the number of records, or -1 on failure.
    */
-  virtual int64_t count() {
+  int64_t count() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -653,7 +660,7 @@ public:
    * Get the size of the database file.
    * @return the size of the database file in bytes, or -1 on failure.
    */
-  virtual int64_t size() {
+  int64_t size() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -666,7 +673,7 @@ public:
    * Get the path of the database file.
    * @return the path of the database file, or an empty string on failure.
    */
-  virtual std::string path() {
+  std::string path() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -680,7 +687,7 @@ public:
    * @param strmap a string map to contain the result.
    * @return true on success, or false on failure.
    */
-  virtual bool status(std::map<std::string, std::string>* strmap) {
+  bool status(std::map<std::string, std::string>* strmap) {
     _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -700,7 +707,7 @@ public:
    * @note Because the object of the return value is allocated by the constructor, it should be
    * released with the delete operator when it is no longer in use.
    */
-  virtual Cursor* cursor() {
+  Cursor* cursor() {
     _assert_(true);
     return new Cursor(this);
   }

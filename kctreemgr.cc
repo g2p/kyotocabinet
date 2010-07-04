@@ -627,7 +627,7 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
     db.status(&status);
     uint32_t type = kc::atoi(status["realtype"].c_str());
     iprintf("type: %s (type=0x%02X) (%s)\n",
-            status["type"].c_str(), type, kc::DB::typestring(type));
+            status["type"].c_str(), type, kc::FileDB::typestring(type));
     uint32_t chksum = kc::atoi(status["chksum"].c_str());
     iprintf("format version: %s (libver=%s.%s) (chksum=0x%02X)\n", status["fmtver"].c_str(),
             status["libver"].c_str(), status["librev"].c_str(), chksum);

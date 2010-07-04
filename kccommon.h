@@ -92,6 +92,14 @@ using tr1::unordered_set;
 
 #endif
 
+#undef VERSION
+#undef LIBVER
+#undef LIBREV
+#undef SYSNAME
+#undef BIGEND
+#undef CLOCKTICK
+#undef PAGESIZE
+
 #if defined(_KCUYIELD)
 #if defined(_MSC_VER)
 #include <windows.h>
@@ -120,6 +128,11 @@ using tr1::unordered_set;
 #define _testyield_()                    ///< for debugging
 #define _assert_(KC_a)                   ///< for debugging
 #endif
+
+/**
+ * All symbols of Kyoto Cabinet.
+ */
+namespace kyotocabinet {}
 
 
 #endif                                   // duplication check
