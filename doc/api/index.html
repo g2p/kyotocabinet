@@ -25,7 +25,7 @@ Introduction</a></h2>
 <p>The following access methods are provided to the database: storing a record with a key and a value, deleting a record by a key, retrieving a record by a key. Moreover, traversal access to every key are provided. These access methods are similar to ones of the original DBM (and its followers: NDBM and GDBM) library defined in the UNIX standard. Kyoto Cabinet is an alternative for the DBM because of its higher performance.</p>
 <p>Each operation of the hash database has the time complexity of "O(1)". Therefore, in theory, the performance is constant regardless of the scale of the database. In practice, the performance is determined by the speed of the main memory or the storage device. If the size of the database is less than the capacity of the main memory, the performance will seem on-memory speed, which is faster than std::map of STL. Of course, the database size can be greater than the capacity of the main memory and the upper limit is 8 exabytes. Even in that case, each operation needs only one or two seeking of the storage device.</p>
 <p>Each operation of the B+ tree database has the time complexity of "O(log N)". Therefore, in theory, the performance is logarithmic to the scale of the database. Although the performance of random access of the B+ tree database is slower than that of the hash database, the B+ tree database supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers. The performance of sequential access is much faster than that of random access.</p>
-<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class. Beside them, two kinds of databases are provided under the same base class. The prototype database is powered by the standard containers of STL. The cache database is powered by the original implementation of double-linked hash map with LRU deletion algorithm. All databases have practical utility methods related to transaction and cursor. Programs for command line interface are also included in the package.</p>
+<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class. Beside them, three kinds of databases are provided under the same base class. The prototype database is powered by the standard containers of STL. The cache database is powered by the original implementation of double-linked hash map with LRU deletion algorithm. The directory database is powered by the directory mechanism of the file system and stores records as respective files in a directory. All databases have practical utility methods related to transaction and cursor. Programs for command line interface are also included in the package.</p>
 <p>The following classes are most important.</p>
 <ul>
 <li><a class="el" href="classkyotocabinet_1_1FileDB.html" title="Basic implementation for file database.">kyotocabinet::FileDB</a> -- common interface of concrete databases </li>
@@ -33,6 +33,7 @@ Introduction</a></h2>
 <li><a class="el" href="classkyotocabinet_1_1CacheDB.html" title="On-memory hash database with LRU deletion.">kyotocabinet::CacheDB</a> -- on-memory hash database for cache with LRU deletion </li>
 <li><a class="el" href="classkyotocabinet_1_1HashDB.html" title="File hash database.">kyotocabinet::HashDB</a> -- file hash database, which implements hash table on a file </li>
 <li><a class="el" href="classkyotocabinet_1_1TreeDB.html" title="File tree database.">kyotocabinet::TreeDB</a> -- file tree database, which implements B+ tree on a file </li>
+<li><a class="el" href="classkyotocabinet_1_1DirDB.html" title="Directory database.">kyotocabinet::DirDB</a> -- directory database, which handles respective files in a directory </li>
 <li><a class="el" href="classkyotocabinet_1_1PolyDB.html" title="Polymorphic database.">kyotocabinet::PolyDB</a> -- polymorphic database, dynamic binding of the above databases</li>
 </ul>
 <ul>
@@ -224,7 +225,7 @@ Example</a></h2>
   <span class="keywordflow">return</span> 0;
 }
 </pre></div> </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 25 20:26:37 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

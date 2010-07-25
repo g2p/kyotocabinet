@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * The command line utility of the file tree database
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -25,7 +25,7 @@ const char* g_progname;                  // program name
 int main(int argc, char** argv);
 static void usage();
 static void dberrprint(kc::FileDB* db, const char* info);
-static void ebufprint(const std::ostringstream* ebuf);
+static void ebufprint(std::ostringstream* ebuf);
 static int32_t runcreate(int argc, char** argv);
 static int32_t runinform(int argc, char** argv);
 static int32_t runset(int argc, char** argv);
@@ -123,16 +123,17 @@ static void dberrprint(kc::FileDB* db, const char* info) {
 
 
 // print the content of the error buffer
-static void ebufprint(const std::ostringstream* ebuf) {
+static void ebufprint(std::ostringstream* ebuf) {
   const std::string& str = ebuf->str();
   std::vector<std::string> lines;
   kc::strsplit(str, '\n', &lines);
   std::vector<std::string>::iterator it = lines.begin();
   std::vector<std::string>::iterator itend = lines.end();
   while (it != itend) {
-    if (it->size() > 0) eprintf("%s: %s\n", g_progname, it->c_str());
+    if (!it->empty()) eprintf("%s: %s\n", g_progname, it->c_str());
     it++;
   }
+  ebuf->str("");
 }
 
 
@@ -598,6 +599,7 @@ static int32_t proccreate(const char* path, int32_t oflags, int32_t apow, int32_
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   if (!db.close()) {
     ebufprint(&ebuf);
@@ -618,6 +620,7 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   if (st) {
     std::map<std::string, std::string> status;
@@ -732,6 +735,7 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   switch (mode) {
     default: {
@@ -800,6 +804,7 @@ static int32_t procremove(const char* path, const char* kbuf, size_t ksiz, int32
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   if (!db.remove(kbuf, ksiz)) {
     ebufprint(&ebuf);
@@ -826,6 +831,7 @@ static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   size_t vsiz;
   char* vbuf = db.get(kbuf, ksiz, &vsiz);
@@ -858,6 +864,7 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   class VisitorImpl : public kc::DB::Visitor {
   public:
@@ -938,6 +945,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   int64_t cnt = 0;
   std::string line;
@@ -998,6 +1006,7 @@ static int32_t procdump(const char* path, const char* file, int32_t oflags) {
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   if (file) {
     if (!db.dump_snapshot(file)) {
@@ -1031,6 +1040,7 @@ static int32_t procload(const char* path, const char* file, int32_t oflags) {
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   if (file) {
     if (!db.load_snapshot(file)) {
@@ -1064,6 +1074,7 @@ static int32_t procdefrag(const char* path, int32_t oflags) {
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   if (!db.defrag(0)) {
     ebufprint(&ebuf);
@@ -1089,6 +1100,7 @@ static int32_t proccheck(const char* path, int32_t oflags) {
     dberrprint(&db, "DB::open failed");
     return 1;
   }
+  ebufprint(&ebuf);
   bool err = false;
   kc::TreeDB::Cursor cur(&db);
   if (!cur.jump() && db.error() != kc::FileDB::Error::NOREC) {

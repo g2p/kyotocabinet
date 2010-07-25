@@ -45,10 +45,12 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><p>Compression modes. </p>
  <a href="classkyotocabinet_1_1Zlib.html#a0a5cdaefd620108e3b15b03e57d8a1d5">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2>Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">static char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1Zlib.html#ae3421e60bc2731393624e12820b65ce0">compress</a> (<a class="el" href="classkyotocabinet_1_1Zlib.html#a0a5cdaefd620108e3b15b03e57d8a1d5">Mode</a> mode, const void *buf, size_t size, size_t *sp)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Compress a serial data.  <a href="#ae3421e60bc2731393624e12820b65ce0"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">static char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1Zlib.html#af659888f76aa1339117c2d6d28258db3">decompress</a> (<a class="el" href="classkyotocabinet_1_1Zlib.html#a0a5cdaefd620108e3b15b03e57d8a1d5">Mode</a> mode, const void *buf, size_t size, size_t *sp)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Decompress a serial data.  <a href="#af659888f76aa1339117c2d6d28258db3"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1Zlib.html#ab0db316018142f47efa1a28d4dcdb84d">compress</a> (const void *buf, size_t size, size_t *sp, <a class="el" href="classkyotocabinet_1_1Zlib.html#a0a5cdaefd620108e3b15b03e57d8a1d5">Mode</a> mode=RAW)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Compress a serial data.  <a href="#ab0db316018142f47efa1a28d4dcdb84d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1Zlib.html#ae08479d84722835efc58d4de32a04522">decompress</a> (const void *buf, size_t size, size_t *sp, <a class="el" href="classkyotocabinet_1_1Zlib.html#a0a5cdaefd620108e3b15b03e57d8a1d5">Mode</a> mode=RAW)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Decompress a serial data.  <a href="#ae08479d84722835efc58d4de32a04522"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static uint32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1Zlib.html#a784c2521ae1ea01580a5b8460b8609e9">calculate_crc</a> (const void *buf, size_t size, uint32_t seed=0)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Calculate the CRC32 checksum of a serial data.  <a href="#a784c2521ae1ea01580a5b8460b8609e9"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p><a class="el" href="classkyotocabinet_1_1Zlib.html" title="Zlib compressor.">Zlib</a> compressor. </p>
@@ -82,19 +84,13 @@
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="ae3421e60bc2731393624e12820b65ce0"></a><!-- doxytag: member="kyotocabinet::Zlib::compress" ref="ae3421e60bc2731393624e12820b65ce0" args="(Mode mode, const void *buf, size_t size, size_t *sp)" -->
+<a class="anchor" id="ab0db316018142f47efa1a28d4dcdb84d"></a><!-- doxytag: member="kyotocabinet::Zlib::compress" ref="ab0db316018142f47efa1a28d4dcdb84d" args="(const void *buf, size_t size, size_t *sp, Mode mode=RAW)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">static char* kyotocabinet::Zlib::compress </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1Zlib.html#a0a5cdaefd620108e3b15b03e57d8a1d5">Mode</a>&nbsp;</td>
-          <td class="paramname"> <em>mode</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">const void *&nbsp;</td>
           <td class="paramname"> <em>buf</em>, </td>
         </tr>
@@ -108,7 +104,13 @@
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">size_t *&nbsp;</td>
-          <td class="paramname"> <em>sp</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>sp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1Zlib.html#a0a5cdaefd620108e3b15b03e57d8a1d5">Mode</a>&nbsp;</td>
+          <td class="paramname"> <em>mode</em> = <code>RAW</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -122,10 +124,10 @@
 <p>Compress a serial data. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the compression mode. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>the input buffer. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the input buffer. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>sp</em>&nbsp;</td><td>the pointer to the variable into which the size of the region of the return value is assigned. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the compression mode. </td></tr>
   </table>
   </dd>
 </dl>
@@ -134,19 +136,13 @@
 
 </div>
 </div>
-<a class="anchor" id="af659888f76aa1339117c2d6d28258db3"></a><!-- doxytag: member="kyotocabinet::Zlib::decompress" ref="af659888f76aa1339117c2d6d28258db3" args="(Mode mode, const void *buf, size_t size, size_t *sp)" -->
+<a class="anchor" id="ae08479d84722835efc58d4de32a04522"></a><!-- doxytag: member="kyotocabinet::Zlib::decompress" ref="ae08479d84722835efc58d4de32a04522" args="(const void *buf, size_t size, size_t *sp, Mode mode=RAW)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">static char* kyotocabinet::Zlib::decompress </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1Zlib.html#a0a5cdaefd620108e3b15b03e57d8a1d5">Mode</a>&nbsp;</td>
-          <td class="paramname"> <em>mode</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">const void *&nbsp;</td>
           <td class="paramname"> <em>buf</em>, </td>
         </tr>
@@ -160,7 +156,13 @@
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">size_t *&nbsp;</td>
-          <td class="paramname"> <em>sp</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>sp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1Zlib.html#a0a5cdaefd620108e3b15b03e57d8a1d5">Mode</a>&nbsp;</td>
+          <td class="paramname"> <em>mode</em> = <code>RAW</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -174,10 +176,10 @@
 <p>Decompress a serial data. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the compression mode. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>the input buffer. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the input buffer. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>sp</em>&nbsp;</td><td>the pointer to the variable into which the size of the region of the return value is assigned. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the compression mode. </td></tr>
   </table>
   </dd>
 </dl>
@@ -186,8 +188,52 @@
 
 </div>
 </div>
+<a class="anchor" id="a784c2521ae1ea01580a5b8460b8609e9"></a><!-- doxytag: member="kyotocabinet::Zlib::calculate_crc" ref="a784c2521ae1ea01580a5b8460b8609e9" args="(const void *buf, size_t size, uint32_t seed=0)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static uint32_t kyotocabinet::Zlib::calculate_crc </td>
+          <td>(</td>
+          <td class="paramtype">const void *&nbsp;</td>
+          <td class="paramname"> <em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&nbsp;</td>
+          <td class="paramname"> <em>seed</em> = <code>0</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [static]</code></td>
+        </tr>
+      </table>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
+<div class="memdoc">
+
+<p>Calculate the CRC32 checksum of a serial data. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>the input buffer. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the input buffer. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>seed</em>&nbsp;</td><td>the cyclic seed value. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the CRC32 checksum. </dd></dl>
+
+</div>
+</div>
+</div>
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 25 20:26:37 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

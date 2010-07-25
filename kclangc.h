@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * C language binding
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -269,14 +269,16 @@ void kcdbdel(KCDB* db);
  * hash database.  If it is "+", the database will be a prototype tree database.  If it is
  * "*", the database will be a cache database.  If its suffix is ".kch", the database will be
  * a file hash database.  If its suffix is ".kct", the database will be a file tree database.
- * Otherwise, this function fails.  Tuning parameters can trail the name, separated by "#".
- * Each parameter is composed of the name and the value, separated by "=".  If the "type"
- * parameter is specified, the database type is determined by the value in "-", "+", "*",
- * "kch", and "kct".  The prototype hash hash database and the prototype tree database do not
- * support any other tuning parameter.  The cache database supports "bnum", "capcount", and
- * "capsize".  The file hash database supports "apow", "fpow", "opts", "bnum", "msiz",
- * "dfunit", "erstrm", and "ervbs".  The file tree database supports all parameters of the
- * file hash database and "psiz", "rcomp", "pccap" in addition.
+ * If its suffix is ".kcd", the database will be a directory database.  Otherwise, this
+ * function fails.  Tuning parameters can trail the name, separated by "#".  Each parameter is
+ * composed of the name and the value, separated by "=".  If the "type" parameter is specified,
+ * the database type is determined by the value in "-", "+", "*", "kch", "kct", and "kcd".  The
+ * prototype hash database and the prototype tree database do not support any other tuning
+ * parameter.  The cache database supports "bnum", "capcount", and "capsize".  The file hash
+ * database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", "erstrm",
+ * "ervbs", and "zkey".  The file tree database supports all parameters of the file hash
+ * database and "psiz", "rcomp", "pccap" in addition.  The directory database supports "opts",
+ * "zcomp", and "zkey".
  * @param mode the connection mode.  KCOWRITER as a writer, KCOREADER as a reader.
  * The following may be added to the writer mode by bitwise-or: KCOCREATE, which means
  * it creates a new database if the file does not exist, KCOTRUNCATE, which means it
@@ -289,16 +291,19 @@ void kcdbdel(KCDB* db);
  * means the database file is not repaired implicitly even if file destruction is detected.
  * @return true on success, or false on failure.
  * @note The tuning parameter "bnum" corresponds to the original "tune_bucket" method.
- * "capcount" is for "cap_count".  "capsize" is for "cap_size".  "apow" is for "tune_alignment".
- * "fpow" is for "tune_fbp".  "opts" is for "tune_options" and the value can contain "s" for
- * the small option, "l" for the linear option, and "c" for the copmress option.  "msiz" is for
- * "tune_map".  "dfunit" is for "tune_defrag".  "erstrm" and "ervbs" are for
- * "tune_error_reporter" and the formar value can be "stdout" or "stderr" and the latter value
- * can be "true" or "false".  "psiz" is for "tune_page".  "rcomp" is for "tune_comparator" and
- * the value can be "lex" for the lexical comparator or "dec" for the decimal comparator.
- * "pccap" is for "tune_page_cache".  Every opened database must be closed by the kcdbclose
- * function when it is no longer in use.  It is not allowed for two or more database objects in
- * the same process to keep their connections to the same database file at the same time.
+ * "capcount" is for "cap_count".  "capsize" is for "cap_size".  "apow" is for
+ * "tune_alignment".  "fpow" is for "tune_fbp".  "opts" is for "tune_options" and the value
+ * can contain "s" for the small option, "l" for the linear option, and "c" for the compress
+ * option.  "msiz" is for "tune_map".  "dfunit" is for "tune_defrag".  "zcomp" is for
+ * "tune_compressor" and the value can be "zlib" for the Zlib raw compressor, "def" for the
+ * Zlib deflate compressor, "gz" for the Zlib gzip compressor, or "arc" for the Arcfour cipher.
+ * "erstrm" and "ervbs" are for "tune_error_reporter" and the formar value can be "stdout" or
+ * "stderr" and the latter value can be "true" or "false".  "zkey" specifies the cipher key of
+ * the compressor.  "psiz" is for "tune_page".  "rcomp" is for "tune_comparator" and the value
+ * can be "lex" for the lexical comparator or "dec" for the decimal comparator.  "pccap" is for
+ * "tune_page_cache".  Every opened database must be closed by the PolyDB::close method when it
+ * is no longer in use.  It is not allowed for two or more database objects in the same process
+ * to keep their connections to the same database file at the same time.
  */
 int32_t kcdbopen(KCDB* db, const char* path, uint32_t mode);
 

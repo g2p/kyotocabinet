@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * The test cases of the utility functions
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -1458,6 +1458,27 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   iprintf("time: %.3f\n", etime - stime);
   iprintf("testing file utility functions:\n");
   stime = kc::time();
+  std::string ostr = "_";
+  for (int32_t i = 0; i < 100; i++) {
+    ostr.append(path);
+  }
+  ostr.append("_");
+  if (!kc::File::write_file(path, ostr.c_str(), ostr.size())) {
+    errprint(__LINE__, "File::write_file");
+    err = true;
+  }
+  int64_t isiz;
+  char* ibuf = kc::File::read_file(path, &isiz);
+  if (ibuf) {
+    if (ostr != ibuf) {
+      errprint(__LINE__, "File::read_file");
+      err = true;
+    }
+    delete[] ibuf;
+  } else {
+    errprint(__LINE__, "File::read_file");
+    err = true;
+  }
   kc::File::Status sbuf;
   if (!kc::File::status(path, &sbuf) || sbuf.isdir || sbuf.size < 1) {
     errprint(__LINE__, "File::status");
@@ -1468,7 +1489,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
     err = true;
   }
   const std::string& abspath = kc::File::absolute_path(path);
-  if (abspath.size() < 1) {
+  if (abspath.empty()) {
     errprint(__LINE__, "File::absolute_path");
     err = true;
   }
@@ -1495,12 +1516,28 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
     err = true;
   }
   const std::string& cwdpath = kc::File::get_current_directory();
-  if (cwdpath.size() < 1) {
+  if (cwdpath.empty()) {
     errprint(__LINE__, "File::get_current_directory");
     err = true;
   }
   if (!kc::File::set_current_directory(cwdpath)) {
     errprint(__LINE__, "File::set_current_directory");
+    err = true;
+  }
+  kc::DirStream dir;
+  if (!dir.open(cwdpath)) {
+    errprint(__LINE__, "DirStream::open");
+    err = true;
+  }
+  std::string cpath;
+  while (dir.read(&cpath)) {
+    if (!kc::File::status(cpath, &sbuf)) {
+      errprint(__LINE__, "File::status");
+      err = true;
+    }
+  }
+  if (!dir.close()) {
+    errprint(__LINE__, "DirStream::close");
     err = true;
   }
   etime = kc::time();
@@ -1769,7 +1806,30 @@ static int32_t procmisc(int64_t rnum) {
     size_t usiz = urp - ubuf;
     uint64_t hash = kc::hashmurmur(&num16, sizeof(num16)) + kc::hashmurmur(ubuf, usiz);
     hash += kc::hashfnv(&num16, sizeof(num16)) + kc::hashfnv(ubuf, usiz);
+    char name[kc::NUMBUFSIZ];
+    hash += kc::hashpath(ubuf, usiz, name);
     hash = kc::nearbyprime(myrand(INT_MAX));
+    char* ebuf = kc::hexencode(ubuf, usiz);
+    size_t osiz;
+    char* obuf = kc::hexdecode(ebuf, &osiz);
+    if (osiz != usiz || std::memcmp(obuf, ubuf, osiz)) {
+      errprint(__LINE__, "hexencode: %d:%d", (int)osiz, (int)usiz);
+      err = true;
+    }
+    delete[] obuf;
+    delete[] ebuf;
+    size_t nsiz = strlen(name);
+    nsiz -= i % nsiz;
+    ebuf = new char[usiz];
+    kc::arccipher(ubuf, usiz, name, nsiz, ebuf);
+    obuf = new char[usiz];
+    kc::arccipher(ebuf, usiz, name, nsiz, obuf);
+    if (std::memcmp(obuf, ubuf, usiz)) {
+      errprint(__LINE__, "arccipher: %s", name);
+      err = true;
+    }
+    delete[] obuf;
+    delete[] ebuf;
     kc::Zlib::Mode zmode;
     switch (myrand(3)) {
       default: zmode = kc::Zlib::RAW; break;
@@ -1777,10 +1837,9 @@ static int32_t procmisc(int64_t rnum) {
       case 1: zmode = kc::Zlib::GZIP; break;
     }
     size_t zsiz;
-    char* zbuf = kc::Zlib::compress(zmode, ubuf, usiz, &zsiz);
+    char* zbuf = kc::Zlib::compress(ubuf, usiz, &zsiz, zmode);
     if (zbuf) {
-      size_t osiz;
-      char* obuf = kc::Zlib::decompress(zmode, zbuf, zsiz, &osiz);
+      obuf = kc::Zlib::decompress(zbuf, zsiz, &osiz, zmode);
       if (obuf) {
         if (osiz != usiz || std::memcmp(obuf, ubuf, osiz)) {
           errprint(__LINE__, "Zlib::decompress");

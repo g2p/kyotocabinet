@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * The test cases of the file hash database
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -181,7 +181,7 @@ static void dbmetaprint(kc::FileDB* db, bool verbose) {
 // parse arguments of order command
 static int32_t runorder(int argc, char** argv) {
   const char* path = NULL;
-  char* rstr = NULL;
+  const char* rstr = NULL;
   int32_t thnum = 1;
   bool rnd = false;
   int32_t mode = 0;
@@ -1688,7 +1688,7 @@ static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t 
       }
     }
     int64_t count = db.count();
-    if (!rnd && itcnt == 1 && db.count() != width * thnum) {
+    if (!rnd && itcnt == 1 && count != width * thnum) {
       dberrprint(&db, __LINE__, "DB::count");
       err = true;
     }

@@ -8,13 +8,13 @@
 <meta http-equiv="Content-Language" content="en" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
-<meta name="author" content="Mikio Hirabayashi" />
+<meta name="author" content="FAL Labs" />
 <meta name="keywords" content="Kyoto Cabinet, kyotocabinet, database, DBM" />
 <meta name="description" content="Specifications of Kyoto Cabinet" />
 <link rel="contents" href="./" />
 <link rel="stylesheet" href="common.css" />
 <link rel="icon" href="icon16.png" />
-<link rev="made" href="mailto:hirarin@gmail.com" />
+<link rev="made" href="mailto:info@fallabs.com" />
 <title>Fundamental Specifications of Kyoto Cabinet Version 1</title>
 </head>
 
@@ -22,7 +22,7 @@
 
 <h1 id="headline">Fundamental Specifications of Kyoto Cabinet Version 1</h1>
 
-<div class="note">Copyright (C) 2009-2010 Mikio Hirabayashi</div>
+<div class="note">Copyright (C) 2009-2010 FAL Labs</div>
 <div class="note">Last Update: Sat, 17 Apr 2010 01:28:52 +0900</div>
 
 <hr />
@@ -34,7 +34,6 @@
 <li><a href="#features">Features</a></li>
 <li><a href="#installation">Installation</a></li>
 <li><a href="#tutorial">Tutorial</a></li>
-<li><a href="#command">Command Line Utilities</a></li>
 <li><a href="#tips">Tips and Hacks</a></li>
 <li><a href="#license">License</a></li>
 </ol>
@@ -51,7 +50,7 @@
 
 <p>Each operation of the B+ tree database has the time complexity of "O(log N)".  Therefore, in theory, the performance is logarithmic to the scale of the database.  Although the performance of random access of the B+ tree database is slower than that of the hash database, the B+ tree database supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers.  The performance of sequential access is much faster than that of random access.</p>
 
-<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class.  Beside them, two kinds of databases are provided under the same base class.  The prototype database is powered by the standard containers of STL.  The cache database is powered by the original implementation of double-linked hash map with LRU deletion algorithm.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.</p>
+<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class.  Beside them, three kinds of databases are provided under the same base class.  The prototype database is powered by the standard containers of STL.  The cache database is powered by the original implementation of double-linked hash map with LRU deletion algorithm.  The directory database is powered by the directory mechanism of the file system and stores records as respective files in a directory.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.</p>
 
 <p>Kyoto Cabinet runs very fast.  For example, elapsed time to store one million records is 0.9 seconds for the hash database, and 1.1 seconds for the B+ tree database.  Moreover, the size of database is very small.  For example, overhead for a record is 16 bytes for the hash database, and 4 bytes for the B+ tree database.  Furthermore, scalability of Kyoto Cabinet is great.  The database size can be up to 8EB (9.22e18 bytes).</p>
 
@@ -198,6 +197,7 @@
 /usr/local/include/kccachedb.h
 /usr/local/include/kchashdb.h
 /usr/local/include/kctreedb.h
+/usr/local/include/kcdirdb.h
 /usr/local/include/kcpolydb.h
 /usr/local/include/kclangc.h
 /usr/local/lib/libkyotocabinet.a
@@ -213,6 +213,8 @@
 /usr/local/bin/kchashmgr
 /usr/local/bin/kctreetest
 /usr/local/bin/kctreemgr
+/usr/local/bin/kcdirtest
+/usr/local/bin/kcdirmgr
 /usr/local/bin/kcpolytest
 /usr/local/bin/kcpolymgr
 /usr/local/bin/kclanctest
@@ -561,6 +563,14 @@ accept(kbuf, ksiz, &amp;setter, true);
 </td>
 </tr>
 <tr>
+<td><code>DirDB</code></td>
+<td>kcdirdb.h</td>
+<td>
+<div>directory database.</div>
+<div>respective files in a directory of the file system.</div>
+</td>
+</tr>
+<tr>
 <td><code>PolyDB</code></td>
 <td>kcpolydb.h</td>
 <td>
@@ -580,12 +590,14 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td><code>CacheDB</code></td>
 <td><code>HashDB</code></td>
 <td><code>TreeDB</code></td>
+<td><code>DirDB</code></td>
 </tr>
 <tr>
 <th abbr="persistence">persistence</th>
 <td>volatile</td>
 <td>volatile</td>
 <td>volatile</td>
+<td>persistent</td>
 <td>persistent</td>
 <td>persistent</td>
 </tr>
@@ -596,6 +608,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td>hash table</td>
 <td>hash table</td>
 <td>B+ tree</td>
+<td>undefined</td>
 </tr>
 <tr>
 <th abbr="complexity">complexity</th>
@@ -604,6 +617,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td>O(1)</td>
 <td>O(1)</td>
 <td>O(log N)</td>
+<td>undefined</td>
 </tr>
 <tr>
 <th abbr="sequence">sequence</th>
@@ -612,6 +626,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td>undefined</td>
 <td>undefined</td>
 <td>custom order</td>
+<td>undefined</td>
 </tr>
 <tr>
 <th abbr="lock">lock unit</th>
@@ -620,443 +635,13 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td>record (mutex)</td>
 <td>record (rwlock)</td>
 <td>page (rwlock)</td>
+<td>record (rwlock)</td>
 </tr>
 </table>
 
 <p>The C language binding is also provided as a wrapper of the polymorphic database API.  Include the header file `<code>kclangc.h</code>' and use the pointer to `<code>KCDB</code>' as a database object.</p>
 
-<p>Please see the <a href="api/">the API documents</a> for detail.  Writing your own sample application is the best way to learn this library.</p>
-
-<hr />
-
-<h2 id="command">Command Line Utilities</h2>
-
-<p>This section describes how to use command line utilities.  They are useful to manage database contents and to test the library and its applications.</p>
-
-<h3 id="kcutiltest">kcutiltest</h3>
-
-<p>The command `<code>kcutiltest</code>' is a utility for facility test and performance test of the utility functions.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.  `<var>path</var>' specifies the path of a file.</p>
-
-<dl class="api">
-<dt><code>kcutiltest mutex [-th <var>num</var>] [-iv <var>num</var>] <var>rnum</var></code></dt>
-<dd>Performs test of lock primitives.</dd>
-<dt><code>kcutiltest file [-th <var>num</var>] [-rnd] [-msiz <var>num</var>] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs test of the filesystem abstraction.</dd>
-<dt><code>kcutiltest map [-rnd] [-bnum <var>num</var>] <var>rnum</var></code></dt>
-<dd>Performs test of data mapping structures.</dd>
-<dt><code>kcutiltest misc <var>rnum</var></code></dt>
-<dd>Performs test of miscellaneous mechanisms.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
-<li><code>-iv <var>num</var></code> : specifies the interval between iterations.</li>
-<li><code>-rnd</code> : performs random test.</li>
-<li><code>-msiz <var>num</var></code> : specifies the size of the memory-mapped region.</li>
-<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
-
-<h3 id="kcutilcodec">kcutilcodec</h3>
-
-<p>The command `<code>kcutilcodec</code>' is a tool to use encoding and decoding features, or to show the configuration.  This command is used in the following format.</p>
-
-<dl class="api">
-<dt><code>kcutilcodec conf [-v|-i|-l|-p]</code></dt>
-<dd>Shows the configuration of Kyoto Cabinet.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-v</code> : show the version number of Kyoto Cabinet.</li>
-<li><code>-i</code> : show options to include the headers of Tokyo Cabinet.</li>
-<li><code>-l</code> : show options to link the library of Tokyo Cabinet.</li>
-<li><code>-p</code> : show the directory path of the commands.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
-
-<h3 id="kcprototest">kcprototest</h3>
-
-<p>The command `<code>kcprototest</code>' is a utility for facility test and performance test of the prototype database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
-
-<dl class="api">
-<dt><code>kcprototest order [-tree] [-th <var>num</var>] [-rnd] [-etc] [-tran] <var>rnum</var></code></dt>
-<dd>Performs in-order tests.</dd>
-<dt><code>kcprototest queue [-tree] [-th <var>num</var>] [-it <var>num</var>] [-rnd] <var>rnum</var></code></dt>
-<dd>Performs queuing operations.</dd>
-<dt><code>kcprototest wicked [-tree] [-th <var>num</var>] [-it <var>num</var>] <var>rnum</var></code></dt>
-<dd>Performs mixed operations selected at random.</dd>
-<dt><code>kcprototest tran [-tree] [-th <var>num</var>] [-it <var>num</var>] <var>rnum</var></code></dt>
-<dd>Performs test of transaction.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-tree</code> : test the prototype tree database instead of the prototype hash database.</li>
-<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
-<li><code>-rnd</code> : performs random test.</li>
-<li><code>-etc</code> : performs miscellaneous operations.</li>
-<li><code>-tran</code> : performs transaction.</li>
-<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
-
-<h3 id="kccachetest">kccachetest</h3>
-
-<p>The command `<code>kccachetest</code>' is a utility for facility test and performance test of the cache database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
-
-<dl class="api">
-<dt><code>kccachetest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
-<dd>Performs in-order tests.</dd>
-<dt><code>kccachetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
-<dd>Performs queuing operations.</dd>
-<dt><code>kccachetest wicked [-th <var>num</var>] [-it <var>num</var>] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
-<dd>Performs mixed operations selected at random.</dd>
-<dt><code>kccachetest tran [-th <var>num</var>] [-it <var>num</var>] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
-<dd>Performs test of transaction.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
-<li><code>-rnd</code> : performs random test.</li>
-<li><code>-etc</code> : performs miscellaneous operations.</li>
-<li><code>-tran</code> : performs transaction.</li>
-<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
-<li><code>-capcnt <var>num</var></code> : specifies the maximum number of records.</li>
-<li><code>-capsiz <var>num</var></code> : specifies the maximum size of memory usage.</li>
-<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
-
-<h3 id="kchashtest">kchashtest</h3>
-
-<p>The command `<code>kchashtest</code>' is a utility for facility test and performance test of the file hash database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
-
-<dl class="api">
-<dt><code>kchashtest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs in-order tests.</dd>
-<dt><code>kchashtest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs queuing operations.</dd>
-<dt><code>kchashtest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs mixed operations selected at random.</dd>
-<dt><code>kchashtest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs test of transaction.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
-<li><code>-rnd</code> : performs random test.</li>
-<li><code>-set</code> : performs setting operation only.</li>
-<li><code>-get</code> : performs getting operation only.</li>
-<li><code>-getw</code> : performs getting with a buffer operation only.</li>
-<li><code>-rem</code> : performs removing operation only.</li>
-<li><code>-etc</code> : performs miscellaneous operations.</li>
-<li><code>-tran</code> : performs transaction.</li>
-<li><code>-oat</code> : opens the database with the auto transaction option.</li>
-<li><code>-oas</code> : opens the database with the auto synchronization option.</li>
-<li><code>-onl</code> : opens the database with the no locking option.</li>
-<li><code>-otl</code> : opens the database with the try locking option.</li>
-<li><code>-onr</code> : opens the database with the no auto repair option.</li>
-<li><code>-apow <var>num</var></code> : specifies the power of the alignment of record size.</li>
-<li><code>-fpow <var>num</var></code> : specifies the power of the capacity of the free block pool.</li>
-<li><code>-ts</code> : tunes the database with the small option.</li>
-<li><code>-tl</code> : tunes the database with the linear option.</li>
-<li><code>-tc</code> : tunes the database with the compression option.</li>
-<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
-<li><code>-msiz <var>num</var></code> : specifies the size of the memory-mapped region.</li>
-<li><code>-dfunit <var>num</var></code> : specifies the unit step number of auto defragmentation.</li>
-<li><code>-erv</code> : reports all errors.</li>
-<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
-<li><code>-hard</code> : performs physical synchronization.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
-
-<h3 id="kchashmgr">kchashmgr</h3>
-
-<p>The command `<code>kchashmgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
-
-<dl class="api">
-<dt><code>kchashmgr create [-otr] [-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] <var>path</var></code></dt>
-<dd>Creates a database file.</dd>
-<dt><code>kchashmgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
-<dd>Prints status information.</dd>
-<dt><code>kchashmgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
-<dd>Stores a record.</dd>
-<dt><code>kchashmgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
-<dd>Removes a record.</dd>
-<dt><code>kchashmgr get [-onl|-otl|-onr] [-sx] [-px] [-pz] <var>path</var> <var>key</var></code></dt>
-<dd>Prints the value of a record.</dd>
-<dt><code>kchashmgr list [-onl|-otl|-onr] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
-<dd>Prints keys of all records, separated by line feeds.</dd>
-<dt><code>kchashmgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Imports records from a TSV file.</dd>
-<dt><code>kchashmgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Dump records into a snapshot file.</dd>
-<dt><code>kchashmgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Load records from a snapshot file.</dd>
-<dt><code>kchashmgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
-<dd>Performs defragmentation.</dd>
-<dt><code>kchashmgr check [-onl|-otl|-onr] <var>path</var></code></dt>
-<dd>Checks consistency.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-otr</code> : opens the database with the truncation option.</li>
-<li><code>-onl</code> : opens the database with the no locking option.</li>
-<li><code>-otl</code> : opens the database with the try locking option.</li>
-<li><code>-onr</code> : opens the database with the no auto repair option.</li>
-<li><code>-apow <var>num</var></code> : specifies the power of the alignment of record size.</li>
-<li><code>-fpow <var>num</var></code> : specifies the power of the capacity of the free block pool.</li>
-<li><code>-ts</code> : tunes the database with the small option.</li>
-<li><code>-tl</code> : tunes the database with the linear option.</li>
-<li><code>-tc</code> : tunes the database with the compression option.</li>
-<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
-<li><code>-st</code> : prints miscellaneous information.</li>
-<li><code>-add</code> : performs adding operation.</li>
-<li><code>-app</code> : performs appending operation.</li>
-<li><code>-inci</code> : performs integer increment operation.</li>
-<li><code>-incd</code> : performs real number increment operation.</li>
-<li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
-<li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
-<li><code>-pz</code> : does not append line feed at the end of the output.</li>
-<li><code>-max</code> : specifies the maximum number of shown records.</li>
-<li><code>-pv</code> : prints values of records also.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
-
-<h3 id="kctreetest">kctreetest</h3>
-
-<p>The command `<code>kctreetest</code>' is a utility for facility test and performance test of the file tree database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
-
-<dl class="api">
-<dt><code>kctreetest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs in-order tests.</dd>
-<dt><code>kctreetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs queuing operations.</dd>
-<dt><code>kctreetest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs mixed operations selected at random.</dd>
-<dt><code>kctreetest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs test of transaction.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
-<li><code>-rnd</code> : performs random test.</li>
-<li><code>-set</code> : performs setting operation only.</li>
-<li><code>-get</code> : performs getting operation only.</li>
-<li><code>-getw</code> : performs getting with a buffer operation only.</li>
-<li><code>-rem</code> : performs removing operation only.</li>
-<li><code>-etc</code> : performs miscellaneous operations.</li>
-<li><code>-tran</code> : performs transaction.</li>
-<li><code>-oat</code> : opens the database with the auto transaction option.</li>
-<li><code>-oas</code> : opens the database with the auto synchronization option.</li>
-<li><code>-onl</code> : opens the database with the no locking option.</li>
-<li><code>-otl</code> : opens the database with the try locking option.</li>
-<li><code>-onr</code> : opens the database with the no auto repair option.</li>
-<li><code>-apow <var>num</var></code> : specifies the power of the alignment of record size.</li>
-<li><code>-fpow <var>num</var></code> : specifies the power of the capacity of the free block pool.</li>
-<li><code>-ts</code> : tunes the database with the small option.</li>
-<li><code>-tl</code> : tunes the database with the linear option.</li>
-<li><code>-tc</code> : tunes the database with the compression option.</li>
-<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
-<li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
-<li><code>-msiz <var>num</var></code> : specifies the size of the memory-mapped region.</li>
-<li><code>-dfunit <var>num</var></code> : specifies the unit step number of auto defragmentation.</li>
-<li><code>-pccap <var>num</var></code> : specifies the capacity size of the page cache.</li>
-<li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
-<li><code>-erv</code> : reports all errors.</li>
-<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
-<li><code>-hard</code> : performs physical synchronization.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
-
-<h3 id="kctreemgr">kctreemgr</h3>
-
-<p>The command `<code>kctreemgr</code>' is a utility for test and debugging of the file tree database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
-
-<dl class="api">
-<dt><code>kctreemgr create [-otr] [-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-rcd] <var>path</var></code></dt>
-<dd>Creates a database file.</dd>
-<dt><code>kctreemgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
-<dd>Prints status information.</dd>
-<dt><code>kctreemgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
-<dd>Stores a record.</dd>
-<dt><code>kctreemgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
-<dd>Removes a record.</dd>
-<dt><code>kctreemgr get [-onl|-otl|-onr] [-sx] [-px] [-pz] <var>path</var> <var>key</var></code></dt>
-<dd>Prints the value of a record.</dd>
-<dt><code>kctreemgr list [-onl|-otl|-onr] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
-<dd>Prints keys of all records, separated by line feeds.</dd>
-<dt><code>kctreemgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Imports records from a TSV file.</dd>
-<dt><code>kctreemgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Dump records into a snapshot file.</dd>
-<dt><code>kctreemgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Load records from a snapshot file.</dd>
-<dt><code>kctreemgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
-<dd>Performs defragmentation.</dd>
-<dt><code>kctreemgr check [-onl|-otl|-onr] <var>path</var></code></dt>
-<dd>Checks consistency.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-otr</code> : opens the database with the truncation option.</li>
-<li><code>-onl</code> : opens the database with the no locking option.</li>
-<li><code>-otl</code> : opens the database with the try locking option.</li>
-<li><code>-onr</code> : opens the database with the no auto repair option.</li>
-<li><code>-apow <var>num</var></code> : specifies the power of the alignment of record size.</li>
-<li><code>-fpow <var>num</var></code> : specifies the power of the capacity of the free block pool.</li>
-<li><code>-ts</code> : tunes the database with the small option.</li>
-<li><code>-tl</code> : tunes the database with the linear option.</li>
-<li><code>-tc</code> : tunes the database with the compression option.</li>
-<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
-<li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
-<li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
-<li><code>-st</code> : prints miscellaneous information.</li>
-<li><code>-add</code> : performs adding operation.</li>
-<li><code>-app</code> : performs appending operation.</li>
-<li><code>-inci</code> : performs integer increment operation.</li>
-<li><code>-incd</code> : performs real number increment operation.</li>
-<li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
-<li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
-<li><code>-pz</code> : does not append line feed at the end of the output.</li>
-<li><code>-max</code> : specifies the maximum number of shown records.</li>
-<li><code>-pv</code> : prints values of records also.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
-
-<h3 id="kcpolytest">kcpolytest</h3>
-
-<p>The command `<code>kcpolytest</code>' is a utility for facility test and performance test of the polymorphic database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
-
-<dl class="api">
-<dt><code>kcpolytest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs in-order tests.</dd>
-<dt><code>kcpolytest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs queuing operations.</dd>
-<dt><code>kcpolytest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs mixed operations selected at random.</dd>
-<dt><code>kcpolytest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs test of transaction.</dd>
-<dt><code>kcpolytest misc <var>path</var></code></dt>
-<dd>Performs miscellaneous tests.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
-<li><code>-rnd</code> : performs random test.</li>
-<li><code>-set</code> : performs setting operation only.</li>
-<li><code>-get</code> : performs getting operation only.</li>
-<li><code>-getw</code> : performs getting with a buffer operation only.</li>
-<li><code>-rem</code> : performs removing operation only.</li>
-<li><code>-etc</code> : performs miscellaneous operations.</li>
-<li><code>-tran</code> : performs transaction.</li>
-<li><code>-oat</code> : opens the database with the auto transaction option.</li>
-<li><code>-oas</code> : opens the database with the auto synchronization option.</li>
-<li><code>-onl</code> : opens the database with the no locking option.</li>
-<li><code>-otl</code> : opens the database with the try locking option.</li>
-<li><code>-onr</code> : opens the database with the no auto repair option.</li>
-<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
-<li><code>-hard</code> : performs physical synchronization.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
-
-<h3 id="kcpolymgr">kcpolymgr</h3>
-
-<p>The command `<code>kcpolymgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
-
-<dl class="api">
-<dt><code>kcpolymgr create [-otr] [-onl|-otl|-onr] <var>path</var></code></dt>
-<dd>Creates a database file.</dd>
-<dt><code>kcpolymgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
-<dd>Prints status information.</dd>
-<dt><code>kcpolymgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
-<dd>Stores a record.</dd>
-<dt><code>kcpolymgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
-<dd>Removes a record.</dd>
-<dt><code>kcpolymgr get [-onl|-otl|-onr] [-sx] [-px] [-pz] <var>path</var> <var>key</var></code></dt>
-<dd>Prints the value of a record.</dd>
-<dt><code>kcpolymgr list [-onl|-otl|-onr] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
-<dd>Prints keys of all records, separated by line feeds.</dd>
-<dt><code>kcpolymgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Imports records from a TSV file.</dd>
-<dt><code>kcpolymgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Dump records into a snapshot file.</dd>
-<dt><code>kcpolymgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Load records from a snapshot file.</dd>
-<dt><code>kcpolymgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
-<dd>Performs defragmentation.</dd>
-<dt><code>kcpolymgr check [-onl|-otl|-onr] <var>path</var></code></dt>
-<dd>Checks consistency.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-otr</code> : opens the database with the truncation option.</li>
-<li><code>-onl</code> : opens the database with the no locking option.</li>
-<li><code>-otl</code> : opens the database with the try locking option.</li>
-<li><code>-onr</code> : opens the database with the no auto repair option.</li>
-<li><code>-st</code> : prints miscellaneous information.</li>
-<li><code>-add</code> : performs adding operation.</li>
-<li><code>-app</code> : performs appending operation.</li>
-<li><code>-inci</code> : performs integer increment operation.</li>
-<li><code>-incd</code> : performs real number increment operation.</li>
-<li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
-<li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
-<li><code>-pz</code> : does not append line feed at the end of the output.</li>
-<li><code>-max</code> : specifies the maximum number of shown records.</li>
-<li><code>-pv</code> : prints values of records also.</li>
-</ul>
-
-<h3 id="kclangctest">kclangctest</h3>
-
-<p>The command `<code>kclangctest</code>' is a utility for facility test and performance test of the C language binding.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
-
-<dl class="api">
-<dt><code>kcpolytest order [-rnd] [-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
-<dd>Performs in-order tests.</dd>
-</dl>
-
-<p>Options feature the following.</p>
-
-<ul class="options">
-<li><code>-rnd</code> : performs random test.</li>
-<li><code>-etc</code> : performs miscellaneous operations.</li>
-<li><code>-tran</code> : performs transaction.</li>
-<li><code>-oat</code> : opens the database with the auto transaction option.</li>
-<li><code>-oas</code> : opens the database with the auto synchronization option.</li>
-<li><code>-onl</code> : opens the database with the no locking option.</li>
-<li><code>-otl</code> : opens the database with the try locking option.</li>
-<li><code>-onr</code> : opens the database with the no auto repair option.</li>
-</ul>
-
-<p>This command returns 0 on success, another on failure.</p>
+<p>Please see the <a href="api/">the API documents</a> for detail.  Writing your own sample application is the best way to learn this library.  <a href="util.html">The specifications of command line utilities</a> is also useful.</p>
 
 <hr />
 
@@ -1106,7 +691,7 @@ db.open(...);
 
 <p>The tuning of the free block pool by `<code>tune_fbp</code>' does not have to be modified in most cases.  The default is 10, which means the capacity of the free block pool is 1024 (1&lt;&lt;10).</p>
 
-<p>The optional features by `<code>tune_options</code>' is useful to reduce the size of the database fine at the expense of scalability or time efficiency.  If `<code>HashDB::TSMALL</code>' is specified, the width of record addressing is reduced from 6 bytes to 4 bytes.  As the result, the footprint for each record is reduced from 16 bytes to 12 bytes.  However, it limits the maximum size of the database file up to 16GB (2GB multiplied by the alignment).  If `<code>HashDB::TLINEAR</code>' is specified, the data structure of the collision chain of hash table is changed from binary tree to linear linked list.  In that case, the footprint of each record is reduced from 16 bytes to 10 bytes although the time efficiency becomes sensitive to the number of the hash buckets.  If `<code>HashDB::TCOMPRESS</code>' is specified, the value of each record is compressed implicitly when stored in the file.  If the value is bigger than 1KB or more, compression is effective.</p>
+<p>The optional features by `<code>tune_options</code>' is useful to reduce the size of the database file at the expense of scalability or time efficiency.  If `<code>HashDB::TSMALL</code>' is specified, the width of record addressing is reduced from 6 bytes to 4 bytes.  As the result, the footprint for each record is reduced from 16 bytes to 12 bytes.  However, it limits the maximum size of the database file up to 16GB (2GB multiplied by the alignment).  If `<code>HashDB::TLINEAR</code>' is specified, the data structure of the collision chain of hash table is changed from binary tree to linear linked list.  In that case, the footprint of each record is reduced from 16 bytes to 10 bytes although the time efficiency becomes sensitive to the number of the hash buckets.  If `<code>HashDB::TCOMPRESS</code>' is specified, the value of each record is compressed implicitly when stored in the file.  If the value is bigger than 1KB or more, compression is effective.</p>
 
 <p>The default tuning of the bucket number is about one million.  If you intend to store more records, call `<code>tune_buckets</code>' to set the bucket number.  The suggested ratio of the bucket number is the twice of the total number of records and it is okay from 100% to 400%.  If the ratio decreases smaller than 100%, the time efficiency will decrease gradually.</p>
 
@@ -1132,7 +717,7 @@ db.tune_map(300LL &lt;&lt; 30);
 db.open(...);
 </pre>
 
-<p>All tuning methods must be called before the database is opened.  Because the settings of `<code>tune_alignment</code>', `<code>tune_fbp</code>', `<code>tune_options</code>', and `<code>tune_buckets</code>' are recorded as the meta data of the database, the methods are called before the database is created and they can not be modified afterward.  Because other tuning parameters are not recorded in the database, they should be specified before every time opening the database.</p>
+<p>All tuning methods must be called before the database is opened.  Because the settings of `<code>tune_alignment</code>', `<code>tune_fbp</code>', `<code>tune_options</code>', and `<code>tune_buckets</code>' are recorded as the meta data of the database, the methods must be called before the database is created and they can not be modified afterward.  Because other tuning parameters are not recorded in the database, they should be specified before every time opening the database.</p>
 
 <h3 id="tips_tuningtree">Tuning the File Tree Database</h3>
 
@@ -1169,7 +754,31 @@ db.tune_page_cache(2LL &lt;&lt; 30);
 db.open(...);
 </pre>
 
-<p>All tuning methods must be called before the database is opened.  Because the setting of `<code>tune_page</code>' is recorded as the meta data of the database, the methods are called before the database is created and it can not be modified afterward.  Because other tuning parameters are not recorded in the database, they should be specified before every time opening the database.</p>
+<p>All tuning methods must be called before the database is opened.  Because the setting of `<code>tune_page</code>' is recorded as the meta data of the database, the methods must be called before the database is created and it can not be modified afterward.  Because other tuning parameters are not recorded in the database, they should be specified before every time opening the database.</p>
+
+<h3 id="tips_tuningdir">Tuning the Directory Database</h3>
+
+<p>The cache database is powered by the directory mechanism of the file system and stores records as respective files in a directory.  The following tuning methods are provided.</p>
+
+<ul>
+<li><code>tune_options</code> : sets the optional features.</li>
+</ul>
+
+<p>The optional features by `<code>tune_options</code>' is useful to reduce the size of the database file at the expense of time efficiency.  If `<code>DirDB::TCOMPRESS</code>' is specified, the key and the value of each record is compressed implicitly when stored in the file.  If the value is bigger than 1KB or more, compression is effective.</p>
+
+<p>Performance of the directory database is strongly based on the file system implementation and its tuning.  Some file systems such as EXT2 are not good at storing a lot of files in a directory.  But, other file systems such as EXT3 and ReiserFS are relatively efficient in that situation.  In general, file systems featuring B tree or its variants are more suitable than linear search algorithms.</p>
+
+<p>All tuning methods must be called before the database is opened.  Because the settings of `<code>tune_options</code>' are recorded as the meta data of the database, the method must be called before the database is created and they can not be modified afterward.</p>
+
+<h3 id="tips_choosedb">Choosing Suitable Databases</h3>
+
+<p>In order to choose suitable database types for your application, it is important to clarify the requirement specification.  If it does not require persistency of records, on-memory databases are suggested.  There are the prototype hash database, the prototype tree database, and the cache database.  If the order of keys is important for your application logic, the prototype tree database is suitable.  If not, the cache database is suitable.  The memory usage of the cache database is smaller than the others and the cache database can delete old records and keep the memory usage constant.  The prototype hash database has few cases to flourish.</p>
+
+<p>If your application requires persistency of records, persistent databases are suggested.  There are the file hash database, the file tree database, and the directory database.  If the order of keys is important for your application logic, the file tree database is suitable.  If not, the file hash database is suitable.  In most cases, performance and concurrency of the file hash database is better than the others.  If the size of each record is large, the directory database is suitable.</p>
+
+<p>Most DBM implementations including Kyoto Cabinet and Tokyo Cabinet are optimized to store small records.  As it is, if you want to handle very large records, using the file system directly is better solution than using DBM.  If you store and retrieve large records, the processing time by the `write' and `read' system calls is dominant rather than the `open' and `lseek' system calls.  Although typical DBMs reduce the workload to locate the position of each record, they increase the workload to read/write the data of each record.  If you want to handle large records but don't want to use the file system directly, use the directory database.  It's a mere wrapper of the directory mechanism of the file system.</p>
+
+<p>If you want to dicide the database type doing performance test with the production code, use the polymorphic database.  It can specify the database type dinamically when opening the database.  In fact, the polymorphic database is suggested in most usecases though it involves a little bit of performance overhead in runtime.  That's why the official script language bindings support the polymorphic database only.</p>
 
 <h3 id="tips_transaction">Transaction</h3>
 
@@ -1257,7 +866,7 @@ db.load_snapshot("backup.kcss");
 
 <p>You should have received a copy of the GNU General Public License along with this program.  If not, see `<code>http://www.gnu.org/licenses/</code>'.</p>
 
-<p>Kyoto Cabinet was written by Mikio Hirabayashi.  You can contact the author by e-mail to `<code>hirarin@gmail.com</code>'.</p>
+<p>Kyoto Cabinet was written by FAL Labs.  You can contact the author by e-mail to `<code>info@fallabs.com</code>'.</p>
 
 <hr />
 

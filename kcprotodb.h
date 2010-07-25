@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Prototype database
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -276,7 +276,7 @@ public:
   virtual ~ProtoDB() {
     _assert_(true);
     if (omode_ != 0) close();
-    if (curs_.size() > 0) {
+    if (!curs_.empty()) {
       typename CursorList::const_iterator cit = curs_.begin();
       typename CursorList::const_iterator citend = curs_.end();
       while (cit != citend) {
@@ -331,7 +331,7 @@ public:
             trlogs_.push_back(log);
           }
           size_ -= ksiz + value.size();
-          if (curs_.size() > 0) {
+          if (!curs_.empty()) {
             typename CursorList::const_iterator cit = curs_.begin();
             typename CursorList::const_iterator citend = curs_.end();
             while (cit != citend) {
@@ -480,7 +480,7 @@ public:
     tran_ = false;
     trlogs_.clear();
     recs_.clear();
-    if (curs_.size() > 0) {
+    if (!curs_.empty()) {
       typename CursorList::const_iterator cit = curs_.begin();
       typename CursorList::const_iterator citend = curs_.end();
       while (cit != citend) {
@@ -594,7 +594,7 @@ public:
       return false;
     }
     if (!commit) {
-      if (curs_.size() > 0) {
+      if (!curs_.empty()) {
         typename CursorList::const_iterator cit = curs_.begin();
         typename CursorList::const_iterator citend = curs_.end();
         while (cit != citend) {
@@ -632,7 +632,7 @@ public:
       return false;
     }
     recs_.clear();
-    if (curs_.size() > 0) {
+    if (!curs_.empty()) {
       typename CursorList::const_iterator cit = curs_.begin();
       typename CursorList::const_iterator citend = curs_.end();
       while (cit != citend) {

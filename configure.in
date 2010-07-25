@@ -7,27 +7,27 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.0.4)
+AC_INIT(kyotocabinet, 1.1.1)
 
 # Package information
 MYLIBVER=3
-MYLIBREV=2
+MYLIBREV=4
 MYFORMATVER=4
 
 # Targets
 MYHEADERFILES="kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h"
-MYHEADERFILES="$MYHEADERFILES kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h"
-MYHEADERFILES="$MYHEADERFILES kclangc.h"
+MYHEADERFILES="$MYHEADERFILES kcprotodb.h kccachedb.h kchashdb.h kctreedb.h"
+MYHEADERFILES="$MYHEADERFILES kcdirdb.h kcpolydb.h kclangc.h"
 MYLIBRARYFILES="libkyotocabinet.a"
 MYLIBOBJFILES="kcutil.o kcdb.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o"
-MYLIBOBJFILES="$MYLIBOBJFILES kcprotodb.o kccachedb.o kchashdb.o kctreedb.o kcpolydb.o"
-MYLIBOBJFILES="$MYLIBOBJFILES kclangc.o"
+MYLIBOBJFILES="$MYLIBOBJFILES kcprotodb.o kccachedb.o kchashdb.o kctreedb.o"
+MYLIBOBJFILES="$MYLIBOBJFILES kcdirdb.o kcpolydb.o kclangc.o"
 MYCOMMANDFILES="kcutiltest kcutilcodec kcprototest kccachetest"
 MYCOMMANDFILES="$MYCOMMANDFILES kchashtest kchashmgr kctreetest kctreemgr"
-MYCOMMANDFILES="$MYCOMMANDFILES kcpolytest kcpolymgr kclangctest"
+MYCOMMANDFILES="$MYCOMMANDFILES kcdirtest kcdirmgr kcpolytest kcpolymgr kclangctest"
 MYMAN1FILES="kcutiltest.1 kcutilcodec.1 kcprototest.1 kccachetest.1"
 MYMAN1FILES="$MYMAN1FILES kchashtest.1 kchashmgr.1 kctreetest.1 kctreemgr.1"
-MYMAN1FILES="$MYMAN1FILES kcpolytest.1 kcpolymgr.1 kclangctest.1"
+MYMAN1FILES="$MYMAN1FILES kcdirtest.1 kcdirmgr.1 kcpolytest.1 kcpolymgr.1 kclangctest.1"
 MYDOCUMENTFILES="COPYING ChangeLog doc kyotocabinet.idl"
 MYPCFILES="kyotocabinet.pc"
 
@@ -66,6 +66,7 @@ AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug], [build for debugging]))
 if test "$enable_debug" = "yes"
 then
+  MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -O0"
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O0"
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
   MYCMDLDFLAGS="$MYCMDLDFLAGS -static"
@@ -77,6 +78,7 @@ AC_ARG_ENABLE(devel,
   AC_HELP_STRING([--enable-devel], [build for development]))
 if test "$enable_devel" = "yes"
 then
+  MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -O2 -fno-inline -pipe"
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O2 -fno-inline -pipe"
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
   enables="$enables (devel)"

@@ -1,6 +1,6 @@
 ================================================================
  Kyoto Cabinet: a straightforward implementation of DBM
- Copyright (C) 2009-2010 Mikio Hirabayashi
+ Copyright (C) 2009-2010 FAL Labs
 ================================================================
 
 
@@ -25,8 +25,8 @@ Contents of the directory tree is below.
 Kyoto Cabinet is released under the terms of the GNU General Public
 License version 3.  See the file `COPYING' for details.
 
-Kyoto Cabinet was written by Mikio Hirabayashi.  You can contact the
-author by e-mail to `hirarin@gmail.com'.
+Kyoto Cabinet was written by FAL Labs.  You can contact the author
+by e-mail to `info@fallabs.com'.
 
 
 Thanks.

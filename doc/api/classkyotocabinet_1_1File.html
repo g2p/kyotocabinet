@@ -103,8 +103,12 @@
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#a19a94168922a42567ea0e6df824beb72">recovered</a> () const </td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check whether the file was recovered or not.  <a href="#a19a94168922a42567ea0e6df824beb72"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#a7a1b1179b6eedc5663274f9890d5c895">status</a> (const std::string &amp;path, <a class="el" href="structkyotocabinet_1_1File_1_1Status.html">Status</a> *buf)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the status information of a file.  <a href="#a7a1b1179b6eedc5663274f9890d5c895"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#a44d2fe960229f0468806445d43440e41">read_file</a> (const std::string &amp;path, int64_t *sp, int64_t limit=-1)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Read the whole data from a file.  <a href="#a44d2fe960229f0468806445d43440e41"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#a739f70505356aa89e94d6012892b285d">write_file</a> (const std::string &amp;path, const char *buf, int64_t size)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Write the whole data into a file.  <a href="#a739f70505356aa89e94d6012892b285d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#ad259250ce5a4543b5d75198fa303546f">status</a> (const std::string &amp;path, <a class="el" href="structkyotocabinet_1_1File_1_1Status.html">Status</a> *buf=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the status information of a file.  <a href="#ad259250ce5a4543b5d75198fa303546f"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static std::string&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#ab33835fe5a673b8e31dff4d6e2bdec2f">absolute_path</a> (const std::string &amp;path)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the absolute path of a file.  <a href="#ab33835fe5a673b8e31dff4d6e2bdec2f"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#ac9477256c7317af69501a764aef36749">remove</a> (const std::string &amp;path)</td></tr>
@@ -121,6 +125,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the path of the current working directory.  <a href="#af944354dd0c019cb4f1c479aeb1c75a0"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#a48e489a86f873e086e556a83d3550b1b">set_current_directory</a> (const std::string &amp;path)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the current working directory.  <a href="#a48e489a86f873e086e556a83d3550b1b"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#a18c04557cb776e4e64452bd0673bfe27">synchronize_whole</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize the whole of the file system with the device.  <a href="#a18c04557cb776e4e64452bd0673bfe27"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Static Public Attributes</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static const char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#a76c9e97e3a027af4f61f0b3033d1d9ae">PATHCHR</a></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Path delimiter character.  <a href="#a76c9e97e3a027af4f61f0b3033d1d9ae"></a><br/></td></tr>
@@ -901,7 +907,97 @@
 
 </div>
 </div>
-<a class="anchor" id="a7a1b1179b6eedc5663274f9890d5c895"></a><!-- doxytag: member="kyotocabinet::File::status" ref="a7a1b1179b6eedc5663274f9890d5c895" args="(const std::string &amp;path, Status *buf)" -->
+<a class="anchor" id="a44d2fe960229f0468806445d43440e41"></a><!-- doxytag: member="kyotocabinet::File::read_file" ref="a44d2fe960229f0468806445d43440e41" args="(const std::string &amp;path, int64_t *sp, int64_t limit=&#45;1)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static char* kyotocabinet::File::read_file </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t *&nbsp;</td>
+          <td class="paramname"> <em>sp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t&nbsp;</td>
+          <td class="paramname"> <em>limit</em> = <code>-1</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Read the whole data from a file. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>path</em>&nbsp;</td><td>the path of a file. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>sp</em>&nbsp;</td><td>the pointer to the variable into which the size of the region of the return value is assigned. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>limit</em>&nbsp;</td><td>the limit length to read. If it is nagative, no limit is specified. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the pointer to the region of the read data, or NULL on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Because an additional zero code is appended at the end of the region of the return value, the return value can be treated as a C-style string. Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a739f70505356aa89e94d6012892b285d"></a><!-- doxytag: member="kyotocabinet::File::write_file" ref="a739f70505356aa89e94d6012892b285d" args="(const std::string &amp;path, const char *buf, int64_t size)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool kyotocabinet::File::write_file </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t&nbsp;</td>
+          <td class="paramname"> <em>size</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Write the whole data into a file. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>path</em>&nbsp;</td><td>the path of a file. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>the data buffer to write. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the data buffer. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The existing file corresponding to the path is overwritten. If no file corresponds to the path, a new file is created. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ad259250ce5a4543b5d75198fa303546f"></a><!-- doxytag: member="kyotocabinet::File::status" ref="ad259250ce5a4543b5d75198fa303546f" args="(const std::string &amp;path, Status *buf=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -915,7 +1011,7 @@
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="structkyotocabinet_1_1File_1_1Status.html">Status</a> *&nbsp;</td>
-          <td class="paramname"> <em>buf</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>buf</em> = <code>NULL</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -930,7 +1026,7 @@
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>path</em>&nbsp;</td><td>the path of a file. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>a structure of status information. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>a structure of status information. If it is NULL, it is omitted. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1167,6 +1263,26 @@
 
 </div>
 </div>
+<a class="anchor" id="a18c04557cb776e4e64452bd0673bfe27"></a><!-- doxytag: member="kyotocabinet::File::synchronize_whole" ref="a18c04557cb776e4e64452bd0673bfe27" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool kyotocabinet::File::synchronize_whole </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Synchronize the whole of the file system with the device. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
 <hr/><h2>Member Data Documentation</h2>
 <a class="anchor" id="a76c9e97e3a027af4f61f0b3033d1d9ae"></a><!-- doxytag: member="kyotocabinet::File::PATHCHR" ref="a76c9e97e3a027af4f61f0b3033d1d9ae" args="" -->
 <div class="memitem">
@@ -1259,7 +1375,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 4 13:26:08 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 25 20:26:37 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

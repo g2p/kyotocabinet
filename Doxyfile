@@ -26,7 +26,7 @@ SEARCHENGINE = NO
 INPUT = .
 FILE_PATTERNS = overview kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h \
   kccompress.h kccompare.h kcmap.h \
-  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcpolydb.h kclangc.h
+  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcdirdb.h kcpolydb.h kclangc.h
 RECURSIVE = NO
 
 

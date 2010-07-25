@@ -12,7 +12,7 @@ Each operation of the hash database has the time complexity of "O(1)".  Therefor
 
 Each operation of the B+ tree database has the time complexity of "O(log N)".  Therefore, in theory, the performance is logarithmic to the scale of the database.  Although the performance of random access of the B+ tree database is slower than that of the hash database, the B+ tree database supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers.  The performance of sequential access is much faster than that of random access.
 
-As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class.  Beside them, two kinds of databases are provided under the same base class.  The prototype database is powered by the standard containers of STL.  The cache database is powered by the original implementation of double-linked hash map with LRU deletion algorithm.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.
+As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class.  Beside them, three kinds of databases are provided under the same base class.  The prototype database is powered by the standard containers of STL.  The cache database is powered by the original implementation of double-linked hash map with LRU deletion algorithm.  The directory database is powered by the directory mechanism of the file system and stores records as respective files in a directory.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.
 
 The following classes are most important.
 
@@ -21,6 +21,7 @@ The following classes are most important.
 @li kyotocabinet::CacheDB -- on-memory hash database for cache with LRU deletion
 @li kyotocabinet::HashDB -- file hash database, which implements hash table on a file
 @li kyotocabinet::TreeDB -- file tree database, which implements B+ tree on a file
+@li kyotocabinet::DirDB -- directory database, which handles respective files in a directory
 @li kyotocabinet::PolyDB -- polymorphic database, dynamic binding of the above databases
 
 @li kclangc.h -- C language binding of the polymorphic database

@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * File tree database
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -275,7 +275,7 @@ public:
         }
         ScopedSpinRWLock lock(&node->lock, false);
         RecordArray& recs = node->recs;
-        if (recs.size() > 0) {
+        if (!recs.empty()) {
           set_position(recs.front(), id);
           return true;
         } else {
@@ -318,7 +318,7 @@ public:
           node->lock.lock_reader();
         }
         RecordArray& recs = node->recs;
-        if (recs.size() > 0) {
+        if (!recs.empty()) {
           Record* frec = recs.front();
           Record* lrec = recs.back();
           if (!db_->reccomp_(rec, frec) && !db_->reccomp_(lrec, rec)) {
@@ -468,7 +468,7 @@ public:
         if (lbuf != lstack) delete[] lbuf;
         return false;
       }
-      if (node->recs.size() < 1) {
+      if (node->recs.empty()) {
         if (lbuf != lstack) delete[] lbuf;
         clear_position();
         if (!set_position(node->next)) return false;
@@ -533,7 +533,7 @@ public:
             step = false;
           }
           recs.erase(rit);
-          if (recs.size() < 1) reorg = true;
+          if (recs.empty()) reorg = true;
         } else if (vbuf != Visitor::NOP) {
           int64_t diff = (int64_t)vsiz - (int64_t)rec->vsiz;
           db_->cusage_ += diff;
@@ -685,7 +685,7 @@ public:
   virtual ~TreeDB() {
     _assert_(true);
     if (omode_ != 0) close();
-    if (curs_.size() > 0) {
+    if (!curs_.empty()) {
       CursorList::const_iterator cit = curs_.begin();
       CursorList::const_iterator citend = curs_.end();
       while (cit != citend) {
@@ -1972,7 +1972,7 @@ private:
   bool check_leaf_node_range(LeafNode* node, Record* rec) {
     _assert_(node && rec);
     RecordArray& recs = node->recs;
-    if (recs.size() < 1) return false;
+    if (recs.empty()) return false;
     Record* frec = recs.front();
     Record* lrec = recs.back();
     return !reccomp_(rec, frec) && !reccomp_(lrec, rec);
@@ -2004,7 +2004,7 @@ private:
         node->dirty = true;
         xfree(rec);
         recs.erase(rit);
-        if (recs.size() < 1) reorg = true;
+        if (recs.empty()) reorg = true;
       } else if (vbuf != Visitor::NOP) {
         int64_t diff = (int64_t)vsiz - (int64_t)rec->vsiz;
         cusage_ += diff;
@@ -2417,7 +2417,7 @@ private:
         }
         inode->dirty = true;
       }
-    } else if (node->recs.size() < 1 && hnum > 0) {
+    } else if (node->recs.empty() && hnum > 0) {
       if (!escape_cursors(node->id, node->next)) return false;
       InnerNode* inode = load_inner_node(hist[--hnum]);
       if (!inode) {
@@ -2491,7 +2491,7 @@ private:
     LinkArray::iterator lit = links.begin();
     LinkArray::iterator litend = links.end();
     if (node->heir == child) {
-      if (links.size() > 0) {
+      if (!links.empty()) {
         Link* link = *lit;
         node->heir = link->child;
         xfree(link);
@@ -2705,7 +2705,7 @@ private:
    */
   void disable_cursors() {
     _assert_(true);
-    if (curs_.size() < 1) return;
+    if (curs_.empty()) return;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {
@@ -2723,7 +2723,7 @@ private:
    */
   void escape_cursors(int64_t src, int64_t dest, Record* rec) {
     _assert_(src > 0 && dest >= 0 && rec);
-    if (curs_.size() < 1) return;
+    if (curs_.empty()) return;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {
@@ -2744,7 +2744,7 @@ private:
    */
   bool escape_cursors(int64_t src, int64_t dest) {
     _assert_(src > 0 && dest >= 0);
-    if (curs_.size() < 1) return true;
+    if (curs_.empty()) return true;
     bool err = false;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();

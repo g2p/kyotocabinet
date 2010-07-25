@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * The test cases of the cache database
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -1444,7 +1444,7 @@ static int32_t procqueue(int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
       }
     }
     int64_t count = db.count();
-    if (!rnd && itcnt == 1 && db.count() != width * thnum) {
+    if (!rnd && itcnt == 1 && count != width * thnum) {
       dberrprint(&db, __LINE__, "DB::count");
       err = true;
     }

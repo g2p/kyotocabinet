@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Data compressor and decompressor
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -74,94 +74,158 @@ public:
   };
   /**
    * Compress a serial data.
-   * @param mode the compression mode.
    * @param buf the input buffer.
    * @param size the size of the input buffer.
    * @param sp the pointer to the variable into which the size of the region of the return
    * value is assigned.
+   * @param mode the compression mode.
    * @return the pointer to the result data, or NULL on failure.
    * @note Because the region of the return value is allocated with the the new[] operator, it
    * should be released with the delete[] operator when it is no longer in use.
    */
-  static char* compress(Mode mode, const void* buf, size_t size, size_t* sp);
+  static char* compress(const void* buf, size_t size, size_t* sp, Mode mode = RAW);
   /**
    * Decompress a serial data.
-   * @param mode the compression mode.
    * @param buf the input buffer.
    * @param size the size of the input buffer.
    * @param sp the pointer to the variable into which the size of the region of the return
    * value is assigned.
+   * @param mode the compression mode.
    * @return the pointer to the result data, or NULL on failure.
    * @note Because an additional zero code is appended at the end of the region of the return
    * value, the return value can be treated as a C-style string.  Because the region of the
    * return value is allocated with the the new[] operator, it should be released with the
    * delete[] operator when it is no longer in use.
    */
-  static char* decompress(Mode mode, const void* buf, size_t size, size_t* sp);
+  static char* decompress(const void* buf, size_t size, size_t* sp, Mode mode = RAW);
+  /**
+   * Calculate the CRC32 checksum of a serial data.
+   * @param buf the input buffer.
+   * @param size the size of the input buffer.
+   * @param seed the cyclic seed value.
+   * @return the CRC32 checksum.
+   */
+  static uint32_t calculate_crc(const void* buf, size_t size, uint32_t seed = 0);
 };
 
 
 /**
- * Compressor with the Zlib raw mode.
+ * Compressor with the Zlib.
  */
-class ZlibRawCompressor : public Compressor {
+template <Zlib::Mode MODE>
+class ZlibCompressor : public Compressor {
+private:
+  /**
+   * Compress a serial data.
+   */
   char* compress(const void* buf, size_t size, size_t* sp) {
-    _assert_(buf && sp);
-    return Zlib::compress(Zlib::RAW, buf, size, sp);
+    _assert_(buf && size <= MEMMAXSIZ && sp);
+    return Zlib::compress(buf, size, sp, MODE);
   }
+  /**
+   * Decompress a serial data.
+   */
   char* decompress(const void* buf, size_t size, size_t* sp) {
-    _assert_(buf && sp);
-    return Zlib::decompress(Zlib::RAW, buf, size, sp);
+    _assert_(buf && size <= MEMMAXSIZ && sp);
+    return Zlib::decompress(buf, size, sp, MODE);
   }
 };
 
 
 /**
- * Compressor with the Zlib deflate mode.
+ * Compressor with the Arcfour cipher.
  */
-class ZlibDeflateCompressor : public Compressor {
+class ArcfourCompressor : public Compressor {
+public:
+  /**
+   * Constructor.
+   */
+  ArcfourCompressor() : kbuf_(NULL), ksiz_(0), salt_(0), cycle_(false) {
+    _assert_(true);
+    kbuf_ = new char[0];
+    ksiz_ = 0;
+  }
+  /**
+   * Destructor.
+   */
+  ~ArcfourCompressor() {
+    _assert_(true);
+    delete[] kbuf_;
+  }
+  /**
+   * Set the cipher key.
+   * @param kbuf the pointer to the region of the cipher key.
+   * @param ksiz the size of the region of the cipher key.
+   */
+  void set_key(const void* kbuf, size_t ksiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
+    delete[] kbuf_;
+    if (ksiz > NUMBUFSIZ) ksiz = NUMBUFSIZ;
+    kbuf_ = new char[ksiz];
+    std::memcpy(kbuf_, kbuf, ksiz);
+    ksiz_ = ksiz;
+  }
+  /**
+   * Begin the cycle of ciper salt.
+   * @param salt the additional cipher salt.
+   */
+  void begin_cycle(uint64_t salt = 0) {
+    salt_ = salt;
+    cycle_ = true;
+  }
+private:
+  /**
+   * Compress a serial data.
+   */
   char* compress(const void* buf, size_t size, size_t* sp) {
-    _assert_(buf && sp);
-    return Zlib::compress(Zlib::DEFLATE, buf, size, sp);
+    _assert_(buf && size <= MEMMAXSIZ && sp);
+    uint64_t salt = cycle_ ? salt_.add(1) : 0;
+    char kbuf[NUMBUFSIZ*2];
+    writefixnum(kbuf, salt, sizeof(salt));
+    std::memcpy(kbuf + sizeof(salt), kbuf_, ksiz_);
+    char* zbuf = new char[NUMBUFSIZ+size];
+    char* wp = zbuf;
+    writefixnum(wp, salt, sizeof(salt));
+    wp += sizeof(salt);
+    arccipher(buf, size, kbuf, sizeof(salt) + ksiz_, wp);
+    if (cycle_) {
+      size_t range = size < sizeof(uint64_t) ? size : sizeof(uint64_t);
+      salt_.add(hashmurmur(wp, range) << 32);
+    }
+    *sp = sizeof(salt) + size;
+    return zbuf;
   }
+  /**
+   * Decompress a serial data.
+   */
   char* decompress(const void* buf, size_t size, size_t* sp) {
-    _assert_(buf && sp);
-    return Zlib::decompress(Zlib::DEFLATE, buf, size, sp);
+    _assert_(buf && size <= MEMMAXSIZ && sp);
+    if (size < sizeof(uint64_t)) return NULL;
+    char kbuf[NUMBUFSIZ*2];
+    std::memcpy(kbuf, buf, sizeof(uint64_t));
+    std::memcpy(kbuf + sizeof(uint64_t), kbuf_, ksiz_);
+    buf = (char*)buf + sizeof(uint64_t);
+    size -= sizeof(uint64_t);
+    char* zbuf = new char[size];
+    arccipher(buf, size, kbuf, sizeof(uint64_t) + ksiz_, zbuf);
+    *sp = size;
+    return zbuf;
   }
-};
-
-
-/**
- * Compressor with the Zlib gzip mode.
- */
-class ZlibGzipCompressor : public Compressor {
-  char* compress(const void* buf, size_t size, size_t* sp) {
-    _assert_(buf && sp);
-    return Zlib::compress(Zlib::GZIP, buf, size, sp);
-  }
-  char* decompress(const void* buf, size_t size, size_t* sp) {
-    _assert_(buf && sp);
-    return Zlib::decompress(Zlib::GZIP, buf, size, sp);
-  }
+  /** The pointer to the key. */
+  char* kbuf_;
+  /** The size of the key. */
+  size_t ksiz_;
+  /** The cipher salt. */
+  AtomicInt64 salt_;
+  /** The flag of the salt cycle */
+  bool cycle_;
 };
 
 
 /**
  * Prepared variable of the compressor with the Zlib raw mode.
  */
-extern ZlibRawCompressor ZLIBRAWCOMP;
-
-
-/**
- * Prepared variable of the compressor with the Zlib deflate mode.
- */
-extern ZlibDeflateCompressor ZLIBDEFLCOMP;
-
-
-/**
- * Prepared variable of the compressor with the Zlib gzip mode.
- */
-extern ZlibGzipCompressor ZLIBGZIPCOMP;
+extern ZlibCompressor<Zlib::RAW> ZLIBRAWCOMP;
 
 
 }                                        // common namespace

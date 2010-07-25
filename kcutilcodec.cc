@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Popular encoders and decoders
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -23,7 +23,15 @@ const char* g_progname;                  // program name
 // function prototypes
 int main(int argc, char** argv);
 static void usage();
+static int runhex(int argc, char** argv);
+static int runciph(int argc, char** argv);
+static int runcomp(int argc, char** argv);
+static int runhash(int argc, char** argv);
 static int runconf(int argc, char** argv);
+static int32_t prochex(const char* file, bool dec);
+static int32_t procciph(const char* file, const char* key);
+static int32_t proccomp(const char* file, int32_t mode, bool dec);
+static int32_t prochash(const char* file, int32_t mode);
 static int32_t procconf(int32_t mode);
 
 
@@ -32,7 +40,15 @@ int main(int argc, char** argv) {
   g_progname = argv[0];
   if (argc < 2) usage();
   int32_t rv = 0;
-  if (!std::strcmp(argv[1], "conf")) {
+  if (!std::strcmp(argv[1], "hex")) {
+    rv = runhex(argc, argv);
+  } else if (!std::strcmp(argv[1], "ciph")) {
+    rv = runciph(argc, argv);
+  } else if (!std::strcmp(argv[1], "comp")) {
+    rv = runcomp(argc, argv);
+  } else if (!std::strcmp(argv[1], "hash")) {
+    rv = runhash(argc, argv);
+  } else if (!std::strcmp(argv[1], "conf")) {
     rv = runconf(argc, argv);
   } else if (!std::strcmp(argv[1], "version") || !std::strcmp(argv[1], "--version")) {
     printversion();
@@ -49,9 +65,111 @@ static void usage() {
   eprintf("%s: popular encoders and decoders of Kyoto Cabinet\n", g_progname);
   eprintf("\n");
   eprintf("usage:\n");
+  eprintf("  %s hex [-d] [file]\n", g_progname);
+  eprintf("  %s ciph [-key str] [file]\n", g_progname);
+  eprintf("  %s comp [-def|-gz] [-d] [file]\n", g_progname);
+  eprintf("  %s hash [-fnv|-path|-crc] [file]\n", g_progname);
   eprintf("  %s conf [-v|-i|-l|-p]\n", g_progname);
   eprintf("\n");
   std::exit(1);
+}
+
+
+// parse arguments of hex command
+static int runhex(int argc, char** argv) {
+  const char* file = NULL;
+  bool dec = false;
+  for (int32_t i = 2; i < argc; i++) {
+    if (argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "-d")) {
+        dec = true;
+      } else {
+        usage();
+      }
+    } else if (!file) {
+      file = argv[i];
+    } else {
+      usage();
+    }
+  }
+  int rv = prochex(file, dec);
+  return rv;
+}
+
+
+// parse arguments of ciph command
+static int runciph(int argc, char** argv) {
+  const char* file = NULL;
+  const char* key = "";
+  for (int32_t i = 2; i < argc; i++) {
+    if (argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "-key")) {
+        if (++i >= argc) usage();
+        key = argv[i];
+      } else {
+        usage();
+      }
+    } else if (!file) {
+      file = argv[i];
+    } else {
+      usage();
+    }
+  }
+  int rv = procciph(file, key);
+  return rv;
+}
+
+
+// parse arguments of comp command
+static int runcomp(int argc, char** argv) {
+  const char* file = NULL;
+  int32_t mode = 0;
+  bool dec = false;
+  for (int32_t i = 2; i < argc; i++) {
+    if (argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "-def")) {
+        mode = 1;
+      } else if (!std::strcmp(argv[i], "-gz")) {
+        mode = 2;
+      } else if (!std::strcmp(argv[i], "-d")) {
+        dec = true;
+      } else {
+        usage();
+      }
+    } else if (!file) {
+      file = argv[i];
+    } else {
+      usage();
+    }
+  }
+  int rv = proccomp(file, mode, dec);
+  return rv;
+}
+
+
+// parse arguments of hash command
+static int runhash(int argc, char** argv) {
+  const char* file = NULL;
+  int32_t mode = 0;
+  for (int32_t i = 2; i < argc; i++) {
+    if (argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "-fnv")) {
+        mode = 1;
+      } else if (!std::strcmp(argv[i], "-path")) {
+        mode = 2;
+      } else if (!std::strcmp(argv[i], "-crc")) {
+        mode = 3;
+      } else {
+        usage();
+      }
+    } else if (!file) {
+      file = argv[i];
+    } else {
+      usage();
+    }
+  }
+  int rv = prochash(file, mode);
+  return rv;
 }
 
 
@@ -77,6 +195,232 @@ static int runconf(int argc, char** argv) {
   }
   int rv = procconf(mode);
   return rv;
+}
+
+
+// perform hex command
+static int32_t prochex(const char* file, bool dec) {
+  const char* istr = file && *file == '@' ? file + 1 : NULL;
+  std::istream *is;
+  std::ifstream ifs;
+  std::istringstream iss(istr ? istr : "");
+  if (file) {
+    if (istr) {
+      is = &iss;
+    } else {
+      ifs.open(file, std::ios_base::in | std::ios_base::binary);
+      if (!ifs) {
+        eprintf("%s: %s: open error\n", g_progname, file);
+        return 1;
+      }
+      is = &ifs;
+    }
+  } else {
+    is = &std::cin;
+  }
+  if (dec) {
+    char c;
+    while (is->get(c)) {
+      int32_t cc = (unsigned char)c;
+      int32_t num = -1;
+      if (cc >= '0' && cc <= '9') {
+        num = cc - '0';
+      } else if (cc >= 'a' && cc <= 'f') {
+        num = cc - 'a' + 10;
+      } else if (cc >= 'A' && cc <= 'F') {
+        num = cc - 'A' + 10;
+      }
+      if (num >= 0) {
+        if (is->get(c)) {
+          cc = (unsigned char)c;
+          if (cc >= '0' && cc <= '9') {
+            num = num * 0x10 + cc - '0';
+          } else if (cc >= 'a' && cc <= 'f') {
+            num = num * 0x10 + cc - 'a' + 10;
+          } else if (cc >= 'A' && cc <= 'F') {
+            num = num * 0x10 + cc - 'A' + 10;
+          }
+          std::cout << (char)num;
+        } else {
+          std::cout << (char)num;
+          break;
+        }
+      }
+    }
+    if (istr) std::cout << std::endl;
+  } else {
+    bool mid = false;
+    char c;
+    while (is->get(c)) {
+      if (mid) std::cout << ' ';
+      int32_t cc = (unsigned char)c;
+      int32_t num = (cc >> 4);
+      if (num < 10) {
+        std::cout << (char)('0' + num);
+      } else {
+        std::cout << (char)('a' + num - 10);
+      }
+      num = (cc & 0x0f);
+      if (num < 10) {
+        std::cout << (char)('0' + num);
+      } else {
+        std::cout << (char)('a' + num - 10);
+      }
+      mid = true;
+    }
+    std::cout << std::endl;
+  }
+  return 0;
+}
+
+
+// perform ciph command
+static int32_t procciph(const char* file, const char* key) {
+  const char* istr = file && *file == '@' ? file + 1 : NULL;
+  std::istream *is;
+  std::ifstream ifs;
+  std::istringstream iss(istr ? istr : "");
+  if (file) {
+    if (istr) {
+      is = &iss;
+    } else {
+      ifs.open(file, std::ios_base::in | std::ios_base::binary);
+      if (!ifs) {
+        eprintf("%s: %s: open error\n", g_progname, file);
+        return 1;
+      }
+      is = &ifs;
+    }
+  } else {
+    is = &std::cin;
+  }
+  std::ostringstream oss;
+  char c;
+  while (is->get(c)) {
+    oss.put(c);
+  }
+  const std::string& ostr = oss.str();
+  char* cbuf = new char[ostr.size()];
+  kc::arccipher(ostr.data(), ostr.size(), key, std::strlen(key), cbuf);
+  std::cout.write(cbuf, ostr.size());
+  delete[] cbuf;
+  return 0;
+}
+
+
+// perform comp command
+static int32_t proccomp(const char* file, int32_t mode, bool dec) {
+  const char* istr = file && *file == '@' ? file + 1 : NULL;
+  std::istream *is;
+  std::ifstream ifs;
+  std::istringstream iss(istr ? istr : "");
+  if (file) {
+    if (istr) {
+      is = &iss;
+    } else {
+      ifs.open(file, std::ios_base::in | std::ios_base::binary);
+      if (!ifs) {
+        eprintf("%s: %s: open error\n", g_progname, file);
+        return 1;
+      }
+      is = &ifs;
+    }
+  } else {
+    is = &std::cin;
+  }
+  std::ostringstream oss;
+  char c;
+  while (is->get(c)) {
+    oss.put(c);
+  }
+  const std::string& ostr = oss.str();
+  bool err = false;
+  switch (mode) {
+    default: {
+      kc::Zlib::Mode zmode;
+      switch (mode) {
+        default: zmode = kc::Zlib::RAW; break;
+        case 1: zmode = kc::Zlib::DEFLATE; break;
+        case 2: zmode = kc::Zlib::GZIP; break;
+      }
+      if (dec) {
+        size_t zsiz;
+        char* zbuf = kc::Zlib::decompress(ostr.data(), ostr.size(), &zsiz, zmode);
+        if (zbuf) {
+          std::cout.write(zbuf, zsiz);
+          delete[] zbuf;
+        } else {
+          eprintf("%s: decompression failed\n", g_progname);
+          err = true;
+        }
+      } else {
+        size_t zsiz;
+        char* zbuf = kc::Zlib::compress(ostr.data(), ostr.size(), &zsiz, zmode);
+        if (zbuf) {
+          std::cout.write(zbuf, zsiz);
+          delete[] zbuf;
+        } else {
+          eprintf("%s: compression failed\n", g_progname);
+          err = true;
+        }
+      }
+      break;
+    }
+  }
+  return err ? 1 : 0;
+}
+
+
+// perform hash command
+static int32_t prochash(const char* file, int32_t mode) {
+  const char* istr = file && *file == '@' ? file + 1 : NULL;
+  std::istream *is;
+  std::ifstream ifs;
+  std::istringstream iss(istr ? istr : "");
+  if (file) {
+    if (istr) {
+      is = &iss;
+    } else {
+      ifs.open(file, std::ios_base::in | std::ios_base::binary);
+      if (!ifs) {
+        eprintf("%s: %s: open error\n", g_progname, file);
+        return 1;
+      }
+      is = &ifs;
+    }
+  } else {
+    is = &std::cin;
+  }
+  std::ostringstream oss;
+  char c;
+  while (is->get(c)) {
+    oss.put(c);
+  }
+  const std::string& ostr = oss.str();
+  switch (mode) {
+    default: {
+      uint64_t hash = kc::hashmurmur(ostr.data(), ostr.size());
+      iprintf("%016llx\n", (unsigned long long)hash);
+      break;
+    }
+    case 1: {
+      uint64_t hash = kc::hashfnv(ostr.data(), ostr.size());
+      iprintf("%016llx\n", (unsigned long long)hash);
+      break;
+    }
+    case 2: {
+      char name[kc::NUMBUFSIZ];
+      uint32_t hash = kc::hashpath(ostr.data(), ostr.size(), name);
+      iprintf("%s\t%08lx\n", name, (unsigned long)hash);
+      break;
+    }
+    case 3: {
+      uint32_t hash = kc::Zlib::calculate_crc(ostr.data(), ostr.size());
+      iprintf("%08x\n", (unsigned)hash);
+      break;
+    }
+  }
+  return 0;
 }
 
 

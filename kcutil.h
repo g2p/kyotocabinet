@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Utility functions
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -201,6 +201,17 @@ uint64_t hashfnv(const void* buf, size_t size);
 
 
 /**
+ * Get the hash value suitable for a file name.
+ * @param buf the source buffer.
+ * @param size the size of the source buffer.
+ * @param obuf the buffer into which the result hash string is written.  It must be more than
+ * NUMBUFSIZ.
+ * @return the auxiliary hash value.
+ */
+uint32_t hashpath(const void* buf, size_t size, char* obuf);
+
+
+/**
  * Get a prime number nearby a number.
  * @param num a natural number.
  * @return the result number.
@@ -287,7 +298,7 @@ size_t strsplit(const std::string& str, char delim, std::vector<std::string>* el
  * @note Because the region of the return value is allocated with the the new[] operator, it
  * should be released with the delete[] operator when it is no longer in use.
  */
-char* hexencode(const char* buf, size_t size);
+char* hexencode(const void* buf, size_t size);
 
 
 /**
@@ -302,6 +313,19 @@ char* hexencode(const char* buf, size_t size);
  * operator when it is no longer in use.
  */
 char* hexdecode(const char* str, size_t* sp);
+
+
+/**
+ * Cipher or decipher a serial object with the Arcfour stream cipher.
+ * @param ptr the pointer to the region.
+ * @param size the size of the region.
+ * @param kbuf the pointer to the region of the cipher key.
+ * @param ksiz the size of the region of the cipher key.
+ * @param obuf the pointer to the region into which the result data is written.  The size of the
+ * buffer should be equal to or more than the input region.  The region can be the same as the
+ * source region.
+ */
+void arccipher(const void* ptr, size_t size, const void* kbuf, size_t ksiz, void* obuf);
 
 
 /**
@@ -736,6 +760,90 @@ inline uint64_t hashfnv(const void* buf, size_t size) {
 
 
 /**
+ * Get the hash value suitable for a file name.
+ */
+inline uint32_t hashpath(const void* buf, size_t size, char* obuf) {
+  _assert_(buf && size <= MEMMAXSIZ && obuf);
+  const unsigned char* rp = (const unsigned char*)buf;
+  uint32_t rv;
+  char* wp = obuf;
+  if (size <= 10) {
+    if (size > 0) {
+      const unsigned char* ep = rp + size;
+      while (rp < ep) {
+        int32_t num = *rp >> 4;
+        if (num < 10) {
+          *(wp++) = '0' + num;
+        } else {
+          *(wp++) = 'a' + num - 10;
+        }
+        num = *rp & 0x0f;
+        if (num < 10) {
+          *(wp++) = '0' + num;
+        } else {
+          *(wp++) = 'a' + num - 10;
+        }
+        rp++;
+      }
+    } else {
+      *(wp++) = '0';
+    }
+    uint64_t hash = hashmurmur(buf, size);
+    rv = (((hash & 0xffff000000000000ULL) >> 48) | ((hash & 0x0000ffff00000000ULL) >> 16)) ^
+      (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
+  } else {
+    *(wp++) = 'f' + 1 + (size & 0x0f);
+    int32_t num = (rp[0] >> 4) + (rp[1] & 0x01 ? 0x10 : 0);
+    if (num < 10) {
+      *(wp++) = '0' + num;
+    } else {
+      *(wp++) = 'a' + num - 10;
+    }
+    num = (rp[0] & 0x0f) + (rp[1] & 0x02 ? 0x10 : 0);
+    if (num < 10) {
+      *(wp++) = '0' + num;
+    } else {
+      *(wp++) = 'a' + num - 10;
+    }
+    num = (rp[1] >> 2) & 0x1f;
+    if (num < 10) {
+      *(wp++) = '0' + num;
+    } else {
+      *(wp++) = 'a' + num - 10;
+    }
+    uint64_t hash = hashmurmur(buf, size);
+    rv = (((hash & 0xffff000000000000ULL) >> 48) | ((hash & 0x0000ffff00000000ULL) >> 16)) ^
+      (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
+    uint64_t inc = hashfnv(buf, size);
+    inc = (((inc & 0xffff000000000000ULL) >> 48) | ((inc & 0x0000ffff00000000ULL) >> 16)) ^
+      (((inc & 0x000000000000ffffULL) << 16) | ((inc & 0x00000000ffff0000ULL) >> 16));
+    for (size_t i = 0; i < sizeof(hash); i++) {
+      uint32_t least = hash >> ((sizeof(hash) - 1) * 8);
+      num = least >> 4;
+      if (inc & 0x01) num += 0x10;
+      inc = inc >> 1;
+      if (num < 10) {
+        *(wp++) = '0' + num;
+      } else {
+        *(wp++) = 'a' + num - 10;
+      }
+      num = least & 0x0f;
+      if (inc & 0x01) num += 0x10;
+      inc = inc >> 1;
+      if (num < 10) {
+        *(wp++) = '0' + num;
+      } else {
+        *(wp++) = 'a' + num - 10;
+      }
+      hash = hash << 8;
+    }
+  }
+  *wp = '\0';
+  return rv;
+}
+
+
+/**
  * Get a prime number nearby a number.
  */
 inline uint64_t nearbyprime(uint64_t num) {
@@ -967,13 +1075,24 @@ inline size_t strsplit(const std::string& str, char delim, std::vector<std::stri
 /**
  * Encode a serial object with hexadecimal encoding.
  */
-inline char* hexencode(const char* buf, size_t size) {
+inline char* hexencode(const void* buf, size_t size) {
   _assert_(buf && size <= MEMMAXSIZ);
-  const unsigned char* rp = (const unsigned char* )buf;
+  const unsigned char* rp = (const unsigned char*)buf;
   char* zbuf = new char[size*2+1];
   char* wp = zbuf;
-  for (size_t i = 0; i < size; i++) {
-    wp += std::sprintf(wp, "%02x", rp[i]);
+  for (const unsigned char* ep = rp + size; rp < ep; rp++) {
+    int32_t num = (*rp >> 4);
+    if (num < 10) {
+      *(wp++) = '0' + num;
+    } else {
+      *(wp++) = 'a' + num - 10;
+    }
+    num = (*rp & 0x0f);
+    if (num < 10) {
+      *(wp++) = '0' + num;
+    } else {
+      *(wp++) = 'a' + num - 10;
+    }
   }
   *wp = '\0';
   return zbuf;
@@ -1019,6 +1138,40 @@ inline char* hexdecode(const char* str, size_t* sp) {
   *wp = '\0';
   *sp = wp - zbuf;
   return zbuf;
+}
+
+
+/**
+ * Cipher or decipher a serial object with the Arcfour stream cipher.
+ */
+inline void arccipher(const void* ptr, size_t size, const void* kbuf, size_t ksiz, void* obuf) {
+  _assert_(ptr && size <= MEMMAXSIZ && kbuf && ksiz <= MEMMAXSIZ && obuf);
+  if (ksiz < 1) {
+    kbuf = "";
+    ksiz = 1;
+  }
+  uint32_t sbox[0x100], kbox[0x100];
+  for(int32_t i = 0; i < 0x100; i++){
+    sbox[i] = i;
+    kbox[i] = ((uint8_t*)kbuf)[i%ksiz];
+  }
+  uint32_t sidx = 0;
+  for(int i = 0; i < 0x100; i++){
+    sidx = (sidx + sbox[i] + kbox[i]) & 0xff;
+    uint32_t swap = sbox[i];
+    sbox[i] = sbox[sidx];
+    sbox[sidx] = swap;
+  }
+  uint32_t x = 0;
+  uint32_t y = 0;
+  for(size_t i = 0; i < size; i++){
+    x = (x + 1) & 0xff;
+    y = (y + sbox[x]) & 0xff;
+    uint32_t swap = sbox[x];
+    sbox[x] = sbox[y];
+    sbox[y] = swap;
+    ((uint8_t*)obuf)[i] = ((uint8_t*)ptr)[i] ^ sbox[(sbox[x]+sbox[y])&0xff];
+  }
 }
 
 

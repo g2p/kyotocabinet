@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Data compressor and decompressor
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -28,9 +28,9 @@ namespace kyotocabinet {                 // common namespace
 /**
  * Compress a serial data.
  */
-char* Zlib::compress(Mode mode, const void* buf, size_t size, size_t* sp) {
+char* Zlib::compress(const void* buf, size_t size, size_t* sp, Mode mode) {
 #if defined(_KC_ZLIB)
-  _assert_(buf && sp);
+  _assert_(buf && size <= MEMMAXSIZ && sp);
   z_stream zs;
   zs.zalloc = Z_NULL;
   zs.zfree = Z_NULL;
@@ -69,10 +69,13 @@ char* Zlib::compress(Mode mode, const void* buf, size_t size, size_t* sp) {
   *sp = zsiz;
   return zbuf;
 #else
-  _assert_(buf && sp);
-  char* zbuf = new char[size];
-  std::memcpy(zbuf, buf, size);
-  *sp = size;
+  _assert_(buf && size <= MEMMAXSIZ && sp);
+  char* zbuf = new char[size+2];
+  char* wp = zbuf;
+  *(wp++) = 'z';
+  *(wp++) = (uint8_t)mode;
+  std::memcpy(wp, buf, size);
+  *sp = size + 2;
   return zbuf;
 #endif
 }
@@ -81,9 +84,9 @@ char* Zlib::compress(Mode mode, const void* buf, size_t size, size_t* sp) {
 /**
  * Decompress a serial data.
  */
-char* Zlib::decompress(Mode mode, const void* buf, size_t size, size_t* sp) {
+char* Zlib::decompress(const void* buf, size_t size, size_t* sp, Mode mode) {
 #if defined(_KC_ZLIB)
-  _assert_(buf && sp);
+  _assert_(buf && size <= MEMMAXSIZ && sp);
   size_t zsiz = size * 8 + 32;
   while (true) {
     z_stream zs;
@@ -126,7 +129,10 @@ char* Zlib::decompress(Mode mode, const void* buf, size_t size, size_t* sp) {
   }
   return NULL;
 #else
-  _assert_(buf && sp);
+  _assert_(buf && size <= MEMMAXSIZ && sp);
+  if (size < 2 || ((char*)buf)[0] != 'z' || ((char*)buf)[1] != (uint8_t)mode) return NULL;
+  buf = (char*)buf + 2;
+  size -= 2;
   char* zbuf = new char[size+1];
   std::memcpy(zbuf, buf, size);
   zbuf[size] = '\0';
@@ -137,21 +143,23 @@ char* Zlib::decompress(Mode mode, const void* buf, size_t size, size_t* sp) {
 
 
 /**
+ * Calculate the CRC32 checksum of a serial data.
+ */
+uint32_t Zlib::calculate_crc(const void* buf, size_t size, uint32_t seed) {
+#if defined(_KC_ZLIB)
+  _assert_(buf && size <= MEMMAXSIZ);
+  return crc32(seed, (unsigned char*)buf, size);
+#else
+  _assert_(buf && size <= MEMMAXSIZ);
+  return 0;
+#endif
+}
+
+
+/**
  * Prepared variable of the Zlib raw mode.
  */
-ZlibRawCompressor ZLIBRAWCOMP;
-
-
-/**
- * Prepared variable of the Zlib deflate mode.
- */
-ZlibDeflateCompressor ZLIBDEFLCOMP;
-
-
-/**
- * Prepared variable of the Zlib gzip mode.
- */
-ZlibGzipCompressor ZLIBGZIPCOMP;
+ZlibCompressor<Zlib::RAW> ZLIBRAWCOMP;
 
 
 }                                        // common namespace

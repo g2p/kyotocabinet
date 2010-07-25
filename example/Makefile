@@ -11,7 +11,7 @@
 SHELL = /bin/sh
 
 # Targets
-MYBINS = kcprotoex kccacheex kchashex kctreeex kcpolyex kcvisex kclangcex
+MYBINS = kcprotoex kccacheex kchashex kctreeex kcdirex kcpolyex kcvisex kclangcex
 
 # Building binaries
 CC = gcc
@@ -63,6 +63,7 @@ check :
 	$(RUNENV) ./kccacheex
 	$(RUNENV) ./kchashex
 	$(RUNENV) ./kctreeex
+	$(RUNENV) ./kcdirex
 	$(RUNENV) ./kcpolyex
 	$(RUNENV) ./kclangcex
 
@@ -89,6 +90,10 @@ kchashex : kchashex.o
 
 
 kctreeex : kctreeex.o
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
+
+
+kcdirex : kcdirex.o
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
 
 

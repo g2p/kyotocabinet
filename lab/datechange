@@ -13,7 +13,7 @@ export LANG LC_ALL
 year=`date '+%Y'`
 date=`date '+%Y-%m-%d'`
 fulldate=`date -R`
-regexsrc='\.(h|c|cc|cpp|cxx|java|pl|pm|pod|rb|rd|lua)$'
+regexsrc='\.(h|c|cc|cpp|cxx|java|pl|pm|pod|xs|rb|rd|py|lua|idl)$'
 regexman='\.[0-9]$'
 regexhtml='\.html$'
 

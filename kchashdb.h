@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * File hash database
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -436,7 +436,7 @@ public:
   virtual ~HashDB() {
     _assert_(true);
     if (omode_ != 0) close();
-    if (curs_.size() > 0) {
+    if (!curs_.empty()) {
       CursorList::const_iterator cit = curs_.begin();
       CursorList::const_iterator citend = curs_.end();
       while (cit != citend) {
@@ -599,6 +599,11 @@ public:
         file_.close();
         return false;
       }
+      if (autosync_ && !File::synchronize_whole()) {
+        set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+        file_.close();
+        return false;
+      }
     }
     if (!load_meta()) {
       file_.close();
@@ -609,7 +614,7 @@ public:
     if (chksum != chksum_) {
       set_error(__FILE__, __LINE__, Error::INVALID, "invalid module checksum");
       report(__FILE__, __LINE__, "info", "saved=%02X calculated=%02X",
-             (unsigned)chksum, (unsigned)chksum_);
+             (unsigned)chksum_, (unsigned)chksum);
       file_.close();
       return false;
     }
@@ -1156,7 +1161,7 @@ protected:
               const char* format, ...) {
     _assert_(file && line > 0 && type && format);
     if (!erstrm_) return;
-    const std::string& path = path_.size() > 0 ? path_ : "-";
+    const std::string& path = path_.empty() ? "-" : path_;
     std::string message;
     va_list ap;
     va_start(ap, format);
@@ -1926,6 +1931,7 @@ private:
   }
   /**
    * Calculate the module checksum.
+   * @return the module checksum.
    */
   uint8_t calc_checksum() {
     _assert_(true);
@@ -2874,7 +2880,7 @@ private:
    */
   void disable_cursors() {
     _assert_(true);
-    if (curs_.size() < 1) return;
+    if (curs_.empty()) return;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {
@@ -2890,7 +2896,7 @@ private:
    */
   void escape_cursors(int64_t off, int64_t dest) {
     _assert_(off >= 0 && dest >= 0);
-    if (curs_.size() < 1) return;
+    if (curs_.empty()) return;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {
@@ -2911,7 +2917,7 @@ private:
    */
   void trim_cursors() {
     _assert_(true);
-    if (curs_.size() < 1) return;
+    if (curs_.empty()) return;
     int64_t end = lsiz_;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();

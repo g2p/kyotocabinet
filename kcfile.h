@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Filesystem abstraction
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -239,12 +239,35 @@ public:
    */
   bool recovered() const;
   /**
+   * Read the whole data from a file.
+   * @param path the path of a file.
+   * @param sp the pointer to the variable into which the size of the region of the return value
+   * is assigned.
+   * @param limit the limit length to read.  If it is nagative, no limit is specified.
+   * @return the pointer to the region of the read data, or NULL on failure.
+   * @note Because an additional zero code is appended at the end of the region of the return
+   * value, the return value can be treated as a C-style string.  Because the region of the
+   * return value is allocated with the the new[] operator, it should be released with the
+   * delete[] operator when it is no longer in use.
+   */
+  static char* read_file(const std::string& path, int64_t* sp, int64_t limit = -1);
+  /**
+   * Write the whole data into a file.
+   * @param path the path of a file.
+   * @param buf the data buffer to write.
+   * @param size the size of the data buffer.
+   * @return true on success, or false on failure.
+   * @note The existing file corresponding to the path is overwritten.  If no file corresponds
+   * to the path, a new file is created.
+   */
+  static bool write_file(const std::string& path, const char* buf, int64_t size);
+  /**
    * Get the status information of a file.
    * @param path the path of a file.
-   * @param buf a structure of status information.
+   * @param buf a structure of status information.  If it is NULL, it is omitted.
    * @return true on success, or false on failure.
    */
-  static bool status(const std::string& path, Status* buf);
+  static bool status(const std::string& path, Status* buf = NULL);
   /**
    * Get the absolute path of a file.
    * @param path the path of a file.
@@ -294,11 +317,57 @@ public:
    * @return true on success, or false on failure.
    */
   static bool set_current_directory(const std::string& path);
+  /**
+   * Synchronize the whole of the file system with the device.
+   * @return true on success, or false on failure.
+   */
+  static bool synchronize_whole();
 private:
   /** Dummy constructor to forbid the use. */
   File(const File&);
   /** Dummy Operator to forbid the use. */
   File& operator =(const File&);
+  /** Opaque pointer. */
+  void* opq_;
+};
+
+
+/**
+ * Directory stream abstraction.
+ */
+class DirStream {
+public:
+  /**
+   * Default constructor.
+   */
+  explicit DirStream();
+  /**
+   * Destructor.
+   * @note If the file is not closed, it is closed implicitly.
+   */
+  ~DirStream();
+  /**
+   * Open a directory.
+   * @param path the path of a directory.
+   * @return true on success, or false on failure.
+   */
+  bool open(const std::string& path);
+  /**
+   * Close the file.
+   * @return true on success, or false on failure.
+   */
+  bool close();
+  /**
+   * Read the next file in the directory.
+   * @param path a string to store the file path.
+   * @return true on success, or false on failure.
+   */
+  bool read(std::string* path);
+private:
+  /** Dummy constructor to forbid the use. */
+  DirStream(const DirStream&);
+  /** Dummy Operator to forbid the use. */
+  DirStream& operator =(const DirStream&);
   /** Opaque pointer. */
   void* opq_;
 };

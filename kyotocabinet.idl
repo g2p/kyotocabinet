@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * IDL for bindings of scripting languages
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -26,7 +26,6 @@ module kyotocabinet {
   interface Visitor;
   interface FileProcessor;
   interface Cursor;
-  interface Comparator;
   interface DB;
   //----------------------------------------------------------------
   // list of strings (substituted by the native mechanism)
@@ -88,12 +87,6 @@ module kyotocabinet {
     boolean step();
     DB db();
     Error error();
-  };
-  //----------------------------------------------------------------
-  // record comarator
-  //----------------------------------------------------------------
-  interface Comparator {
-    long compare(in string a, in string b);
   };
   //----------------------------------------------------------------
   // common database operations
@@ -181,7 +174,13 @@ module kyotocabinet {
     boolean tune_map(in long long msiz);
     boolean tune_defrag(in long dfunit);
     boolean tune_page_cache(in long long pccap);
-    boolean tune_comparator(in Comparator rcomp);
+  };
+  //----------------------------------------------------------------
+  // directory database
+  //----------------------------------------------------------------
+  interface DirDB :DB {
+    const long TCOMPRESS = 1 << 0;
+    boolean tune_options(in long opts);
   };
   //----------------------------------------------------------------
   // polymorphic database

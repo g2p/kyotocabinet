@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * System-dependent configurations
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -90,9 +90,9 @@
 
 #endif
 
-#define _KC_VERSION    "1.0.4"
+#define _KC_VERSION    "1.1.1"
 #define _KC_LIBVER     3
-#define _KC_LIBREV     2
+#define _KC_LIBREV     4
 #define _KC_FMTVER     4
 
 #if ! defined(_MYNOATOMIC)

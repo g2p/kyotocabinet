@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Cache database
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -293,7 +293,7 @@ public:
   virtual ~CacheDB() {
     _assert_(true);
     if (omode_ != 0) close();
-    if (curs_.size() > 0) {
+    if (!curs_.empty()) {
       CursorList::const_iterator cit = curs_.begin();
       CursorList::const_iterator citend = curs_.end();
       while (cit != citend) {
@@ -813,7 +813,7 @@ private:
               TranLog log(kbuf, ksiz, dbuf + rksiz, rec->vsiz);
               slot->trlogs.push_back(log);
             }
-            if (curs_.size() > 0) escape_cursors(rec);
+            if (!curs_.empty()) escape_cursors(rec);
             if (rec == slot->first) slot->first = rec->next;
             if (rec == slot->last) slot->last = rec->prev;
             if (rec->prev) rec->prev->next = rec->next;
@@ -860,7 +860,7 @@ private:
                 Record* old = rec;
                 rec = (Record*)xrealloc(rec, sizeof(*rec) + ksiz + vsiz);
                 if (rec != old) {
-                  if (curs_.size() > 0) adjust_cursors(old, rec);
+                  if (!curs_.empty()) adjust_cursors(old, rec);
                   if (slot->first == old) slot->first = rec;
                   if (slot->last == old) slot->last = rec;
                   *entp = rec;
@@ -873,7 +873,7 @@ private:
               rec->vsiz = vsiz;
             }
             if (!isiter && slot->last != rec) {
-              if (curs_.size() > 0) escape_cursors(rec);
+              if (!curs_.empty()) escape_cursors(rec);
               if (slot->first == rec) slot->first = rec->next;
               if (rec->prev) rec->prev->next = rec->next;
               if (rec->next) rec->next->prev = rec->prev;
@@ -1085,7 +1085,7 @@ private:
    */
   void escape_cursors(Record* rec) {
     ScopedSpinLock lock(&flock_);
-    if (curs_.size() < 1) return;
+    if (curs_.empty()) return;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {
@@ -1101,7 +1101,7 @@ private:
    */
   void adjust_cursors(Record* orec, Record* nrec) {
     ScopedSpinLock lock(&flock_);
-    if (curs_.size() < 1) return;
+    if (curs_.empty()) return;
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {

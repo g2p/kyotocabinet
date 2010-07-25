@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Filesystem abstraction
- *                                                      Copyright (C) 2009-2010 Mikio Hirabayashi
+ *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -90,6 +90,21 @@ struct WALMessage {
 
 
 /**
+ * DirStream internal.
+ */
+struct DirStreamCore {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  Mutex alock;                           ///< attribute lock
+  ::HANDLE dh;                           ///< directory handle
+  std::string cur;                       ///< current file
+#else
+  Mutex alock;                           ///< attribute lock
+  ::DIR* dh;                             ///< directory handle
+#endif
+};
+
+
+/**
  * Set the error message.
  * @param core the inner condition.
  * @param msg the error message.
@@ -159,8 +174,9 @@ static size_t myread(int fd, void* buf, size_t count);
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
 static int64_t win_pwrite(::HANDLE fh, const void* buf, size_t count, int64_t offset);
 static int64_t win_pread(::HANDLE fh, void* buf, size_t count, int64_t offset);
+static int64_t win_write(::HANDLE fh, const void* buf, size_t count);
 static int64_t win_read(::HANDLE fh, void* buf, size_t count);
-static int win_ftruncate(::HANDLE fh, int64_t length);
+static int32_t win_ftruncate(::HANDLE fh, int64_t length);
 #endif
 
 
@@ -1543,29 +1559,153 @@ bool File::recovered() const {
 
 
 /**
+ * Read the whole data from a file.
+ */
+char* File::read_file(const std::string& path, int64_t* sp, int64_t limit) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(sp);
+  if (limit < 0) limit = INT64_MAX;
+  ::DWORD amode = GENERIC_READ;
+  ::DWORD smode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+  ::DWORD cmode = OPEN_EXISTING;
+  ::HANDLE fh = ::CreateFile(path.c_str(), amode, smode, NULL, cmode,
+                             FILE_ATTRIBUTE_NORMAL, NULL);
+  if (!fh || fh == INVALID_HANDLE_VALUE) return NULL;
+  ::LARGE_INTEGER sbuf;
+  if (!::GetFileSizeEx(fh, &sbuf)) {
+    ::CloseHandle(fh);
+    return false;
+  }
+  if (limit > (int64_t)sbuf.QuadPart) limit = sbuf.QuadPart;
+  char* buf = new char[limit+1];
+  char* wp = buf;
+  int64_t rsiz;
+  while ((rsiz = win_read(fh, wp, limit - (wp - buf))) > 0) {
+    wp += rsiz;
+  }
+  *wp = '\0';
+  ::CloseHandle(fh);
+  *sp = wp - buf;
+  return buf;
+#else
+  _assert_(sp);
+  if (limit < 0) limit = INT64_MAX;
+  int fd = ::open(path.c_str(), O_RDONLY, FILEPERM);
+  if (fd < 0) return NULL;
+  struct stat sbuf;
+  if (::fstat(fd, &sbuf) == -1 || !S_ISREG(sbuf.st_mode)) {
+    ::close(fd);
+    return NULL;
+  }
+  if (limit > (int64_t)sbuf.st_size) limit = sbuf.st_size;
+  char* buf = new char[limit+1];
+  char* wp = buf;
+  ssize_t rsiz;
+  while ((rsiz = ::read(fd, wp, limit - (wp - buf))) > 0) {
+    wp += rsiz;
+  }
+  *wp = '\0';
+  ::close(fd);
+  *sp = wp - buf;
+  return buf;
+#endif
+}
+
+
+/**
+ * Write the whole data into a file.
+ */
+bool File::write_file(const std::string& path, const char* buf, int64_t size) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(buf);
+  ::DWORD amode = GENERIC_WRITE;
+  ::DWORD smode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+  ::DWORD cmode = CREATE_ALWAYS;
+  ::HANDLE fh = ::CreateFile(path.c_str(), amode, smode, NULL, cmode,
+                             FILE_ATTRIBUTE_NORMAL, NULL);
+  if (!fh || fh == INVALID_HANDLE_VALUE) return false;
+  bool err = false;
+  const char* rp = buf;
+  while (!err && size > 0) {
+    int64_t wb = win_write(fh, rp, size);
+    switch (wb) {
+      case -1: {
+        if (errno != EINTR) {
+          err = true;
+          break;
+        }
+      }
+      case 0: {
+        break;
+      }
+      default: {
+        rp += wb;
+        size -= wb;
+        break;
+      }
+    }
+  }
+  if (!::CloseHandle(fh)) err = true;
+  return !err;
+#else
+  _assert_(buf);
+  int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, FILEPERM);
+  if (fd < 0) return false;
+  bool err = false;
+  const char* rp = buf;
+  while (!err && size > 0) {
+    ssize_t wb = ::write(fd, rp, size);
+    switch (wb) {
+      case -1: {
+        if (errno != EINTR) {
+          err = true;
+          break;
+        }
+      }
+      case 0: {
+        break;
+      }
+      default: {
+        rp += wb;
+        size -= wb;
+        break;
+      }
+    }
+  }
+  if (::close(fd) != 0) err = true;
+  return !err;
+#endif
+}
+
+
+/**
  * Get the status information of a file.
  */
 bool File::status(const std::string& path, Status* buf) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(buf);
+  _assert_(true);
   ::WIN32_FILE_ATTRIBUTE_DATA ibuf;
   if (!::GetFileAttributesEx(path.c_str(), GetFileExInfoStandard, &ibuf)) return false;
-  buf->isdir = ibuf.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
-  ::LARGE_INTEGER li;
-  li.LowPart = ibuf.nFileSizeLow;
-  li.HighPart = ibuf.nFileSizeHigh;
-  buf->size = li.QuadPart;
-  li.LowPart = ibuf.ftLastWriteTime.dwLowDateTime;
-  li.HighPart = ibuf.ftLastWriteTime.dwHighDateTime;
-  buf->mtime = li.QuadPart;
+  if (buf) {
+    buf->isdir = ibuf.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+    ::LARGE_INTEGER li;
+    li.LowPart = ibuf.nFileSizeLow;
+    li.HighPart = ibuf.nFileSizeHigh;
+    buf->size = li.QuadPart;
+    li.LowPart = ibuf.ftLastWriteTime.dwLowDateTime;
+    li.HighPart = ibuf.ftLastWriteTime.dwHighDateTime;
+    buf->mtime = li.QuadPart;
+  }
   return true;
 #else
-  _assert_(buf);
+  _assert_(true);
   struct ::stat sbuf;
   if (::lstat(path.c_str(), &sbuf) != 0) return false;
-  buf->isdir = S_ISDIR(sbuf.st_mode);
-  buf->size = sbuf.st_size;
-  buf->mtime = sbuf.st_mtime;
+  if (buf) {
+    buf->isdir = S_ISDIR(sbuf.st_mode);
+    buf->size = sbuf.st_size;
+    buf->mtime = sbuf.st_mtime;
+  }
   return true;
 #endif
 }
@@ -1619,7 +1759,7 @@ bool File::remove(const std::string& path) {
 bool File::rename(const std::string& opath, const std::string& npath) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
-  return ::MoveFile(opath.c_str(), npath.c_str()) != 0;
+  return ::MoveFileEx(opath.c_str(), npath.c_str(), MOVEFILE_REPLACE_EXISTING) != 0;
 #else
   _assert_(true);
   return ::rename(opath.c_str(), npath.c_str()) == 0;
@@ -1729,6 +1869,162 @@ bool File::set_current_directory(const std::string& path) {
 #else
   _assert_(true);
   return ::chdir(path.c_str()) == 0;
+#endif
+}
+
+
+/**
+ * Synchronize the whole of the file system with the device.
+ */
+bool File::synchronize_whole() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  return true;
+#else
+  _assert_(true);
+  ::sync();
+  return true;
+#endif
+}
+
+
+
+/**
+ * Default constructor.
+ */
+DirStream::DirStream() : opq_(NULL) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  DirStreamCore* core = new DirStreamCore;
+  core->dh = NULL;
+  opq_ = core;
+#else
+  _assert_(true);
+  DirStreamCore* core = new DirStreamCore;
+  core->dh = NULL;
+  opq_ = core;
+#endif
+}
+
+
+/**
+ * Destructor.
+ */
+DirStream::~DirStream() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  DirStreamCore* core = (DirStreamCore*)opq_;
+  if (core->dh) close();
+  delete core;
+#else
+  _assert_(true);
+  DirStreamCore* core = (DirStreamCore*)opq_;
+  if (core->dh) close();
+  delete core;
+#endif
+}
+
+
+/**
+ * Open a directory.
+ */
+bool DirStream::open(const std::string& path) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  DirStreamCore* core = (DirStreamCore*)opq_;
+  ScopedMutex lock(&core->alock);
+  if (core->dh) return false;
+  std::string dpath = path;
+  size_t plen = path.size();
+  if (plen < 1 || path[plen-1] != File::PATHCHR) dpath.append(File::PATHSTR);
+  dpath.append("*");
+  ::WIN32_FIND_DATA fbuf;
+  ::HANDLE dh = ::FindFirstFile(dpath.c_str(), &fbuf);
+  if (!dh || dh == INVALID_HANDLE_VALUE) return false;
+  core->dh = dh;
+  core->cur = fbuf.cFileName;
+  return true;
+#else
+  _assert_(true);
+  DirStreamCore* core = (DirStreamCore*)opq_;
+  ScopedMutex lock(&core->alock);
+  if (core->dh) return false;
+  ::DIR* dh = ::opendir(path.c_str());
+  if (!dh) return false;
+  core->dh = dh;
+  return true;
+#endif
+}
+
+
+/**
+ * Close the file.
+ */
+bool DirStream::close() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  DirStreamCore* core = (DirStreamCore*)opq_;
+  ScopedMutex lock(&core->alock);
+  if (!core->dh) return false;
+  bool err = false;
+  if (!::FindClose(core->dh)) err = true;
+  core->dh = NULL;
+  core->cur.clear();
+  return !err;
+#else
+  _assert_(true);
+  DirStreamCore* core = (DirStreamCore*)opq_;
+  ScopedMutex lock(&core->alock);
+  if (!core->dh) return false;
+  bool err = false;
+  if (::closedir(core->dh) != 0) err = true;
+  core->dh = NULL;
+  return !err;
+#endif
+}
+
+
+/**
+ * Read the next file in the directory.
+ */
+bool DirStream::read(std::string* path) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(path);
+  DirStreamCore* core = (DirStreamCore*)opq_;
+  ScopedMutex lock(&core->alock);
+  if (!core->dh) return false;
+  while (core->cur == File::CDIRSTR || core->cur == File::PDIRSTR) {
+    ::WIN32_FIND_DATA fbuf;
+    if (::FindNextFile(core->dh, &fbuf)) {
+      core->cur = fbuf.cFileName;
+    } else {
+      core->cur.clear();
+      return false;
+    }
+  }
+  if (core->cur.empty()) return false;
+  path->clear();
+  path->append(core->cur);
+  ::WIN32_FIND_DATA fbuf;
+  if (::FindNextFile(core->dh, &fbuf)) {
+    core->cur = fbuf.cFileName;
+  } else {
+    core->cur.clear();
+  }
+  return true;
+#else
+  _assert_(path);
+  DirStreamCore* core = (DirStreamCore*)opq_;
+  ScopedMutex lock(&core->alock);
+  if (!core->dh) return false;
+  struct ::dirent *dp;
+  do {
+    dp = ::readdir(core->dh);
+    if (!dp) return false;
+  } while (!std::strcmp(dp->d_name, File::CDIRSTR) || !std::strcmp(dp->d_name, File::PDIRSTR));
+  path->clear();
+  path->append(dp->d_name);
+  return true;
 #endif
 }
 
@@ -2339,14 +2635,27 @@ static int64_t win_pwrite(::HANDLE fh, const void* buf, size_t count, int64_t of
  */
 static int64_t win_pread(::HANDLE fh, void* buf, size_t count, int64_t offset) {
   _assert_(buf && offset >= 0);
-  ::DWORD wb;
+  ::DWORD rb;
   ::LARGE_INTEGER li;
   li.QuadPart = offset;
   ::OVERLAPPED ol;
   ol.Offset = li.LowPart;
   ol.OffsetHigh = li.HighPart;
   ol.hEvent = NULL;
-  if (!::ReadFile(fh, buf, count, &wb, &ol)) return -1;
+  if (!::ReadFile(fh, buf, count, &rb, &ol)) return -1;
+  return rb;
+}
+#endif
+
+
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+/**
+ * Emulate the write call
+ */
+static int64_t win_write(::HANDLE fh, const void* buf, size_t count) {
+  _assert_(buf);
+  ::DWORD wb;
+  if (!::WriteFile(fh, buf, count, &wb, NULL)) return -1;
   return wb;
 }
 #endif
@@ -2358,9 +2667,9 @@ static int64_t win_pread(::HANDLE fh, void* buf, size_t count, int64_t offset) {
  */
 static int64_t win_read(::HANDLE fh, void* buf, size_t count) {
   _assert_(buf);
-  ::DWORD wb;
-  if (!::ReadFile(fh, buf, count, &wb, NULL)) return -1;
-  return wb;
+  ::DWORD rb;
+  if (!::ReadFile(fh, buf, count, &rb, NULL)) return -1;
+  return rb;
 }
 #endif
 
@@ -2369,7 +2678,7 @@ static int64_t win_read(::HANDLE fh, void* buf, size_t count) {
 /**
  * Emulate the ftruncate call
  */
-static int win_ftruncate(::HANDLE fh, int64_t length) {
+static int32_t win_ftruncate(::HANDLE fh, int64_t length) {
   _assert_(length >= 0);
   ::LARGE_INTEGER li;
   li.QuadPart = length;
