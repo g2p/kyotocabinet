@@ -24,10 +24,10 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcplantdb.h>
 #include <kcprotodb.h>
 #include <kccachedb.h>
 #include <kchashdb.h>
-#include <kctreedb.h>
 #include <kcdirdb.h>
 
 namespace kyotocabinet {                 // common namespace
@@ -36,14 +36,14 @@ namespace kyotocabinet {                 // common namespace
 /**
  * Polymorphic database.
  */
-class PolyDB : public FileDB {
+class PolyDB : public BasicDB {
 public:
   class Cursor;
 public:
   /**
    * Cursor to indicate a record.
    */
-  class Cursor : public FileDB::Cursor {
+  class Cursor : public BasicDB::Cursor {
     friend class PolyDB;
   public:
     /**
@@ -53,7 +53,7 @@ public:
     explicit Cursor(PolyDB* db) : db_(db), cur_(NULL) {
       _assert_(db);
       if (db_->type_ == TYPEVOID) {
-        ProtoTreeDB tmpdb;
+        ProtoHashDB tmpdb;
         cur_ = tmpdb.cursor();
       } else {
         cur_ = db->db_->cursor();
@@ -122,6 +122,20 @@ public:
       return jump(key.c_str(), key.size());
     }
     /**
+     * Jump the cursor to the last record.
+     * @return true on success, or false on failure.
+     * @note This method is dedicated to tree databases.  Some database types, especially hash
+     * databases, may provide a dummy implementation.
+     */
+    bool jump_last() {
+      _assert_(true);
+      if (db_->type_ == TYPEVOID) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      return cur_->jump_last();
+    }
+    /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
@@ -132,6 +146,20 @@ public:
         return false;
       }
       return cur_->step();
+    }
+    /**
+     * Step the cursor to the previous record.
+     * @return true on success, or false on failure.
+     * @note This method is dedicated to tree databases.  Some database types, especially hash
+     * databases, may provide a dummy implementation.
+     */
+    bool step_back() {
+      _assert_(true);
+      if (db_->type_ == TYPEVOID) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      return cur_->step_back();
     }
     /**
      * Get the database object.
@@ -149,7 +177,7 @@ public:
     /** The inner database. */
     PolyDB* db_;
     /** The inner cursor. */
-    FileDB::Cursor* cur_;
+    BasicDB::Cursor* cur_;
   };
   /**
    * Default constructor.
@@ -162,7 +190,7 @@ public:
    * @param db the internal database object.  Its possession is transferred inside and the
    * object is deleted automatically.
    */
-  explicit PolyDB(FileDB* db) : type_(TYPEMISC), db_(db), error_(), zcomp_(NULL) {
+  explicit PolyDB(BasicDB* db) : type_(TYPEMISC), db_(db), error_(), zcomp_(NULL) {
     _assert_(db);
   }
   /**
@@ -233,18 +261,24 @@ public:
    * Open a database file.
    * @param path the path of a database file.  If it is "-", the database will be a prototype
    * hash database.  If it is "+", the database will be a prototype tree database.  If it is
-   * "*", the database will be a cache database.  If its suffix is ".kch", the database will be
-   * a file hash database.  If its suffix is ".kct", the database will be a file tree database.
-   * If its suffix is ".kcd", the database will be a directory database.  Otherwise, this
-   * function fails.  Tuning parameters can trail the name, separated by "#".  Each parameter is
-   * composed of the name and the value, separated by "=".  If the "type" parameter is specified,
-   * the database type is determined by the value in "-", "+", "*", "kch", "kct", and "kcd".  The
+   * "*", the database will be a cache hash database.  If it is "%", the database will be a
+   * cache tree database.  If its suffix is ".kch", the database will be a file hash database.
+   * If its suffix is ".kct", the database will be a file tree database.  If its suffix is
+   * ".kcd", the database will be a directory hash database.  If its suffix is ".kcf", the
+   * database will be a directory tree database.  Otherwise, this function fails.  Tuning
+   * parameters can trail the name, separated by "#".  Each parameter is composed of the name
+   * and the value, separated by "=".  If the "type" parameter is specified, the database type
+   * is determined by the value in "-", "+", "*", "%", "kch", "kct", "kcd", and "kcf".  The
    * prototype hash database and the prototype tree database do not support any other tuning
-   * parameter.  The cache database supports "bnum", "capcount", and "capsize".  The file hash
-   * database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", "erstrm",
-   * "ervbs", and "zkey".  The file tree database supports all parameters of the file hash
-   * database and "psiz", "rcomp", "pccap" in addition.  The directory database supports "opts",
-   * "zcomp", and "zkey".
+   * parameter.  The cache hash database supports "opts", "bnum", "zcomp", "capcount", "capsize",
+   * "erstrm", "ervbs", and "zkey".  The cache tree database supports all parameters of the
+   * cache hash database except for capacity limitation, and supports "psiz", "rcomp", "pccap"
+   * in addition.  The file hash database supports "apow", "fpow", "opts", "bnum", "msiz",
+   * "dfunit", "zcomp", "erstrm", "ervbs", and "zkey".  The file tree database supports all
+   * parameters of the file hash database and "psiz", "rcomp", "pccap" in addition.  The
+   * directory hash database supports "opts", "zcomp", "erstrm", "ervbs", and "zkey".  The
+   * directory tree database supports all parameters of the file hash database and "psiz",
+   * "rcomp", "pccap" in addition.
    * @param mode the connection mode.  PolyDB::OWRITER as a writer, PolyDB::OREADER as a
    * reader.  The following may be added to the writer mode by bitwise-or: PolyDB::OCREATE,
    * which means it creates a new database if the file does not exist, PolyDB::OTRUNCATE, which
@@ -257,20 +291,21 @@ public:
    * which means the database file is not repaired implicitly even if file destruction is
    * detected.
    * @return true on success, or false on failure.
-   * @note The tuning parameter "bnum" corresponds to the original "tune_bucket" method.
-   * "capcount" is for "cap_count".  "capsize" is for "cap_size".  "apow" is for
-   * "tune_alignment".  "fpow" is for "tune_fbp".  "opts" is for "tune_options" and the value
-   * can contain "s" for the small option, "l" for the linear option, and "c" for the compress
-   * option.  "msiz" is for "tune_map".  "dfunit" is for "tune_defrag".  "zcomp" is for
-   * "tune_compressor" and the value can be "zlib" for the Zlib raw compressor, "def" for the
-   * Zlib deflate compressor, "gz" for the Zlib gzip compressor, or "arc" for the Arcfour cipher.
-   * "erstrm" and "ervbs" are for "tune_error_reporter" and the formar value can be "stdout" or
-   * "stderr" and the latter value can be "true" or "false".  "zkey" specifies the cipher key of
-   * the compressor.  "psiz" is for "tune_page".  "rcomp" is for "tune_comparator" and the value
-   * can be "lex" for the lexical comparator or "dec" for the decimal comparator.  "pccap" is for
-   * "tune_page_cache".  Every opened database must be closed by the PolyDB::close method when it
-   * is no longer in use.  It is not allowed for two or more database objects in the same process
-   * to keep their connections to the same database file at the same time.
+   * @note The tuning parameter "opts" is for the original "tune_options" and the value can
+   * contain "s" for the small option, "l" for the linear option, and "c" for the compress
+   * option.  "bnum" corresponds to "tune_bucket".  "zcomp" is for "tune_compressor" and the
+   * value can be "zlib" for the ZLIB raw compressor, "def" for the ZLIB deflate compressor,
+   * "gz" for the ZLIB gzip compressor, "lzo" for the LZO compressor, "lzma" for the LZMA
+   * compressor, or "arc" for the Arcfour cipher.  "erstrm" and "ervbs" are for
+   * "tune_error_reporter" and the formar value can be "stdout" or "stderr" and the latter value
+   * can be "true" or "false".  "zkey" specifies the cipher key of the compressor.  "capcount"
+   * is for "cap_count".  "capsize" is for "cap_size".  "psiz" is for "tune_page".  "rcomp" is
+   * for "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for
+   * the decimal comparator.  "pccap" is for "tune_page_cache".  "apow" is for "tune_alignment".
+   * "fpow" is for "tune_fbp".  "msiz" is for "tune_map".  "dfunit" is for "tune_defrag".
+   * Every opened database must be closed by the PolyDB::close method when it is no longer in
+   * use.  It is not allowed for two or more database objects in the same process to keep their
+   * connections to the same database file at the same time.
    */
   bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
     _assert_(true);
@@ -293,14 +328,14 @@ public:
     bool tcompress = false;
     int64_t msiz = -1;
     int64_t dfunit = -1;
-    Compressor *zcomp = NULL;
+    Compressor* zcomp = NULL;
     int64_t psiz = -1;
-    Comparator *rcomp = NULL;
+    Comparator* rcomp = NULL;
     int64_t pccap = 0;
     std::ostream* erstrm = NULL;
     bool ervbs = false;
     std::string zkey = "";
-    ArcfourCompressor *arccomp = NULL;
+    ArcfourCompressor* arccomp = NULL;
     std::vector<std::string>::iterator it = elems.begin();
     std::vector<std::string>::iterator itend = elems.end();
     if (it != itend) {
@@ -316,6 +351,8 @@ public:
       type = TYPEPTREE;
     } else if (!std::strcmp(fstr, "*")) {
       type = TYPECACHE;
+    } else if (!std::strcmp(fstr, "%")) {
+      type = TYPEGRASS;
     } else {
       pv = std::strrchr(fstr, File::EXTCHR);
       if (pv) {
@@ -326,6 +363,8 @@ public:
           type = TYPETREE;
         } else if (!std::strcmp(pv, "kcd") || !std::strcmp(pv, "ddb")) {
           type = TYPEDIR;
+        } else if (!std::strcmp(pv, "kcf") || !std::strcmp(pv, "fdb")) {
+          type = TYPEFOREST;
         }
       }
     }
@@ -341,6 +380,8 @@ public:
             type = TYPEPTREE;
           } else if (!std::strcmp(value, "*") || !std::strcmp(value, "cache")) {
             type = TYPECACHE;
+          } else if (!std::strcmp(value, "%") || !std::strcmp(value, "grass")) {
+            type = TYPEGRASS;
           } else if (!std::strcmp(value, "kch") || !std::strcmp(value, "hdb") ||
                      !std::strcmp(value, "hash")) {
             type = TYPEHASH;
@@ -348,8 +389,11 @@ public:
                      !std::strcmp(value, "tree")) {
             type = TYPETREE;
           } else if (!std::strcmp(value, "kcd") || !std::strcmp(value, "ddb") ||
-                     !std::strcmp(value, "dir")) {
+                     !std::strcmp(value, "dir") || !std::strcmp(value, "directory")) {
             type = TYPEDIR;
+          } else if (!std::strcmp(value, "kcf") || !std::strcmp(value, "fdb") ||
+                     !std::strcmp(value, "for") || !std::strcmp(value, "forest")) {
+            type = TYPEFOREST;
           }
         } else if (!std::strcmp(key, "bnum") || !std::strcmp(key, "buckets")) {
           bnum = atoix(value);
@@ -374,13 +418,27 @@ public:
           zcomp = NULL;
           arccomp = NULL;
           if (!std::strcmp(value, "zlib") || !std::strcmp(value, "raw")) {
-            zcomp = new ZlibCompressor<Zlib::RAW>;
+            zcomp = new ZLIBCompressor<ZLIB::RAW>;
           } else if (!std::strcmp(value, "def") || !std::strcmp(value, "deflate")) {
-            zcomp = new ZlibCompressor<Zlib::DEFLATE>;
+            zcomp = new ZLIBCompressor<ZLIB::DEFLATE>;
           } else if (!std::strcmp(value, "gz") || !std::strcmp(value, "gzip")) {
-            zcomp = new ZlibCompressor<Zlib::GZIP>;
+            zcomp = new ZLIBCompressor<ZLIB::GZIP>;
+          } else if (!std::strcmp(value, "lzo") || !std::strcmp(value, "oz")) {
+            zcomp = new LZOCompressor<LZO::RAW>;
+          } else if (!std::strcmp(value, "lzocrc") || !std::strcmp(value, "ozcrc")) {
+            zcomp = new LZOCompressor<LZO::CRC>;
+          } else if (!std::strcmp(value, "lzma") || !std::strcmp(value, "xz")) {
+            zcomp = new LZMACompressor<LZMA::RAW>;
+          } else if (!std::strcmp(value, "lzmacrc") || !std::strcmp(value, "xzcrc")) {
+            zcomp = new LZMACompressor<LZMA::CRC>;
+          } else if (!std::strcmp(value, "lzmasha") || !std::strcmp(value, "xzsha")) {
+            zcomp = new LZMACompressor<LZMA::SHA>;
           } else if (!std::strcmp(value, "arc") || !std::strcmp(value, "rc4")) {
             arccomp = new ArcfourCompressor();
+            zcomp = arccomp;
+          } else if (!std::strcmp(value, "arcz") || !std::strcmp(value, "rc4z")) {
+            arccomp = new ArcfourCompressor();
+            arccomp->set_compressor(&ZLIBRAWCOMP);
             zcomp = arccomp;
           }
         } else if (!std::strcmp(key, "psiz") || !std::strcmp(key, "page")) {
@@ -415,7 +473,7 @@ public:
       zcomp_ = zcomp;
       tcompress = true;
     }
-    FileDB *db;
+    BasicDB *db;
     switch (type) {
       default: {
         set_error(Error::INVALID, "unknown database type");
@@ -432,11 +490,30 @@ public:
         break;
       }
       case TYPECACHE: {
+        int8_t opts = 0;
+        if (tcompress) opts |= CacheDB::TCOMPRESS;
         CacheDB* cdb = new CacheDB();
+        if (opts > 0) cdb->tune_options(opts);
         if (bnum > 0) cdb->tune_buckets(bnum);
+        if (zcomp) cdb->tune_compressor(zcomp);
         if (capcount > 0) cdb->cap_count(capcount);
         if (capsize > 0) cdb->cap_size(capsize);
+        if (erstrm) cdb->tune_error_reporter(erstrm, ervbs);
         db = cdb;
+        break;
+      }
+      case TYPEGRASS: {
+        int8_t opts = 0;
+        if (tcompress) opts |= GrassDB::TCOMPRESS;
+        GrassDB* gdb = new GrassDB();
+        if (opts > 0) gdb->tune_options(opts);
+        if (bnum > 0) gdb->tune_buckets(bnum);
+        if (psiz > 0) gdb->tune_page(psiz);
+        if (zcomp) gdb->tune_compressor(zcomp);
+        if (pccap > 0) gdb->tune_page_cache(pccap);
+        if (rcomp) gdb->tune_comparator(rcomp);
+        if (erstrm) gdb->tune_error_reporter(erstrm, ervbs);
+        db = gdb;
         break;
       }
       case TYPEHASH: {
@@ -483,6 +560,20 @@ public:
         if (opts > 0) ddb->tune_options(opts);
         if (zcomp) ddb->tune_compressor(zcomp);
         db = ddb;
+        break;
+      }
+      case TYPEFOREST: {
+        int8_t opts = 0;
+        if (tcompress) opts |= TreeDB::TCOMPRESS;
+        ForestDB* fdb = new ForestDB();
+        if (opts > 0) fdb->tune_options(opts);
+        if (bnum > 0) fdb->tune_buckets(bnum);
+        if (psiz > 0) fdb->tune_page(psiz);
+        if (zcomp) fdb->tune_compressor(zcomp);
+        if (pccap > 0) fdb->tune_page_cache(pccap);
+        if (rcomp) fdb->tune_comparator(rcomp);
+        if (erstrm) fdb->tune_error_reporter(erstrm, ervbs);
+        db = fdb;
         break;
       }
     }
@@ -657,7 +748,7 @@ public:
    * Reveal the inner database object.
    * @return the inner database object, or NULL on failure.
    */
-  FileDB* reveal_inner_db() {
+  BasicDB* reveal_inner_db() {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
@@ -673,7 +764,7 @@ private:
   /** The database type. */
   Type type_;
   /** The internal database. */
-  FileDB* db_;
+  BasicDB* db_;
   /** The last happened error. */
   TSD<Error> error_;
   /** The custom compressor. */

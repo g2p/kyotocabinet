@@ -1,5 +1,5 @@
 /*************************************************************************************************
- * Directory database
+ * Directory hash database
  *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of

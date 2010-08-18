@@ -24,6 +24,7 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcplantdb.h>
 
 namespace kyotocabinet {                 // common namespace
 
@@ -79,7 +80,7 @@ const char* HDBTMPPATHEXT = "tmpkch";    ///< extension of the temporary file
  * forbidden for multible database objects in a process to open the same database at the same
  * time.
  */
-class HashDB : public FileDB {
+class HashDB : public BasicDB {
 public:
   class Cursor;
 private:
@@ -88,7 +89,7 @@ private:
   struct FreeBlockComparator;
   class Repeater;
   class Transactor;
-  friend class TreeDB;
+  friend class PlantDB<HashDB, BasicDB::TYPETREE>;
   /** An alias of set of free blocks. */
   typedef std::set<FreeBlock> FBP;
   /** An alias of list of cursors. */
@@ -97,7 +98,7 @@ public:
   /**
    * Cursor to indicate a record.
    */
-  class Cursor : public FileDB::Cursor {
+  class Cursor : public BasicDB::Cursor {
     friend class HashDB;
   public:
     /**
@@ -323,6 +324,21 @@ public:
       return jump(key.c_str(), key.size());
     }
     /**
+     * Jump the cursor to the last record.
+     * @return true on success, or false on failure.
+     * @note This is a dummy implementation for compatibility.
+     */
+    bool jump_last() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, true);
+      if (db_->omode_ == 0) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      db_->set_error(Error::NOIMPL, "not implemented");
+      return false;
+    }
+    /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
@@ -346,6 +362,21 @@ public:
         err = true;
       }
       return !err;
+    }
+    /**
+     * Step the cursor to the previous record.
+     * @return true on success, or false on failure.
+     * @note This is a dummy implementation for compatibility.
+     */
+    bool step_back() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, true);
+      if (db_->omode_ == 0) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      db_->set_error(Error::NOIMPL, "not implemented");
+      return false;
     }
     /**
      * Get the database object.
@@ -420,7 +451,7 @@ public:
     mlock_(), rlock_(), flock_(), atlock_(), error_(), erstrm_(NULL), ervbs_(false),
     omode_(0), writer_(false), autotran_(false), autosync_(false), reorg_(false), trim_(false),
     file_(), fbp_(), curs_(), path_(""),
-    libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEHASH),
+    libver_(0), librev_(0), fmtver_(0), chksum_(0), type_(TYPEHASH),
     apow_(HDBDEFAPOW), fpow_(HDBDEFFPOW), opts_(0), bnum_(HDBDEFBNUM),
     flags_(0), flagopen_(false), count_(0), lsiz_(0), psiz_(0), opaque_(),
     msiz_(HDBDEFMSIZ), dfunit_(0), embcomp_(&ZLIBRAWCOMP),
@@ -588,6 +619,9 @@ public:
     if (file_.recovered()) report(__FILE__, __LINE__, "info", "recovered by the WAL file");
     if ((mode & OWRITER) && file_.size() < 1) {
       calc_meta();
+      libver_ = LIBVER;
+      librev_ = LIBREV;
+      fmtver_ = FMTVER;
       chksum_ = calc_checksum();
       lsiz_ = roff_;
       if (!file_.truncate(lsiz_)) {
@@ -825,6 +859,8 @@ public:
     }
     fbp_.clear();
     bool err = false;
+    reorg_ = false;
+    trim_ = false;
     flags_ = 0;
     flagopen_ = false;
     count_ = 0;
@@ -891,7 +927,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
-    (*strmap)["type"] = "HashDB";
+    (*strmap)["type"] = strprintf("%d", (int)TYPEHASH);
     (*strmap)["realtype"] = strprintf("%u", type_);
     (*strmap)["path"] = path_;
     (*strmap)["libver"] = strprintf("%u", libver_);
@@ -909,6 +945,9 @@ public:
     (*strmap)["realsize"] = strprintf("%lld", (long long)file_.size());
     (*strmap)["recovered"] = strprintf("%d", file_.recovered());
     (*strmap)["reorganized"] = strprintf("%d", reorg_);
+    (*strmap)["trimmed"] = strprintf("%d", trim_);
+    if (strmap->count("opaque") > 0)
+      (*strmap)["opaque"] = std::string(opaque_, sizeof(opaque_));
     if (strmap->count("fbpnum_used") > 0) {
       if (writer_) {
         (*strmap)["fbpnum_used"] = strprintf("%lld", (long long)fbp_.size());
@@ -925,8 +964,6 @@ public:
       }
       (*strmap)["bnum_used"] = strprintf("%lld", (long long)cnt);
     }
-    if (strmap->count("opaque") > 0)
-      (*strmap)["opaque"] = std::string(opaque_, sizeof(opaque_));
     (*strmap)["count"] = strprintf("%lld", (long long)count_);
     (*strmap)["size"] = strprintf("%lld", (long long)lsiz_);
     return true;
@@ -1089,6 +1126,10 @@ public:
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return false;
+    }
+    if (!writer_) {
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
@@ -1349,7 +1390,7 @@ protected:
    * Get the data compressor.
    * @return the data compressor, or NULL on failure.
    */
-  Compressor *comp() {
+  Compressor* comp() {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
@@ -2111,10 +2152,10 @@ private:
             if (dest == &file_ || dest->open(path, File::OWRITER | File::ONOLOCK, 0)) {
               int64_t off = 0;
               int64_t size = src.size();
-              char buf[HDBIOBUFSIZ*4];
+              char buf[HDBIOBUFSIZ*8];
               while (off < size) {
-                int32_t psiz = size - off;
-                if (psiz > (int32_t)sizeof(buf)) psiz = sizeof(buf);
+                int64_t psiz = size - off;
+                if (psiz > (int64_t)sizeof(buf)) psiz = sizeof(buf);
                 if (src.read(off, buf, psiz)) {
                   if (!dest->write(off, buf, psiz)) {
                     set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
@@ -3176,7 +3217,7 @@ private:
   /** The unit step number of auto defragmentation. */
   int64_t dfunit_;
   /** The embedded data compressor. */
-  Compressor *embcomp_;
+  Compressor* embcomp_;
   /** The alignment of records. */
   size_t align_;
   /** The number of elements of the free block pool. */
@@ -3204,6 +3245,10 @@ private:
   /** The escaped free block pool for transaction. */
   FBP trfbp_;
 };
+
+
+/** An alias of the file tree database. */
+typedef PlantDB<HashDB, BasicDB::TYPETREE> TreeDB;
 
 
 }                                        // common namespace

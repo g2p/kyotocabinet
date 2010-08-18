@@ -24,6 +24,7 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcplantdb.h>
 
 namespace kyotocabinet {                 // common namespace
 
@@ -32,7 +33,8 @@ namespace kyotocabinet {                 // common namespace
  * Constants for implementation.
  */
 namespace {
-const size_t PDBBNUM = 1048583LL;        ///< bucket number of hash table
+const size_t PDBHASHBNUM = 1048583LL;    ///< bucket number of hash table
+const size_t PDBOPAQUESIZ = 16;          ///< size of the opaque buffer
 }
 
 
@@ -54,38 +56,36 @@ template <class STRMAP>
 void map_tune(STRMAP* map) {}
 template <>
 void map_tune(StringHashMap* map) {
-  map->rehash(PDBBNUM);
+  map->rehash(PDBHASHBNUM);
   map->max_load_factor(FLT_MAX);
 }
-template <class STRMAP>
-FileDB::Type map_type(STRMAP* map) {
-  return FileDB::TYPEPMISC;
+template <class ITER>
+bool iter_back(ITER* itp) {
+  return false;
 }
 template <>
-FileDB::Type map_type(StringHashMap* map) {
-  return FileDB::TYPEPHASH;
-}
-template <>
-FileDB::Type map_type(StringTreeMap* map) {
-  return FileDB::TYPEPTREE;
+bool iter_back(StringTreeMap::iterator* itp) {
+  --(*itp);
+  return true;
 }
 }
 
 
 /**
- * Prototype implementation of file database with STL.
- * @param STRMAP a map compatible class of STL.
+ * Prototype implementation of database with STL.
+ * @param STRMAP a class compatible with the map class of STL.
+ * @param DBTYPE the database type number of the class.
  * @note This class template is a template for concrete classes which wrap data structures
  * compatible with std::map.  Template instance classes can be inherited but overwriting methods
  * is forbidden.  The class ProtoHashDB is the instance using std::unordered_map.  The class
  * ProtoTreeDB is the instance using std::map.  Before every database operation, it is necessary
- * to call the CacheDB::open method in order to open a database file and connect the database
+ * to call the BasicDB::open method in order to open a database file and connect the database
  * object to it.  To avoid data missing or corruption, it is important to close every database
- * file by the CacheDB::close method when the database is no longer in use.  It is forbidden for
+ * file by the BasicDB::close method when the database is no longer in use.  It is forbidden for
  * multible database objects in a process to open the same database at the same time.
  */
-template <class STRMAP>
-class ProtoDB : public FileDB {
+template <class STRMAP, uint8_t DBTYPE>
+class ProtoDB : public BasicDB {
 public:
   class Cursor;
 private:
@@ -98,7 +98,7 @@ public:
   /**
    * Cursor to indicate a record.
    */
-  class Cursor : public FileDB::Cursor {
+  class Cursor : public BasicDB::Cursor {
     friend class ProtoDB;
   public:
     /**
@@ -226,6 +226,28 @@ public:
       return jump(key.c_str(), key.size());
     }
     /**
+     * Jump the cursor to the last record.
+     * @return true on success, or false on failure.
+     */
+    bool jump_last() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, true);
+      if (db_->omode_ == 0) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      it_ = db_->recs_.end();
+      if (it_ == db_->recs_.begin()) {
+        db_->set_error(Error::NOREC, "no record");
+        return false;
+      }
+      if (!iter_back(&it_)) {
+        db_->set_error(Error::NOIMPL, "not implemented");
+        return false;
+      }
+      return true;
+    }
+    /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
@@ -241,6 +263,32 @@ public:
         return false;
       }
       it_++;
+      if (it_ == db_->recs_.end()) {
+        db_->set_error(Error::NOREC, "no record");
+        return false;
+      }
+      return true;
+    }
+    /**
+     * Step the cursor to the previous record.
+     * @return true on success, or false on failure.
+     */
+    bool step_back() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, true);
+      if (db_->omode_ == 0) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      if (it_ == db_->recs_.begin()) {
+        db_->set_error(Error::NOREC, "no record");
+        it_ = db_->recs_.end();
+        return false;
+      }
+      if (!iter_back(&it_)) {
+        db_->set_error(Error::NOIMPL, "not implemented");
+        return false;
+      }
       return true;
     }
     /**
@@ -265,7 +313,8 @@ public:
    * Default constructor.
    */
   explicit ProtoDB() : mlock_(), error_(), omode_(0), recs_(),
-                       curs_(), path_(""), size_(0), tran_(false), trlogs_(), trsize_(0) {
+                       curs_(), path_(""), size_(0), opaque_(),
+                       tran_(false), trlogs_(), trsize_(0) {
     _assert_(true);
     map_tune(&recs_);
   }
@@ -439,19 +488,19 @@ public:
   /**
    * Open a database file.
    * @param path the path of a database file.
-   * @param mode the connection mode.  FileDB::OWRITER as a writer, FileDB::OREADER as a
-   * reader.  The following may be added to the writer mode by bitwise-or: FileDB::OCREATE,
-   * which means it creates a new database if the file does not exist, FileDB::OTRUNCATE, which
-   * means it creates a new database regardless if the file exists, FileDB::OAUTOTRAN, which
-   * means each updating operation is performed in implicit transaction, FileDB::OAUTOSYNC,
+   * @param mode the connection mode.  BasicDB::OWRITER as a writer, BasicDB::OREADER as a
+   * reader.  The following may be added to the writer mode by bitwise-or: BasicDB::OCREATE,
+   * which means it creates a new database if the file does not exist, BasicDB::OTRUNCATE, which
+   * means it creates a new database regardless if the file exists, BasicDB::OAUTOTRAN, which
+   * means each updating operation is performed in implicit transaction, BasicDB::OAUTOSYNC,
    * which means each updating operation is followed by implicit synchronization with the file
    * system.  The following may be added to both of the reader mode and the writer mode by
-   * bitwise-or: FileDB::ONOLOCK, which means it opens the database file without file locking,
-   * FileDB::OTRYLOCK, which means locking is performed without blocking, FileDB::ONOREPAIR,
+   * bitwise-or: BasicDB::ONOLOCK, which means it opens the database file without file locking,
+   * BasicDB::OTRYLOCK, which means locking is performed without blocking, BasicDB::ONOREPAIR,
    * which means the database file is not repaired implicitly even if file destruction is
    * detected.
    * @return true on success, or false on failure.
-   * @note Every opened database must be closed by the FileDB::close method when it is no
+   * @note Every opened database must be closed by the BasicDB::close method when it is no
    * longer in use.  It is not allowed for two or more database objects in the same process to
    * keep their connections to the same database file at the same time.
    */
@@ -464,6 +513,7 @@ public:
     }
     omode_ = mode;
     path_.append(path);
+    std::memset(opaque_, 0, sizeof(opaque_));
     return true;
   }
   /**
@@ -641,6 +691,7 @@ public:
         cit++;
       }
     }
+    std::memset(opaque_, 0, sizeof(opaque_));
     return true;
   }
   /**
@@ -694,9 +745,11 @@ public:
       set_error(Error::INVALID, "not opened");
       return false;
     }
-    (*strmap)["type"] = "ProtoDB";
-    (*strmap)["realtype"] = strprintf("%u", (unsigned)map_type(&recs_));
+    (*strmap)["type"] = strprintf("%u", (unsigned)DBTYPE);
+    (*strmap)["realtype"] = strprintf("%u", (unsigned)DBTYPE);
     (*strmap)["path"] = path_;
+    if (strmap->count("opaque") > 0)
+      (*strmap)["opaque"] = std::string(opaque_, sizeof(opaque_));
     (*strmap)["count"] = strprintf("%lld", (long long)recs_.size());
     (*strmap)["size"] = strprintf("%lld", (long long)size_);
     return true;
@@ -711,6 +764,36 @@ public:
     _assert_(true);
     return new Cursor(this);
   }
+  /**
+   * Get the opaque data.
+   * @return the pointer to the opaque data region, whose size is 16 bytes.
+   */
+  char* opaque() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(Error::INVALID, "not opened");
+      return NULL;
+    }
+    return opaque_;
+  }
+  /**
+   * Synchronize the opaque data.
+   * @return true on success, or false on failure.
+   */
+  bool synchronize_opaque() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ == 0) {
+      set_error(Error::INVALID, "not opened");
+      return false;
+    }
+    if (!(omode_ & OWRITER)) {
+      set_error(Error::NOPERM, "permission denied");
+      return false;
+    }
+    return true;
+  }
 private:
   /**
    * Transaction log.
@@ -721,9 +804,13 @@ private:
     std::string value;                   ///< old value
     /** constructor for a full record */
     explicit TranLog(const std::string& pkey, const std::string& pvalue) :
-      full(true), key(pkey), value(pvalue) {}
+      full(true), key(pkey), value(pvalue) {
+      _assert_(true);
+    }
     /** constructor for an empty record */
-    explicit TranLog(const std::string& pkey) : full(false), key(pkey) {}
+    explicit TranLog(const std::string& pkey) : full(false), key(pkey) {
+      _assert_(true);
+    }
   };
   /** Dummy constructor to forbid the use. */
   ProtoDB(const ProtoDB&);
@@ -743,6 +830,8 @@ private:
   std::string path_;
   /** The total size of records. */
   int64_t size_;
+  /** The opaque data. */
+  char opaque_[PDBOPAQUESIZ];
   /** The flag whether in transaction. */
   bool tran_;
   /** The transaction logs. */
@@ -753,11 +842,11 @@ private:
 
 
 /** An alias of the prototype hash database. */
-typedef ProtoDB<StringHashMap> ProtoHashDB;
+typedef ProtoDB<StringHashMap, BasicDB::TYPEPHASH> ProtoHashDB;
 
 
 /** An alias of the prototype tree database. */
-typedef ProtoDB<StringTreeMap> ProtoTreeDB;
+typedef ProtoDB<StringTreeMap, BasicDB::TYPEPTREE> ProtoTreeDB;
 
 
 }                                        // common namespace

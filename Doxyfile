@@ -6,7 +6,7 @@ PROJECT_NAME = "Kyoto Cabinet"
 OUTPUT_LANGUAGE = English
 EXTRACT_ALL = NO
 EXTRACT_PRIVATE = NO
-EXTRACT_STATIC = NO
+EXTRACT_STATIC = YES
 REPEAT_BRIEF = YES
 ALWAYS_DETAILED_SEC = YES
 SHOW_INCLUDE_FILES = YES
@@ -26,7 +26,7 @@ SEARCHENGINE = NO
 INPUT = .
 FILE_PATTERNS = overview kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h \
   kccompress.h kccompare.h kcmap.h \
-  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcdirdb.h kcpolydb.h kclangc.h
+  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
 RECURSIVE = NO
 
 

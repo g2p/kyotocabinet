@@ -90,25 +90,39 @@
 
 #endif
 
-#define _KC_VERSION    "1.1.1"
-#define _KC_LIBVER     3
-#define _KC_LIBREV     4
-#define _KC_FMTVER     4
-
-#if ! defined(_MYNOATOMIC)
-#if defined(_MYGCCATOMIC)
-#define _KC_GCCATOMIC
-#endif
-#endif
-
-#if ! defined(_MYNOZLIB)
-#define _KC_ZLIB
-#endif
+#define _KC_VERSION    "1.2.6"
+#define _KC_LIBVER     4
+#define _KC_LIBREV     7
+#define _KC_FMTVER     5
 
 #if defined(_MYBIGEND)
-#define _KC_BIGEND     true
+#define _KC_BIGEND     1
 #else
-#define _KC_BIGEND     false
+#define _KC_BIGEND     0
+#endif
+
+#if defined(_MYGCCATOMIC)
+#define _KC_GCCATOMIC  1
+#else
+#define _KC_GCCATOMIC  0
+#endif
+
+#if defined(_MYZLIB)
+#define _KC_ZLIB       1
+#else
+#define _KC_ZLIB       0
+#endif
+
+#if defined(_MYLZO)
+#define _KC_LZO        1
+#else
+#define _KC_LZO        0
+#endif
+
+#if defined(_MYLZMA)
+#define _KC_LZMA       1
+#else
+#define _KC_LZMA       0
 #endif
 
 

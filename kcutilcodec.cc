@@ -38,6 +38,7 @@ static int32_t procconf(int32_t mode);
 // main routine
 int main(int argc, char** argv) {
   g_progname = argv[0];
+  kc::setstdiobin();
   if (argc < 2) usage();
   int32_t rv = 0;
   if (!std::strcmp(argv[1], "hex")) {
@@ -67,7 +68,7 @@ static void usage() {
   eprintf("usage:\n");
   eprintf("  %s hex [-d] [file]\n", g_progname);
   eprintf("  %s ciph [-key str] [file]\n", g_progname);
-  eprintf("  %s comp [-def|-gz] [-d] [file]\n", g_progname);
+  eprintf("  %s comp [-def|-gz|-lzo|-lzma] [-d] [file]\n", g_progname);
   eprintf("  %s hash [-fnv|-path|-crc] [file]\n", g_progname);
   eprintf("  %s conf [-v|-i|-l|-p]\n", g_progname);
   eprintf("\n");
@@ -131,6 +132,10 @@ static int runcomp(int argc, char** argv) {
         mode = 1;
       } else if (!std::strcmp(argv[i], "-gz")) {
         mode = 2;
+      } else if (!std::strcmp(argv[i], "-lzo")) {
+        mode = 3;
+      } else if (!std::strcmp(argv[i], "-lzma")) {
+        mode = 4;
       } else if (!std::strcmp(argv[i], "-d")) {
         dec = true;
       } else {
@@ -337,15 +342,15 @@ static int32_t proccomp(const char* file, int32_t mode, bool dec) {
   bool err = false;
   switch (mode) {
     default: {
-      kc::Zlib::Mode zmode;
+      kc::ZLIB::Mode zmode;
       switch (mode) {
-        default: zmode = kc::Zlib::RAW; break;
-        case 1: zmode = kc::Zlib::DEFLATE; break;
-        case 2: zmode = kc::Zlib::GZIP; break;
+        default: zmode = kc::ZLIB::RAW; break;
+        case 1: zmode = kc::ZLIB::DEFLATE; break;
+        case 2: zmode = kc::ZLIB::GZIP; break;
       }
       if (dec) {
         size_t zsiz;
-        char* zbuf = kc::Zlib::decompress(ostr.data(), ostr.size(), &zsiz, zmode);
+        char* zbuf = kc::ZLIB::decompress(ostr.data(), ostr.size(), &zsiz, zmode);
         if (zbuf) {
           std::cout.write(zbuf, zsiz);
           delete[] zbuf;
@@ -355,7 +360,57 @@ static int32_t proccomp(const char* file, int32_t mode, bool dec) {
         }
       } else {
         size_t zsiz;
-        char* zbuf = kc::Zlib::compress(ostr.data(), ostr.size(), &zsiz, zmode);
+        char* zbuf = kc::ZLIB::compress(ostr.data(), ostr.size(), &zsiz, zmode);
+        if (zbuf) {
+          std::cout.write(zbuf, zsiz);
+          delete[] zbuf;
+        } else {
+          eprintf("%s: compression failed\n", g_progname);
+          err = true;
+        }
+      }
+      break;
+    }
+    case 3: {
+      kc::LZO::Mode zmode = kc::LZO::RAW;
+      if (dec) {
+        size_t zsiz;
+        char* zbuf = kc::LZO::decompress(ostr.data(), ostr.size(), &zsiz, zmode);
+        if (zbuf) {
+          std::cout.write(zbuf, zsiz);
+          delete[] zbuf;
+        } else {
+          eprintf("%s: decompression failed\n", g_progname);
+          err = true;
+        }
+      } else {
+        size_t zsiz;
+        char* zbuf = kc::LZO::compress(ostr.data(), ostr.size(), &zsiz, zmode);
+        if (zbuf) {
+          std::cout.write(zbuf, zsiz);
+          delete[] zbuf;
+        } else {
+          eprintf("%s: compression failed\n", g_progname);
+          err = true;
+        }
+      }
+      break;
+    }
+    case 4: {
+      kc::LZMA::Mode zmode = kc::LZMA::RAW;
+      if (dec) {
+        size_t zsiz;
+        char* zbuf = kc::LZMA::decompress(ostr.data(), ostr.size(), &zsiz, zmode);
+        if (zbuf) {
+          std::cout.write(zbuf, zsiz);
+          delete[] zbuf;
+        } else {
+          eprintf("%s: decompression failed\n", g_progname);
+          err = true;
+        }
+      } else {
+        size_t zsiz;
+        char* zbuf = kc::LZMA::compress(ostr.data(), ostr.size(), &zsiz, zmode);
         if (zbuf) {
           std::cout.write(zbuf, zsiz);
           delete[] zbuf;
@@ -415,7 +470,7 @@ static int32_t prochash(const char* file, int32_t mode) {
       break;
     }
     case 3: {
-      uint32_t hash = kc::Zlib::calculate_crc(ostr.data(), ostr.size());
+      uint32_t hash = kc::ZLIB::calculate_crc(ostr.data(), ostr.size());
       iprintf("%08x\n", (unsigned)hash);
       break;
     }
@@ -452,11 +507,18 @@ static int32_t procconf(int32_t mode) {
       iprintf("BIGEND: %d\n", kc::BIGEND);
       iprintf("CLOCKTICK: %d\n", kc::CLOCKTICK);
       iprintf("PAGESIZE: %d\n", kc::PAGESIZE);
+      iprintf("FEATURES: %s\n", kc::FEATURES);
       iprintf("TYPES: void*=%d short=%d int=%d long=%d long_long=%d size_t=%d"
               " float=%d double=%d long_double=%d\n",
               (int)sizeof(void*), (int)sizeof(short), (int)sizeof(int), (int)sizeof(long),
               (int)sizeof(long long), (int)sizeof(size_t),
               (int)sizeof(float), (int)sizeof(double), (int)sizeof(long double));
+      std::map<std::string, std::string> info;
+      kc::getsysinfo(&info);
+      if (info["mem_total"].size() > 0)
+        iprintf("MEMORY: total=%s free=%s cached=%s\n",
+                info["mem_total"].c_str(), info["mem_free"].c_str(),
+                info["mem_cached"].c_str());
       if (std::strcmp(_KC_PREFIX, "*")) {
         iprintf("prefix: %s\n", _KC_PREFIX);
         iprintf("includedir: %s\n", _KC_INCLUDEDIR);

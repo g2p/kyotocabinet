@@ -1,3 +1,81 @@
+2010-08-17  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcthread.cc (CondVar): Win32 support was added.
+
+	* kcdb.h (jump_last, step_back): new functions.
+
+	* kcplantdb.h (jump_last, step_back): new functions.
+
+	* kcutiltest.cc (runpara, procpara): parallel tests were added.
+
+	- Release: 1.2.6
+
+2010-08-07  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kccachedb.h (CacheDB::clear_slot): a bug related to transaction was fixed.
+
+	* kchashdb.h (HashDB::reorganize_file): a bug of overflow was fixed.
+
+	- Release: 1.2.5
+
+2010-08-06  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcutil.h (hashpath): variance was improved.
+
+	* kccompress.h (LZO::calculate_crc, LZMA::calculate_crc): new functions.
+
+	- Release: 1.2.4
+
+2010-08-01  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcutil.cc (getsysinfo): some information was added for Darwin and Win32.
+
+	* kcutil.cc (setstdiobin): new function.
+
+	* kccompress.h (LZO, LZMA): new classes.
+
+	* kcfile.cc (File::remove, File::rename): modified for Win32 virus checkers.
+
+	* kcpolydb.h (PolyDB::open): "zcomp=lzo" and "zcomp=lzma" were added.
+
+	- Release: 1.2.3
+
+2010-07-29  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcutil.cc (getsysinfo): new function.
+
+	* kccache.h (GrassDB): new class.
+
+	* kccachetest.cc: new file.
+
+	- Release: 1.2.2
+
+2010-07-28  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcompress.h (ArcfourComressor::ArcfourComressor): suppressed a warning.
+
+	* kccompress.h (ArcfourCompressor::set_compressor): new method.
+
+	* kcpolydb.h (PolyDB::open): "zcomp=arcz" was added.
+
+	* Makefile.in: now deals with an internal bug of GCC 4.2.1 on Mac OS X.
+
+	- Release: 1.2.1
+
+2010-07-26  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcdb.h (BasicDB): renamed from FileDB.
+
+	* kcplantdb.h: new file.
+
+	* kctreedb.h: removed.
+
+	* kchashdb.h (TreeDB): re-defined as a type alias.
+
+	* kcdirdb.h (ForestDB): new class as a type alias.
+
+	- Release: 1.2.0
+
 2010-07-24  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcutil.h (arccipher): new function.

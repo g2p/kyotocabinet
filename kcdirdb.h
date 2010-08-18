@@ -1,5 +1,5 @@
 /*************************************************************************************************
- * Directory database
+ * Directory hash database
  *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
@@ -24,6 +24,7 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcplantdb.h>
 
 namespace kyotocabinet {                 // common namespace
 
@@ -33,20 +34,23 @@ namespace kyotocabinet {                 // common namespace
  */
 namespace {
 const char* DDBMAGICFILE = "__KCDIR__";  ///< magic file of the directory
-const char* DDBCOMPFILE = "__comp__";    ///< compression file of the directory
+const char* DDBMETAFILE = "__meta__";    ///< meta data file of the directory
+const char* DDBOPAQUEFILE = "__opq__";   ///< opaque file of the directory
 const char* DDBATRANPREFIX = "_x";       ///< prefix of files for auto transaction
 const char DDBCHKSUMSEED[] = "__kyotocabinet__";  ///< seed of the module checksum
 const char DDBMAGICEOF[] = "_EOF_";      ///< magic data for the end of file
+const int64_t DDBMETABUFSIZ = 128;       ///< size of the meta data buffer
 const uint8_t DDBRECMAGIC = 0xcc;        ///< magic data for record
 const int32_t DDBRLOCKSLOT = 64;         ///< number of slots of the record lock
 const int32_t DDBRECUNITSIZ = 32;        ///< unit size of a record
+const size_t DDBOPAQUESIZ = 16;          ///< size of the opaque buffer
 const char* DDBWALPATHEXT = "wal";       ///< extension of the WAL directory
 const char* DDBTMPPATHEXT = "tmp";       ///< extension of the temporary directory
 }
 
 
 /**
- * Directory database.
+ * Directory hash database.
  * @note This class is a concrete class to operate a hash database in a directory.  This class
  * can be inherited but overwriting methods is forbidden.  Before every database operation, it is
  * necessary to call the TreeDB::open method in order to open a database file and connect the
@@ -55,11 +59,12 @@ const char* DDBTMPPATHEXT = "tmp";       ///< extension of the temporary directo
  * forbidden for multible database objects in a process to open the same database at the same
  * time.
  */
-class DirDB : public FileDB {
+class DirDB : public BasicDB {
 public:
   class Cursor;
 private:
   struct Record;
+  friend class PlantDB<DirDB, BasicDB::TYPEFOREST>;
   /** An alias of list of cursors. */
   typedef std::list<Cursor*> CursorList;
   /** An alias of vector of strings. */
@@ -68,7 +73,7 @@ public:
   /**
    * Cursor to indicate a record.
    */
-  class Cursor : public FileDB::Cursor {
+  class Cursor : public BasicDB::Cursor {
     friend class DirDB;
   public:
     /**
@@ -233,6 +238,21 @@ public:
       return jump(key.c_str(), key.size());
     }
     /**
+     * Jump the cursor to the last record.
+     * @return true on success, or false on failure.
+     * @note This is a dummy implementation for compatibility.
+     */
+    bool jump_last() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, true);
+      if (db_->omode_ == 0) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      db_->set_error(Error::NOIMPL, "not implemented");
+      return false;
+    }
+    /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
@@ -255,6 +275,21 @@ public:
         }
       } while (*name_.c_str() == *DDBMAGICFILE);
       return true;
+    }
+    /**
+     * Step the cursor to the previous record.
+     * @return true on success, or false on failure.
+     * @note This is a dummy implementation for compatibility.
+     */
+    bool step_back() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, true);
+      if (db_->omode_ == 0) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      db_->set_error(Error::NOIMPL, "not implemented");
+      return false;
     }
     /**
      * Get the database object.
@@ -295,15 +330,26 @@ public:
    * Tuning Options.
    */
   enum Option {
-    TCOMPRESS = 1 << 0                   ///< compress each record
+    TSMALL = 1 << 0,                     ///< dummy for compatibility
+    TLINEAR = 1 << 1,                    ///< dummy for compatibility
+    TCOMPRESS = 1 << 2                   ///< compress each record
+  };
+  /**
+   * Status flags.
+   */
+  enum Flag {
+    FOPEN = 1 << 0,                      ///< dummy for compatibility
+    FFATAL = 1 << 1                      ///< dummy for compatibility
   };
   /**
    * Default constructor.
    */
   explicit DirDB() :
     mlock_(), rlock_(), error_(), erstrm_(NULL), ervbs_(false),
-    omode_(0), writer_(false), autotran_(false), autosync_(false), file_(), curs_(), path_(""),
-    opts_(0), count_(0), size_(0), embcomp_(&ZLIBRAWCOMP), comp_(NULL), compchk_(0),
+    omode_(0), writer_(false), autotran_(false), autosync_(false), recov_(false), reorg_(false),
+    file_(), curs_(), path_(""),
+    libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEDIR),
+    opts_(0), count_(0), size_(0), opaque_(), embcomp_(&ZLIBRAWCOMP), comp_(NULL),
     tran_(false), trhard_(false), trcount_(0), trsize_(0), walpath_(""), tmppath_("") {
     _assert_(true);
   }
@@ -427,6 +473,8 @@ public:
     writer_ = false;
     autotran_ = false;
     autosync_ = false;
+    recov_ = false;
+    reorg_ = false;
     uint32_t fmode = File::OREADER;
     if (mode & OWRITER) {
       writer_ = true;
@@ -443,13 +491,14 @@ public:
       psiz--;
     }
     const std::string& cpath = path.substr(0, psiz);
-    const std::string& metapath = cpath + File::PATHCHR + DDBMAGICFILE;
-    const std::string& comppath = cpath + File::PATHCHR + DDBCOMPFILE;
+    const std::string& magicpath = cpath + File::PATHCHR + DDBMAGICFILE;
+    const std::string& metapath = cpath + File::PATHCHR + DDBMETAFILE;
+    const std::string& opqpath = cpath + File::PATHCHR + DDBOPAQUEFILE;
     const std::string& walpath = cpath + File::EXTCHR + DDBWALPATHEXT;
     const std::string& tmppath = cpath + File::EXTCHR + DDBTMPPATHEXT;
     bool hot = false;
-    if (writer_ && (mode & OTRUNCATE) && File::status(metapath)) {
-      if (!file_.open(metapath, fmode)) {
+    if (writer_ && (mode & OTRUNCATE) && File::status(magicpath)) {
+      if (!file_.open(magicpath, fmode)) {
         set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
         return false;
       }
@@ -465,12 +514,16 @@ public:
         set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
         return false;
       }
-      const std::string& buf = format_meta(0, 0);
-      if (!File::write_file(metapath, buf.c_str(), buf.size())) {
+      const std::string& buf = format_magic(0, 0);
+      if (!File::write_file(magicpath, buf.c_str(), buf.size())) {
         set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
         return false;
       }
-      if (File::status(comppath) && !File::remove(comppath)) {
+      if (File::status(metapath) && !File::remove(metapath)) {
+        set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
+        return false;
+      }
+      if (File::status(opqpath) && !File::remove(opqpath)) {
         set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
         return false;
       }
@@ -482,11 +535,11 @@ public:
         set_error(__FILE__, __LINE__, Error::NOPERM, "invalid path (not directory)");
         return false;
       }
-      if (!File::status(metapath)) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data");
+      if (!File::status(magicpath)) {
+        set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data");
         return false;
       }
-      if (!file_.open(metapath, fmode)) {
+      if (!file_.open(magicpath, fmode)) {
         set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
         return false;
       }
@@ -496,7 +549,7 @@ public:
         set_error(__FILE__, __LINE__, Error::SYSTEM, "making a directory failed");
         return false;
       }
-      if (!file_.open(metapath, fmode)) {
+      if (!file_.open(magicpath, fmode)) {
         set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
         return false;
       }
@@ -507,19 +560,16 @@ public:
     if (hot) {
       count_ = 0;
       size_ = 0;
-      if (opts_ & TCOMPRESS) {
-        comp_ = embcomp_;
-        compchk_ = calc_comp_checksum();
-        const std::string& buf = strprintf("%u\n", (unsigned)compchk_);
-        if (!File::write_file(comppath, buf.c_str(), buf.size())) {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
-          file_.close();
-          return false;
-        }
-      } else {
-        comp_ = NULL;
-        compchk_ = 0;
+      comp_ = (opts_ & TCOMPRESS) ? embcomp_ : NULL;
+      libver_ = LIBVER;
+      librev_ = LIBREV;
+      fmtver_ = FMTVER;
+      chksum_ = calc_checksum();
+      if (!dump_meta(metapath)) {
+        file_.close();
+        return false;
       }
+      std::memset(opaque_, 0, sizeof(opaque_));
       if (autosync_ && !File::synchronize_whole()) {
         set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
         file_.close();
@@ -530,7 +580,7 @@ public:
         if (writer_) {
           file_.truncate(0);
         } else {
-          File::write_file(metapath, "", 0);
+          File::write_file(magicpath, "", 0);
           file_.refresh();
         }
         DirStream dir;
@@ -550,37 +600,32 @@ public:
           }
           dir.close();
           File::remove_directory(walpath);
+          recov_ = true;
           report(__FILE__, __LINE__, "info", "recovered by the WAL directory");
         }
       }
-      if (File::status(comppath)) {
-        opts_ |= TCOMPRESS;
-        comp_ = embcomp_;
-        compchk_ = calc_comp_checksum();
-        int64_t nsiz;
-        char* nbuf = File::read_file(comppath, &nsiz, NUMBUFSIZ);
-        if (nbuf) {
-          uint32_t chk = atoi(nbuf);
-          delete[] nbuf;
-          if (chk != compchk_) {
-            set_error(__FILE__, __LINE__, Error::INVALID, "invalid compression checksum");
-            file_.close();
-            return false;
-          }
-        } else {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, "reading a file failed");
-          file_.close();
-          return false;
-        }
+      if (!load_meta(metapath)) {
+        file_.close();
+        return false;
       }
-      if (!load_meta()) {
-        if (!calc_meta(cpath)) {
+      comp_ = (opts_ & TCOMPRESS) ? embcomp_ : NULL;
+      uint8_t chksum = calc_checksum();
+      if (chksum != chksum_) {
+        set_error(__FILE__, __LINE__, Error::INVALID, "invalid module checksum");
+        report(__FILE__, __LINE__, "info", "saved=%02X calculated=%02X",
+               (unsigned)chksum_, (unsigned)chksum);
+        file_.close();
+        return false;
+      }
+      if (!load_magic()) {
+        if (!calc_magic(cpath)) {
           file_.close();
           return false;
         }
+        reorg_ = true;
         if (!writer_ && !(mode & ONOLOCK)) {
-          const std::string& buf = format_meta(count_, size_);
-          if (!File::write_file(metapath, buf.c_str(), buf.size())) {
+          const std::string& buf = format_magic(count_, size_);
+          if (!File::write_file(magicpath, buf.c_str(), buf.size())) {
             set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
             file_.close();
             return false;
@@ -591,7 +636,7 @@ public:
             return false;
           }
         }
-        report(__FILE__, __LINE__, "info", "re-calculated meta data");
+        report(__FILE__, __LINE__, "info", "re-calculated magic data");
       }
     }
     if (writer_ && !file_.truncate(0)) {
@@ -612,6 +657,7 @@ public:
     tran_ = false;
     walpath_ = walpath;
     tmppath_ = tmppath;
+    load_opaque();
     return true;
   }
   /**
@@ -628,7 +674,10 @@ public:
     bool err = false;
     if (tran_ && !abort_transaction()) err = true;
     if (!disable_cursors()) err = true;
-    if (writer_ && !dump_meta()) err = true;
+    if (writer_) {
+      if (!dump_magic()) err = true;
+      if (!dump_opaque()) err = true;
+    }
     if (!file_.close()) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
       err = true;
@@ -798,6 +847,9 @@ public:
     } else {
       if (!remove_files(path_)) err = true;
     }
+    recov_ = false;
+    reorg_ = false;
+    std::memset(opaque_, 0, sizeof(opaque_));
     count_ = 0;
     size_ = 0;
     return !err;
@@ -853,11 +905,18 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
-    (*strmap)["type"] = "DirDB";
-    (*strmap)["realtype"] = strprintf("%u", (unsigned)TYPEDIR);
+    (*strmap)["type"] = strprintf("%d", (int)TYPEDIR);
+    (*strmap)["realtype"] = strprintf("%u", (unsigned)type_);
     (*strmap)["path"] = path_;
+    (*strmap)["libver"] = strprintf("%u", libver_);
+    (*strmap)["librev"] = strprintf("%u", librev_);
+    (*strmap)["fmtver"] = strprintf("%u", fmtver_);
+    (*strmap)["chksum"] = strprintf("%u", chksum_);
     (*strmap)["opts"] = strprintf("%u", opts_);
-    (*strmap)["compchk"] = strprintf("%u", (unsigned)compchk_);
+    (*strmap)["recovered"] = strprintf("%d", recov_);
+    (*strmap)["reorganized"] = strprintf("%d", reorg_);
+    if (strmap->count("opaque") > 0)
+      (*strmap)["opaque"] = std::string(opaque_, sizeof(opaque_));
     (*strmap)["count"] = strprintf("%lld", (long long)count_);
     (*strmap)["size"] = strprintf("%lld", (long long)size_impl());
     return true;
@@ -919,6 +978,38 @@ public:
     embcomp_ = comp;
     return true;
   }
+  /**
+   * Get the opaque data.
+   * @return the pointer to the opaque data region, whose size is 16 bytes.
+   */
+  char* opaque() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return NULL;
+    }
+    return opaque_;
+  }
+  /**
+   * Synchronize the opaque data.
+   * @return true on success, or false on failure.
+   */
+  bool synchronize_opaque() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return false;
+    }
+    if (!writer_) {
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      return false;
+    }
+    bool err = false;
+    if (!dump_opaque()) err = true;
+    return !err;
+  }
 protected:
   /**
    * Set the error information.
@@ -972,6 +1063,223 @@ protected:
     report(file, line, type, "%s=%s", name, hex);
     delete[] hex;
   }
+  /**
+   * Set the database type.
+   * @param type the database type.
+   * @return true on success, or false on failure.
+   */
+  bool tune_type(int8_t type) {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ != 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      return false;
+    }
+    type_ = type;
+    return true;
+  }
+  /**
+   * Get the library version.
+   * @return the library version, or 0 on failure.
+   */
+  uint8_t libver() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return libver_;
+  }
+  /**
+   * Get the library revision.
+   * @return the library revision, or 0 on failure.
+   */
+  uint8_t librev() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return librev_;
+  }
+  /**
+   * Get the format version.
+   * @return the format version, or 0 on failure.
+   */
+  uint8_t fmtver() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return fmtver_;
+  }
+  /**
+   * Get the module checksum.
+   * @return the module checksum, or 0 on failure.
+   */
+  uint8_t chksum() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return chksum_;
+  }
+  /**
+   * Get the database type.
+   * @return the database type, or 0 on failure.
+   */
+  uint8_t type() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return type_;
+  }
+  /**
+   * Get the options.
+   * @return the options, or 0 on failure.
+   */
+  uint8_t opts() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return opts_;
+  }
+  /**
+   * Get the data compressor.
+   * @return the data compressor, or NULL on failure.
+   */
+  Compressor* comp() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return NULL;
+    }
+    return comp_;
+  }
+  /**
+   * Check whether the database was recovered or not.
+   * @return true if recovered, or false if not.
+   */
+  bool recovered() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return false;
+    }
+    return recov_;
+  }
+  /**
+   * Check whether the database was reorganized or not.
+   * @return true if recovered, or false if not.
+   */
+  bool reorganized() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return false;
+    }
+    return reorg_;
+  }
+private:
+  /**
+   * Set the power of the alignment of record size.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool tune_alignment(int8_t apow) {
+    return true;
+  }
+  /**
+   * Set the power of the capacity of the free block pool.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool tune_fbp(int8_t fpow) {
+    return true;
+  }
+  /**
+   * Set the number of buckets of the hash table.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool tune_buckets(int64_t bnum) {
+    return true;
+  }
+  /**
+   * Set the size of the internal memory-mapped region.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool tune_map(int64_t msiz) {
+    return true;
+  }
+  /**
+   * Set the unit step number of auto defragmentation.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool tune_defrag(int64_t dfunit) {
+    return true;
+  }
+  /**
+   * Perform defragmentation of the file.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool defrag(int64_t step) {
+    return true;
+  }
+  /**
+   * Get the status flags.
+   * @note This is a dummy implementation for compatibility.
+   */
+  uint8_t flags() {
+    return 0;
+  }
+  /**
+   * Get the alignment power.
+   * @note This is a dummy implementation for compatibility.
+   */
+  uint8_t apow() {
+    return 0;
+  }
+  /**
+   * Get the free block pool power.
+   * @note This is a dummy implementation for compatibility.
+   */
+  uint8_t fpow() {
+    return 0;
+  }
+  /**
+   * Get the bucket number.
+   * @note This is a dummy implementation for compatibility.
+   */
+  int64_t bnum() {
+    return 1;
+  }
+  /**
+   * Get the size of the internal memory-mapped region.
+   * @note This is a dummy implementation for compatibility.
+   */
+  int64_t msiz() {
+    return 0;
+  }
+  /**
+   * Get the unit step number of auto defragmentation.
+   * @note This is a dummy implementation for compatibility.
+   */
+  int64_t dfunit() {
+    return 0;
+  }
 private:
   /**
    * Record data.
@@ -985,12 +1293,12 @@ private:
     size_t vsiz;                         ///< value size
   };
   /**
-   * Dump the meta data into the file.
+   * Dump the magic data into the file.
    * @return true on success, or false on failure.
    */
-  bool dump_meta() {
+  bool dump_magic() {
     _assert_(true);
-    const std::string& buf = format_meta(count_, size_);
+    const std::string& buf = format_magic(count_, size_);
     if (!file_.write(0, buf.c_str(), buf.size())) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
       return false;
@@ -998,17 +1306,17 @@ private:
     return true;
   }
   /**
-   * Format the meta data.
+   * Format the magic data.
    * @return the result string.
    */
-  std::string format_meta(int64_t count, int64_t size) {
+  std::string format_magic(int64_t count, int64_t size) {
     return strprintf("%lld\n%lld\n%s\n", (long long)count, (long long)size, DDBMAGICEOF);
   }
   /**
-   * Load the meta data from the file.
+   * Load the magic data from the file.
    * @return true on success, or false on failure.
    */
-  bool load_meta() {
+  bool load_magic() {
     _assert_(true);
     char buf[NUMBUFSIZ*3];
     size_t len = file_.size();
@@ -1031,11 +1339,11 @@ private:
     return true;
   }
   /**
-   * Calculate meta data.
+   * Calculate magic data.
    * @param cpath the path of the database file.
    * @return true on success, or false on failure.
    */
-  bool calc_meta(const std::string& cpath) {
+  bool calc_magic(const std::string& cpath) {
     _assert_(true);
     count_ = 0;
     size_ = 0;
@@ -1065,18 +1373,106 @@ private:
     return !err;
   }
   /**
-   * Calculate the compression checksum.
-   * @return the compression checksum.
+   * Calculate the module checksum.
+   * @return the module checksum.
    */
-  uint32_t calc_comp_checksum() {
+  uint8_t calc_checksum() {
     _assert_(true);
-    size_t zsiz;
-    char* zbuf = comp_->compress(DDBCHKSUMSEED, sizeof(DDBCHKSUMSEED) - 1, &zsiz);
-    if (!zbuf) return 0;
+    const char* kbuf = DDBCHKSUMSEED;
+    size_t ksiz = sizeof(DDBCHKSUMSEED) - 1;
+    char* zbuf = NULL;
+    size_t zsiz = 0;
+    if (comp_) {
+      zbuf = comp_->compress(kbuf, ksiz, &zsiz);
+      if (!zbuf) return 0;
+      kbuf = zbuf;
+      ksiz = zsiz;
+    }
     char name[NUMBUFSIZ];
-    uint32_t hash = hashpath(zbuf, zsiz, name);
+    uint32_t hash = hashpath(kbuf, ksiz, name);
+    hash += hashmurmur(name, std::strlen(name));
     delete[] zbuf;
     return hash;
+  }
+  /**
+   * Dump the meta data into the file.
+   * @param metapath the path of the meta data file.
+   * @return true on success, or false on failure.
+   */
+  bool dump_meta(const std::string& metapath) {
+    _assert_(true);
+    bool err = false;
+    char buf[DDBMETABUFSIZ];
+    char* wp = buf;
+    wp += std::sprintf(wp, "%u\n", libver_);
+    wp += std::sprintf(wp, "%u\n", librev_);
+    wp += std::sprintf(wp, "%u\n", fmtver_);
+    wp += std::sprintf(wp, "%u\n", chksum_);
+    wp += std::sprintf(wp, "%u\n", type_);
+    wp += std::sprintf(wp, "%u\n", opts_);
+    wp += std::sprintf(wp, "%s\n", DDBMAGICEOF);
+    if (!File::write_file(metapath, buf, wp - buf)) {
+      set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
+      err = true;
+    }
+    return !err;
+  }
+  /**
+   * Load the meta data from the file.
+   * @param metapath the path of the meta data file.
+   * @return true on success, or false on failure.
+   */
+  bool load_meta(const std::string& metapath) {
+    _assert_(true);
+    int64_t size;
+    char* buf = File::read_file(metapath, &size, DDBMETABUFSIZ);
+    if (!buf) {
+      set_error(__FILE__, __LINE__, Error::SYSTEM, "reading a file failed");
+      return false;
+    }
+    std::string str(buf, size);
+    delete[] buf;
+    std::vector<std::string> elems;
+    if (strsplit(str, '\n', &elems) < 7 || elems[6] != DDBMAGICEOF) {
+      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data file");
+      return false;
+    }
+    libver_ = atoi(elems[0].c_str());
+    librev_ = atoi(elems[1].c_str());
+    fmtver_ = atoi(elems[2].c_str());
+    chksum_ = atoi(elems[3].c_str());
+    type_ = atoi(elems[4].c_str());
+    opts_ = atoi(elems[5].c_str());
+    return true;
+  }
+  /**
+   * Dump the opaque data into the file.
+   * @return true on success, or false on failure.
+   */
+  bool dump_opaque() {
+    _assert_(true);
+    bool err = false;
+    const std::string& opath = path_ + File::PATHCHR + DDBOPAQUEFILE;
+    if (!File::write_file(opath, opaque_, sizeof(opaque_))) {
+      set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
+      err = true;
+    }
+    return !err;
+  }
+  /**
+   * Load the opaque data from the file.
+   * @return true on success, or false on failure.
+   */
+  void load_opaque() {
+    _assert_(true);
+    std::memset(opaque_, 0, sizeof(opaque_));
+    const std::string& opath = path_ + File::PATHCHR + DDBOPAQUEFILE;
+    int64_t size;
+    char* buf = File::read_file(opath, &size, sizeof(opaque_));
+    if (buf) {
+      std::memcpy(opaque_, buf, size);
+      delete[] buf;
+    }
   }
   /**
    * Remove inner files.
@@ -1436,7 +1832,7 @@ private:
   bool synchronize_impl(bool hard, FileProcessor* proc) {
     _assert_(true);
     bool err = false;
-    if (!dump_meta()) err = true;
+    if (!dump_magic()) err = true;
     if (hard && !File::synchronize_whole()) {
       set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
       err = true;
@@ -1577,25 +1973,39 @@ private:
   bool autotran_;
   /** The flag for auto synchronization. */
   bool autosync_;
-  /** The file for meta data. */
+  /** The flag for recovered. */
+  bool recov_;
+  /** The flag for reorganized. */
+  bool reorg_;
+  /** The file for magic data. */
   File file_;
   /** The cursor objects. */
   CursorList curs_;
   /** The path of the database file. */
   std::string path_;
+  /** The library version. */
+  uint8_t libver_;
+  /** The library revision. */
+  uint8_t librev_;
+  /** The format revision. */
+  uint8_t fmtver_;
+  /** The module checksum. */
+  uint8_t chksum_;
+  /** The database type. */
+  uint8_t type_;
   /** The options. */
   uint8_t opts_;
   /** The record number. */
   AtomicInt64 count_;
   /** The total size of records. */
   AtomicInt64 size_;
+  /** The opaque data. */
+  char opaque_[DDBOPAQUESIZ];
   /** The embedded data compressor. */
   Compressor* embcomp_;
   /** The data compressor. */
   Compressor* comp_;
   /** The compression checksum. */
-  uint32_t compchk_;
-  /** The flag whether in transaction. */
   bool tran_;
   /** The flag whether hard transaction. */
   bool trhard_;
@@ -1608,6 +2018,10 @@ private:
   /** The temporary directory. */
   std::string tmppath_;
 };
+
+
+/** An alias of the directory tree database. */
+typedef PlantDB<DirDB, BasicDB::TYPEFOREST> ForestDB;
 
 
 }                                        // common namespace

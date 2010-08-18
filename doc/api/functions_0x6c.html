@@ -74,32 +74,36 @@ Here is a list of all documented class members with links to the class documenta
 : <a class="el" href="classkyotocabinet_1_1LinkedHashMap.html#a899f05330cf72e1b907beb348d4befad">kyotocabinet::LinkedHashMap&lt; KEY, VALUE, HASH, EQUALTO &gt;</a>
 </li>
 <li>librev()
-: <a class="el" href="classkyotocabinet_1_1HashDB.html#a1359d7918dcb1bd3c6d39df6fe8bffc2">kyotocabinet::HashDB</a>
+: <a class="el" href="classkyotocabinet_1_1DirDB.html#ad8a788141fd029138019749f9384bbf5">kyotocabinet::DirDB</a>
+, <a class="el" href="classkyotocabinet_1_1HashDB.html#a1359d7918dcb1bd3c6d39df6fe8bffc2">kyotocabinet::HashDB</a>
+, <a class="el" href="classkyotocabinet_1_1CacheDB.html#abf4ae56bd3fefcd5bc8c467effe63b9d">kyotocabinet::CacheDB</a>
 </li>
 <li>libver()
 : <a class="el" href="classkyotocabinet_1_1HashDB.html#a6cd389211dab81ceb9b53bd7e8d028aa">kyotocabinet::HashDB</a>
+, <a class="el" href="classkyotocabinet_1_1CacheDB.html#abdd2dae45cd11ee1fcbf9bbb9115e8f2">kyotocabinet::CacheDB</a>
+, <a class="el" href="classkyotocabinet_1_1DirDB.html#a512c05ef64273c673271343924b641ed">kyotocabinet::DirDB</a>
 </li>
 <li>LinkedHashMap()
 : <a class="el" href="classkyotocabinet_1_1LinkedHashMap.html#a342ffd240c98f2d30427a0b4483d290c">kyotocabinet::LinkedHashMap&lt; KEY, VALUE, HASH, EQUALTO &gt;</a>
 </li>
 <li>load_snapshot()
-: <a class="el" href="classkyotocabinet_1_1FileDB.html#a6596e972c14133a7460230555d44a9b3">kyotocabinet::FileDB</a>
+: <a class="el" href="classkyotocabinet_1_1BasicDB.html#ac5859d441499888396b3a10c094abdc8">kyotocabinet::BasicDB</a>
 </li>
 <li>lock()
-: <a class="el" href="classkyotocabinet_1_1Mutex.html#a96d6f35b0801edc5223458f7239f439b">kyotocabinet::Mutex</a>
+: <a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#ae7f5a600b0c85ba4bdd5161e4318fc64">kyotocabinet::SlottedSpinLock&lt; SLOTNUM &gt;</a>
+, <a class="el" href="classkyotocabinet_1_1Mutex.html#a96d6f35b0801edc5223458f7239f439b">kyotocabinet::Mutex</a>
 , <a class="el" href="classkyotocabinet_1_1SlottedMutex.html#aa2988dd1b67cebfe79d157950824f1db">kyotocabinet::SlottedMutex&lt; SLOTNUM &gt;</a>
 , <a class="el" href="classkyotocabinet_1_1SpinLock.html#abe6a24664c6ccf898f57dabe855a79cc">kyotocabinet::SpinLock</a>
-, <a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#ae7f5a600b0c85ba4bdd5161e4318fc64">kyotocabinet::SlottedSpinLock&lt; SLOTNUM &gt;</a>
 </li>
 <li>lock_all()
 : <a class="el" href="classkyotocabinet_1_1SlottedMutex.html#a573dd65cd47f0e7bdde6d2fd507c5a87">kyotocabinet::SlottedMutex&lt; SLOTNUM &gt;</a>
 , <a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#a55382a590ac4f7b5eceb9ee68033ab2e">kyotocabinet::SlottedSpinLock&lt; SLOTNUM &gt;</a>
 </li>
 <li>lock_reader()
-: <a class="el" href="classkyotocabinet_1_1SlottedRWLock.html#aa9ab1e83242e193803843b345768b02f">kyotocabinet::SlottedRWLock&lt; SLOTNUM &gt;</a>
+: <a class="el" href="classkyotocabinet_1_1RWLock.html#abbb6bf7a27a91de36e2adc962f6c9d98">kyotocabinet::RWLock</a>
+, <a class="el" href="classkyotocabinet_1_1SlottedRWLock.html#aa9ab1e83242e193803843b345768b02f">kyotocabinet::SlottedRWLock&lt; SLOTNUM &gt;</a>
 , <a class="el" href="classkyotocabinet_1_1SpinRWLock.html#acd589f9b2c66f0ca8051766ade0e1399">kyotocabinet::SpinRWLock</a>
 , <a class="el" href="classkyotocabinet_1_1SlottedSpinRWLock.html#a4ce77564de0ddbb56c2f7d78070e56da">kyotocabinet::SlottedSpinRWLock&lt; SLOTNUM &gt;</a>
-, <a class="el" href="classkyotocabinet_1_1RWLock.html#abbb6bf7a27a91de36e2adc962f6c9d98">kyotocabinet::RWLock</a>
 </li>
 <li>lock_reader_all()
 : <a class="el" href="classkyotocabinet_1_1SlottedRWLock.html#a99b1f925c74e0bbd4578fc8e8f115bad">kyotocabinet::SlottedRWLock&lt; SLOTNUM &gt;</a>
@@ -111,13 +115,13 @@ Here is a list of all documented class members with links to the class documenta
 </li>
 <li>lock_try()
 : <a class="el" href="classkyotocabinet_1_1SpinLock.html#a5935812ac3d066cf642748af267ce6b4">kyotocabinet::SpinLock</a>
-, <a class="el" href="classkyotocabinet_1_1Mutex.html#a9da8b318a447648cf3da8bdf29c021e3">kyotocabinet::Mutex</a>
+, <a class="el" href="classkyotocabinet_1_1Mutex.html#a02d117cbbf900c9458253dacee2f4d8e">kyotocabinet::Mutex</a>
 </li>
 <li>lock_writer()
-: <a class="el" href="classkyotocabinet_1_1SpinRWLock.html#aad5c21b72910172a633bb30c841b33e3">kyotocabinet::SpinRWLock</a>
-, <a class="el" href="classkyotocabinet_1_1SlottedSpinRWLock.html#a273fa4ffcb4039fed9190bf9287d8101">kyotocabinet::SlottedSpinRWLock&lt; SLOTNUM &gt;</a>
+: <a class="el" href="classkyotocabinet_1_1RWLock.html#ab9a8799747f2f08fea90ef3f54479216">kyotocabinet::RWLock</a>
+, <a class="el" href="classkyotocabinet_1_1SpinRWLock.html#aad5c21b72910172a633bb30c841b33e3">kyotocabinet::SpinRWLock</a>
 , <a class="el" href="classkyotocabinet_1_1SlottedRWLock.html#a2fdc9e6890e9379e7ab0a8b4da2829a5">kyotocabinet::SlottedRWLock&lt; SLOTNUM &gt;</a>
-, <a class="el" href="classkyotocabinet_1_1RWLock.html#ab9a8799747f2f08fea90ef3f54479216">kyotocabinet::RWLock</a>
+, <a class="el" href="classkyotocabinet_1_1SlottedSpinRWLock.html#a273fa4ffcb4039fed9190bf9287d8101">kyotocabinet::SlottedSpinRWLock&lt; SLOTNUM &gt;</a>
 </li>
 <li>lock_writer_all()
 : <a class="el" href="classkyotocabinet_1_1SlottedRWLock.html#a0147204626a57c7edddddffcc29f2aa3">kyotocabinet::SlottedRWLock&lt; SLOTNUM &gt;</a>
@@ -128,11 +132,11 @@ Here is a list of all documented class members with links to the class documenta
 , <a class="el" href="classkyotocabinet_1_1SpinRWLock.html#a3c7fffa4e1a114efbec7cb1c41c0098a">kyotocabinet::SpinRWLock</a>
 </li>
 <li>LOGIC
-: <a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859a6418e576b549e7f242266390ae845bab">kyotocabinet::FileDB::Error</a>
+: <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2a39d6d061463db3f26f063c8d63a726fa">kyotocabinet::BasicDB::Error</a>
 </li>
 </ul>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 25 20:26:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:51 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

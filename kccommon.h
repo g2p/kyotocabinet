@@ -108,16 +108,16 @@ using tr1::unordered_set;
 #include <sched.h>
 #define _yield_()  ::sched_yield()
 #endif
-#define _testyield_()                             \
-  do {                                            \
-    static uint32_t _KC_seed = 725;               \
-    _KC_seed = _KC_seed * 123456761 + 211;        \
-    if (_KC_seed % 0x100 == 0) _yield_();         \
+#define _testyield_()                           \
+  do {                                          \
+    static uint32_t _KC_seed = 725;             \
+    _KC_seed = _KC_seed * 123456761 + 211;      \
+    if (_KC_seed % 0x100 == 0) _yield_();       \
   } while(false)
-#define _assert_(KC_a)                            \
-  do {                                            \
-    _testyield_();                                \
-    assert(KC_a);                                 \
+#define _assert_(KC_a)                          \
+  do {                                          \
+    _testyield_();                              \
+    assert(KC_a);                               \
   } while(false)
 #elif defined(_KCDEBUG)
 #define _yield_()

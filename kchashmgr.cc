@@ -24,7 +24,7 @@ const char* g_progname;                  // program name
 // function prototypes
 int main(int argc, char** argv);
 static void usage();
-static void dberrprint(kc::FileDB* db, const char* info);
+static void dberrprint(kc::BasicDB* db, const char* info);
 static void ebufprint(std::ostringstream* ebuf);
 static int32_t runcreate(int argc, char** argv);
 static int32_t runinform(int argc, char** argv);
@@ -57,6 +57,7 @@ static int32_t proccheck(const char* path, int32_t oflags);
 // main routine
 int main(int argc, char** argv) {
   g_progname = argv[0];
+  kc::setstdiobin();
   if (argc < 2) usage();
   int32_t rv = 0;
   if (!std::strcmp(argv[1], "create")) {
@@ -114,9 +115,9 @@ static void usage() {
 }
 
 
-// print error message of file database
-static void dberrprint(kc::FileDB* db, const char* info) {
-  kc::FileDB::Error err = db->error();
+// print error message of database
+static void dberrprint(kc::BasicDB* db, const char* info) {
+  kc::BasicDB::Error err = db->error();
   eprintf("%s: %s: %s: %d: %s: %s\n",
           g_progname, info, db->path().c_str(), err.code(), err.name(), err.message());
 }
@@ -615,68 +616,76 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
   bool err = false;
   if (st) {
     std::map<std::string, std::string> status;
+    status["opaque"] = "";
     status["fbpnum_used"] = "";
     status["bnum_used"] = "";
-    status["opaque"] = "";
-    db.status(&status);
-    uint32_t type = kc::atoi(status["realtype"].c_str());
-    iprintf("type: %s (type=0x%02X) (%s)\n",
-            status["type"].c_str(), type, kc::FileDB::typestring(type));
-    uint32_t chksum = kc::atoi(status["chksum"].c_str());
-    iprintf("format version: %s (libver=%s.%s) (chksum=0x%02X)\n", status["fmtver"].c_str(),
-            status["libver"].c_str(), status["librev"].c_str(), chksum);
-    iprintf("path: %s\n", status["path"].c_str());
-    int32_t flags = kc::atoi(status["flags"].c_str());
-    iprintf("status flags:");
-    if (flags & kc::HashDB::FOPEN) iprintf(" open");
-    if (flags & kc::HashDB::FFATAL) iprintf(" fatal");
-    iprintf(" (flags=%d)", flags);
-    if (kc::atoi(status["recovered"].c_str()) > 0) iprintf(" (recovered)");
-    if (kc::atoi(status["reorganized"].c_str()) > 0) iprintf(" (reorganized)");
-    iprintf("\n", flags);
-    int32_t apow = kc::atoi(status["apow"].c_str());
-    iprintf("alignment: %d (apow=%d)\n", 1 << apow, apow);
-    int32_t fpow = kc::atoi(status["fpow"].c_str());
-    int32_t fbpnum = fpow > 0 ? 1 << fpow : 0;
-    int32_t fbpused = kc::atoi(status["fbpnum_used"].c_str());
-    int64_t frgcnt = kc::atoi(status["frgcnt"].c_str());
-    iprintf("free block pool: %d (fpow=%d) (used=%d) (frg=%lld)\n",
-            fbpnum, fpow, fbpused, (long long)frgcnt);
-    int32_t opts = kc::atoi(status["opts"].c_str());
-    iprintf("options:");
-    if (opts & kc::HashDB::TSMALL) iprintf(" small");
-    if (opts & kc::HashDB::TLINEAR) iprintf(" linear");
-    if (opts & kc::HashDB::TCOMPRESS) iprintf(" compress");
-    iprintf(" (opts=%d)\n", opts);
-    const char* opaque = status["opaque"].c_str();
-    iprintf("opaque:");
-    if (std::count(opaque, opaque + 16, 0) != 16) {
-      for (int32_t i = 0; i < 16; i++) {
-        iprintf(" %02X", ((unsigned char*)opaque)[i]);
+    if (db.status(&status)) {
+      uint32_t type = kc::atoi(status["type"].c_str());
+      iprintf("type: %s (%s) (type=0x%02X)\n",
+              kc::BasicDB::typecname(type), kc::BasicDB::typestring(type), type);
+      uint32_t rtype = kc::atoi(status["realtype"].c_str());
+      if (rtype > 0 && rtype != type)
+        iprintf("real type: %s (%s) (realtype=0x%02X)\n",
+                kc::BasicDB::typecname(rtype), kc::BasicDB::typestring(rtype), rtype);
+      uint32_t chksum = kc::atoi(status["chksum"].c_str());
+      iprintf("format version: %s (libver=%s.%s) (chksum=0x%02X)\n", status["fmtver"].c_str(),
+              status["libver"].c_str(), status["librev"].c_str(), chksum);
+      iprintf("path: %s\n", status["path"].c_str());
+      int32_t flags = kc::atoi(status["flags"].c_str());
+      iprintf("status flags:");
+      if (flags & kc::HashDB::FOPEN) iprintf(" open");
+      if (flags & kc::HashDB::FFATAL) iprintf(" fatal");
+      iprintf(" (flags=%d)", flags);
+      if (kc::atoi(status["recovered"].c_str()) > 0) iprintf(" (recovered)");
+      if (kc::atoi(status["reorganized"].c_str()) > 0) iprintf(" (reorganized)");
+      if (kc::atoi(status["trimmed"].c_str()) > 0) iprintf(" (trimmed)");
+      iprintf("\n", flags);
+      int32_t apow = kc::atoi(status["apow"].c_str());
+      iprintf("alignment: %d (apow=%d)\n", 1 << apow, apow);
+      int32_t fpow = kc::atoi(status["fpow"].c_str());
+      int32_t fbpnum = fpow > 0 ? 1 << fpow : 0;
+      int32_t fbpused = kc::atoi(status["fbpnum_used"].c_str());
+      int64_t frgcnt = kc::atoi(status["frgcnt"].c_str());
+      iprintf("free block pool: %d (fpow=%d) (used=%d) (frg=%lld)\n",
+              fbpnum, fpow, fbpused, (long long)frgcnt);
+      int32_t opts = kc::atoi(status["opts"].c_str());
+      iprintf("options:");
+      if (opts & kc::HashDB::TSMALL) iprintf(" small");
+      if (opts & kc::HashDB::TLINEAR) iprintf(" linear");
+      if (opts & kc::HashDB::TCOMPRESS) iprintf(" compress");
+      iprintf(" (opts=%d)\n", opts);
+      if (status["opaque"].size() >= 16) {
+        const char* opaque = status["opaque"].c_str();
+        iprintf("opaque:");
+        if (std::count(opaque, opaque + 16, 0) != 16) {
+          for (int32_t i = 0; i < 16; i++) {
+            iprintf(" %02X", ((unsigned char*)opaque)[i]);
+          }
+        } else {
+          iprintf(" 0");
+        }
+        iprintf("\n");
       }
-    } else {
-      iprintf(" 0");
+      int64_t bnum = kc::atoi(status["bnum"].c_str());
+      int64_t bnumused = kc::atoi(status["bnum_used"].c_str());
+      int64_t count = kc::atoi(status["count"].c_str());
+      double load = 1;
+      if (count > 0 && bnumused > 0) {
+        load = (double)count / bnumused;
+        if (!(opts & kc::HashDB::TLINEAR)) load = std::log(load + 1) / std::log(2.0);
+      }
+      iprintf("buckets: %lld (used=%lld) (load=%.2f)\n",
+              (long long)bnum, (long long)bnumused, load);
+      std::string cntstr = unitnumstr(count);
+      iprintf("count: %lld (%S)\n", count, &cntstr);
+      int64_t size = kc::atoi(status["size"].c_str());
+      int64_t msiz = kc::atoi(status["msiz"].c_str());
+      int64_t realsize = kc::atoi(status["realsize"].c_str());
+      std::string sizestr = unitnumstrbyte(size);
+      iprintf("size: %lld (%S) (map=%lld)", size, &sizestr, (long long)msiz);
+      if (size != realsize) iprintf(" (gap=%lld)", (long long)(realsize - size));
+      iprintf("\n");
     }
-    iprintf("\n");
-    int64_t bnum = kc::atoi(status["bnum"].c_str());
-    int64_t bnumused = kc::atoi(status["bnum_used"].c_str());
-    int64_t count = kc::atoi(status["count"].c_str());
-    double load = 0;
-    if (count > 0 && bnumused > 0) {
-      load = (double)count / bnumused;
-      if (!(opts & kc::HashDB::TLINEAR)) load = std::log(load + 1) / std::log(2.0);
-    }
-    iprintf("buckets: %lld (used=%lld) (load=%.2f)\n",
-            (long long)bnum, (long long)bnumused, load);
-    std::string cntstr = unitnumstr(count);
-    iprintf("count: %lld (%S)\n", count, &cntstr);
-    int64_t size = kc::atoi(status["size"].c_str());
-    int64_t msiz = kc::atoi(status["msiz"].c_str());
-    int64_t realsize = kc::atoi(status["realsize"].c_str());
-    std::string sizestr = unitnumstrbyte(size);
-    iprintf("size: %lld (%S) (map=%lld)", size, &sizestr, (long long)msiz);
-    if (size != realsize) iprintf(" (gap=%lld)", (long long)(realsize - size));
-    iprintf("\n");
   } else {
     uint8_t flags = db.flags();
     if (flags != 0) {
@@ -859,13 +868,13 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
   if (kbuf || max >= 0) {
     kc::HashDB::Cursor cur(&db);
     if (kbuf) {
-      if (!cur.jump(kbuf, ksiz) && db.error() != kc::FileDB::Error::NOREC) {
+      if (!cur.jump(kbuf, ksiz) && db.error() != kc::BasicDB::Error::NOREC) {
         ebufprint(&ebuf);
         dberrprint(&db, "Cursor::jump failed");
         err = true;
       }
     } else {
-      if (!cur.jump() && db.error() != kc::FileDB::Error::NOREC) {
+      if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
         ebufprint(&ebuf);
         dberrprint(&db, "Cursor::jump failed");
         err = true;
@@ -873,7 +882,7 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
     }
     while (!err && max > 0) {
       if (!cur.accept(&visitor, false, true)) {
-        if (db.error() != kc::FileDB::Error::NOREC) {
+        if (db.error() != kc::BasicDB::Error::NOREC) {
           ebufprint(&ebuf);
           dberrprint(&db, "Cursor::accept failed");
           err = true;
@@ -948,7 +957,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
         break;
       }
       case 1: {
-        if (!db.remove(fields[0]) && db.error() != kc::FileDB::Error::NOREC) {
+        if (!db.remove(fields[0]) && db.error() != kc::BasicDB::Error::NOREC) {
           ebufprint(&ebuf);
           dberrprint(&db, "DB::remove failed");
           err = true;
@@ -1076,7 +1085,7 @@ static int32_t proccheck(const char* path, int32_t oflags) {
   ebufprint(&ebuf);
   bool err = false;
   kc::HashDB::Cursor cur(&db);
-  if (!cur.jump() && db.error() != kc::FileDB::Error::NOREC) {
+  if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
     ebufprint(&ebuf);
     dberrprint(&db, "DB::jump failed");
     err = true;
@@ -1109,14 +1118,14 @@ static int32_t proccheck(const char* path, int32_t oflags) {
         if (cnt % 50000 == 0) iprintf(" (%lld)\n", (long long)cnt);
       }
     } else {
-      if (db.error() != kc::FileDB::Error::NOREC) {
+      if (db.error() != kc::BasicDB::Error::NOREC) {
         ebufprint(&ebuf);
         dberrprint(&db, "Cursor::get failed");
         err = true;
       }
       break;
     }
-    if (!cur.step() && db.error() != kc::FileDB::Error::NOREC) {
+    if (!cur.step() && db.error() != kc::BasicDB::Error::NOREC) {
       ebufprint(&ebuf);
       dberrprint(&db, "Cursor::step failed");
       err = true;

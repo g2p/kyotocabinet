@@ -24,6 +24,7 @@ const size_t FILEIOUNIT = 50;            // file I/O unit size
 // global variables
 const char* g_progname;                  // program name
 uint32_t g_randseed;                     // random seed
+int64_t g_memusage;                      // memory usage
 
 
 // function prototypes
@@ -33,10 +34,12 @@ static void errprint(int32_t line, const char* format, ...);
 static void fileerrprint(kc::File* file, int32_t line, const char* func);
 static void filemetaprint(kc::File* file);
 static int32_t runmutex(int argc, char** argv);
+static int32_t runpara(int argc, char** argv);
 static int32_t runfile(int argc, char** argv);
 static int32_t runmap(int argc, char** argv);
 static int32_t runmisc(int argc, char** argv);
 static int32_t procmutex(int64_t rnum, int32_t thnum, double iv);
+static int32_t procpara(int64_t rnum, int32_t thnum, double iv);
 static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd, int64_t msiz);
 static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum);
 static int32_t procmisc(int64_t rnum);
@@ -48,10 +51,14 @@ int main(int argc, char** argv) {
   const char* ebuf = kc::getenv("KCRNDSEED");
   g_randseed = ebuf ? (uint32_t)kc::atoi(ebuf) : (uint32_t)(kc::time() * 1000);
   mysrand(g_randseed);
+  g_memusage = memusage();
+  kc::setstdiobin();
   if (argc < 2) usage();
   int32_t rv = 0;
   if (!std::strcmp(argv[1], "mutex")) {
     rv = runmutex(argc, argv);
+  } else if (!std::strcmp(argv[1], "para")) {
+    rv = runpara(argc, argv);
   } else if (!std::strcmp(argv[1], "file")) {
     rv = runfile(argc, argv);
   } else if (!std::strcmp(argv[1], "map")) {
@@ -78,6 +85,7 @@ static void usage() {
   eprintf("\n");
   eprintf("usage:\n");
   eprintf("  %s mutex [-th num] [-iv num] rnum\n", g_progname);
+  eprintf("  %s para [-th num] [-iv num] rnum\n", g_progname);
   eprintf("  %s file [-th num] [-rnd] [-msiz num] path rnum\n", g_progname);
   eprintf("  %s map [-rnd] [-bnum num] rnum\n", g_progname);
   eprintf("  %s misc rnum\n", g_progname);
@@ -139,6 +147,37 @@ static int32_t runmutex(int argc, char** argv) {
   if (rnum < 1 || thnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
   int32_t rv = procmutex(rnum, thnum, iv);
+  return rv;
+}
+
+
+// parse arguments of para command
+static int32_t runpara(int argc, char** argv) {
+  const char* rstr = NULL;
+  int32_t thnum = 1;
+  double iv = 0.0;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!rstr && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "-th")) {
+        if (++i >= argc) usage();
+        thnum = kc::atoix(argv[i]);
+      } else if (!std::strcmp(argv[i], "-iv")) {
+        if (++i >= argc) usage();
+        iv = kc::atof(argv[i]);
+      } else {
+        usage();
+      }
+    } else if (!rstr) {
+      rstr = argv[i];
+    } else {
+      usage();
+    }
+  }
+  if (!rstr) usage();
+  int64_t rnum = kc::atoix(rstr);
+  if (rnum < 1 || thnum < 1) usage();
+  if (thnum > THREADMAX) thnum = THREADMAX;
+  int32_t rv = procpara(rnum, thnum, iv);
   return rv;
 }
 
@@ -967,6 +1006,111 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
 }
 
 
+// perform para command
+static int32_t procpara(int64_t rnum, int32_t thnum, double iv) {
+  iprintf("<Parallel Test>\n  seed=%u  rnum=%lld  thnum=%d  iv=%.3f\n\n",
+          g_randseed, (long long)rnum, thnum, iv);
+  bool err = false;
+  double stime = kc::time();
+  class Worker : public kc::Thread {
+  public:
+    void setparams(int32_t id, kc::CondVar* cond, kc::Mutex* mutex, std::list<int64_t>* queue,
+                   int64_t rnum, int32_t thnum, double iv) {
+      id_ = id;
+      cond_ = cond;
+      mutex_ = mutex;
+      queue_ = queue;
+      rnum_ = rnum;
+      thnum_ = thnum;
+      iv_ = iv;
+      alive_ = true;
+      err_ = false;
+    }
+    bool error() {
+      return err_;
+    }
+    void run() {
+      while (alive_) {
+        mutex_->lock();
+        int64_t num = 0;
+        if (queue_->empty()) {
+          cond_->wait(mutex_, 0.1);
+        } else {
+          num = queue_->front();
+          queue_->pop_front();
+        }
+        mutex_->unlock();
+        if (iv_ > 0) {
+          kc::Thread::sleep(iv_ * thnum_);
+        } else if (iv_ < 0) {
+          kc::Thread::yield();
+        }
+      }
+    }
+    void die() {
+      alive_ = false;
+    }
+  private:
+    int32_t id_;
+    kc::CondVar* cond_;
+    kc::Mutex* mutex_;
+    std::list<int64_t>* queue_;
+    int64_t rnum_;
+    int32_t thnum_;
+    double iv_;
+    bool alive_;
+    bool err_;
+  };
+  Worker workers[THREADMAX];
+  kc::CondVar cond;
+  kc::Mutex mutex;
+  std::list<int64_t> queue;
+  for (int32_t i = 0; i < thnum; i++) {
+    workers[i].setparams(i, &cond, &mutex, &queue, rnum, thnum, iv);
+    workers[i].start();
+  }
+  for (int64_t i = 1; i <= rnum; i++) {
+    mutex.lock();
+    queue.push_back(i);
+    cond.signal();
+    mutex.unlock();
+    if (iv > 0) {
+      kc::Thread::sleep(iv);
+    } else if (iv < 0) {
+      kc::Thread::yield();
+    }
+    if (rnum > 250 && i % (rnum / 250) == 0) {
+      iputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+    }
+  }
+  while (true) {
+    mutex.lock();
+    if (queue.empty()) {
+      mutex.unlock();
+      break;
+    }
+    mutex.unlock();
+    kc::Thread::sleep(0.01);
+  }
+  for (int32_t i = 0; i < thnum; i++) {
+    workers[i].die();
+  }
+  mutex.lock();
+  cond.broadcast();
+  mutex.unlock();
+  for (int32_t i = 0; i < thnum; i++) {
+    workers[i].die();
+    workers[i].join();
+    if (workers[i].error()) err = true;
+  }
+  double etime = kc::time();
+  iprintf("time: %.3f\n", etime - stime);
+  iprintf("%s\n\n", err ? "error" : "ok");
+  return err ? 1 : 0;
+}
+
+
 // perform file command
 static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd, int64_t msiz) {
   iprintf("<File Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  rnd=%d  msiz=%lld\n\n",
@@ -1569,6 +1713,8 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   double etime = kc::time();
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld\n", (long long)map.count());
+  int64_t musage = memusage();
+  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   iprintf("getting records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
@@ -1593,6 +1739,8 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   etime = kc::time();
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld\n", (long long)map.count());
+  musage = memusage();
+  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   iprintf("traversing records:\n");
   stime = kc::time();
   int64_t cnt = 0;
@@ -1615,6 +1763,8 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   etime = kc::time();
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld\n", (long long)map.count());
+  musage = memusage();
+  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   Map paramap(bnum + 31);
   iprintf("migrating records:\n");
   stime = kc::time();
@@ -1640,6 +1790,8 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   etime = kc::time();
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld,%lld\n", (long long)map.count(), (long long)paramap.count());
+  musage = memusage();
+  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   iprintf("removing records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
@@ -1657,6 +1809,8 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   etime = kc::time();
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld,%lld\n", (long long)map.count(), (long long)paramap.count());
+  musage = memusage();
+  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   if (rnd) {
     iprintf("wicked testing:\n");
     stime = kc::time();
@@ -1739,6 +1893,8 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
     etime = kc::time();
     iprintf("time: %.3f\n", etime - stime);
     iprintf("count: %lld\n", (long long)map.count());
+    musage = memusage();
+    if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   }
   iprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
@@ -1818,7 +1974,7 @@ static int32_t procmisc(int64_t rnum) {
     }
     delete[] obuf;
     delete[] ebuf;
-    size_t nsiz = strlen(name);
+    size_t nsiz = std::strlen(name);
     nsiz -= i % nsiz;
     ebuf = new char[usiz];
     kc::arccipher(ubuf, usiz, name, nsiz, ebuf);
@@ -1830,29 +1986,47 @@ static int32_t procmisc(int64_t rnum) {
     }
     delete[] obuf;
     delete[] ebuf;
-    kc::Zlib::Mode zmode;
+    kc::ZLIB::Mode zmode;
     switch (myrand(3)) {
-      default: zmode = kc::Zlib::RAW; break;
-      case 0: zmode = kc::Zlib::DEFLATE; break;
-      case 1: zmode = kc::Zlib::GZIP; break;
+      default: zmode = kc::ZLIB::RAW; break;
+      case 0: zmode = kc::ZLIB::DEFLATE; break;
+      case 1: zmode = kc::ZLIB::GZIP; break;
     }
     size_t zsiz;
-    char* zbuf = kc::Zlib::compress(ubuf, usiz, &zsiz, zmode);
+    char* zbuf = kc::ZLIB::compress(ubuf, usiz, &zsiz, zmode);
     if (zbuf) {
-      obuf = kc::Zlib::decompress(zbuf, zsiz, &osiz, zmode);
+      obuf = kc::ZLIB::decompress(zbuf, zsiz, &osiz, zmode);
       if (obuf) {
         if (osiz != usiz || std::memcmp(obuf, ubuf, osiz)) {
-          errprint(__LINE__, "Zlib::decompress");
+          errprint(__LINE__, "ZLIB::decompress");
           err = true;
         }
         delete[] obuf;
       } else {
-        errprint(__LINE__, "Zlib::decompress");
+        errprint(__LINE__, "ZLIB::decompress");
         err = true;
       }
       delete[] zbuf;
     } else {
-      errprint(__LINE__, "Zlib::compress");
+      errprint(__LINE__, "ZLIB::compress");
+      err = true;
+    }
+    zbuf = kc::LZO::compress(ubuf, usiz, &zsiz);
+    if (zbuf) {
+      obuf = kc::LZO::decompress(zbuf, zsiz, &osiz);
+      if (obuf) {
+        if (osiz != usiz || std::memcmp(obuf, ubuf, osiz)) {
+          errprint(__LINE__, "LZO::decompress");
+          err = true;
+        }
+        delete[] obuf;
+      } else {
+        errprint(__LINE__, "LZO::decompress");
+        err = true;
+      }
+      delete[] zbuf;
+    } else {
+      errprint(__LINE__, "LZO::compress");
       err = true;
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {

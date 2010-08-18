@@ -87,7 +87,7 @@ pre {
   padding: 0.2ex;
   background-color: #eeeef8;
   border: 1px solid #ddddee;
-  font-size: 95%;
+  font-size: 90%;
 }
 
 li,dt,dd {
@@ -123,10 +123,12 @@ ul ul {
 table {
   border-collapse: collapse;
 }
-td {
+th,td {
   text-align: left;
   vertical-align: top;
   padding: 0.2ex 0.8ex;
+}
+td {
   border: solid 1px #aaaabb;
   font-size: 95%;
 }
@@ -188,7 +190,6 @@ var {
     margin: 1.2ex 1.2ex;
     background-color: #ffffff;
     border: 1px solid #cccccc;
-    font-size: 90%;
   }
   a,code,kbd {
     color: #000000;

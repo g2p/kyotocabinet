@@ -29,7 +29,7 @@
   </div>
 </div>
 <div class="contents">
-<h1>kyotocabinet::DirDB::Cursor Class Reference</h1><!-- doxytag: class="kyotocabinet::DirDB::Cursor" --><!-- doxytag: inherits="kyotocabinet::FileDB::Cursor" -->
+<h1>kyotocabinet::DirDB::Cursor Class Reference</h1><!-- doxytag: class="kyotocabinet::DirDB::Cursor" --><!-- doxytag: inherits="kyotocabinet::BasicDB::Cursor" -->
 <p><a class="el" href="classkyotocabinet_1_1DirDB_1_1Cursor.html" title="Cursor to indicate a record.">Cursor</a> to indicate a record.  
 <a href="#_details">More...</a></p>
 
@@ -50,8 +50,12 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor onto a record.  <a href="#a571ba922e064ee841e37a08ef0389c5c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB_1_1Cursor.html#a5c103f59e9a9dc88b55dfb5b88c7fdcb">jump</a> (const std::string &amp;key)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record.  <a href="#a5c103f59e9a9dc88b55dfb5b88c7fdcb"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB_1_1Cursor.html#a138fb0137277d17b7c7d489bb8d4a21a">jump_last</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the last record.  <a href="#a138fb0137277d17b7c7d489bb8d4a21a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB_1_1Cursor.html#a1777ac2ce032e0a09f684ebae713b5ce">step</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the next record.  <a href="#a1777ac2ce032e0a09f684ebae713b5ce"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB_1_1Cursor.html#a242bcd524a78a6a55668db4b80851bac">step_back</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the previous record.  <a href="#a242bcd524a78a6a55668db4b80851bac"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1DirDB.html">DirDB</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB_1_1Cursor.html#ac0836d0d5f9698adc2b877635519e8cd">db</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the database object.  <a href="#ac0836d0d5f9698adc2b877635519e8cd"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Friends</h2></td></tr>
@@ -104,7 +108,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>DirDB</b></td></tr>
 
 <p>Destructor. </p>
 
-<p>Reimplemented from <a class="el" href="classkyotocabinet_1_1FileDB_1_1Cursor.html#a7ba9b9890d67d2fb43ecff4441c24740">kyotocabinet::FileDB::Cursor</a>.</p>
+<p>Reimplemented from <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#a0e93160f1599c0063b6db4226216cfb3">kyotocabinet::BasicDB::Cursor</a>.</p>
 
 </div>
 </div>
@@ -240,6 +244,29 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>DirDB</b></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a138fb0137277d17b7c7d489bb8d4a21a"></a><!-- doxytag: member="kyotocabinet::DirDB::Cursor::jump_last" ref="a138fb0137277d17b7c7d489bb8d4a21a" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::DirDB::Cursor::jump_last </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Jump the cursor to the last record. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This is a dummy implementation for compatibility. </dd></dl>
+
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a567337fcb49d1c3bde6552b05a2f1f1e">kyotocabinet::DB::Cursor</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a1777ac2ce032e0a09f684ebae713b5ce"></a><!-- doxytag: member="kyotocabinet::DirDB::Cursor::step" ref="a1777ac2ce032e0a09f684ebae713b5ce" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -262,6 +289,29 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>DirDB</b></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a242bcd524a78a6a55668db4b80851bac"></a><!-- doxytag: member="kyotocabinet::DirDB::Cursor::step_back" ref="a242bcd524a78a6a55668db4b80851bac" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::DirDB::Cursor::step_back </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Step the cursor to the previous record. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This is a dummy implementation for compatibility. </dd></dl>
+
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a1eb720a41b9bad81f3dd6621870133d5">kyotocabinet::DB::Cursor</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="ac0836d0d5f9698adc2b877635519e8cd"></a><!-- doxytag: member="kyotocabinet::DirDB::Cursor::db" ref="ac0836d0d5f9698adc2b877635519e8cd" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -280,12 +330,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>DirDB</b></td></tr>
 <p>Get the database object. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the database object. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB_1_1Cursor.html#a5ef866b22d00c7a7bd8b7ed93c01bdee">kyotocabinet::FileDB::Cursor</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#a79e3904e5b10ed3d356545ed4259160e">kyotocabinet::BasicDB::Cursor</a>.</p>
 
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 25 20:26:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:51 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

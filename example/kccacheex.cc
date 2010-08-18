@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
   CacheDB db;
 
   // open the database
-  if (!db.open("*", CacheDB::OWRITER | CacheDB::OCREATE)) {
+  if (!db.open("%", CacheDB::OWRITER | CacheDB::OCREATE)) {
     cerr << "open error: " << db.error().name() << endl;
   }
 

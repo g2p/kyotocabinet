@@ -1,5 +1,5 @@
 /*************************************************************************************************
- * File tree database
+ * Plant database
  *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
@@ -13,7 +13,7 @@
  *************************************************************************************************/
 
 
-#include "kctreedb.h"
+#include "kcplantdb.h"
 #include "myconf.h"
 
 namespace kyotocabinet {                 // common namespace

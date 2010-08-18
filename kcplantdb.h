@@ -1,5 +1,5 @@
 /*************************************************************************************************
- * File tree database
+ * Plant database
  *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#ifndef _KCTREEDB_H                      // duplication check
-#define _KCTREEDB_H
+#ifndef _KCPLANTDB_H                     // duplication check
+#define _KCPLANTDB_H
 
 #include <kccommon.h>
 #include <kcutil.h>
@@ -24,7 +24,6 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
-#include <kchashdb.h>
 
 namespace kyotocabinet {                 // common namespace
 
@@ -33,42 +32,46 @@ namespace kyotocabinet {                 // common namespace
  * Constants for implementation.
  */
 namespace {
-const int32_t TDBSLOTNUM = 16;           ///< number of cache slots
-const uint8_t TDBDEFAPOW = 8;            ///< default alignment power
-const uint8_t TDBDEFFPOW = 10;           ///< default free block pool power
-const int64_t TDBDEFBNUM = 64LL << 10;   ///< default bucket number
-const int32_t TDBDEFPSIZ = 8192;         ///< default page size
-const int64_t TDBDEFPCCAP = 64LL << 20;  ///< default capacity size of the page cache
-const char TDBMETAKEY[] = "@";           ///< key of the record for meta data
-const int64_t TDBHEADSIZ = 64;           ///< size of the header
-const int64_t TDBMOFFNUMS = 8;           ///< offset of the numbers
-const char TDBLNPREFIX = 'L';            ///< prefix of leaf nodes
-const char TDBINPREFIX = 'I';            ///< prefix of inner nodes
-const size_t TDBAVGWAY = 16;             ///< average number of ways of each node
-const size_t TDBWARMRATIO = 4;           ///< ratio of the warm cache
-const size_t TDBINFLRATIO = 32;          ///< ratio of flushing inner nodes
-const size_t TDBDEFLINUM = 64;           ///< default number of items in each leaf node
-const size_t TDBDEFIINUM = 128;          ///< default number of items in each inner node
-const size_t TDBRECBUFSIZ = 64;          ///< size of the record buffer
-const int64_t TDBINIDBASE = 1LL << 48;   ///< base ID number for inner nodes
-const size_t TDBINLINKMIN = 8;           ///< minimum number of links in each inner node
-const int32_t TDBLEVELMAX = 16;          ///< maximum level of B+ tree
-const int32_t TDBATRANCNUM = 256;        ///< number of cached nodes for auto transaction
-const char* BDBTMPPATHEXT = "tmpkct";    ///< extension of the temporary file
+const int32_t PDBSLOTNUM = 16;           ///< number of cache slots
+const uint8_t PDBDEFAPOW = 8;            ///< default alignment power
+const uint8_t PDBDEFFPOW = 10;           ///< default free block pool power
+const int64_t PDBDEFBNUM = 64LL << 10;   ///< default bucket number
+const int32_t PDBDEFPSIZ = 8192;         ///< default page size
+const int64_t PDBDEFPCCAP = 64LL << 20;  ///< default capacity size of the page cache
+const char PDBMETAKEY[] = "@";           ///< key of the record for meta data
+const int64_t PDBHEADSIZ = 80;           ///< size of the header
+const int64_t PDBMOFFNUMS = 8;           ///< offset of the numbers
+const char PDBLNPREFIX = 'L';            ///< prefix of leaf nodes
+const char PDBINPREFIX = 'I';            ///< prefix of inner nodes
+const size_t PDBAVGWAY = 16;             ///< average number of ways of each node
+const size_t PDBWARMRATIO = 4;           ///< ratio of the warm cache
+const size_t PDBINFLRATIO = 32;          ///< ratio of flushing inner nodes
+const size_t PDBDEFLINUM = 64;           ///< default number of items in each leaf node
+const size_t PDBDEFIINUM = 128;          ///< default number of items in each inner node
+const size_t PDBRECBUFSIZ = 64;          ///< size of the record buffer
+const int64_t PDBINIDBASE = 1LL << 48;   ///< base ID number for inner nodes
+const size_t PDBINLINKMIN = 8;           ///< minimum number of links in each inner node
+const int32_t PDBLEVELMAX = 16;          ///< maximum level of B+ tree
+const int32_t PDBATRANCNUM = 256;        ///< number of cached nodes for auto transaction
+const char* PDBTMPPATHEXT = "tmpkct";    ///< extension of the temporary file
 }
 
 
 /**
- * File tree database.
- * @note This class is a concrete class to operate a tree database on a file.  This class can be
- * inherited but overwriting methods is forbidden.  Before every database operation, it is
- * necessary to call the TreeDB::open method in order to open a database file and connect the
- * database object to it.  To avoid data missing or corruption, it is important to close every
- * database file by the TreeDB::close method when the database is no longer in use.  It is
- * forbidden for multible database objects in a process to open the same database at the same
- * time.
+ * Plant database.
+ * @param BASEDB a class compatible with the file hash database class.
+ * @param DBTYPE the database type number of the class.
+ * @note This class template is a template for concrete classes to operate tree databases.
+ * Template instance classes can be inherited but overwriting methods is forbidden.  The class
+ * TreeDB is the instance of the file tree database.  The class ForestDB is the instance of the
+ * directory tree database.  Before every database operation, it is necessary to call the
+ * BasicDB::open method in order to open a database file and connect the database object to it.
+ * To avoid data missing or corruption, it is important to close every database file by the
+ * BasicDB::close method when the database is no longer in use.  It is forbidden for multible
+ * database objects in a process to open the same database at the same time.
  */
-class TreeDB : public FileDB {
+template <class BASEDB, uint8_t DBTYPE>
+class PlantDB : public BasicDB {
 public:
   class Cursor;
 private:
@@ -91,14 +94,14 @@ public:
   /**
    * Cursor to indicate a record.
    */
-  class Cursor : public FileDB::Cursor {
-    friend class TreeDB;
+  class Cursor : public BasicDB::Cursor {
+    friend class PlantDB;
   public:
     /**
      * Constructor.
      * @param db the container database object.
      */
-    explicit Cursor(TreeDB* db) : db_(db), stack_(), kbuf_(NULL), ksiz_(0), lid_(0) {
+    explicit Cursor(PlantDB* db) : db_(db), stack_(), kbuf_(NULL), ksiz_(0), lid_(0) {
       _assert_(db);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       db_->curs_.push_back(this);
@@ -205,6 +208,24 @@ public:
       return jump(key.c_str(), key.size());
     }
     /**
+     * Jump the cursor to the last record.
+     * @return true on success, or false on failure.
+     * @note This method is dedicated to tree databases.  Some database types, especially hash
+     * databases, may provide a dummy implementation.
+     */
+    bool jump_last() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, false);
+      if (db_->omode_ == 0) {
+        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        return false;
+      }
+      if (kbuf_) clear_position();
+      bool err = false;
+      if (!set_position_back(db_->last_)) err = true;
+      return !err;
+    }
+    /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
@@ -219,10 +240,45 @@ public:
       return true;
     }
     /**
+     * Step the cursor to the previous record.
+     * @return true on success, or false on failure.
+     */
+    bool step_back() {
+      _assert_(true);
+      db_->mlock_.lock_reader();
+      if (db_->omode_ == 0) {
+        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->mlock_.unlock();
+        return false;
+      }
+      if (!kbuf_) {
+        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->mlock_.unlock();
+        return false;
+      }
+      bool err = false;
+      bool hit = false;
+      if (lid_ > 0 && !back_position_spec(&hit)) err = true;
+      if (!err && !hit) {
+        if (!db_->mlock_.promote()) {
+          db_->mlock_.unlock();
+          db_->mlock_.lock_writer();
+        }
+        if (kbuf_) {
+          if (!back_position_atom()) err = true;
+        } else {
+          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          err = true;
+        }
+      }
+      db_->mlock_.unlock();
+      return !err;
+    }
+    /**
      * Get the database object.
      * @return the database object.
      */
-    TreeDB* db() {
+    PlantDB* db() {
       _assert_(true);
       return db_;
     }
@@ -270,7 +326,7 @@ public:
         LeafNode* node = db_->load_leaf_node(id, false);
         if (!node) {
           db_->set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
-          db_->hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+          db_->db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
           return false;
         }
         ScopedSpinRWLock lock(&node->lock, false);
@@ -280,6 +336,32 @@ public:
           return true;
         } else {
           id = node->next;
+        }
+      }
+      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+      return false;
+    }
+    /**
+     * Set the current position at the previous node.
+     * @param id the ID of the previous node.
+     * @return true on success, or false on failure.
+     */
+    bool set_position_back(int64_t id) {
+      _assert_(true);
+      while (id > 0) {
+        LeafNode* node = db_->load_leaf_node(id, false);
+        if (!node) {
+          db_->set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
+          db_->db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+          return false;
+        }
+        ScopedSpinRWLock lock(&node->lock, false);
+        RecordArray& recs = node->recs;
+        if (!recs.empty()) {
+          set_position(recs.back(), id);
+          return true;
+        } else {
+          id = node->prev;
         }
       }
       db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
@@ -297,7 +379,7 @@ public:
       _assert_(visitor && hitp);
       bool err = false;
       bool hit = false;
-      char rstack[TDBRECBUFSIZ];
+      char rstack[PDBRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -306,11 +388,11 @@ public:
       std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
       LeafNode* node = db_->load_leaf_node(lid_, false);
       if (node) {
-        char lstack[TDBRECBUFSIZ];
+        char lstack[PDBRECBUFSIZ];
         char* lbuf = NULL;
         size_t lsiz = 0;
         Link* link = NULL;
-        int64_t hist[TDBLEVELMAX];
+        int64_t hist[PDBLEVELMAX];
         int32_t hnum = 0;
         if (writable) {
           node->lock.lock_writer();
@@ -322,9 +404,9 @@ public:
           Record* frec = recs.front();
           Record* lrec = recs.back();
           if (!db_->reccomp_(rec, frec) && !db_->reccomp_(lrec, rec)) {
-            RecordArray::iterator ritend = recs.end();
-            RecordArray::iterator rit = std::lower_bound(recs.begin(), ritend,
-                                                         rec, db_->reccomp_);
+            typename RecordArray::iterator ritend = recs.end();
+            typename RecordArray::iterator rit = std::lower_bound(recs.begin(), ritend,
+                                                                  rec, db_->reccomp_);
             if (rit != ritend) {
               hit = true;
               if (db_->reccomp_(rec, *rit)) {
@@ -359,7 +441,7 @@ public:
                   std::memcpy(lbuf + sizeof(*link), kbuf, ksiz);
                 }
                 xfree(rec);
-                RecordArray::iterator ritnext = rit + 1;
+                typename RecordArray::iterator ritnext = rit + 1;
                 if (ritnext != ritend) {
                   clear_position();
                   set_position(*ritnext, node->id);
@@ -425,7 +507,7 @@ public:
                 err = true;
               }
             } else if (flush) {
-              int32_t idx = id % TDBSLOTNUM;
+              int32_t idx = id % PDBSLOTNUM;
               LeafSlot* lslot = db_->lslots_ + idx;
               if (!db_->flush_leaf_cache_part(lslot)) err = true;
               InnerSlot* islot = db_->islots_ + idx;
@@ -453,14 +535,14 @@ public:
       bool err = false;
       bool reorg = false;
       *retryp = false;
-      char lstack[TDBRECBUFSIZ];
+      char lstack[PDBRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz_;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
       link->child = 0;
       link->ksiz = ksiz_;
       std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
-      int64_t hist[TDBLEVELMAX];
+      int64_t hist[PDBLEVELMAX];
       int32_t hnum = 0;
       LeafNode* node = db_->search_tree(link, true, hist, &hnum);
       if (!node) {
@@ -490,7 +572,7 @@ public:
           return false;
         }
       }
-      char rstack[TDBRECBUFSIZ];
+      char rstack[PDBRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -498,9 +580,9 @@ public:
       rec->vsiz = 0;
       std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
       RecordArray& recs = node->recs;
-      RecordArray::iterator ritend = recs.end();
-      RecordArray::iterator rit = std::lower_bound(recs.begin(), ritend,
-                                                   rec, db_->reccomp_);
+      typename RecordArray::iterator ritend = recs.end();
+      typename RecordArray::iterator rit = std::lower_bound(recs.begin(), ritend,
+                                                            rec, db_->reccomp_);
       if (rit != ritend) {
         if (db_->reccomp_(rec, *rit)) {
           clear_position();
@@ -526,7 +608,7 @@ public:
           node->size -= rsiz;
           node->dirty = true;
           xfree(rec);
-          RecordArray::iterator ritnext = rit + 1;
+          typename RecordArray::iterator ritnext = rit + 1;
           if (ritnext != ritend) {
             clear_position();
             set_position(*ritnext, node->id);
@@ -565,7 +647,7 @@ public:
           if (!db_->reorganize_tree(node, hist, hnum)) err = true;
           if (atran && !db_->tran_ && !db_->fix_auto_transaction_tree()) err = true;
         } else if (db_->cusage_ > db_->pccap_) {
-          int32_t idx = node->id % TDBSLOTNUM;
+          int32_t idx = node->id % PDBSLOTNUM;
           LeafSlot* lslot = db_->lslots_ + idx;
           if (!db_->flush_leaf_cache_part(lslot)) err = true;
           InnerSlot* islot = db_->islots_ + idx;
@@ -598,14 +680,14 @@ public:
      */
     bool adjust_position() {
       _assert_(true);
-      char lstack[TDBRECBUFSIZ];
+      char lstack[PDBRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz_;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
       link->child = 0;
       link->ksiz = ksiz_;
       std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
-      int64_t hist[TDBLEVELMAX];
+      int64_t hist[PDBLEVELMAX];
       int32_t hnum = 0;
       LeafNode* node = db_->search_tree(link, true, hist, &hnum);
       if (!node) {
@@ -613,7 +695,7 @@ public:
         if (lbuf != lstack) delete[] lbuf;
         return false;
       }
-      char rstack[TDBRECBUFSIZ];
+      char rstack[PDBRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -623,9 +705,9 @@ public:
       bool err = false;
       node->lock.lock_reader();
       const RecordArray& recs = node->recs;
-      RecordArray::const_iterator ritend = node->recs.end();
-      RecordArray::const_iterator rit = std::lower_bound(recs.begin(), ritend,
-                                                         rec, db_->reccomp_);
+      typename RecordArray::const_iterator ritend = node->recs.end();
+      typename RecordArray::const_iterator rit = std::lower_bound(recs.begin(), ritend,
+                                                                  rec, db_->reccomp_);
       if (rit == ritend) {
         node->lock.unlock();
         if (!set_position(node->next)) err = true;
@@ -635,16 +717,120 @@ public:
       }
       if (rbuf != rstack) delete[] rbuf;
       if (lbuf != lstack) delete[] lbuf;
-      return true;
+      return !err;
+    }
+    /**
+     * Back the position to the previous record speculatively.
+     * @param hitp the pointer to the variable for the hit flag.
+     * @return true on success, or false on failure.
+     */
+    bool back_position_spec(bool* hitp) {
+      _assert_(hitp);
+
+      // hoge
+      if (rand() % 5 == 0) return true;
+
+      bool err = false;
+      bool hit = false;
+      char rstack[PDBRECBUFSIZ];
+      size_t rsiz = sizeof(Record) + ksiz_;
+      char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
+      Record* rec = (Record*)rbuf;
+      rec->ksiz = ksiz_;
+      rec->vsiz = 0;
+      std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
+      LeafNode* node = db_->load_leaf_node(lid_, false);
+      if (node) {
+        node->lock.lock_reader();
+        RecordArray& recs = node->recs;
+        if (!recs.empty()) {
+          Record* frec = recs.front();
+          Record* lrec = recs.back();
+          if (db_->reccomp_(rec, frec)) {
+            hit = true;
+            clear_position();
+            if (!set_position_back(node->prev)) err = true;
+          } else if (!db_->reccomp_(lrec, rec)) {
+            hit = true;
+            typename RecordArray::iterator ritbeg = recs.begin();
+            typename RecordArray::iterator ritend = recs.end();
+            typename RecordArray::iterator rit = std::lower_bound(recs.begin(), ritend,
+                                                                  rec, db_->reccomp_);
+            clear_position();
+            if (rit == ritbeg) {
+              if (!set_position_back(node->prev)) err = true;
+            } else {
+              rit--;
+              set_position(*rit, node->id);
+            }
+          }
+        }
+        node->lock.unlock();
+      }
+      if (rbuf != rstack) delete[] rbuf;
+      *hitp = hit;
+      return !err;
+    }
+    /**
+     * Back the position to the previous record atomically.
+     * @return true on success, or false on failure.
+     */
+    bool back_position_atom() {
+      _assert_(true);
+      char lstack[PDBRECBUFSIZ];
+      size_t lsiz = sizeof(Link) + ksiz_;
+      char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
+      Link* link = (Link*)lbuf;
+      link->child = 0;
+      link->ksiz = ksiz_;
+      std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
+      int64_t hist[PDBLEVELMAX];
+      int32_t hnum = 0;
+      LeafNode* node = db_->search_tree(link, true, hist, &hnum);
+      if (!node) {
+        db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+        if (lbuf != lstack) delete[] lbuf;
+        return false;
+      }
+      char rstack[PDBRECBUFSIZ];
+      size_t rsiz = sizeof(Record) + ksiz_;
+      char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
+      Record* rec = (Record*)rbuf;
+      rec->ksiz = ksiz_;
+      rec->vsiz = 0;
+      std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
+      bool err = false;
+      node->lock.lock_reader();
+      const RecordArray& recs = node->recs;
+      typename RecordArray::const_iterator ritbeg = node->recs.begin();
+      typename RecordArray::const_iterator ritend = node->recs.end();
+      typename RecordArray::const_iterator rit = std::lower_bound(recs.begin(), ritend,
+                                                                  rec, db_->reccomp_);
+      clear_position();
+      if (rit == ritbeg) {
+        node->lock.unlock();
+        if (!set_position_back(node->prev)) err = true;
+      } else if (rit == ritend) {
+        ritend--;
+        set_position(*ritend, node->id);
+        node->lock.unlock();
+      } else {
+        rit--;
+        set_position(*rit, node->id);
+        node->lock.unlock();
+      }
+      if (rbuf != rstack) delete[] rbuf;
+      if (lbuf != lstack) delete[] lbuf;
+      return !err;
     }
     /** Dummy constructor to forbid the use. */
     Cursor(const Cursor&);
     /** Dummy Operator to forbid the use. */
     Cursor& operator =(const Cursor&);
     /** The inner database. */
-    TreeDB* db_;
+    PlantDB* db_;
     /** The stack buffer for the key. */
-    char stack_[TDBRECBUFSIZ];
+    char stack_[PDBRECBUFSIZ];
     /** The pointer to the key region. */
     char* kbuf_;
     /** The size of the key region. */
@@ -656,24 +842,24 @@ public:
    * Tuning Options.
    */
   enum Option {
-    TSMALL = HashDB::TSMALL,             ///< use 32-bit addressing
-    TLINEAR = HashDB::TLINEAR,           ///< use linear collision chaining
-    TCOMPRESS = HashDB::TCOMPRESS        ///< compress each record
+    TSMALL = BASEDB::TSMALL,             ///< use 32-bit addressing
+    TLINEAR = BASEDB::TLINEAR,           ///< use linear collision chaining
+    TCOMPRESS = BASEDB::TCOMPRESS        ///< compress each record
   };
   /**
    * Status flags.
    */
   enum Flag {
-    FOPEN = HashDB::FOPEN,               ///< whether opened
-    FFATAL = HashDB::FFATAL              ///< whether with fatal error
+    FOPEN = BASEDB::FOPEN,               ///< whether opened
+    FFATAL = BASEDB::FFATAL              ///< whether with fatal error
   };
   /**
    * Default constructor.
    */
-  explicit TreeDB() :
+  explicit PlantDB() :
     mlock_(), omode_(0), writer_(false), autotran_(false), autosync_(false),
-    hdb_(), curs_(), apow_(TDBDEFAPOW), fpow_(TDBDEFFPOW), opts_(0), bnum_(TDBDEFBNUM),
-    psiz_(TDBDEFPSIZ), pccap_(TDBDEFPCCAP),
+    db_(), curs_(), apow_(PDBDEFAPOW), fpow_(PDBDEFFPOW), opts_(0), bnum_(PDBDEFBNUM),
+    psiz_(PDBDEFPSIZ), pccap_(PDBDEFPCCAP),
     root_(0), first_(0), last_(0), lcnt_(0), icnt_(0), count_(0), cusage_(0),
     lslots_(), islots_(), reccomp_(), linkcomp_(), tran_(false), trcnt_(0) {
     _assert_(true);
@@ -682,12 +868,12 @@ public:
    * Destructor.
    * @note If the database is not closed, it is closed implicitly.
    */
-  virtual ~TreeDB() {
+  virtual ~PlantDB() {
     _assert_(true);
     if (omode_ != 0) close();
     if (!curs_.empty()) {
-      CursorList::const_iterator cit = curs_.begin();
-      CursorList::const_iterator citend = curs_.end();
+      typename CursorList::const_iterator cit = curs_.begin();
+      typename CursorList::const_iterator citend = curs_.end();
       while (cit != citend) {
         Cursor* cur = *cit;
         cur->db_ = NULL;
@@ -718,14 +904,14 @@ public:
       mlock_.unlock();
       return false;
     }
-    char lstack[TDBRECBUFSIZ];
+    char lstack[PDBRECBUFSIZ];
     size_t lsiz = sizeof(Link) + ksiz;
     char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
     Link* link = (Link*)lbuf;
     link->child = 0;
     link->ksiz = ksiz;
     std::memcpy(lbuf + sizeof(*link), kbuf, ksiz);
-    int64_t hist[TDBLEVELMAX];
+    int64_t hist[PDBLEVELMAX];
     int32_t hnum = 0;
     LeafNode* node = search_tree(link, true, hist, &hnum);
     if (!node) {
@@ -734,7 +920,7 @@ public:
       mlock_.unlock();
       return false;
     }
-    char rstack[TDBRECBUFSIZ];
+    char rstack[PDBRECBUFSIZ];
     size_t rsiz = sizeof(Record) + ksiz;
     char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
     Record* rec = (Record*)rbuf;
@@ -758,7 +944,7 @@ public:
       if (atran && !tran_ && !fix_auto_transaction_tree()) err = true;
       reorg = false;
     } else if (cusage_ > pccap_) {
-      int32_t idx = node->id % TDBSLOTNUM;
+      int32_t idx = node->id % PDBSLOTNUM;
       LeafSlot* lslot = lslots_ + idx;
       if (!clean_leaf_cache_part(lslot)) err = true;
       if (mlock_.promote()) {
@@ -783,7 +969,7 @@ public:
       }
       mlock_.unlock();
     } else if (flush) {
-      int32_t idx = node->id % TDBSLOTNUM;
+      int32_t idx = node->id % PDBSLOTNUM;
       LeafSlot* lslot = lslots_ + idx;
       mlock_.lock_writer();
       if (!flush_leaf_cache_part(lslot)) err = true;
@@ -834,15 +1020,15 @@ public:
       LeafNode* node = load_leaf_node(id, false);
       if (!node) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
-        hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+        db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
         return false;
       }
       id = node->next;
       const RecordArray& recs = node->recs;
       RecordArray keys;
       keys.reserve(recs.size());
-      RecordArray::const_iterator rit = recs.begin();
-      RecordArray::const_iterator ritend = recs.end();
+      typename RecordArray::const_iterator rit = recs.begin();
+      typename RecordArray::const_iterator ritend = recs.end();
       while (rit != ritend) {
         Record* rec = *rit;
         size_t rsiz = sizeof(*rec) + rec->ksiz;
@@ -855,8 +1041,8 @@ public:
         keys.push_back(key);
         rit++;
       }
-      RecordArray::const_iterator kit = keys.begin();
-      RecordArray::const_iterator kitend = keys.end();
+      typename RecordArray::const_iterator kit = keys.begin();
+      typename RecordArray::const_iterator kitend = keys.end();
       bool reorg = false;
       while (kit != kitend) {
         Record* rec = *kit;
@@ -866,14 +1052,14 @@ public:
       if (reorg) {
         Record* rec = keys.front();
         char* dbuf = (char*)rec + sizeof(*rec);
-        char lstack[TDBRECBUFSIZ];
+        char lstack[PDBRECBUFSIZ];
         size_t lsiz = sizeof(Link) + rec->ksiz;
         char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
         Link* link = (Link*)lbuf;
         link->child = 0;
         link->ksiz = rec->ksiz;
         std::memcpy(lbuf + sizeof(*link), dbuf, rec->ksiz);
-        int64_t hist[TDBLEVELMAX];
+        int64_t hist[PDBLEVELMAX];
         int32_t hnum = 0;
         node = search_tree(link, false, hist, &hnum);
         if (node) {
@@ -885,11 +1071,11 @@ public:
         if (lbuf != lstack) delete[] lbuf;
       }
       if (cusage_ > pccap_) {
-        for (int32_t i = 0; i < TDBSLOTNUM; i++) {
+        for (int32_t i = 0; i < PDBSLOTNUM; i++) {
           LeafSlot* lslot = lslots_ + i;
           if (!flush_leaf_cache_part(lslot)) err = true;
         }
-        InnerSlot* islot = islots_ + (flcnt++) % TDBSLOTNUM;
+        InnerSlot* islot = islots_ + (flcnt++) % PDBSLOTNUM;
         if (islot->warm->count() > 2 && !flush_inner_cache_part(islot)) err = true;
       }
       kit = keys.begin();
@@ -908,7 +1094,7 @@ public:
    */
   Error error() const {
     _assert_(true);
-    return hdb_.error();
+    return db_.error();
   }
   /**
    * Set the error information.
@@ -917,24 +1103,24 @@ public:
    */
   void set_error(Error::Code code, const char* message) {
     _assert_(message);
-    hdb_.set_error(code, message);
+    db_.set_error(code, message);
   }
   /**
    * Open a database file.
    * @param path the path of a database file.
-   * @param mode the connection mode.  TreeDB::OWRITER as a writer, TreeDB::OREADER as a
-   * reader.  The following may be added to the writer mode by bitwise-or: TreeDB::OCREATE,
-   * which means it creates a new database if the file does not exist, TreeDB::OTRUNCATE, which
-   * means it creates a new database regardless if the file exists, TreeDB::OAUTOTRAN, which
-   * means each updating operation is performed in implicit transaction, TreeDB::OAUTOSYNC,
+   * @param mode the connection mode.  BasicDB::OWRITER as a writer, BasicDB::OREADER as a
+   * reader.  The following may be added to the writer mode by bitwise-or: BasicDB::OCREATE,
+   * which means it creates a new database if the file does not exist, BasicDB::OTRUNCATE, which
+   * means it creates a new database regardless if the file exists, BasicDB::OAUTOTRAN, which
+   * means each updating operation is performed in implicit transaction, BasicDB::OAUTOSYNC,
    * which means each updating operation is followed by implicit synchronization with the file
    * system.  The following may be added to both of the reader mode and the writer mode by
-   * bitwise-or: TreeDB::ONOLOCK, which means it opens the database file without file locking,
-   * TreeDB::OTRYLOCK, which means locking is performed without blocking, TreeDB::ONOREPAIR,
+   * bitwise-or: BasicDB::ONOLOCK, which means it opens the database file without file locking,
+   * BasicDB::OTRYLOCK, which means locking is performed without blocking, BasicDB::ONOREPAIR,
    * which means the database file is not repaired implicitly even if file destruction is
    * detected.
    * @return true on success, or false on failure.
-   * @note Every opened database must be closed by the TreeDB::close method when it is no
+   * @note Every opened database must be closed by the BasicDB::close method when it is no
    * longer in use.  It is not allowed for two or more database objects in the same process to
    * keep their connections to the same database file at the same time.
    */
@@ -945,6 +1131,10 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
+    if (DBTYPE == TYPEGRASS) {
+      mode &= ~OREADER;
+      mode |= OWRITER | OCREATE;
+    }
     writer_ = false;
     autotran_ = false;
     autosync_ = false;
@@ -953,41 +1143,41 @@ public:
       if (mode & OAUTOTRAN) autotran_ = true;
       if (mode & OAUTOSYNC) autosync_ = true;
     }
-    if (!hdb_.tune_type(TYPETREE)) return false;
-    if (!hdb_.tune_alignment(apow_)) return false;
-    if (!hdb_.tune_fbp(fpow_)) return false;
-    if (!hdb_.tune_options(opts_)) return false;
-    if (!hdb_.tune_buckets(bnum_)) return false;
-    if (!hdb_.open(path, mode)) return false;
-    if (hdb_.type() != TYPETREE) {
+    if (!db_.tune_type(DBTYPE)) return false;
+    if (!db_.tune_alignment(apow_)) return false;
+    if (!db_.tune_fbp(fpow_)) return false;
+    if (!db_.tune_options(opts_)) return false;
+    if (!db_.tune_buckets(bnum_)) return false;
+    if (!db_.open(path, mode)) return false;
+    if (db_.type() != DBTYPE) {
       set_error(__FILE__, __LINE__, Error::INVALID, "invalid database type");
-      hdb_.close();
+      db_.close();
       return false;
     }
-    if (hdb_.recovered()) {
+    if (db_.recovered()) {
       if (!writer_) {
-        if (!hdb_.close()) return false;
+        if (!db_.close()) return false;
         mode &= ~OREADER;
         mode |= OWRITER;
-        if (!hdb_.open(path, mode)) return false;
+        if (!db_.open(path, mode)) return false;
       }
       if (!recalc_count()) return false;
-    } else if (hdb_.reorganized()) {
+    } else if (db_.reorganized()) {
       if (!writer_) {
-        if (!hdb_.close()) return false;
+        if (!db_.close()) return false;
         mode &= ~OREADER;
         mode |= OWRITER;
-        if (!hdb_.open(path, mode)) return false;
+        if (!db_.open(path, mode)) return false;
       }
       if (!reorganize_file()) return false;
     }
-    root_ = 0;
-    first_ = 0;
-    last_ = 0;
-    count_ = 0;
-    create_leaf_cache();
-    create_inner_cache();
-    if (writer_ && hdb_.count() < 1) {
+    if (writer_ && db_.count() < 1) {
+      root_ = 0;
+      first_ = 0;
+      last_ = 0;
+      count_ = 0;
+      create_leaf_cache();
+      create_inner_cache();
       lcnt_ = 0;
       create_leaf_node(0, 0);
       root_ = 1;
@@ -997,34 +1187,29 @@ public:
       icnt_ = 0;
       count_ = 0;
       if (!reccomp_.comp) reccomp_.comp = &LEXICALCOMP;
-      if (!dump_meta()) {
+      if (!dump_meta() || !flush_leaf_cache(true) || !load_meta()) {
         delete_inner_cache();
         delete_leaf_cache();
-        hdb_.close();
+        db_.close();
         return false;
       }
-      if (!flush_leaf_cache(true)) {
-        delete_inner_cache();
-        delete_leaf_cache();
-        hdb_.close();
+    } else {
+      if (!load_meta()) {
+        db_.close();
         return false;
       }
-    }
-    if (!load_meta()) {
-      delete_inner_cache();
-      delete_leaf_cache();
-      hdb_.close();
-      return false;
+      create_leaf_cache();
+      create_inner_cache();
     }
     if (psiz_ < 1 || root_ < 1 || first_ < 1 || last_ < 1 ||
-        lcnt_ < 1 || icnt_ < 0 || count_ < 0) {
+        lcnt_ < 1 || icnt_ < 0 || count_ < 0 || bnum_ < 1) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data");
-      hdb_.report(__FILE__, __LINE__, "info", "psiz=%ld root=%ld first=%ld last=%ld"
-                  " lcnt=%ld icnt=%ld count=%ld", (long)psiz_, (long)root_,
-                  (long)first_, (long)last_, (long)lcnt_, (long)icnt_, (long)count_);
+      db_.report(__FILE__, __LINE__, "info", "psiz=%ld root=%ld first=%ld last=%ld"
+                 " lcnt=%ld icnt=%ld count=%ld bnum=%ld", (long)psiz_, (long)root_,
+                 (long)first_, (long)last_, (long)lcnt_, (long)icnt_, (long)count_, (long)bnum_);
       delete_inner_cache();
       delete_leaf_cache();
-      hdb_.close();
+      db_.close();
       return false;
     }
     omode_ = mode;
@@ -1050,8 +1235,8 @@ public:
     int64_t isiz = calc_inner_cache_size();
     if (cusage_ != lsiz + isiz) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "invalid cache usage");
-      hdb_.report(__FILE__, __LINE__, "info", "cusage=%ld lsiz=%ld isiz=%ld",
-                  (long)cusage_, (long)lsiz, (long)isiz);
+      db_.report(__FILE__, __LINE__, "info", "cusage=%ld lsiz=%ld isiz=%ld",
+                 (long)cusage_, (long)lsiz, (long)isiz);
       err = true;
     }
     if (!flush_leaf_cache(true)) err = true;
@@ -1062,14 +1247,14 @@ public:
     int64_t icnt = calc_inner_cache_count();
     if (cusage_ != 0 || lsiz != 0 || isiz != 0 || lcnt != 0 || icnt != 0) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "remaining cache");
-      hdb_.report(__FILE__, __LINE__, "info", "cusage=%ld lsiz=%ld isiz=%ld lcnt=%ld icnt=%ld",
-                  (long)cusage_, (long)lsiz, (long)isiz, (long)lcnt, (long)icnt);
+      db_.report(__FILE__, __LINE__, "info", "cusage=%ld lsiz=%ld isiz=%ld lcnt=%ld icnt=%ld",
+                 (long)cusage_, (long)lsiz, (long)isiz, (long)lcnt, (long)icnt);
       err = true;
     }
     delete_inner_cache();
     delete_leaf_cache();
     if (writer_ && !dump_meta()) err = true;
-    if (!hdb_.close()) err = true;
+    if (!db_.close()) err = true;
     omode_ = 0;
     return !err;
   }
@@ -1115,7 +1300,7 @@ public:
       FileProcessor* proc_;
       int64_t count_;
     } wrapper(proc, count_);
-    if (!hdb_.synchronize(hard, &wrapper)) err = true;
+    if (!db_.synchronize(hard, &wrapper)) err = true;
     mlock_.unlock();
     return !err;
   }
@@ -1228,7 +1413,7 @@ public:
     flush_leaf_cache(false);
     flush_inner_cache(false);
     bool err = false;
-    if (!hdb_.clear()) err = true;
+    if (!db_.clear()) err = true;
     lcnt_ = 0;
     create_leaf_node(0, 0);
     root_ = 1;
@@ -1266,7 +1451,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return -1;
     }
-    return hdb_.size();
+    return db_.size();
   }
   /**
    * Get the path of the database file.
@@ -1279,7 +1464,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return "";
     }
-    return hdb_.path();
+    return db_.path();
   }
   /**
    * Get the miscellaneous status information.
@@ -1293,8 +1478,8 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
-    if (!hdb_.status(strmap)) return false;
-    (*strmap)["type"] = "TreeDB";
+    if (!db_.status(strmap)) return false;
+    (*strmap)["type"] = strprintf("%d", (int)DBTYPE);
     (*strmap)["psiz"] = strprintf("%d", psiz_);
     (*strmap)["pccap"] = strprintf("%lld", (long long)pccap_);
     const char* compname = "external";
@@ -1310,6 +1495,8 @@ public:
     (*strmap)["lcnt"] = strprintf("%lld", (long long)lcnt_);
     (*strmap)["icnt"] = strprintf("%lld", (long long)icnt_);
     (*strmap)["count"] = strprintf("%lld", (long long)count_);
+    (*strmap)["bnum"] = strprintf("%lld", (long long)bnum_);
+    (*strmap)["pnum"] = strprintf("%lld", (long long)db_.count());
     (*strmap)["cusage"] = strprintf("%lld", (long long)cusage_);
     if (strmap->count("cusage_lcnt") > 0)
       (*strmap)["cusage_lcnt"] = strprintf("%lld", (long long)calc_leaf_cache_count());
@@ -1322,7 +1509,7 @@ public:
     if (strmap->count("tree_level") > 0) {
       Link link;
       link.ksiz = 0;
-      int64_t hist[TDBLEVELMAX];
+      int64_t hist[PDBLEVELMAX];
       int32_t hnum = 0;
       search_tree(&link, false, hist, &hnum);
       (*strmap)["tree_level"] = strprintf("%d", hnum + 1);
@@ -1352,7 +1539,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    return hdb_.tune_error_reporter(erstrm, ervbs);
+    return db_.tune_error_reporter(erstrm, ervbs);
   }
   /**
    * Set the power of the alignment of record size.
@@ -1366,7 +1553,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    apow_ = apow >= 0 ? apow : TDBDEFAPOW;
+    apow_ = apow >= 0 ? apow : PDBDEFAPOW;
     return true;
   }
   /**
@@ -1381,13 +1568,14 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    fpow_ = fpow >= 0 ? fpow : TDBDEFFPOW;
+    fpow_ = fpow >= 0 ? fpow : PDBDEFFPOW;
     return true;
   }
   /**
    * Set the optional features.
-   * @param opts the optional features by bitwise-or: TreeDB::TSMALL to use 32-bit addressing,
-   * TreeDB::TLINEAR to use linear collision chaining, TreeDB::TCOMPRESS to compress each record.
+   * @param opts the optional features by bitwise-or: BasicDB::TSMALL to use 32-bit addressing,
+   * BasicDB::TLINEAR to use linear collision chaining, BasicDB::TCOMPRESS to compress each
+   * record.
    * @return true on success, or false on failure.
    */
   bool tune_options(int8_t opts) {
@@ -1412,7 +1600,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    bnum_ = bnum > 0 ? bnum : TDBDEFBNUM;
+    bnum_ = bnum > 0 ? bnum : PDBDEFBNUM;
     return true;
   }
   /**
@@ -1427,7 +1615,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    psiz_ = psiz > 0 ? psiz : TDBDEFPSIZ;
+    psiz_ = psiz > 0 ? psiz : PDBDEFPSIZ;
     return true;
   }
   /**
@@ -1442,7 +1630,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    return hdb_.tune_map(msiz);
+    return db_.tune_map(msiz);
   }
   /**
    * Set the unit step number of auto defragmentation.
@@ -1456,7 +1644,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    return hdb_.tune_defrag(dfunit);
+    return db_.tune_defrag(dfunit);
   }
   /**
    * Set the capacity size of the page cache.
@@ -1470,7 +1658,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    pccap_ = pccap > 0 ? pccap : TDBDEFPCCAP;
+    pccap_ = pccap > 0 ? pccap : PDBDEFPCCAP;
     return true;
   }
   /**
@@ -1485,7 +1673,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
-    return hdb_.tune_compressor(comp);
+    return db_.tune_compressor(comp);
   }
   /**
    * Set the record comparator.
@@ -1513,7 +1701,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return NULL;
     }
-    return hdb_.opaque();
+    return db_.opaque();
   }
   /**
    * Synchronize the opaque data.
@@ -1526,7 +1714,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
-    return hdb_.synchronize_opaque();
+    return db_.synchronize_opaque();
   }
   /**
    * Perform defragmentation of the file.
@@ -1540,7 +1728,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
-    return hdb_.defrag(step);
+    return db_.defrag(step);
   }
   /**
    * Get the status flags.
@@ -1553,7 +1741,7 @@ public:
       set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return 0;
     }
-    return hdb_.flags();
+    return db_.flags();
   }
 protected:
   /**
@@ -1566,7 +1754,7 @@ protected:
   void set_error(const char* file, int32_t line,
                  Error::Code code, const char* message) {
     _assert_(file && line > 0 && message);
-    hdb_.set_error(file, line, code, message);
+    db_.set_error(file, line, code, message);
   }
 private:
   /**
@@ -1661,10 +1849,10 @@ private:
    */
   void create_leaf_cache() {
     _assert_(true);
-    int64_t bnum = bnum_ / TDBSLOTNUM + 1;
+    int64_t bnum = bnum_ / PDBSLOTNUM + 1;
     if (bnum < INT8_MAX) bnum = INT8_MAX;
     bnum = nearbyprime(bnum);
-    for (int32_t i = 0; i < TDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
       lslots_[i].hot = new LeafCache(bnum);
       lslots_[i].warm = new LeafCache(bnum);
     }
@@ -1674,7 +1862,7 @@ private:
    */
   void delete_leaf_cache() {
     _assert_(true);
-    for (int32_t i = TDBSLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = PDBSLOTNUM - 1; i >= 0; i--) {
       LeafSlot* slot = lslots_ + i;
       delete slot->warm;
       delete slot->hot;
@@ -1688,10 +1876,10 @@ private:
   bool flush_leaf_cache(bool save) {
     _assert_(true);
     bool err = false;
-    for (int32_t i = TDBSLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = PDBSLOTNUM - 1; i >= 0; i--) {
       LeafSlot* slot = lslots_ + i;
-      LeafCache::Iterator it = slot->warm->begin();
-      LeafCache::Iterator itend = slot->warm->end();
+      typename LeafCache::Iterator it = slot->warm->begin();
+      typename LeafCache::Iterator itend = slot->warm->end();
       while (it != itend) {
         LeafNode* node = it.value();
         it++;
@@ -1731,11 +1919,11 @@ private:
   bool clean_leaf_cache() {
     _assert_(true);
     bool err = false;
-    for (int32_t i = 0; i < TDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
       ScopedSpinLock lock(&slot->lock);
-      LeafCache::Iterator it = slot->warm->begin();
-      LeafCache::Iterator itend = slot->warm->end();
+      typename LeafCache::Iterator it = slot->warm->begin();
+      typename LeafCache::Iterator itend = slot->warm->end();
       while (it != itend) {
         LeafNode* node = it.value();
         if (!save_leaf_node(node)) err = true;
@@ -1780,13 +1968,13 @@ private:
     LeafNode* node = new LeafNode;
     node->id = ++lcnt_;
     node->size = sizeof(int32_t) * 2;
-    node->recs.reserve(TDBDEFLINUM);
+    node->recs.reserve(PDBDEFLINUM);
     node->prev = prev;
     node->next = next;
     node->hot = false;
     node->dirty = true;
     node->dead = false;
-    int32_t sidx = node->id % TDBSLOTNUM;
+    int32_t sidx = node->id % PDBSLOTNUM;
     LeafSlot* slot = lslots_ + sidx;
     slot->warm->set(node->id, node, LeafCache::MLAST);
     cusage_ += node->size;
@@ -1802,14 +1990,14 @@ private:
     _assert_(node);
     bool err = false;
     if (save && !save_leaf_node(node)) err = true;
-    RecordArray::const_iterator rit = node->recs.begin();
-    RecordArray::const_iterator ritend = node->recs.end();
+    typename RecordArray::const_iterator rit = node->recs.begin();
+    typename RecordArray::const_iterator ritend = node->recs.end();
     while (rit != ritend) {
       Record* rec = *rit;
       xfree(rec);
       rit++;
     }
-    int32_t sidx = node->id % TDBSLOTNUM;
+    int32_t sidx = node->id % PDBSLOTNUM;
     LeafSlot* slot = lslots_ + sidx;
     if (node->hot) {
       slot->hot->remove(node->id);
@@ -1831,16 +2019,16 @@ private:
     if (!node->dirty) return true;
     bool err = false;
     char hbuf[NUMBUFSIZ];
-    size_t hsiz = std::sprintf(hbuf, "%c%llX", TDBLNPREFIX, (long long)node->id);
+    size_t hsiz = std::sprintf(hbuf, "%c%llX", PDBLNPREFIX, (long long)node->id);
     if (node->dead) {
-      if (!hdb_.remove(hbuf, hsiz) && hdb_.error().code() != Error::NOREC) err = true;
+      if (!db_.remove(hbuf, hsiz) && db_.error().code() != Error::NOREC) err = true;
     } else {
       char* rbuf = new char[node->size];
       char* wp = rbuf;
       wp += writevarnum(wp, node->prev);
       wp += writevarnum(wp, node->next);
-      RecordArray::const_iterator rit = node->recs.begin();
-      RecordArray::const_iterator ritend = node->recs.end();
+      typename RecordArray::const_iterator rit = node->recs.begin();
+      typename RecordArray::const_iterator ritend = node->recs.end();
       while (rit != ritend) {
         Record* rec = *rit;
         wp += writevarnum(wp, rec->ksiz);
@@ -1852,7 +2040,7 @@ private:
         wp += rec->vsiz;
         rit++;
       }
-      if (!hdb_.set(hbuf, hsiz, rbuf, wp - rbuf)) err = true;
+      if (!db_.set(hbuf, hsiz, rbuf, wp - rbuf)) err = true;
       delete[] rbuf;
     }
     node->dirty = false;
@@ -1866,13 +2054,13 @@ private:
    */
   LeafNode* load_leaf_node(int64_t id, bool prom) {
     _assert_(id > 0);
-    int32_t sidx = id % TDBSLOTNUM;
+    int32_t sidx = id % PDBSLOTNUM;
     LeafSlot* slot = lslots_ + sidx;
     ScopedSpinLock lock(&slot->lock);
     LeafNode** np = slot->hot->get(id, LeafCache::MLAST);
     if (np) return *np;
     if (prom) {
-      if (slot->hot->count() * TDBWARMRATIO > slot->warm->count() + TDBWARMRATIO) {
+      if (slot->hot->count() * PDBWARMRATIO > slot->warm->count() + PDBWARMRATIO) {
         slot->hot->first_value()->hot = false;
         slot->hot->migrate(slot->hot->first_key(), slot->warm, LeafCache::MLAST);
       }
@@ -1886,7 +2074,7 @@ private:
       if (np) return *np;
     }
     char hbuf[NUMBUFSIZ];
-    size_t hsiz = std::sprintf(hbuf, "%c%llX", TDBLNPREFIX, (long long)id);
+    size_t hsiz = std::sprintf(hbuf, "%c%llX", PDBLNPREFIX, (long long)id);
     class VisitorImpl : public DB::Visitor {
     public:
       explicit VisitorImpl() : node_(NULL) {}
@@ -1937,8 +2125,8 @@ private:
           node->size += rsiz;
         }
         if (vsiz != 0) {
-          RecordArray::const_iterator rit = node->recs.begin();
-          RecordArray::const_iterator ritend = node->recs.end();
+          typename RecordArray::const_iterator rit = node->recs.begin();
+          typename RecordArray::const_iterator ritend = node->recs.end();
           while (rit != ritend) {
             Record* rec = *rit;
             xfree(rec);
@@ -1952,7 +2140,7 @@ private:
       }
       LeafNode* node_;
     } visitor;
-    if (!hdb_.accept(hbuf, hsiz, &visitor, false)) return NULL;
+    if (!db_.accept(hbuf, hsiz, &visitor, false)) return NULL;
     LeafNode* node = visitor.pop();
     if (!node) return NULL;
     node->id = id;
@@ -1988,8 +2176,8 @@ private:
     _assert_(node && rec && visitor);
     bool reorg = false;
     RecordArray& recs = node->recs;
-    RecordArray::iterator ritend = recs.end();
-    RecordArray::iterator rit = std::lower_bound(recs.begin(), ritend, rec, reccomp_);
+    typename RecordArray::iterator ritend = recs.end();
+    typename RecordArray::iterator rit = std::lower_bound(recs.begin(), ritend, rec, reccomp_);
     if (rit != ritend && !reccomp_(rec, *rit)) {
       Record* rec = *rit;
       char* kbuf = (char*)rec + sizeof(*rec);
@@ -2054,7 +2242,7 @@ private:
       LeafNode* nextnode = load_leaf_node(newnode->next, false);
       if (!nextnode) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
-        hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)newnode->next);
+        db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)newnode->next);
         return NULL;
       }
       nextnode->prev = newnode->id;
@@ -2063,9 +2251,9 @@ private:
     node->next = newnode->id;
     node->dirty = true;
     RecordArray& recs = node->recs;
-    RecordArray::iterator mid = recs.begin() + recs.size() / 2;
-    RecordArray::iterator rit = mid;
-    RecordArray::iterator ritend = recs.end();
+    typename RecordArray::iterator mid = recs.begin() + recs.size() / 2;
+    typename RecordArray::iterator rit = mid;
+    typename RecordArray::iterator ritend = recs.end();
     RecordArray& newrecs = newnode->recs;
     while (rit != ritend) {
       Record* rec = *rit;
@@ -2084,10 +2272,10 @@ private:
    */
   void create_inner_cache() {
     _assert_(true);
-    int64_t bnum = (bnum_ / TDBAVGWAY) / TDBSLOTNUM + 1;
+    int64_t bnum = (bnum_ / PDBAVGWAY) / PDBSLOTNUM + 1;
     if (bnum < INT8_MAX) bnum = INT8_MAX;
     bnum = nearbyprime(bnum);
-    for (int32_t i = 0; i < TDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
       islots_[i].warm = new InnerCache(bnum);
     }
   }
@@ -2096,7 +2284,7 @@ private:
    */
   void delete_inner_cache() {
     _assert_(true);
-    for (int32_t i = TDBSLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = PDBSLOTNUM - 1; i >= 0; i--) {
       InnerSlot* slot = islots_ + i;
       delete slot->warm;
     }
@@ -2109,10 +2297,10 @@ private:
   bool flush_inner_cache(bool save) {
     _assert_(true);
     bool err = false;
-    for (int32_t i = TDBSLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = PDBSLOTNUM - 1; i >= 0; i--) {
       InnerSlot* slot = islots_ + i;
-      InnerCache::Iterator it = slot->warm->begin();
-      InnerCache::Iterator itend = slot->warm->end();
+      typename InnerCache::Iterator it = slot->warm->begin();
+      typename InnerCache::Iterator itend = slot->warm->end();
       while (it != itend) {
         InnerNode* node = it.value();
         it++;
@@ -2142,11 +2330,11 @@ private:
   bool clean_inner_cache() {
     _assert_(true);
     bool err = false;
-    for (int32_t i = 0; i < TDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
       InnerSlot* slot = islots_ + i;
       ScopedSpinLock lock(&slot->lock);
-      InnerCache::Iterator it = slot->warm->begin();
-      InnerCache::Iterator itend = slot->warm->end();
+      typename InnerCache::Iterator it = slot->warm->begin();
+      typename InnerCache::Iterator itend = slot->warm->end();
       while (it != itend) {
         InnerNode* node = it.value();
         if (!save_inner_node(node)) err = true;
@@ -2163,13 +2351,13 @@ private:
   InnerNode* create_inner_node(int64_t heir) {
     _assert_(true);
     InnerNode* node = new InnerNode;
-    node->id = ++icnt_ + TDBINIDBASE;
+    node->id = ++icnt_ + PDBINIDBASE;
     node->heir = heir;
-    node->links.reserve(TDBDEFIINUM);
+    node->links.reserve(PDBDEFIINUM);
     node->size = sizeof(int64_t);
     node->dirty = true;
     node->dead = false;
-    int32_t sidx = node->id % TDBSLOTNUM;
+    int32_t sidx = node->id % PDBSLOTNUM;
     InnerSlot* slot = islots_ + sidx;
     slot->warm->set(node->id, node, InnerCache::MLAST);
     cusage_ += node->size;
@@ -2185,14 +2373,14 @@ private:
     _assert_(node);
     bool err = false;
     if (save && !save_inner_node(node)) err = true;
-    LinkArray::const_iterator lit = node->links.begin();
-    LinkArray::const_iterator litend = node->links.end();
+    typename LinkArray::const_iterator lit = node->links.begin();
+    typename LinkArray::const_iterator litend = node->links.end();
     while (lit != litend) {
       Link* link = *lit;
       xfree(link);
       lit++;
     }
-    int32_t sidx = node->id % TDBSLOTNUM;
+    int32_t sidx = node->id % PDBSLOTNUM;
     InnerSlot* slot = islots_ + sidx;
     slot->warm->remove(node->id);
     cusage_ -= node->size;
@@ -2210,15 +2398,15 @@ private:
     bool err = false;
     char hbuf[NUMBUFSIZ];
     size_t hsiz = std::sprintf(hbuf, "%c%llX",
-                               TDBINPREFIX, (long long)(node->id - TDBINIDBASE));
+                               PDBINPREFIX, (long long)(node->id - PDBINIDBASE));
     if (node->dead) {
-      if (!hdb_.remove(hbuf, hsiz) && hdb_.error().code() != Error::NOREC) err = true;
+      if (!db_.remove(hbuf, hsiz) && db_.error().code() != Error::NOREC) err = true;
     } else {
       char* rbuf = new char[node->size];
       char* wp = rbuf;
       wp += writevarnum(wp, node->heir);
-      LinkArray::const_iterator lit = node->links.begin();
-      LinkArray::const_iterator litend = node->links.end();
+      typename LinkArray::const_iterator lit = node->links.begin();
+      typename LinkArray::const_iterator litend = node->links.end();
       while (lit != litend) {
         Link* link = *lit;
         wp += writevarnum(wp, link->child);
@@ -2228,7 +2416,7 @@ private:
         wp += link->ksiz;
         lit++;
       }
-      if (!hdb_.set(hbuf, hsiz, rbuf, wp - rbuf)) err = true;
+      if (!db_.set(hbuf, hsiz, rbuf, wp - rbuf)) err = true;
       delete[] rbuf;
     }
     node->dirty = false;
@@ -2241,13 +2429,13 @@ private:
    */
   InnerNode* load_inner_node(int64_t id) {
     _assert_(id > 0);
-    int32_t sidx = id % TDBSLOTNUM;
+    int32_t sidx = id % PDBSLOTNUM;
     InnerSlot* slot = islots_ + sidx;
     ScopedSpinLock lock(&slot->lock);
     InnerNode** np = slot->warm->get(id, InnerCache::MLAST);
     if (np) return *np;
     char hbuf[NUMBUFSIZ];
-    size_t hsiz = std::sprintf(hbuf, "%c%llX", TDBINPREFIX, (long long)(id - TDBINIDBASE));
+    size_t hsiz = std::sprintf(hbuf, "%c%llX", PDBINPREFIX, (long long)(id - PDBINIDBASE));
     class VisitorImpl : public DB::Visitor {
     public:
       explicit VisitorImpl() : node_(NULL) {}
@@ -2288,8 +2476,8 @@ private:
           node->size += sizeof(*link) + rksiz;
         }
         if (vsiz != 0) {
-          LinkArray::const_iterator lit = node->links.begin();
-          LinkArray::const_iterator litend = node->links.end();
+          typename LinkArray::const_iterator lit = node->links.begin();
+          typename LinkArray::const_iterator litend = node->links.end();
           while (lit != litend) {
             Link* link = *lit;
             xfree(link);
@@ -2303,7 +2491,7 @@ private:
       }
       InnerNode* node_;
     } visitor;
-    if (!hdb_.accept(hbuf, hsiz, &visitor, false)) return NULL;
+    if (!db_.accept(hbuf, hsiz, &visitor, false)) return NULL;
     InnerNode* node = visitor.pop();
     if (!node) return NULL;
     node->id = id;
@@ -2325,18 +2513,18 @@ private:
     _assert_(link && hist && hnp);
     int64_t id = root_;
     int32_t hnum = 0;
-    while (id > TDBINIDBASE) {
+    while (id > PDBINIDBASE) {
       InnerNode* node = load_inner_node(id);
       if (!node) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-        hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+        db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
         return NULL;
       }
       hist[hnum++] = id;
       const LinkArray& links = node->links;
-      LinkArray::const_iterator litbeg = links.begin();
-      LinkArray::const_iterator litend = links.end();
-      LinkArray::const_iterator lit = std::upper_bound(litbeg, litend, link, linkcomp_);
+      typename LinkArray::const_iterator litbeg = links.begin();
+      typename LinkArray::const_iterator litend = links.end();
+      typename LinkArray::const_iterator lit = std::upper_bound(litbeg, litend, link, linkcomp_);
       if (lit == litbeg) {
         id = node->heir;
       } else {
@@ -2380,16 +2568,16 @@ private:
         InnerNode* inode = load_inner_node(parent);
         if (!inode) {
           set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-          hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)parent);
+          db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)parent);
           delete[] kbuf;
           return false;
         }
         add_link_inner_node(inode, child, kbuf, ksiz);
         delete[] kbuf;
         LinkArray& links = inode->links;
-        if (inode->size <= psiz_ || links.size() <= TDBINLINKMIN) break;
-        LinkArray::iterator litbeg = links.begin();
-        LinkArray::iterator mid = litbeg + links.size() / 2;
+        if (inode->size <= psiz_ || links.size() <= PDBINLINKMIN) break;
+        typename LinkArray::iterator litbeg = links.begin();
+        typename LinkArray::iterator mid = litbeg + links.size() / 2;
         Link* link = *mid;
         InnerNode* newinode = create_inner_node(link->child);
         heir = inode->id;
@@ -2398,8 +2586,8 @@ private:
         ksiz = link->ksiz;
         kbuf = new char[ksiz];
         std::memcpy(kbuf, dbuf, ksiz);
-        LinkArray::iterator lit = mid + 1;
-        LinkArray::iterator litend = links.end();
+        typename LinkArray::iterator lit = mid + 1;
+        typename LinkArray::iterator litend = links.end();
         while (lit != litend) {
           link = *lit;
           char* dbuf = (char*)link + sizeof(*link);
@@ -2422,7 +2610,7 @@ private:
       InnerNode* inode = load_inner_node(hist[--hnum]);
       if (!inode) {
         set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-        hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)hist[hnum]);
+        db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)hist[hnum]);
         return false;
       }
       if (sub_link_tree(inode, node->id, hist, hnum)) {
@@ -2430,7 +2618,7 @@ private:
           LeafNode* tnode = load_leaf_node(node->prev, false);
           if (!tnode) {
             set_error(__FILE__, __LINE__, Error::BROKEN, "missing node");
-            hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)node->prev);
+            db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)node->prev);
             return false;
           }
           tnode->next = node->next;
@@ -2441,7 +2629,7 @@ private:
           LeafNode* tnode = load_leaf_node(node->next, false);
           if (!tnode) {
             set_error(__FILE__, __LINE__, Error::BROKEN, "missing node");
-            hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)node->next);
+            db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)node->next);
             return false;
           }
           tnode->prev = node->prev;
@@ -2469,8 +2657,8 @@ private:
     char* dbuf = (char*)link + sizeof(*link);
     std::memcpy(dbuf, kbuf, ksiz);
     LinkArray& links = node->links;
-    LinkArray::iterator litend = links.end();
-    LinkArray::iterator lit = std::upper_bound(links.begin(), litend, link, linkcomp_);
+    typename LinkArray::iterator litend = links.end();
+    typename LinkArray::iterator lit = std::upper_bound(links.begin(), litend, link, linkcomp_);
     links.insert(lit, link);
     node->size += rsiz;
     node->dirty = true;
@@ -2488,8 +2676,8 @@ private:
     _assert_(node && hist && hnum >= 0);
     node->dirty = true;
     LinkArray& links = node->links;
-    LinkArray::iterator lit = links.begin();
-    LinkArray::iterator litend = links.end();
+    typename LinkArray::iterator lit = links.begin();
+    typename LinkArray::iterator litend = links.end();
     if (node->heir == child) {
       if (!links.empty()) {
         Link* link = *lit;
@@ -2501,7 +2689,7 @@ private:
         InnerNode* pnode = load_inner_node(hist[--hnum]);
         if (!pnode) {
           set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-          hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)hist[hnum]);
+          db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)hist[hnum]);
           return false;
         }
         node->dead = true;
@@ -2509,11 +2697,11 @@ private:
       }
       node->dead = true;
       root_ = child;
-      while (child > TDBINIDBASE) {
+      while (child > PDBINIDBASE) {
         node = load_inner_node(child);
         if (!node) {
           set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-          hdb_.report(__FILE__, __LINE__, "info", "id=%ld", (long)child);
+          db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)child);
           return false;
         }
         if (node->dead) {
@@ -2543,7 +2731,7 @@ private:
    */
   bool dump_meta() {
     _assert_(true);
-    char head[TDBHEADSIZ];
+    char head[PDBHEADSIZ];
     std::memset(head, 0, sizeof(head));
     char* wp = head;
     if (reccomp_.comp == &LEXICALCOMP) {
@@ -2553,7 +2741,7 @@ private:
     } else {
       *(uint8_t*)(wp++) = 0xff;
     }
-    wp = head + TDBMOFFNUMS;
+    wp = head + PDBMOFFNUMS;
     uint64_t num = hton64(psiz_);
     std::memcpy(wp, &num, sizeof(num));
     wp += sizeof(num);
@@ -2575,7 +2763,12 @@ private:
     num = hton64(count_);
     std::memcpy(wp, &num, sizeof(num));
     wp += sizeof(num);
-    if (!hdb_.set(TDBMETAKEY, sizeof(TDBMETAKEY) - 1, head, sizeof(head))) return false;
+    num = hton64(bnum_);
+    std::memcpy(wp, &num, sizeof(num));
+    wp += sizeof(num);
+    std::memcpy(wp, "\nBoofy!\n", sizeof(num));
+    wp += sizeof(num);
+    if (!db_.set(PDBMETAKEY, sizeof(PDBMETAKEY) - 1, head, sizeof(head))) return false;
     return true;
   }
   /**
@@ -2584,12 +2777,12 @@ private:
    */
   bool load_meta() {
     _assert_(true);
-    char head[TDBHEADSIZ];
-    int32_t hsiz = hdb_.get(TDBMETAKEY, sizeof(TDBMETAKEY) - 1, head, sizeof(head));
+    char head[PDBHEADSIZ];
+    int32_t hsiz = db_.get(PDBMETAKEY, sizeof(PDBMETAKEY) - 1, head, sizeof(head));
     if (hsiz < 0) return false;
     if (hsiz != sizeof(head)) {
       set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data record");
-      hdb_.report(__FILE__, __LINE__, "info", "hsiz=%d", hsiz);
+      db_.report(__FILE__, __LINE__, "info", "hsiz=%d", hsiz);
       return false;
     }
     const char* rp = head;
@@ -2603,7 +2796,7 @@ private:
       set_error(__FILE__, __LINE__, Error::BROKEN, "comparator is invalid");
       return false;
     }
-    rp = head + TDBMOFFNUMS;
+    rp = head + PDBMOFFNUMS;
     uint64_t num;
     std::memcpy(&num, rp, sizeof(num));
     psiz_ = ntoh64(num);
@@ -2626,6 +2819,9 @@ private:
     std::memcpy(&num, rp, sizeof(num));
     count_ = ntoh64(num);
     rp += sizeof(num);
+    std::memcpy(&num, rp, sizeof(num));
+    bnum_ = ntoh64(num);
+    rp += sizeof(num);
     return true;
   }
   /**
@@ -2635,7 +2831,7 @@ private:
   int64_t calc_leaf_cache_count() {
     _assert_(true);
     int64_t sum = 0;
-    for (int32_t i = 0; i < TDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
       sum += slot->warm->count();
       sum += slot->hot->count();
@@ -2649,10 +2845,10 @@ private:
   int64_t calc_leaf_cache_size() {
     _assert_(true);
     int64_t sum = 0;
-    for (int32_t i = 0; i < TDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
-      LeafCache::Iterator it = slot->warm->begin();
-      LeafCache::Iterator itend = slot->warm->end();
+      typename LeafCache::Iterator it = slot->warm->begin();
+      typename LeafCache::Iterator itend = slot->warm->end();
       while (it != itend) {
         LeafNode* node = it.value();
         sum += node->size;
@@ -2675,7 +2871,7 @@ private:
   int64_t calc_inner_cache_count() {
     _assert_(true);
     int64_t sum = 0;
-    for (int32_t i = 0; i < TDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
       InnerSlot* slot = islots_ + i;
       sum += slot->warm->count();
     }
@@ -2688,10 +2884,10 @@ private:
   int64_t calc_inner_cache_size() {
     _assert_(true);
     int64_t sum = 0;
-    for (int32_t i = 0; i < TDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
       InnerSlot* slot = islots_ + i;
-      InnerCache::Iterator it = slot->warm->begin();
-      InnerCache::Iterator itend = slot->warm->end();
+      typename InnerCache::Iterator it = slot->warm->begin();
+      typename InnerCache::Iterator itend = slot->warm->end();
       while (it != itend) {
         InnerNode* node = it.value();
         sum += node->size;
@@ -2706,8 +2902,8 @@ private:
   void disable_cursors() {
     _assert_(true);
     if (curs_.empty()) return;
-    CursorList::const_iterator cit = curs_.begin();
-    CursorList::const_iterator citend = curs_.end();
+    typename CursorList::const_iterator cit = curs_.begin();
+    typename CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {
       Cursor* cur = *cit;
       if (cur->kbuf_) cur->clear_position();
@@ -2724,8 +2920,8 @@ private:
   void escape_cursors(int64_t src, int64_t dest, Record* rec) {
     _assert_(src > 0 && dest >= 0 && rec);
     if (curs_.empty()) return;
-    CursorList::const_iterator cit = curs_.begin();
-    CursorList::const_iterator citend = curs_.end();
+    typename CursorList::const_iterator cit = curs_.begin();
+    typename CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {
       Cursor* cur = *cit;
       if (cur->lid_ == src) {
@@ -2746,13 +2942,13 @@ private:
     _assert_(src > 0 && dest >= 0);
     if (curs_.empty()) return true;
     bool err = false;
-    CursorList::const_iterator cit = curs_.begin();
-    CursorList::const_iterator citend = curs_.end();
+    typename CursorList::const_iterator cit = curs_.begin();
+    typename CursorList::const_iterator citend = curs_.end();
     while (cit != citend) {
       Cursor* cur = *cit;
       if (cur->lid_ == src) {
         cur->clear_position();
-        if (!cur->set_position(dest) && hdb_.error().code() != Error::NOREC) err = true;
+        if (!cur->set_position(dest) && db_.error().code() != Error::NOREC) err = true;
       }
       cit++;
     }
@@ -2777,8 +2973,8 @@ private:
       id = node->next;
       flush_leaf_node(node, false);
     }
-    hdb_.report(__FILE__, __LINE__, "info", "recalculated the record count from %ld to %ld",
-                (long)count_, (long)count);
+    db_.report(__FILE__, __LINE__, "info", "recalculated the record count from %ld to %ld",
+               (long)count_, (long)count);
     count_ = count;
     if (!dump_meta()) err = true;
     delete_inner_cache();
@@ -2792,30 +2988,30 @@ private:
   bool reorganize_file() {
     _assert_(true);
     if (!load_meta()) return false;
-    const std::string& npath = hdb_.path() + File::EXTCHR + BDBTMPPATHEXT;
-    TreeDB tdb;
+    const std::string& npath = db_.path() + File::EXTCHR + PDBTMPPATHEXT;
+    PlantDB tdb;
     tdb.tune_comparator(reccomp_.comp);
     if (!tdb.open(npath, OWRITER | OCREATE | OTRUNCATE)) {
       set_error(__FILE__, __LINE__, tdb.error().code(), "opening the destination failed");
       return false;
     }
-    hdb_.report(__FILE__, __LINE__, "info", "reorganizing the database");
+    db_.report(__FILE__, __LINE__, "info", "reorganizing the database");
     bool err = false;
     create_leaf_cache();
     create_inner_cache();
-    DB::Cursor* cur = hdb_.cursor();
+    DB::Cursor* cur = db_.cursor();
     cur->jump();
     char* kbuf;
     size_t ksiz;
     while (!err && (kbuf = cur->get_key(&ksiz)) != NULL) {
-      if (*kbuf == TDBLNPREFIX) {
+      if (*kbuf == PDBLNPREFIX) {
         int64_t id = std::strtol(kbuf + 1, NULL, 16);
-        if (id > 0 && id < TDBINIDBASE) {
+        if (id > 0 && id < PDBINIDBASE) {
           LeafNode* node = load_leaf_node(id, false);
           if (node) {
             const RecordArray& recs = node->recs;
-            RecordArray::const_iterator rit = recs.begin();
-            RecordArray::const_iterator ritend = recs.end();
+            typename RecordArray::const_iterator rit = recs.begin();
+            typename RecordArray::const_iterator ritend = recs.end();
             while (rit != ritend) {
               Record* rec = *rit;
               char* dbuf = (char*)rec + sizeof(*rec);
@@ -2840,20 +3036,20 @@ private:
       set_error(__FILE__, __LINE__, tdb.error().code(), "opening the destination failed");
       err = true;
     }
-    HashDB hdb;
+    BASEDB hdb;
     if (!err && hdb.open(npath, OREADER)) {
-      if (!hdb_.clear()) err = true;
+      if (!db_.clear()) err = true;
       cur = hdb.cursor();
       cur->jump();
       const char* vbuf;
       size_t vsiz;
       while (!err && (kbuf = cur->get(&ksiz, &vbuf, &vsiz)) != NULL) {
-        if (!hdb_.set(kbuf, ksiz, vbuf, vsiz)) err = true;
+        if (!db_.set(kbuf, ksiz, vbuf, vsiz)) err = true;
         delete[] kbuf;
         cur->step();
       }
       delete cur;
-      if (!hdb_.synchronize(false, NULL)) err = true;
+      if (!db_.synchronize(false, NULL)) err = true;
       if (!hdb.close()) {
         set_error(__FILE__, __LINE__, hdb.error().code(), "opening the destination failed");
         err = true;
@@ -2875,13 +3071,13 @@ private:
     _assert_(true);
     if (!clean_leaf_cache()) return false;
     if (!clean_inner_cache()) return false;
-    int32_t idx = trcnt_++ % TDBSLOTNUM;
+    int32_t idx = trcnt_++ % PDBSLOTNUM;
     LeafSlot* lslot = lslots_ + idx;
     if (lslot->warm->count() + lslot->hot->count() > 1) flush_leaf_cache_part(lslot);
     InnerSlot* islot = islots_ + idx;
     if (islot->warm->count() > 1) flush_inner_cache_part(islot);
     if (!dump_meta()) return false;
-    if (!hdb_.begin_transaction(hard)) return false;
+    if (!db_.begin_transaction(hard)) return false;
     return true;
   }
   /**
@@ -2894,7 +3090,7 @@ private:
     if (!clean_leaf_cache()) return false;
     if (!clean_inner_cache()) return false;
     if (!dump_meta()) err = true;
-    if (!hdb_.end_transaction(true)) return false;
+    if (!db_.end_transaction(true)) return false;
     return !err;
   }
   /**
@@ -2906,7 +3102,7 @@ private:
     bool err = false;
     flush_leaf_cache(false);
     flush_inner_cache(false);
-    if (!hdb_.end_transaction(false)) err = true;
+    if (!db_.end_transaction(false)) err = true;
     if (!load_meta()) err = true;
     disable_cursors();
     return !err;
@@ -2917,18 +3113,18 @@ private:
    */
   bool fix_auto_transaction_tree() {
     _assert_(true);
-    if (!hdb_.begin_transaction(autosync_)) return false;
+    if (!db_.begin_transaction(autosync_)) return false;
     bool err = false;
     if (!clean_leaf_cache()) err = true;
     if (!clean_inner_cache()) err = true;
-    size_t cnum = TDBATRANCNUM / TDBSLOTNUM;
-    int32_t idx = trcnt_++ % TDBSLOTNUM;
+    size_t cnum = PDBATRANCNUM / PDBSLOTNUM;
+    int32_t idx = trcnt_++ % PDBSLOTNUM;
     LeafSlot* lslot = lslots_ + idx;
     if (lslot->warm->count() + lslot->hot->count() > cnum) flush_leaf_cache_part(lslot);
     InnerSlot* islot = islots_ + idx;
     if (islot->warm->count() > cnum) flush_inner_cache_part(islot);
     if (!dump_meta()) err = true;
-    if (!hdb_.end_transaction(true)) err = true;
+    if (!db_.end_transaction(true)) err = true;
     return !err;
   }
   /**
@@ -2937,11 +3133,11 @@ private:
    */
   bool fix_auto_transaction_leaf(LeafNode* node) {
     _assert_(node);
-    if (!hdb_.begin_transaction(autosync_)) return false;
+    if (!db_.begin_transaction(autosync_)) return false;
     bool err = false;
     if (!save_leaf_node(node)) err = true;
     if (!dump_meta()) err = true;
-    if (!hdb_.end_transaction(true)) err = true;
+    if (!db_.end_transaction(true)) err = true;
     return !err;
   }
   /**
@@ -2954,13 +3150,13 @@ private:
     if (!flush_leaf_cache(true)) err = true;
     if (!flush_inner_cache(true)) err = true;
     if (!dump_meta()) err = true;
-    if (!hdb_.synchronize(true, NULL)) err = true;
+    if (!db_.synchronize(true, NULL)) err = true;
     return !err;
   }
   /** Dummy constructor to forbid the use. */
-  TreeDB(const TreeDB&);
+  PlantDB(const PlantDB&);
   /** Dummy Operator to forbid the use. */
-  TreeDB& operator =(const TreeDB&);
+  PlantDB& operator =(const PlantDB&);
   /** The method lock. */
   SpinRWLock mlock_;
   /** The open mode. */
@@ -2971,8 +3167,8 @@ private:
   bool autotran_;
   /** The flag for auto synchronization. */
   bool autosync_;
-  /** The internal hash database. */
-  HashDB hdb_;
+  /** The internal database. */
+  BASEDB db_;
   /** The cursor objects. */
   CursorList curs_;
   /** The alignment power. */
@@ -3002,9 +3198,9 @@ private:
   /** The cache memory usage. */
   AtomicInt64 cusage_;
   /** The Slots of leaf nodes. */
-  LeafSlot lslots_[TDBSLOTNUM];
+  LeafSlot lslots_[PDBSLOTNUM];
   /** The Slots of inner nodes. */
-  InnerSlot islots_[TDBSLOTNUM];
+  InnerSlot islots_[PDBSLOTNUM];
   /** The record comparator. */
   RecordComparator reccomp_;
   /** The link comparator. */

@@ -50,7 +50,7 @@
 
 <p>Each operation of the B+ tree database has the time complexity of "O(log N)".  Therefore, in theory, the performance is logarithmic to the scale of the database.  Although the performance of random access of the B+ tree database is slower than that of the hash database, the B+ tree database supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers.  The performance of sequential access is much faster than that of random access.</p>
 
-<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class.  Beside them, three kinds of databases are provided under the same base class.  The prototype database is powered by the standard containers of STL.  The cache database is powered by the original implementation of double-linked hash map with LRU deletion algorithm.  The directory database is powered by the directory mechanism of the file system and stores records as respective files in a directory.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.</p>
+<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class.  Beside them, six kinds of databases are provided under the same base class.  The prototype hash database is powered by the standard container of std::unordered_map.  The prototype tree database is powered by the standard container of std::map.  The cache hash database is powered by the original implementation of double-linked hash map with LRU deletion algorithm.  The cache tree database is powered by the cache hash database and provides B+ tree mechanism.  The directory hash database is powered by the directory mechanism of the file system and stores records as respective files in a directory.  The directory tree database is powered by the directory hash database and provides B+ tree mechanism.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.</p>
 
 <p>Kyoto Cabinet runs very fast.  For example, elapsed time to store one million records is 0.9 seconds for the hash database, and 1.1 seconds for the B+ tree database.  Moreover, the size of database is very small.  For example, overhead for a record is 16 bytes for the hash database, and 4 bytes for the B+ tree database.  Furthermore, scalability of Kyoto Cabinet is great.  The database size can be up to 8EB (9.22e18 bytes).</p>
 
@@ -171,7 +171,7 @@
 <pre>$ make
 </pre>
 
-<p>Perform self-diagnostic test.</p>
+<p>Perform self-diagnostic test.  This takes a while.</p>
 
 <pre>$ make check
 </pre>
@@ -193,11 +193,12 @@
 /usr/local/include/kccompress.h
 /usr/local/include/kccompare.h
 /usr/local/include/kcmap.h
+/usr/local/include/kcplantdb.h
 /usr/local/include/kcprotodb.h
 /usr/local/include/kccachedb.h
 /usr/local/include/kchashdb.h
-/usr/local/include/kctreedb.h
 /usr/local/include/kcdirdb.h
+/usr/local/include/kcforestdb.h
 /usr/local/include/kcpolydb.h
 /usr/local/include/kclangc.h
 /usr/local/lib/libkyotocabinet.a
@@ -209,12 +210,15 @@
 /usr/local/bin/kcutilcodec
 /usr/local/bin/kcprototest
 /usr/local/bin/kccachetest
+/usr/local/bin/kcgrasstest
 /usr/local/bin/kchashtest
 /usr/local/bin/kchashmgr
 /usr/local/bin/kctreetest
 /usr/local/bin/kctreemgr
 /usr/local/bin/kcdirtest
 /usr/local/bin/kcdirmgr
+/usr/local/bin/kcforesttest
+/usr/local/bin/kcforestmgr
 /usr/local/bin/kcpolytest
 /usr/local/bin/kcpolymgr
 /usr/local/bin/kclanctest
@@ -232,11 +236,15 @@
 <li><code>--enable-profile</code> : build for profiling.  Enable profiling symbols, perform optimization, and perform dynamic linking.</li>
 <li><code>--enable-static</code> : build by static linking.</li>
 <li><code>--disable-shared</code> :  avoid to build shared libraries.</li>
-<li><code>--disable-zlib</code> : build without ZLIB compression.</li>
 <li><code>--disable-atomic</code> : build without atomic operations.</li>
+<li><code>--disable-zlib</code> : build without ZLIB compression.</li>
+<li><code>--enable-lzo</code> : build with LZO compression.</li>
+<li><code>--enable-lzma</code> : build with LZMA compression.</li>
 </ul>
 
 <p>`<code>--prefix</code>' and other options are also available as with usual UNIX software packages.  If you want to install Kyoto Cabinet under `<code>/usr</code>' not `<code>/usr/local</code>', specify `<code>--prefix=/usr</code>'.  As well, the library search path does not include `<code>/usr/local/lib</code>', it is necessary to set the environment variable `<code>LD_LIBRARY_PATH</code>' to include `<code>/usr/local/lib</code>' before running applications of Kyoto Cabinet.</p>
+
+<p>ZLIB is enabled by default.  LZO and LZMA are disabled by default.  Note that the programs on which Kyoto Cabinet depends are under different licenses.  For example, ZLIB is under the zlib license, LZO is under the GPL, and LZMA is under the LGPL.  You must also comply with their license terms if you enable them.</p>
 
 <h3 id="installation_library">How to Use the Library</h3>
 
@@ -527,7 +535,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td>kcprotodb.h</td>
 <td>
 <div>prototype hash database.</div>
-<div>on-memory database implemented with std::unorderd_map of STL.</div>
+<div>on-memory database implemented with std::unorderd_map.</div>
 </td>
 </tr>
 <tr>
@@ -535,15 +543,23 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td>kcprotodb.h</td>
 <td>
 <div>prototype tree database.</div>
-<div>on-memory database implemented with std::map of STL.</div>
+<div>on-memory database implemented with std::map.</div>
 </td>
 </tr>
 <tr>
 <td><code>CacheDB</code></td>
 <td>kccachedb.h</td>
 <td>
-<div>cache database.</div>
+<div>cache hash database.</div>
 <div>on-memory database featuring LRU deletion.</div>
+</td>
+</tr>
+<tr>
+<td><code>GrassDB</code></td>
+<td>kccachedb.h</td>
+<td>
+<div>cache tree database.</div>
+<div>on-memory database of B+ tree: cache with order.</div>
 </td>
 </tr>
 <tr>
@@ -556,7 +572,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 </tr>
 <tr>
 <td><code>TreeDB</code></td>
-<td>kctreedb.h</td>
+<td>kchashdb.h</td>
 <td>
 <div>file tree database.</div>
 <div>file database of B+ tree: DBM with order.</div>
@@ -566,8 +582,16 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td><code>DirDB</code></td>
 <td>kcdirdb.h</td>
 <td>
-<div>directory database.</div>
+<div>directory hash database.</div>
 <div>respective files in a directory of the file system.</div>
+</td>
+</tr>
+<tr>
+<td><code>ForestDB</code></td>
+<td>kcdirdb.h</td>
+<td>
+<div>directory tree database.</div>
+<div>directory database of B+ tree: huge DBM with order</div>
 </td>
 </tr>
 <tr>
@@ -584,58 +608,76 @@ accept(kbuf, ksiz, &amp;setter, true);
 
 <table summary="database features">
 <tr>
-<th abbr="class"></th>
-<td><code>ProtoHashDB</code></td>
-<td><code>ProtoTreeDB</code></td>
-<td><code>CacheDB</code></td>
-<td><code>HashDB</code></td>
-<td><code>TreeDB</code></td>
-<td><code>DirDB</code></td>
-</tr>
-<tr>
+<th abbr="class">class</th>
 <th abbr="persistence">persistence</th>
-<td>volatile</td>
-<td>volatile</td>
-<td>volatile</td>
-<td>persistent</td>
-<td>persistent</td>
-<td>persistent</td>
-</tr>
-<tr>
 <th abbr="algorithm">algorithm</th>
-<td>hash table</td>
-<td>red black tree</td>
-<td>hash table</td>
-<td>hash table</td>
-<td>B+ tree</td>
-<td>undefined</td>
-</tr>
-<tr>
 <th abbr="complexity">complexity</th>
-<td>O(1)</td>
-<td>O(log N)</td>
-<td>O(1)</td>
-<td>O(1)</td>
-<td>O(log N)</td>
-<td>undefined</td>
-</tr>
-<tr>
 <th abbr="sequence">sequence</th>
-<td>undefined</td>
-<td>lexical order</td>
-<td>undefined</td>
-<td>undefined</td>
-<td>custom order</td>
-<td>undefined</td>
+<th abbr="lock">lock unit</th>
 </tr>
 <tr>
-<th abbr="lock">lock unit</th>
+<td><code>ProtoHashDB</code></td>
+<td>volatile</td>
+<td>hash table</td>
+<td>O(1)</td>
+<td>undefined</td>
 <td>whole (rwlock)</td>
+</tr>
+<tr>
+<td><code>ProtoTreeDB</code></td>
+<td>volatile</td>
+<td>red black tree</td>
+<td>O(log N)</td>
+<td>lexical order</td>
 <td>whole (rwlock)</td>
+</tr>
+<tr>
+<td><code>CacheDB</code></td>
+<td>volatile</td>
+<td>hash table</td>
+<td>O(1)</td>
+<td>undefined</td>
 <td>record (mutex)</td>
-<td>record (rwlock)</td>
+</tr>
+<tr>
+<td><code>GrassDB</code></td>
+<td>volatile</td>
+<td>B+ tree</td>
+<td>O(log N)</td>
+<td>custom order</td>
 <td>page (rwlock)</td>
+</tr>
+<tr>
+<td><code>HashDB</code></td>
+<td>persistent</td>
+<td>hash table</td>
+<td>O(1)</td>
+<td>undefined</td>
 <td>record (rwlock)</td>
+</tr>
+<tr>
+<td><code>TreeDB</code></td>
+<td>persistent</td>
+<td>B+ tree</td>
+<td>O(log N)</td>
+<td>custom order</td>
+<td>page (rwlock)</td>
+</tr>
+<tr>
+<td><code>DirDB</code></td>
+<td>persistent</td>
+<td>undefined</td>
+<td>undefined</td>
+<td>undefined</td>
+<td>record (rwlock)</td>
+</tr>
+<tr>
+<td><code>ForestDB</code></td>
+<td>persistent</td>
+<td>B+ tree</td>
+<td>O(log N)</td>
+<td>custom order</td>
+<td>page (rwlock)</td>
 </tr>
 </table>
 
@@ -649,19 +691,25 @@ accept(kbuf, ksiz, &amp;setter, true);
 
 <p>This section describes tips and hacks to use Kyoto Cabinet.</p>
 
-<h3 id="tips_tuningcache">Tuning the Cache Database</h3>
+<h3 id="tips_tuningcache">Tuning the Cache Hash Database</h3>
 
-<p>The cache database is on-memory database featuring LRU deletion.  The following tuning methods are provided.</p>
+<p>The cache hash database (CacheDB) is on-memory database featuring LRU deletion.  The following tuning methods are provided.</p>
 
 <ul>
+<li><code>tune_options</code> : sets the optional features.</li>
 <li><code>tune_buckets</code> : sets the number of buckets of the hash table.</li>
+<li><code>tune_compressor</code> : set the data compressor.</li>
 <li><code>cap_count</code> : sets the capacity by record number.</li>
 <li><code>cap_size</code> : sets the capacity by memory usage.</li>
 </ul>
 
-<p>By default, the cache database maintains all records on memory and no record is expired.  If you want to expire old records to keep the memory usage constant, call `<code>cap_count</code>' and/or `<code>cap_size</code>' to limit the capacity.</p>
+<p>The optional features by `<code>tune_options</code>' is useful to reduce the memory usage at the expense of time efficiency.  If `<code>CacheDB::TCOMPRESS</code>' is specified, the key and the value of each record is compressed implicitly when stored in the file.  If the value is bigger than 1KB or more, compression is effective.</p>
 
 <p>The default tuning of the bucket number is about one million.  If you intend to store more records, call `<code>tune_buckets</code>' to set the bucket number.  The suggested ratio of the bucket number is the same to the total number of records and it is okay from 50% to 400%.  If the ratio decreases smaller than 50%, the time efficiency will decrease gradually.</p>
+
+<p>The default compression algorithm of the `<code>CacheDB::TCOMPRESS</code>' option is "Deflate" by ZLIB.  If you want to use another algorithm, call `<code>tune_compressor</code>' to set a functor which implements compression and decompression functions.</p>
+
+<p>By default, the cache hash database maintains all records on memory and no record is expired.  If you want to expire old records to keep the memory usage constant, call `<code>cap_count</code>' and/or `<code>cap_size</code>' to limit the capacity.</p>
 
 <p>If you want to cache ten millions of records and keep the memory usage less than 8GB, the following tuning is suggested for example.</p>
 
@@ -673,9 +721,36 @@ db.open(...);
 
 <p>All tuning methods must be called before the database is opened.</p>
 
+<h3 id="tips_tuninggrass">Tuning the Cache Tree Database</h3>
+
+<p>The cache tree database (GrassDB) is on-memory database of B+ tree.  Because each node of B+ tree is serialized as a page buffer and treated as a record in the cache hash database, all tuning methods of the cache hash database except for capacity limitation are inherited to the cache tree database.  Moreover, the following tuning methods are added.</p>
+
+<ul>
+<li><code>tune_page</code> : sets the size of each page.</li>
+<li><code>tune_page_cache</code> : sets the capacity size of the page cache.</li>
+<li><code>tune_comparator</code> : sets the record comparator.</li>
+</ul>
+
+<p>The tuning of the page size by `<code>tune_page</code>' does not have to be modified in most cases.  The default is 8192, which is the twice of the typical page size of popular environments.  If the size of each node exceeds the parameter, the node is divided into two.</p>
+
+<p>The default tuning of the capacity size of the page cache is 64MB.  If your want to reduce memory usage, call `<code>tune_page_cache</code>' to convert most pages into flat byte arrays which are serialized or compressed in order to improve space efficiency.</p>
+
+<p>The default record comparator is the lexical ordering function.  That is, records in the B+ tree database are placed in the lexical order of each key.  If you want to use another ordering, call `<code>tune_comparator</code>' to set a functor which implements the ordering function.</p>
+
+<p>If you want to cache ten millions of records and keep the memory usage as small as possible, the following tuning is suggested for example.</p>
+
+<pre>db.tune_options(TreeDB::TCCOMPESS);
+db.tune_buckets(500LL * 1000);
+db.tune_page(32768);
+db.tune_page_cache(1LL &lt;&lt; 20);
+db.open(...);
+</pre>
+
+<p>All tuning methods must be called before the database is opened.</p>
+
 <h3 id="tips_tuninghash">Tuning the File Hash Database</h3>
 
-<p>The file hash database is file database of hash table.  The following tuning methods are provided.</p>
+<p>The file hash database (HashDB) is file database of hash table.  The following tuning methods are provided.</p>
 
 <ul>
 <li><code>tune_alignment</code> : sets the power of the alignment of record size.</li>
@@ -699,13 +774,13 @@ db.open(...);
 
 <p>By default, auto defragmentation is disabled.  If the existing records in the database are modified (removed or modified with varying the size), fragmentation of available regions proceeds gradually.  In that case, call `<code>tune_defrag</code>' to enable auto defragmentation and set the unit step number.  The suggested unit step number is 8, which means that a set of defragmentation operations is performed each 8 updating operations.  The more the unit is, space efficiency becomes higher but time efficiency becomes lower.</p>
 
-<p>The default compression algorithm of the `<code>HashDB::TLINEAR</code>' option is "Deflate" by ZLIB.  If you want to use another algorithm, call `<code>tune_compressor</code>' to set a functor which implements compression and decompression functions.</p>
+<p>The default compression algorithm of the `<code>HashDB::TCOMPRESS</code>' option is "Deflate" by ZLIB.  If you want to use another algorithm, call `<code>tune_compressor</code>' to set a functor which implements compression and decompression functions.</p>
 
 <p>If you intend to store ten thousands of records and reduce the database size as possible, the following tuning is suggested for example.</p>
 
 <pre>db.tune_alignment(0);
-db.tune_buckets(10LL * 1000);
 db.tune_options(HashDB::TSMALL | HashDB::TLINEAR);
+db.tune_buckets(10LL * 1000);
 db.tune_defrag(8);
 db.open(...);
 </pre>
@@ -721,7 +796,7 @@ db.open(...);
 
 <h3 id="tips_tuningtree">Tuning the File Tree Database</h3>
 
-<p>The file tree database is file database of B+ tree.  Because each node of B+ tree is serialized as a page buffer and stored as a record in the file hash database, all tuning parameters of the file hash database is inherited to the file tree database.  Moreover, the following tuning methods are added.</p>
+<p>The file tree database (TreeDB) is file database of B+ tree.  Because each node of B+ tree is serialized as a page buffer and stored as a record in the file hash database, all tuning methods of the file hash database are inherited to the file tree database.  Moreover, the following tuning methods are added.</p>
 
 <ul>
 <li><code>tune_page</code> : sets the size of each page.</li>
@@ -731,7 +806,7 @@ db.open(...);
 
 <p>The tuning of the page size by `<code>tune_page</code>' does not have to be modified in most cases.  The default is 8192, which is the twice of the typical page size of popular environments.  If the size of each node exceeds the parameter, the node is divided into two.</p>
 
-<p>The default tuning of the capacity size of the page cache is 64MB.  If your machine has abundant RAM, call `<code>tune_page</code>' to load all nodes on the page cache.  If the RAM is not abundant, it is better to keep the default page cache size and assign the RAM for the internal memory-mapped region by `<code>tune_map</code>'.</p>
+<p>The default tuning of the capacity size of the page cache is 64MB.  If your machine has abundant RAM, call `<code>tune_page_cache</code>' to load all nodes on the page cache.  If the RAM is not abundant, it is better to keep the default page cache size and assign the RAM for the internal memory-mapped region by `<code>tune_map</code>'.</p>
 
 <p>The default record comparator is the lexical ordering function.  That is, records in the B+ tree database are placed in the lexical order of each key.  If you want to use another ordering, call `<code>tune_comparator</code>' to set a functor which implements the ordering function.</p>
 
@@ -739,8 +814,8 @@ db.open(...);
 
 <p>If you intend to store ten thousands of records and reduce the database size as possible, the following tuning is suggested for example.</p>
 
-<pre>db.tune_buckets(1LL * 1000);
-db.tune_options(TreeDB::TCCOMPESS);
+<pre>db.tune_options(TreeDB::TCCOMPESS);
+db.tune_buckets(1LL * 1000);
 db.tune_defrag(8);
 db.tune_page(32768);
 db.open(...);
@@ -756,9 +831,9 @@ db.open(...);
 
 <p>All tuning methods must be called before the database is opened.  Because the setting of `<code>tune_page</code>' is recorded as the meta data of the database, the methods must be called before the database is created and it can not be modified afterward.  Because other tuning parameters are not recorded in the database, they should be specified before every time opening the database.</p>
 
-<h3 id="tips_tuningdir">Tuning the Directory Database</h3>
+<h3 id="tips_tuningdir">Tuning the Directory Hash Database</h3>
 
-<p>The cache database is powered by the directory mechanism of the file system and stores records as respective files in a directory.  The following tuning methods are provided.</p>
+<p>The directory hash database (DirDB) is powered by the directory mechanism of the file system and stores records as respective files in a directory.  The following tuning methods are provided.</p>
 
 <ul>
 <li><code>tune_options</code> : sets the optional features.</li>
@@ -766,19 +841,25 @@ db.open(...);
 
 <p>The optional features by `<code>tune_options</code>' is useful to reduce the size of the database file at the expense of time efficiency.  If `<code>DirDB::TCOMPRESS</code>' is specified, the key and the value of each record is compressed implicitly when stored in the file.  If the value is bigger than 1KB or more, compression is effective.</p>
 
-<p>Performance of the directory database is strongly based on the file system implementation and its tuning.  Some file systems such as EXT2 are not good at storing a lot of files in a directory.  But, other file systems such as EXT3 and ReiserFS are relatively efficient in that situation.  In general, file systems featuring B tree or its variants are more suitable than linear search algorithms.</p>
+<p>Performance of the directory hash database is strongly based on the file system implementation and its tuning.  Some file systems such as EXT2 are not good at storing a lot of files in a directory.  But, other file systems such as EXT3 and ReiserFS are relatively efficient in that situation.  In general, file systems featuring B tree or its variants are more suitable than linear search algorithms.</p>
 
 <p>All tuning methods must be called before the database is opened.  Because the settings of `<code>tune_options</code>' are recorded as the meta data of the database, the method must be called before the database is created and they can not be modified afterward.</p>
 
+<h3 id="tips_tuningforest">Tuning the Directory Tree Database</h3>
+
+<p>The directory tree database (ForestDB) is directory database of B+ tree.  As with that the file tree database is based on the file hash database, the directory tree database is based on the directory hash database.  So, all tuning methods of the directory hash database are inherited to the directory tree database.  Additional tuning methods are the same as ones of the file tree database.</p>
+
+<p>The performance characteristics of the directory tree database is similar to those of the directory hash database.  However, because records are organized in pages, frequency of I/O operations is less and performance is better in many cases.</p>
+
 <h3 id="tips_choosedb">Choosing Suitable Databases</h3>
 
-<p>In order to choose suitable database types for your application, it is important to clarify the requirement specification.  If it does not require persistency of records, on-memory databases are suggested.  There are the prototype hash database, the prototype tree database, and the cache database.  If the order of keys is important for your application logic, the prototype tree database is suitable.  If not, the cache database is suitable.  The memory usage of the cache database is smaller than the others and the cache database can delete old records and keep the memory usage constant.  The prototype hash database has few cases to flourish.</p>
+<p>In order to choose suitable database types for your application, it is important to clarify the requirement specification.  If it does not require persistency of records, on-memory databases are suggested.  There are the prototype hash database (ProtoHashDB), the prototype tree database (ProtoTreeDB), the cache hash database (CacheDB), and the cache tree database (GrassDB).  If the order of keys is important for your application logic, the cache tree database is suitable.  If not, the cache hash database is suitable.  The memory usage of the cache tree database is smaller than the others.  The cache hash database can delete old records and keep the memory usage constant.  The prototype databases have few cases to flourish.</p>
 
-<p>If your application requires persistency of records, persistent databases are suggested.  There are the file hash database, the file tree database, and the directory database.  If the order of keys is important for your application logic, the file tree database is suitable.  If not, the file hash database is suitable.  In most cases, performance and concurrency of the file hash database is better than the others.  If the size of each record is large, the directory database is suitable.</p>
+<p>If your application requires persistency of records, persistent databases are suggested.  There are the file hash database (HashDB), the file tree database (TreeDB), the directory hash database (DirDB), and the directory tree database (ForestDB).  If the order of keys is important for your application logic, the file tree database is suitable.  If not, the file hash database is suitable.  In most cases, performance and concurrency of the file hash database is better than the others.  If the size of each record is large, the directory hash database is suitable.</p>
 
-<p>Most DBM implementations including Kyoto Cabinet and Tokyo Cabinet are optimized to store small records.  As it is, if you want to handle very large records, using the file system directly is better solution than using DBM.  If you store and retrieve large records, the processing time by the `write' and `read' system calls is dominant rather than the `open' and `lseek' system calls.  Although typical DBMs reduce the workload to locate the position of each record, they increase the workload to read/write the data of each record.  If you want to handle large records but don't want to use the file system directly, use the directory database.  It's a mere wrapper of the directory mechanism of the file system.</p>
+<p>Most DBM implementations including Kyoto Cabinet and Tokyo Cabinet are optimized to store small records.  As it is, if you want to handle very large records, using the file system directly is better solution than using DBM.  If you store and retrieve large records, the processing time by the `write' and `read' system calls is dominant rather than the `open' and `lseek' system calls.  Although typical DBMs reduce the workload to locate the position of each record, they increase the workload to read/write the data of each record.  If you want to handle large records but don't want to use the file system directly, use the directory hash database.  It's a mere wrapper of the directory mechanism of the file system.  If you want to handle large records in order of keys, use the directory tree database.  The directory database is the final weapon of scalability.</p>
 
-<p>If you want to dicide the database type doing performance test with the production code, use the polymorphic database.  It can specify the database type dinamically when opening the database.  In fact, the polymorphic database is suggested in most usecases though it involves a little bit of performance overhead in runtime.  That's why the official script language bindings support the polymorphic database only.</p>
+<p>If you want to decide the database type doing performance test with the production code, use the polymorphic database.  It can specify the database type dinamically when opening the database.  In fact, the polymorphic database is suggested in most usecases though it involves a little bit of performance overhead in runtime.  That's why the official script language bindings support the polymorphic database only.</p>
 
 <h3 id="tips_transaction">Transaction</h3>
 
@@ -790,7 +871,7 @@ db.set("korea", "seoul");
 db.end_transaction();
 </pre>
 
-<p>If you can't be bothered to begin and commit transaction explicitly, use auto transaction mechanism by specifying the `<code>FileDB::AUTOTRAN</code>' option when opening the database.  Auto transaction is begun and committed implicitly for each operation.  Overhead of auto transaction is lighter than explicit transaction.</p>
+<p>If you can't be bothered to begin and commit transaction explicitly, use auto transaction mechanism by specifying the `<code>BasicDB::AUTOTRAN</code>' option when opening the database.  Auto transaction is begun and committed implicitly for each operation.  Overhead of auto transaction is lighter than explicit transaction.</p>
 
 <pre>db.open("casket.kch", HashDB::OWRITER | HashDB::OCREATE | HashDB::OAUTOTRAN);
 db.set("japan", "tokyo");
@@ -809,7 +890,7 @@ db.set("china", "beijing");
 
 <dl>
 <dt><strong>transaction</strong></dt>
-<dd>implicit usage: open(..., FileDB::OAUTOTRAN);</dd>
+<dd>implicit usage: open(..., BasicDB::OAUTOTRAN);</dd>
 <dd>explicit usage: begin_transaction(false); ...; end_transaction(true);</dd>
 <dd>risk on process crash: none</dd>
 <dd>risk on system crash: Some records may be missing.</dd>
@@ -818,7 +899,7 @@ db.set("china", "beijing");
 
 <dl>
 <dt><strong>transaction + synchronize</strong></dt>
-<dd>implicit usage: open(..., FileDB::OAUTOTRAN | FileDB::OAUTOSYNC);</dd>
+<dd>implicit usage: open(..., BasicDB::OAUTOTRAN | BasicDB::OAUTOSYNC);</dd>
 <dd>explicit usage: begin_transaction(true); ...; end_transaction(true);</dd>
 <dd>risk on process crash: none</dd>
 <dd>risk on system crash: none</dd>
@@ -829,7 +910,7 @@ db.set("china", "beijing");
 
 <p>Any hardware will break down suddenly.  Especially such storage devices as HDD and SSD are fragile.  Therefore, making backup files of your database file periodically is very important even if you use transaction.  You can copy a database file by such popular commands as `<code>cp</code>' and `<code>tar</code>' when the database is not being updated by another process.</p>
 
-<p>If an application uses multi threads and you want to make a backup file of the database in safety, use the `<code>FileDB::copy</code>' method, which synchronizes the database status with the database file and makes a copy file.  During the copying operation, it is assured that the database file is not updated.</p>
+<p>If an application uses multi threads and you want to make a backup file of the database in safety, use the `<code>BasicDB::copy</code>' method, which synchronizes the database status with the database file and makes a copy file.  During the copying operation, it is assured that the database file is not updated.</p>
 
 <pre>db.copy("backup.kch");
 </pre>
@@ -848,13 +929,44 @@ db.synchronize(&amp;proc);
 
 <h3 id="tips_snapshot">Pseudo-snapshot</h3>
 
-<p>Chiefly for the cache database, the pseudo-snapshot mechanism is provided.  The `<code>FileDB::dump_snapshot</code>' dumps all records into a stream or a file.  The `<code>FileDB::load_snapshot</code>' method loads records from a stream or a file.  Although the operations are performed atomically, they don't finish momentarily but take time in proportion of the database size with blocking the other threads.  Because the format of pseudo-snapshot data is common among the all database classes, it is useful to migrate records for each other.</p>
+<p>Chiefly for the cache hash database and the cache tree database, the pseudo-snapshot mechanism is provided.  The `<code>BasicDB::dump_snapshot</code>' dumps all records into a stream or a file.  The `<code>BasicDB::load_snapshot</code>' method loads records from a stream or a file.  Although the operations are performed atomically, they don't finish momentarily but take time in proportion of the database size with blocking the other threads.  Because the format of pseudo-snapshot data is common among the all database classes, it is useful to migrate records for each other.</p>
 
 <pre>db.dump_snapshot("backup.kcss");
 db.load_snapshot("backup.kcss");
 </pre>
 
 <p>If you don't want to let the other threads be blocked.  Use the cursor mechanism and save/load records by yourself.</p>
+
+<h3 id="tips_encrypted">Encrypted Database</h3>
+
+<p>The `<code>tune_compressor</code>' method of the file tree database and so on can set an arbitrary data compression functor.  In fact, the functor can perform not only data compression but also data encryption.  The class `<code>ArcfourCompressor</code>' implements a lightweight cipher algorithm based on Arcfour (aka. RC4).  It is useful to improve security of your database casually without high overhead.</p>
+
+<pre>ArcfourCompressor comp;
+comp.set_key("foobarbaz", 9);
+TreeDB db;
+db.tune_options(kc::TreeDB::TCOMPRESS);
+db.tune_compressor(&amp;comp);
+db.open(...);
+comp.begin_cycle((uint64_t)getpid() &lt;&lt; 32 + (uint64_t)time());
+</pre>
+
+<p>If you use the polymorphic database, it is very easy to enable encryption.  The naming option "zcomp" specifies the compression algorithm and the naming option "zkey" specifies the encryption key.</p>
+
+<pre>PolyDB db;
+db.open("casket.kct#zcomp=arc#zkey=foobarbaz", ...);
+</pre>
+
+<p>"zcomp" supports "zlib" for the raw format of ZLIB, "def" for the Deflate format, "gz" for the gzip format, "arc" for Arcfour encryption, and "arcz" for Arcfour encryption compressed by ZLIB.</p>
+
+<p>Note that the hash database types (CacheDB, HashDB, DirDB) compress the value of each record only.  That is, the key of each record is not compressed there.  However, the tree database types (GrassDB, TreeDB, ForestDB) compress all data in database.  So, if you want to use the compressor for encryption, choose one of tree database types.</p>
+
+<h3 id="tips_memsaving">On-memory Databases to Save Memory Usage</h3>
+
+<p>The cache hash database (CacheDB) and the cache tree database (GrassDB) are useful to save memory usage of associative array of strings.  They can substitute std::map of C++, java.lang.Map of Java, and built-in "hash" mechanisms of many scripting languages.  The cache hash database improves space efficiency by serializing the key and the value of each record into a byte array.  The cache tree database improves space efficiency by serializing records in each page into a byte array.</p>
+
+<p>For example, if you store ten million records and each is composed of a 8-byte key and a 8-byte value, `std::map&lt;std::string, std::string&gt;' (ProtoTreeDB) uses about 1.2GB memory.  In the same situation, the cache hash database uses 620MB memory and the cache tree database uses 318MB memory.  The cache tree database provides the best space efficiency in this use case.  However, as for time efficiency, the cache hash database is superior to the cache tree database, due to the difference of hash table and B+ tree.  Note that B+ tree is very good at sequeitial access but not suitable for random access.</p>
+
+<p>If you want to reduce the memory usage extremely, use the cache tree database with the compression option.  Moreover, set the bucket number about 5% of the record number, set the page size 32768 or more, and set the capacity of the page cache less than 5% of the total record size.  For example, for the above situation of ten million records, the bucket number should be 500 thousand, the page size should be 32768, and the page cache should be 8MB.  Those are expressed as "%#opts=c#bnum=500k#psiz=32768#pccap=8m" for the polymorphic database.  Consequently, it uses 60MB memory only.</p>
 
 <hr />
 

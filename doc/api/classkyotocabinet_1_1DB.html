@@ -164,7 +164,7 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>The operation for each record is performed atomically and other threads accessing the same record are blocked. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a0a7926656c87cc321b1695ea40cef121">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a783ee4916eda2fb7c1714032f456478a">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#af5ba4bff5ce1f4ce73c25c57c119a3fd">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#abfadd89cc0469d9abfc180b1f7f06f8d">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a583a623b1770d4217d49e289cb8ad909">kyotocabinet::ProtoDB&lt; STRMAP &gt;</a>, and <a class="el" href="classkyotocabinet_1_1TreeDB.html#a65408da85a1223c01bca9af521c7ef88">kyotocabinet::TreeDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a0a7926656c87cc321b1695ea40cef121">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a783ee4916eda2fb7c1714032f456478a">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#af5ba4bff5ce1f4ce73c25c57c119a3fd">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a21b949bdd3a0b8fbb9b40ba1f7e3e825">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#abfadd89cc0469d9abfc180b1f7f06f8d">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#addce7abcfed926755ca9f889c5b189f5">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
 
 </div>
 </div>
@@ -204,7 +204,7 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a9302903f1da9a953ab5c3448a0c078c5">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#afe8f2431a86d28120a0fd32368a2a8b9">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a4289e1edfb71e905fb67b4733c07f5b9">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a000d286c93a335c63342801ccc7c437e">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a6ffe7542f3973d43af95c9c7ee471f87">kyotocabinet::ProtoDB&lt; STRMAP &gt;</a>, and <a class="el" href="classkyotocabinet_1_1TreeDB.html#a174bf8f9853befe45abcb52f5202f663">kyotocabinet::TreeDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a9302903f1da9a953ab5c3448a0c078c5">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#afe8f2431a86d28120a0fd32368a2a8b9">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a4289e1edfb71e905fb67b4733c07f5b9">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#ab20af0d4173c6f25a4ae425b7c2ddabb">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a000d286c93a335c63342801ccc7c437e">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a5cf60ab94e1411c0ebf86644a23ff259">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
 
 </div>
 </div>
@@ -258,7 +258,7 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, a new record is created. If the corresponding record exists, the value is overwritten. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a6f50991dd21b5ca6c01856617e3c7dc6">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#ace1d7f4a0d37c2d4e61b102bc0d0f725">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -290,7 +290,7 @@
 <p>Set the value of a record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a404f686394fed04af54989925c86b555" title="Set the value of a record.">DB::set</a> method except that the parameters are std::string. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a9fe4bf3667d91f535fef0f4187aeebe2">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#aceb9eb24d4664b0dc0f2734da66511c4">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -344,7 +344,7 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, a new record is created. If the corresponding record exists, the record is not modified and false is returned. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#aeb0678659ef4753f309fab0ea66729e0">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#a330568e1a92d74bfbc38682cd8604462">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -376,7 +376,7 @@
 <p>Set the value of a record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#adc4dd6b46fe5da9f18b3b138dacea71f" title="Add a record.">DB::add</a> method except that the parameters are std::string. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a215723f9309ceea6d4e260ebb5fab3a3">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#ae917d6aa4cba62bd808121fddb4035b0">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -430,7 +430,7 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, a new record is created. If the corresponding record exists, the given value is appended at the end of the existing value. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a71f32b94bf892a7815f79cbf2cf3b6a1">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#a23e776e5bd1e3c5caa0f62edffb87a54">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -462,7 +462,7 @@
 <p>Set the value of a record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#abd7a961826d20e91fa43a5867534a6a8" title="Append the value of a record.">DB::append</a> method except that the parameters are std::string. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a98f8b133b075a473c7bdd6f8c30c1af1">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#aed0ebc961e906fe7fb534f917b4a9f8f">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -508,7 +508,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the result value, or INT64_MIN on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a3eb6bbc1f55fd557b5a0a107172cb0c6">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#addcd1fc6d593df0afbb8e311800e668d">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -540,7 +540,7 @@
 <p>Add a number to the numeric value of a record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a20021c698bbcbd1fb4d4c80ca19174e0" title="Add a number to the numeric value of a record.">DB::increment</a> method except that the parameter is std::string. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a2c441271dd2ea680763ebd99828825e1">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#a9de76cd3e63652dcf158b3215751ccd7">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -578,7 +578,7 @@
 <p>Add a number to the numeric value of a record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a20021c698bbcbd1fb4d4c80ca19174e0" title="Add a number to the numeric value of a record.">DB::increment</a> method except that the parameter and the return value are double. Not-a-number is returned on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a504a0fe77b02c83e18829ea4ec47bd83">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#aa54d97c02860a7e7a1733eb720bfdc76">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -610,7 +610,7 @@
 <p>Add a number to the numeric value of a record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a20021c698bbcbd1fb4d4c80ca19174e0" title="Add a number to the numeric value of a record.">DB::increment</a> method except that the parameter is std::string and the return value is double. Not-a-number is returned on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a1df6c847e5ce9eb83bd8c81f40517a09">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#a2cf1b332f2a918f4b154bd21b3f1749d">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -677,7 +677,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a9da1f1ff0dd3a3be5f3828c0ca5030d9">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#a4cc551a65eed27a7905c50aac95f43db">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -715,7 +715,7 @@
 <p>Perform compare-and-swap. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#aabee2bb56d152806855244a7cfa2cbff" title="Perform compare-and-swap.">DB::cas</a> method except that the parameters are std::string. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a89bc20c036e229d9d45aa7766fa610e1">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#a98f785851e346ce32049d70cdac36f51">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -755,7 +755,7 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, false is returned. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a4899fd7eadf0fe2b35298f919895392c">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#a98b9a0b2337e16b79a22a97d4d96d04c">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -778,7 +778,7 @@
 <p>Remove a record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#ac1aaa8a4954cae19764c0e6d1dba3b72" title="Remove a record.">DB::remove</a> method except that the parameter is std::string. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#acf709679250f62b3223d6f8c474aa42b">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#ac6b7b1fdab9e9288c8ff918bef8bf0b3">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -825,7 +825,7 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>the pointer to the value region of the corresponding record, or NULL on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, NULL is returned. Because an additional zero code is appended at the end of the region of the return value, the return value can be treated as a C-style string. Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#aa80ad1d44b87d528fc5858cea261447e">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#a04721eb5a61876244bbc5c08e0a34c61">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -848,7 +848,7 @@
 <p>Retrieve the value of a record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a11fe066de448a7fb003614c5fe82a46d" title="Retrieve the value of a record.">DB::get</a> method except that the parameter and the return value are std::string. The return value should be deleted explicitly by the caller. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a7fb63acdd7897cf372fac5b1e47dc999">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#aaeb3e8ab339c7d4bdbdfcb6bc0592a12">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -901,7 +901,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the size of the value, or -1 on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1FileDB.html#a51f3daf508f2072ac6b8b90fb071b096">kyotocabinet::FileDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#abad0525bdccdcab5b587846a69ff0fe3">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -923,7 +923,7 @@
 <p>Remove all records. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a426df2e9b1878df1fbe8b102ac0a9ded">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#ac83c0ac01b8306d08ce3d8390f918ec8">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#ad57fa07626f7316e8f85b30761fe4111">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#ac44e7a789e618f49c22aa568550e8458">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a111d91f2ae3dccbdd4c8a64e09b7b7e1">kyotocabinet::ProtoDB&lt; STRMAP &gt;</a>, and <a class="el" href="classkyotocabinet_1_1TreeDB.html#a2f5fe20f07abe25455484dc3086fd4b4">kyotocabinet::TreeDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a426df2e9b1878df1fbe8b102ac0a9ded">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#ac83c0ac01b8306d08ce3d8390f918ec8">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#ad57fa07626f7316e8f85b30761fe4111">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a61809e5bd2610e1a06698aeb68817d64">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#ac44e7a789e618f49c22aa568550e8458">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#ad80683dcfde15c43dff973d680889387">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
 
 </div>
 </div>
@@ -945,7 +945,7 @@
 <p>Get the number of records. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the number of records, or -1 on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a41aff5a403500857452361fbfae78a56">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a2cf204fb743fb423c909ae4da791a190">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a4ddabaf565304f34bd3ac8c48473219a">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a6c3da5678761393ae7eb34273317d73c">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#abbff998c3df5cee414d75304523790e3">kyotocabinet::ProtoDB&lt; STRMAP &gt;</a>, and <a class="el" href="classkyotocabinet_1_1TreeDB.html#ad2abfba978402786ace1b2cb4f353abb">kyotocabinet::TreeDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a41aff5a403500857452361fbfae78a56">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a2cf204fb743fb423c909ae4da791a190">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a4ddabaf565304f34bd3ac8c48473219a">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a31f43901e55fe473abdfbd0251c259a0">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a6c3da5678761393ae7eb34273317d73c">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#acc978744b73b3d72c725780b2131f322">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
 
 </div>
 </div>
@@ -968,12 +968,12 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>the return value is the created cursor object. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>Because the object of the return value is allocated by the constructor, it should be released with the delete operator when it is no longer in use. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a17e1259ddba5fc7d45185f715394c99b">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1FileDB.html#aa01f253bebc20a6412031eb8925793f4">kyotocabinet::FileDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a022cc78478731810c4defb3e2e055b7b">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#af0924e24d436a6c4f827a2c0c6260f4d">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a54f983af2afab8f667d1e28595b224c2">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a5c6c6f62782d6732e30aa9db7c7a270b">kyotocabinet::ProtoDB&lt; STRMAP &gt;</a>, and <a class="el" href="classkyotocabinet_1_1TreeDB.html#abaf1dc0a398f5d8ae00f7e2cdb3cbf2d">kyotocabinet::TreeDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a17e1259ddba5fc7d45185f715394c99b">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1BasicDB.html#af270fcad9cfa1dce1b661c33c07165d6">kyotocabinet::BasicDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a022cc78478731810c4defb3e2e055b7b">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#af0924e24d436a6c4f827a2c0c6260f4d">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a93f1873138591d62a508c0cfef53d7ba">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a54f983af2afab8f667d1e28595b224c2">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a8222c60d8d58fa1a45941507dc9deba1">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
 
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 25 20:26:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:51 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

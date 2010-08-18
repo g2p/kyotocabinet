@@ -84,7 +84,9 @@ module kyotocabinet {
     string get_value(in boolean step);
     boolean jump();
     boolean jump_(in string key);
+    boolean jump_last();
     boolean step();
+    boolean step_back();
     DB db();
     Error error();
   };
@@ -138,12 +140,22 @@ module kyotocabinet {
   interface ProtoTreeDB :DB {
   };
   //----------------------------------------------------------------
-  // cache database
+  // cache hash database
   //----------------------------------------------------------------
   interface CacheDB :DB {
+    boolean tune_options(in long opts);
     boolean tune_buckets(in long long bnum);
     boolean cap_count(in long long count);
     boolean cap_size(in long long size);
+  };
+  //----------------------------------------------------------------
+  // cache tree database
+  //----------------------------------------------------------------
+  interface GrassDB :DB {
+    boolean tune_options(in long opts);
+    boolean tune_buckets(in long long bnum);
+    boolean tune_page(in long psiz);
+    boolean tune_page_cache(in long long pccap);
   };
   //----------------------------------------------------------------
   // file hash database
@@ -176,11 +188,21 @@ module kyotocabinet {
     boolean tune_page_cache(in long long pccap);
   };
   //----------------------------------------------------------------
-  // directory database
+  // directory hash database
   //----------------------------------------------------------------
   interface DirDB :DB {
-    const long TCOMPRESS = 1 << 0;
+    const long TCOMPRESS = 1 << 2;
     boolean tune_options(in long opts);
+  };
+  //----------------------------------------------------------------
+  // directory tree database
+  //----------------------------------------------------------------
+  interface ForestDB :DB {
+    const long TCOMPRESS = 1 << 2;
+    boolean tune_options(in long opts);
+    boolean tune_buckets(in long long bnum);
+    boolean tune_page(in long psiz);
+    boolean tune_page_cache(in long long pccap);
   };
   //----------------------------------------------------------------
   // polymorphic database

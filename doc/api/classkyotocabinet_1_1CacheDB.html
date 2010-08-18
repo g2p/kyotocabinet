@@ -29,7 +29,7 @@
   </div>
 </div>
 <div class="contents">
-<h1>kyotocabinet::CacheDB Class Reference</h1><!-- doxytag: class="kyotocabinet::CacheDB" --><!-- doxytag: inherits="kyotocabinet::FileDB" -->
+<h1>kyotocabinet::CacheDB Class Reference</h1><!-- doxytag: class="kyotocabinet::CacheDB" --><!-- doxytag: inherits="kyotocabinet::BasicDB" -->
 <p>On-memory hash database with LRU deletion.  
 <a href="#_details">More...</a></p>
 
@@ -52,6 +52,18 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Slot table. <br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><b>TranLog</b></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Transaction log. <br/></td></tr>
+<tr><td colspan="2"><h2>Public Types</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#ade67fcf7ec690cbfd0e1758301c45a09">Option</a> { <a class="el" href="classkyotocabinet_1_1CacheDB.html#ade67fcf7ec690cbfd0e1758301c45a09a561369d11f8100f49e495cfc19a6cd67">TSMALL</a> =  1 &lt;&lt; 0, 
+<a class="el" href="classkyotocabinet_1_1CacheDB.html#ade67fcf7ec690cbfd0e1758301c45a09af54cfc57b0e881602b435419abbc12c7">TLINEAR</a> =  1 &lt;&lt; 1, 
+<a class="el" href="classkyotocabinet_1_1CacheDB.html#ade67fcf7ec690cbfd0e1758301c45a09a9b9a0b37a8d27753f36288dc9083f955">TCOMPRESS</a> =  1 &lt;&lt; 2
+ }</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><p>Tuning Options. </p>
+ <a href="classkyotocabinet_1_1CacheDB.html#ade67fcf7ec690cbfd0e1758301c45a09">More...</a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#aaf95f2c33218c801b2d7a82c9445f854">Flag</a> { <a class="el" href="classkyotocabinet_1_1CacheDB.html#aaf95f2c33218c801b2d7a82c9445f854a5b6d7bf92c2324bc8f68b48adb6db298">FOPEN</a> =  1 &lt;&lt; 0, 
+<a class="el" href="classkyotocabinet_1_1CacheDB.html#aaf95f2c33218c801b2d7a82c9445f854a1e0c71b6c30761e5fc4149bc800b3ef3">FFATAL</a> =  1 &lt;&lt; 1
+ }</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><p>Status flags. </p>
+ <a href="classkyotocabinet_1_1CacheDB.html#aaf95f2c33218c801b2d7a82c9445f854">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#ad132e3713e71a4dd434d1e023f9b026c">CacheDB</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Default constructor.  <a href="#ad132e3713e71a4dd434d1e023f9b026c"></a><br/></td></tr>
@@ -61,15 +73,15 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to a record.  <a href="#a0a7926656c87cc321b1695ea40cef121"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a9302903f1da9a953ab5c3448a0c078c5">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#a9302903f1da9a953ab5c3448a0c078c5"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a5574b0058edb29a5b696c53ec8b9a7bf">error</a> () const </td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a5574b0058edb29a5b696c53ec8b9a7bf">error</a> () const </td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the last happened error.  <a href="#a5574b0058edb29a5b696c53ec8b9a7bf"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a459b5061b5ad14350c678fa4285c3c60">set_error</a> (<a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a> code, const char *message)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a459b5061b5ad14350c678fa4285c3c60">set_error</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a459b5061b5ad14350c678fa4285c3c60"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#aff8d30ef3cd6990348c47a88983548bf">open</a> (const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#aff8d30ef3cd6990348c47a88983548bf"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0">close</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#abd976dad39a19f3e9f688d8dd0a63bc0"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#af010bf2acb088252f32b972768b5edd9">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1FileDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#af010bf2acb088252f32b972768b5edd9">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#af010bf2acb088252f32b972768b5edd9"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a4a6206c4b92dddb8a9dde4e582b4af18">begin_transaction</a> (bool hard=false)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#a4a6206c4b92dddb8a9dde4e582b4af18"></a><br/></td></tr>
@@ -89,16 +101,108 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#aa1f1aa4eea1413a010154c1e66507706"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1CacheDB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a17e1259ddba5fc7d45185f715394c99b">cursor</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#a17e1259ddba5fc7d45185f715394c99b"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a33de38eeac5d1d61bd088373ccf80cbd">tune_error_reporter</a> (std::ostream *erstrm, bool ervbs)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal error reporter.  <a href="#a33de38eeac5d1d61bd088373ccf80cbd"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abe067496c40fc0e5a6535749eda7ffe4">tune_options</a> (int8_t opts)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the optional features.  <a href="#abe067496c40fc0e5a6535749eda7ffe4"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#acee3916a46ddab369ab2a9c858784973">tune_buckets</a> (int64_t bnum)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the number of buckets of the hash table.  <a href="#acee3916a46ddab369ab2a9c858784973"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#aa4813cbf267a0bc680863198ff015c67">tune_compressor</a> (<a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a> *comp)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the data compressor.  <a href="#aa4813cbf267a0bc680863198ff015c67"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#aad92a2799a2440a64ad463bea3765228">cap_count</a> (int64_t count)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the capacity by record number.  <a href="#aad92a2799a2440a64ad463bea3765228"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a83391b5fa1fa6903bb043ba3736c2856">cap_size</a> (int64_t size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the capacity by memory usage.  <a href="#a83391b5fa1fa6903bb043ba3736c2856"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abdc993678a42c4a05e667c2d8e146019">opaque</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the opaque data.  <a href="#abdc993678a42c4a05e667c2d8e146019"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a451ff9f111dc181c5baf7cd197b241e0">synchronize_opaque</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize the opaque data.  <a href="#a451ff9f111dc181c5baf7cd197b241e0"></a><br/></td></tr>
+<tr><td colspan="2"><h2>Protected Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a17999b28f615d71e10db9dfad1976107">set_error</a> (const char *file, int32_t line, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a17999b28f615d71e10db9dfad1976107"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abdc4e1be231ac61bf319fcf64d34f03d">report</a> (const char *file, int32_t line, const char *type, const char *format,...)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report a message for debugging.  <a href="#abdc4e1be231ac61bf319fcf64d34f03d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a28bef20cc61def918d9153b3c055fda6">tune_type</a> (int8_t type)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the database type.  <a href="#a28bef20cc61def918d9153b3c055fda6"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abdd2dae45cd11ee1fcbf9bbb9115e8f2">libver</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the library version.  <a href="#abdd2dae45cd11ee1fcbf9bbb9115e8f2"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abf4ae56bd3fefcd5bc8c467effe63b9d">librev</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the library revision.  <a href="#abf4ae56bd3fefcd5bc8c467effe63b9d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a54b967e0492574d2185c7bef4d2a3b6c">fmtver</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the format version.  <a href="#a54b967e0492574d2185c7bef4d2a3b6c"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a41a78cc517473b0eec96deb9c06d420b">chksum</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the module checksum.  <a href="#a41a78cc517473b0eec96deb9c06d420b"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#af4194f3d3f9ad65df7e4d50234e4d787">type</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the database type.  <a href="#af4194f3d3f9ad65df7e4d50234e4d787"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a80b7d910c6d5c96d9c0a77bde73bccd8">opts</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the options.  <a href="#a80b7d910c6d5c96d9c0a77bde73bccd8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a80d40594e6de1977c3c656aaf9d87ec1">comp</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the data compressor.  <a href="#a80d40594e6de1977c3c656aaf9d87ec1"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a81a34420d67e0190795eb7b1d2807c9e">recovered</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check whether the database was recovered or not.  <a href="#a81a34420d67e0190795eb7b1d2807c9e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#acfbcd8dc8bd96bcc2907801c0233b75e">reorganized</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check whether the database was reorganized or not.  <a href="#acfbcd8dc8bd96bcc2907801c0233b75e"></a><br/></td></tr>
+<tr><td colspan="2"><h2>Friends</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa780202cbc01574e5bf9250f34e9ba2a"></a><!-- doxytag: member="kyotocabinet::CacheDB::PlantDB&lt; CacheDB, BasicDB::TYPEGRASS &gt;" ref="aa780202cbc01574e5bf9250f34e9ba2a" args="" -->
+class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB, BasicDB::TYPEGRASS &gt;</b></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p>On-memory hash database with LRU deletion. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>This class is a concrete class to operate a hash database on memory. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1CacheDB.html#aff8d30ef3cd6990348c47a88983548bf" title="Open a database file.">CacheDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0" title="Close the database file.">CacheDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. </dd></dl>
+<hr/><h2>Member Enumeration Documentation</h2>
+<a class="anchor" id="ade67fcf7ec690cbfd0e1758301c45a09"></a><!-- doxytag: member="kyotocabinet::CacheDB::Option" ref="ade67fcf7ec690cbfd0e1758301c45a09" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classkyotocabinet_1_1CacheDB.html#ade67fcf7ec690cbfd0e1758301c45a09">kyotocabinet::CacheDB::Option</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Tuning Options. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="ade67fcf7ec690cbfd0e1758301c45a09a561369d11f8100f49e495cfc19a6cd67"></a><!-- doxytag: member="TSMALL" ref="ade67fcf7ec690cbfd0e1758301c45a09a561369d11f8100f49e495cfc19a6cd67" args="" -->TSMALL</em>&nbsp;</td><td>
+<p>dummy for compatibility </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ade67fcf7ec690cbfd0e1758301c45a09af54cfc57b0e881602b435419abbc12c7"></a><!-- doxytag: member="TLINEAR" ref="ade67fcf7ec690cbfd0e1758301c45a09af54cfc57b0e881602b435419abbc12c7" args="" -->TLINEAR</em>&nbsp;</td><td>
+<p>dummy for compatibility </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ade67fcf7ec690cbfd0e1758301c45a09a9b9a0b37a8d27753f36288dc9083f955"></a><!-- doxytag: member="TCOMPRESS" ref="ade67fcf7ec690cbfd0e1758301c45a09a9b9a0b37a8d27753f36288dc9083f955" args="" -->TCOMPRESS</em>&nbsp;</td><td>
+<p>compress each record </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="aaf95f2c33218c801b2d7a82c9445f854"></a><!-- doxytag: member="kyotocabinet::CacheDB::Flag" ref="aaf95f2c33218c801b2d7a82c9445f854" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classkyotocabinet_1_1CacheDB.html#aaf95f2c33218c801b2d7a82c9445f854">kyotocabinet::CacheDB::Flag</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Status flags. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="aaf95f2c33218c801b2d7a82c9445f854a5b6d7bf92c2324bc8f68b48adb6db298"></a><!-- doxytag: member="FOPEN" ref="aaf95f2c33218c801b2d7a82c9445f854a5b6d7bf92c2324bc8f68b48adb6db298" args="" -->FOPEN</em>&nbsp;</td><td>
+<p>dummy for compatibility </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="aaf95f2c33218c801b2d7a82c9445f854a1e0c71b6c30761e5fc4149bc800b3ef3"></a><!-- doxytag: member="FFATAL" ref="aaf95f2c33218c801b2d7a82c9445f854a1e0c71b6c30761e5fc4149bc800b3ef3" args="" -->FFATAL</em>&nbsp;</td><td>
+<p>dummy for compatibility </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+
+</div>
+</div>
 <hr/><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="ad132e3713e71a4dd434d1e023f9b026c"></a><!-- doxytag: member="kyotocabinet::CacheDB::CacheDB" ref="ad132e3713e71a4dd434d1e023f9b026c" args="()" -->
 <div class="memitem">
@@ -239,7 +343,7 @@
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html">Error</a> kyotocabinet::CacheDB::error </td>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html">Error</a> kyotocabinet::CacheDB::error </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -252,7 +356,7 @@
 <p>Get the last happened error. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the last happened error. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#a2727ff69a020a612ffadc4da25bcf659">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a0bbc7d536f192222362a98af678abd16">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -263,7 +367,7 @@
         <tr>
           <td class="memname">void kyotocabinet::CacheDB::set_error </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1FileDB_1_1Error.html#a99bc44199668acd9529de73bcafa8859">Error::Code</a>&nbsp;</td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a>&nbsp;</td>
           <td class="paramname"> <em>code</em>, </td>
         </tr>
         <tr>
@@ -321,14 +425,14 @@
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>path</em>&nbsp;</td><td>the path of a database file. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the connection mode. <a class="el" href="classkyotocabinet_1_1FileDB.html#a78217797904f5f7e8e5bc2d5dcdc92a1aee9600ae9d6bc1019e7d2bf240148577" title="open as a writer">CacheDB::OWRITER</a> as a writer, <a class="el" href="classkyotocabinet_1_1FileDB.html#a78217797904f5f7e8e5bc2d5dcdc92a1a9ae0cda7c679cb31b8a6ef4ef98774b1" title="open as a reader">CacheDB::OREADER</a> as a reader. The following may be added to the writer mode by bitwise-or: <a class="el" href="classkyotocabinet_1_1FileDB.html#a78217797904f5f7e8e5bc2d5dcdc92a1a6954ad0fbb248ab350ded1e64b83031b" title="writer creating">CacheDB::OCREATE</a>, which means it creates a new database if the file does not exist, <a class="el" href="classkyotocabinet_1_1FileDB.html#a78217797904f5f7e8e5bc2d5dcdc92a1a759159347ecbdb310ea5b9eea93a20df" title="writer truncating">CacheDB::OTRUNCATE</a>, which means it creates a new database regardless if the file exists, <a class="el" href="classkyotocabinet_1_1FileDB.html#a78217797904f5f7e8e5bc2d5dcdc92a1a4e9882484b806065eebb8e7c8ac8ad45" title="auto transaction">CacheDB::OAUTOTRAN</a>, which means each updating operation is performed in implicit transaction, <a class="el" href="classkyotocabinet_1_1FileDB.html#a78217797904f5f7e8e5bc2d5dcdc92a1a45831fd32d83e4ed14badcb7d11fe3a0" title="auto synchronization">CacheDB::OAUTOSYNC</a>, which means each updating operation is followed by implicit synchronization with the file system. The following may be added to both of the reader mode and the writer mode by bitwise-or: <a class="el" href="classkyotocabinet_1_1FileDB.html#a78217797904f5f7e8e5bc2d5dcdc92a1a8c3c4f6a722e36884d12ffe85ec5c71c" title="open without locking">CacheDB::ONOLOCK</a>, which means it opens the database file without file locking, <a class="el" href="classkyotocabinet_1_1FileDB.html#a78217797904f5f7e8e5bc2d5dcdc92a1a51ef97ec7581f6979030fce0a72bdd8a" title="lock without blocking">CacheDB::OTRYLOCK</a>, which means locking is performed without blocking, <a class="el" href="classkyotocabinet_1_1FileDB.html#a78217797904f5f7e8e5bc2d5dcdc92a1ae19375037726a1d3a944927104d45290" title="open without auto repair">CacheDB::ONOREPAIR</a>, which means the database file is not repaired implicitly even if file destruction is detected. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the connection mode. <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664daed0e4bf55347835f8a1c277487767485" title="open as a writer">CacheDB::OWRITER</a> as a writer, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664daac1e035a2264effff6af2f74af4fcf2d" title="open as a reader">CacheDB::OREADER</a> as a reader. The following may be added to the writer mode by bitwise-or: <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664dafddaf6558a2c6e43223eb5c6f0d0e240" title="writer creating">CacheDB::OCREATE</a>, which means it creates a new database if the file does not exist, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da84636e0600e10a014e61abcb53c11d39" title="writer truncating">CacheDB::OTRUNCATE</a>, which means it creates a new database regardless if the file exists, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da648178f135de06196ff0a59b6d50ffc0" title="auto transaction">CacheDB::OAUTOTRAN</a>, which means each updating operation is performed in implicit transaction, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664dac6952961b46d7d1e71df632e45d80a93" title="auto synchronization">CacheDB::OAUTOSYNC</a>, which means each updating operation is followed by implicit synchronization with the file system. The following may be added to both of the reader mode and the writer mode by bitwise-or: <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da3d1f28662fd5f8c91749aa57cc6f4732" title="open without locking">CacheDB::ONOLOCK</a>, which means it opens the database file without file locking, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da12f4827b918598179bf05c0797127687" title="lock without blocking">CacheDB::OTRYLOCK</a>, which means locking is performed without blocking, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da4d79a8f0bc49849b0b434fb4fda4836a" title="open without auto repair">CacheDB::ONOREPAIR</a>, which means the database file is not repaired implicitly even if file destruction is detected. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>Every opened database must be closed by the <a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0" title="Close the database file.">CacheDB::close</a> method when it is no longer in use. It is not allowed for two or more database objects in the same process to keep their connections to the same database file at the same time. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#aec3eee613bc7028b50fd230852800bbb">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a6f8ee2f3bde5f5389119fe43696f9bdc">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -350,7 +454,7 @@
 <p>Close the database file. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#aea6a3ded9a4eafd270b4385bd8c32ca7">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a8863ffedb9604742305ece7ccdb23c2a">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -367,7 +471,7 @@
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1FileDB_1_1FileProcessor.html">FileProcessor</a> *&nbsp;</td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *&nbsp;</td>
           <td class="paramname"> <em>proc</em> = <code>NULL</code></td><td>&nbsp;</td>
         </tr>
         <tr>
@@ -389,7 +493,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#ac1aa6b843b06bfbc810a8acec11e6243">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#abb532f56482420a71ebc5650e4296ce1">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -418,7 +522,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#ac809addc9f2b7813b34f3d891e284dea">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a7999f8bf717cfd22ceed42bc54755f00">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -447,7 +551,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#a5e270126621cd97d6067146c3aea577e">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a2cfd959c679cdb7716eab913ac227a6c">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -476,7 +580,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#ad1dce43b8f171d984f884ab0a351b2b9">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a2c32f6bb5544045cf75c5aac1e2d1cac">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -542,7 +646,7 @@
 <p>Get the size of the database file. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the size of the database file in bytes, or -1 on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#a5c1108626741e251cbb3e3ae0a99982c">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a573aae4382f43ed148ea035baa4d5f51">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -564,7 +668,7 @@
 <p>Get the path of the database file. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the path of the database file, or an empty string on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#a863370de4ed04bb89dea1245d404ad84">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#af67d9b139fcfb2fd5bc38d97d7a1856b">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -593,7 +697,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#adf6c5ca4568e757f03e7e3402e21e0d3">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#ac8807fad23476a2eb7da0c869c546727">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -616,7 +720,71 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>the return value is the created cursor object. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>Because the object of the return value is allocated by the constructor, it should be released with the delete operator when it is no longer in use. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1FileDB.html#aa01f253bebc20a6412031eb8925793f4">kyotocabinet::FileDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#af270fcad9cfa1dce1b661c33c07165d6">kyotocabinet::BasicDB</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a33de38eeac5d1d61bd088373ccf80cbd"></a><!-- doxytag: member="kyotocabinet::CacheDB::tune_error_reporter" ref="a33de38eeac5d1d61bd088373ccf80cbd" args="(std::ostream *erstrm, bool ervbs)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::CacheDB::tune_error_reporter </td>
+          <td>(</td>
+          <td class="paramtype">std::ostream *&nbsp;</td>
+          <td class="paramname"> <em>erstrm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>ervbs</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set the internal error reporter. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>erstrm</em>&nbsp;</td><td>a stream object into which internal error messages are stored. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>ervbs</em>&nbsp;</td><td>true to report all errors, or false to report fatal errors only. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="abe067496c40fc0e5a6535749eda7ffe4"></a><!-- doxytag: member="kyotocabinet::CacheDB::tune_options" ref="abe067496c40fc0e5a6535749eda7ffe4" args="(int8_t opts)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::CacheDB::tune_options </td>
+          <td>(</td>
+          <td class="paramtype">int8_t&nbsp;</td>
+          <td class="paramname"> <em>opts</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set the optional features. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>opts</em>&nbsp;</td><td>the optional features by bitwise-or: <a class="el" href="classkyotocabinet_1_1DirDB.html#a8a003b2f5adf2bb8f9e79035f57e7f68a624ae00fb9a368d8932a09a061a636e7" title="compress each record">DirDB::TCOMPRESS</a> to compress each record. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
 </div>
 </div>
@@ -640,6 +808,33 @@
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>bnum</em>&nbsp;</td><td>the number of buckets of the hash table. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aa4813cbf267a0bc680863198ff015c67"></a><!-- doxytag: member="kyotocabinet::CacheDB::tune_compressor" ref="aa4813cbf267a0bc680863198ff015c67" args="(Compressor *comp)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::CacheDB::tune_compressor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a> *&nbsp;</td>
+          <td class="paramname"> <em>comp</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set the data compressor. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>comp</em>&nbsp;</td><td>the data compressor object. </td></tr>
   </table>
   </dd>
 </dl>
@@ -701,8 +896,362 @@
 
 </div>
 </div>
+<a class="anchor" id="abdc993678a42c4a05e667c2d8e146019"></a><!-- doxytag: member="kyotocabinet::CacheDB::opaque" ref="abdc993678a42c4a05e667c2d8e146019" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* kyotocabinet::CacheDB::opaque </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 25 20:26:37 2010 for Kyoto Cabinet by&nbsp;
+<div class="memdoc">
+
+<p>Get the opaque data. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the pointer to the opaque data region, whose size is 16 bytes. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a451ff9f111dc181c5baf7cd197b241e0"></a><!-- doxytag: member="kyotocabinet::CacheDB::synchronize_opaque" ref="a451ff9f111dc181c5baf7cd197b241e0" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::CacheDB::synchronize_opaque </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Synchronize the opaque data. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a17999b28f615d71e10db9dfad1976107"></a><!-- doxytag: member="kyotocabinet::CacheDB::set_error" ref="a17999b28f615d71e10db9dfad1976107" args="(const char *file, int32_t line, Error::Code code, const char *message)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::CacheDB::set_error </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramname"> <em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a>&nbsp;</td>
+          <td class="paramname"> <em>code</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>message</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set the error information. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the epicenter. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the epicenter. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>code</em>&nbsp;</td><td>an error code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>message</em>&nbsp;</td><td>a supplement message. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="abdc4e1be231ac61bf319fcf64d34f03d"></a><!-- doxytag: member="kyotocabinet::CacheDB::report" ref="abdc4e1be231ac61bf319fcf64d34f03d" args="(const char *file, int32_t line, const char *type, const char *format,...)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::CacheDB::report </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramname"> <em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&nbsp;</td>
+          <td class="paramname"> <em>...</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Report a message for debugging. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the epicenter. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the epicenter. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>type</em>&nbsp;</td><td>the type string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>...</em>&nbsp;</td><td>used according to the format string. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a28bef20cc61def918d9153b3c055fda6"></a><!-- doxytag: member="kyotocabinet::CacheDB::tune_type" ref="a28bef20cc61def918d9153b3c055fda6" args="(int8_t type)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::CacheDB::tune_type </td>
+          <td>(</td>
+          <td class="paramtype">int8_t&nbsp;</td>
+          <td class="paramname"> <em>type</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set the database type. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>type</em>&nbsp;</td><td>the database type. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="abdd2dae45cd11ee1fcbf9bbb9115e8f2"></a><!-- doxytag: member="kyotocabinet::CacheDB::libver" ref="abdd2dae45cd11ee1fcbf9bbb9115e8f2" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t kyotocabinet::CacheDB::libver </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the library version. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the library version, or 0 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="abf4ae56bd3fefcd5bc8c467effe63b9d"></a><!-- doxytag: member="kyotocabinet::CacheDB::librev" ref="abf4ae56bd3fefcd5bc8c467effe63b9d" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t kyotocabinet::CacheDB::librev </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the library revision. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the library revision, or 0 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a54b967e0492574d2185c7bef4d2a3b6c"></a><!-- doxytag: member="kyotocabinet::CacheDB::fmtver" ref="a54b967e0492574d2185c7bef4d2a3b6c" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t kyotocabinet::CacheDB::fmtver </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the format version. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the format version, or 0 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a41a78cc517473b0eec96deb9c06d420b"></a><!-- doxytag: member="kyotocabinet::CacheDB::chksum" ref="a41a78cc517473b0eec96deb9c06d420b" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t kyotocabinet::CacheDB::chksum </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the module checksum. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the module checksum, or 0 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="af4194f3d3f9ad65df7e4d50234e4d787"></a><!-- doxytag: member="kyotocabinet::CacheDB::type" ref="af4194f3d3f9ad65df7e4d50234e4d787" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t kyotocabinet::CacheDB::type </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the database type. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the database type, or 0 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a80b7d910c6d5c96d9c0a77bde73bccd8"></a><!-- doxytag: member="kyotocabinet::CacheDB::opts" ref="a80b7d910c6d5c96d9c0a77bde73bccd8" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t kyotocabinet::CacheDB::opts </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the options. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the options, or 0 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a80d40594e6de1977c3c656aaf9d87ec1"></a><!-- doxytag: member="kyotocabinet::CacheDB::comp" ref="a80d40594e6de1977c3c656aaf9d87ec1" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a>* kyotocabinet::CacheDB::comp </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the data compressor. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the data compressor, or NULL on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a81a34420d67e0190795eb7b1d2807c9e"></a><!-- doxytag: member="kyotocabinet::CacheDB::recovered" ref="a81a34420d67e0190795eb7b1d2807c9e" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::CacheDB::recovered </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Check whether the database was recovered or not. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true if recovered, or false if not. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="acfbcd8dc8bd96bcc2907801c0233b75e"></a><!-- doxytag: member="kyotocabinet::CacheDB::reorganized" ref="acfbcd8dc8bd96bcc2907801c0233b75e" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::CacheDB::reorganized </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Check whether the database was reorganized or not. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true if recovered, or false if not. </dd></dl>
+
+</div>
+</div>
+</div>
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:51 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

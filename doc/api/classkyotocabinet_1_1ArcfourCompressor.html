@@ -44,8 +44,10 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#aa66cb07b8f029b2e88cc72e42bfbb6cb"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ArcfourCompressor.html#a7fffa1c8061de7add6f1752b2d3cf74a">set_key</a> (const void *kbuf, size_t ksiz)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the cipher key.  <a href="#a7fffa1c8061de7add6f1752b2d3cf74a"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ArcfourCompressor.html#a0d1320e1653c23cebbce963cbfeb05bd">begin_cycle</a> (int64_t salt=0)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin the cycle of ciper salt.  <a href="#a0d1320e1653c23cebbce963cbfeb05bd"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ArcfourCompressor.html#aa5fc9d4c82595cde9a47b8747481c53f">set_compressor</a> (<a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a> *comp)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set an additional data compressor.  <a href="#aa5fc9d4c82595cde9a47b8747481c53f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1ArcfourCompressor.html#ac9f9acfda2f84c092022fcbabb775b58">begin_cycle</a> (uint64_t salt=0)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin the cycle of ciper salt.  <a href="#ac9f9acfda2f84c092022fcbabb775b58"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p><a class="el" href="classkyotocabinet_1_1Compressor.html" title="Interfrace of data compression and decompression.">Compressor</a> with the Arcfour cipher. </p>
@@ -125,14 +127,40 @@
 
 </div>
 </div>
-<a class="anchor" id="a0d1320e1653c23cebbce963cbfeb05bd"></a><!-- doxytag: member="kyotocabinet::ArcfourCompressor::begin_cycle" ref="a0d1320e1653c23cebbce963cbfeb05bd" args="(int64_t salt=0)" -->
+<a class="anchor" id="aa5fc9d4c82595cde9a47b8747481c53f"></a><!-- doxytag: member="kyotocabinet::ArcfourCompressor::set_compressor" ref="aa5fc9d4c82595cde9a47b8747481c53f" args="(Compressor *comp)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::ArcfourCompressor::set_compressor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a> *&nbsp;</td>
+          <td class="paramname"> <em>comp</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set an additional data compressor. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>comp</em>&nbsp;</td><td>the additional data data compressor. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ac9f9acfda2f84c092022fcbabb775b58"></a><!-- doxytag: member="kyotocabinet::ArcfourCompressor::begin_cycle" ref="ac9f9acfda2f84c092022fcbabb775b58" args="(uint64_t salt=0)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void kyotocabinet::ArcfourCompressor::begin_cycle </td>
           <td>(</td>
-          <td class="paramtype">int64_t&nbsp;</td>
+          <td class="paramtype">uint64_t&nbsp;</td>
           <td class="paramname"> <em>salt</em> = <code>0</code></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -152,7 +180,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jul 25 20:26:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:51 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

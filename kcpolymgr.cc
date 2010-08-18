@@ -24,7 +24,7 @@ const char* g_progname;                  // program name
 // function prototypes
 int main(int argc, char** argv);
 static void usage();
-static void dberrprint(kc::FileDB* db, const char* info);
+static void dberrprint(kc::BasicDB* db, const char* info);
 static int32_t runcreate(int argc, char** argv);
 static int32_t runinform(int argc, char** argv);
 static int32_t runset(int argc, char** argv);
@@ -53,6 +53,7 @@ static int32_t proccheck(const char* path, int32_t oflags);
 // main routine
 int main(int argc, char** argv) {
   g_progname = argv[0];
+  kc::setstdiobin();
   if (argc < 2) usage();
   int32_t rv = 0;
   if (!std::strcmp(argv[1], "create")) {
@@ -106,9 +107,9 @@ static void usage() {
 }
 
 
-// print error message of file database
-static void dberrprint(kc::FileDB* db, const char* info) {
-  kc::FileDB::Error err = db->error();
+// print error message of database
+static void dberrprint(kc::BasicDB* db, const char* info) {
+  kc::BasicDB::Error err = db->error();
   eprintf("%s: %s: %s: %d: %s: %s\n",
           g_progname, info, db->path().c_str(), err.code(), err.name(), err.message());
 }
@@ -532,12 +533,13 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
   bool err = false;
   if (st) {
     std::map<std::string, std::string> status;
-    db.status(&status);
-    std::map<std::string, std::string>::iterator it = status.begin();
-    std::map<std::string, std::string>::iterator itend = status.end();
-    while (it != itend) {
-      iprintf("%s: %s\n", it->first.c_str(), it->second.c_str());
-      it++;
+    if (db.status(&status)) {
+      std::map<std::string, std::string>::iterator it = status.begin();
+      std::map<std::string, std::string>::iterator itend = status.end();
+      while (it != itend) {
+        iprintf("%s: %s\n", it->first.c_str(), it->second.c_str());
+        it++;
+      }
     }
   } else {
     iprintf("count: %lld\n", (long long)db.count());
@@ -687,19 +689,19 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
   if (kbuf || max >= 0) {
     kc::PolyDB::Cursor cur(&db);
     if (kbuf) {
-      if (!cur.jump(kbuf, ksiz) && db.error() != kc::FileDB::Error::NOREC) {
+      if (!cur.jump(kbuf, ksiz) && db.error() != kc::BasicDB::Error::NOREC) {
         dberrprint(&db, "Cursor::jump failed");
         err = true;
       }
     } else {
-      if (!cur.jump() && db.error() != kc::FileDB::Error::NOREC) {
+      if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
         dberrprint(&db, "Cursor::jump failed");
         err = true;
       }
     }
     while (!err && max > 0) {
       if (!cur.accept(&visitor, false, true)) {
-        if (db.error() != kc::FileDB::Error::NOREC) {
+        if (db.error() != kc::BasicDB::Error::NOREC) {
           dberrprint(&db, "Cursor::accept failed");
           err = true;
         }
@@ -766,7 +768,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
         break;
       }
       case 1: {
-        if (!db.remove(fields[0]) && db.error() != kc::FileDB::Error::NOREC) {
+        if (!db.remove(fields[0]) && db.error() != kc::BasicDB::Error::NOREC) {
           dberrprint(&db, "DB::remove failed");
           err = true;
         }
@@ -848,7 +850,7 @@ static int32_t proccheck(const char* path, int32_t oflags) {
   }
   bool err = false;
   kc::PolyDB::Cursor cur(&db);
-  if (!cur.jump() && db.error() != kc::FileDB::Error::NOREC) {
+  if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
     dberrprint(&db, "DB::jump failed");
     err = true;
   }
@@ -878,13 +880,13 @@ static int32_t proccheck(const char* path, int32_t oflags) {
         if (cnt % 50000 == 0) iprintf(" (%lld)\n", (long long)cnt);
       }
     } else {
-      if (db.error() != kc::FileDB::Error::NOREC) {
+      if (db.error() != kc::BasicDB::Error::NOREC) {
         dberrprint(&db, "Cursor::get failed");
         err = true;
       }
       break;
     }
-    if (!cur.step() && db.error() != kc::FileDB::Error::NOREC) {
+    if (!cur.step() && db.error() != kc::BasicDB::Error::NOREC) {
       dberrprint(&db, "Cursor::step failed");
       err = true;
     }

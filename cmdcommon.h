@@ -24,6 +24,7 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcplantdb.h>
 
 #if !defined(_KC_PREFIX)
 #define _KC_PREFIX       "*"
@@ -64,7 +65,9 @@ uint64_t g_rnd_w = 88675123;
 
 
 // function prototypes
+void mysrand(int64_t seed);
 int64_t myrand(int64_t range);
+int64_t memusage();
 void iprintf(const char* format, ...);
 void iputchar(char c);
 void eprintf(const char* format, ...);
@@ -77,7 +80,7 @@ std::string unitnumstrbyte(int64_t num);
 
 
 // get the random seed
-void mysrand(int64_t seed) {
+inline void mysrand(int64_t seed) {
   g_rnd_x = seed;
   for (int32_t i = 0; i < 16; i++) {
     myrand(1);
@@ -86,13 +89,21 @@ void mysrand(int64_t seed) {
 
 
 // get a random number
-int64_t myrand(int64_t range) {
+inline int64_t myrand(int64_t range) {
   uint64_t t = g_rnd_x ^ (g_rnd_x << 11);
   g_rnd_x = g_rnd_y;
   g_rnd_y = g_rnd_z;
   g_rnd_z = g_rnd_w;
   g_rnd_w = (g_rnd_w ^ (g_rnd_w >> 19)) ^ (t ^ (t >> 8));
   return (g_rnd_w & INT64_MAX) % range;
+}
+
+
+// get the current memory usage
+inline int64_t memusage() {
+  std::map<std::string, std::string> info;
+  kc::getsysinfo(&info);
+  return kc::atoi(info["mem_rss"].c_str());
 }
 
 

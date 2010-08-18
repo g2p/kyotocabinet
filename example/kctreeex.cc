@@ -1,4 +1,4 @@
-#include <kctreedb.h>
+#include <kchashdb.h>
 
 using namespace std;
 using namespace kyotocabinet;

@@ -698,10 +698,12 @@ public:
   bool wait(Mutex* mutex, double sec);
   /**
    * Send the wake-up signal to another waiting thread.
+   * @note The mutex used for the wait method should be locked by the caller.
    */
   void signal();
   /**
    * Send the wake-up signal to all waiting threads.
+   * @note The mutex used for the wait method should be locked by the caller.
    */
   void broadcast();
 private:

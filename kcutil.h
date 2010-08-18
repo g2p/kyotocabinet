@@ -61,6 +61,10 @@ extern const int32_t CLOCKTICK;
 extern const int32_t PAGESIZE;
 
 
+/** The extra feature list. */
+extern const char* const FEATURES;
+
+
 /** The buffer size for numeric data. */
 const size_t NUMBUFSIZ = 32;
 
@@ -395,6 +399,19 @@ int64_t getpid();
  * @return the value of the environment variable, or NULL on failure.
  */
 const char* getenv(const char* name);
+
+
+/**
+ * Get system information of the environment.
+ * @param strmap a string map to contain the result.
+ */
+void getsysinfo(std::map<std::string, std::string>* strmap);
+
+
+/**
+ * Set the standard streams into the binary mode.
+ */
+void setstdiobin();
 
 
 /**
@@ -793,23 +810,14 @@ inline uint32_t hashpath(const void* buf, size_t size, char* obuf) {
       (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
   } else {
     *(wp++) = 'f' + 1 + (size & 0x0f);
-    int32_t num = (rp[0] >> 4) + (rp[1] & 0x01 ? 0x10 : 0);
-    if (num < 10) {
-      *(wp++) = '0' + num;
-    } else {
-      *(wp++) = 'a' + num - 10;
-    }
-    num = (rp[0] & 0x0f) + (rp[1] & 0x02 ? 0x10 : 0);
-    if (num < 10) {
-      *(wp++) = '0' + num;
-    } else {
-      *(wp++) = 'a' + num - 10;
-    }
-    num = (rp[1] >> 2) & 0x1f;
-    if (num < 10) {
-      *(wp++) = '0' + num;
-    } else {
-      *(wp++) = 'a' + num - 10;
+    for (int i = 0; i <= 6; i += 3) {
+      uint32_t num = (rp[i] ^ rp[i+1] ^ rp[i+2] ^
+                      rp[size-i-1] ^ rp[size-i-2] ^ rp[size-i-3]) % 36;
+      if (num < 10) {
+        *(wp++) = '0' + num;
+      } else {
+        *(wp++) = 'a' + num - 10;
+      }
     }
     uint64_t hash = hashmurmur(buf, size);
     rv = (((hash & 0xffff000000000000ULL) >> 48) | ((hash & 0x0000ffff00000000ULL) >> 16)) ^
@@ -819,7 +827,7 @@ inline uint32_t hashpath(const void* buf, size_t size, char* obuf) {
       (((inc & 0x000000000000ffffULL) << 16) | ((inc & 0x00000000ffff0000ULL) >> 16));
     for (size_t i = 0; i < sizeof(hash); i++) {
       uint32_t least = hash >> ((sizeof(hash) - 1) * 8);
-      num = least >> 4;
+      uint64_t num = least >> 4;
       if (inc & 0x01) num += 0x10;
       inc = inc >> 1;
       if (num < 10) {
@@ -1151,12 +1159,12 @@ inline void arccipher(const void* ptr, size_t size, const void* kbuf, size_t ksi
     ksiz = 1;
   }
   uint32_t sbox[0x100], kbox[0x100];
-  for(int32_t i = 0; i < 0x100; i++){
+  for (int32_t i = 0; i < 0x100; i++) {
     sbox[i] = i;
     kbox[i] = ((uint8_t*)kbuf)[i%ksiz];
   }
   uint32_t sidx = 0;
-  for(int i = 0; i < 0x100; i++){
+  for (int i = 0; i < 0x100; i++) {
     sidx = (sidx + sbox[i] + kbox[i]) & 0xff;
     uint32_t swap = sbox[i];
     sbox[i] = sbox[sidx];
@@ -1164,7 +1172,7 @@ inline void arccipher(const void* ptr, size_t size, const void* kbuf, size_t ksi
   }
   uint32_t x = 0;
   uint32_t y = 0;
-  for(size_t i = 0; i < size; i++){
+  for (size_t i = 0; i < size; i++) {
     x = (x + 1) & 0xff;
     y = (y + sbox[x]) & 0xff;
     uint32_t swap = sbox[x];

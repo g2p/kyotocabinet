@@ -53,7 +53,7 @@ CXXFLAGS = @MYCXXFLAGS@
 LDFLAGS = @MYLDFLAGS@
 CMDLDFLAGS = @MYCMDLDFLAGS@
 LIBS = @LIBS@
-LDENV = LD_RUN_PATH=/lib:/usr/lib:$(LIBDIR):$(HOME)/lib:/usr/local/lib:@MYRUNPATH@:.
+LDENV = LD_RUN_PATH=/lib:/usr/lib:$(LIBDIR):$(HOME)/lib:/usr/local/lib:@MYRUNPATH@
 RUNENV = @MYLDLIBPATHENV@=.:/lib:/usr/lib:$(LIBDIR):$(HOME)/lib:/usr/local/lib:@MYRUNPATH@
 POSTCMD = @MYPOSTCMD@
 
@@ -162,9 +162,11 @@ check :
 	$(MAKE) check-util
 	$(MAKE) check-proto
 	$(MAKE) check-cache
+	$(MAKE) check-grass
 	$(MAKE) check-hash
 	$(MAKE) check-tree
 	$(MAKE) check-dir
+	$(MAKE) check-forest
 	$(MAKE) check-poly
 	$(MAKE) check-langc
 	rm -rf casket*
@@ -183,12 +185,17 @@ check-util :
 	$(RUNENV) $(RUNCMD) ./kcutilcodec ciph -key 'hoge' check.in > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -gz Makefile > check.in
 	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -gz -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -lzo Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -lzo -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -lzma Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -lzma -d check.in > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilcodec hash Makefile > check.in
 	$(RUNENV) $(RUNCMD) ./kcutilcodec hash -fnv Makefile > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilcodec hash -path Makefile > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilcodec conf
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcutiltest mutex -th 4 -iv -1 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest para -th 4 -iv -1 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest file -th 4 casket 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest file -th 4 -rnd -msiz 1m casket 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest map -bnum 1000 10000
@@ -224,11 +231,25 @@ check-cache :
 	$(RUNENV) $(RUNCMD) ./kccachetest order -th 4 -rnd -etc -bnum 5000 -capcnt 10000 10000
 	$(RUNENV) $(RUNCMD) ./kccachetest order -th 4 -rnd -etc -bnum 5000 -capsiz 10000 10000
 	$(RUNENV) $(RUNCMD) ./kccachetest order -th 4 -rnd -etc -tran \
-	  -bnum 5000 -capcnt 10000 10000
+	  -tc -bnum 5000 -capcnt 10000 10000
 	$(RUNENV) $(RUNCMD) ./kccachetest wicked -bnum 5000 10000
-	$(RUNENV) $(RUNCMD) ./kccachetest wicked -th 4 -it 4 -bnum 5000 -capcnt 10000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest wicked -th 4 -it 4 -tc -bnum 5000 -capcnt 10000 10000
 	$(RUNENV) $(RUNCMD) ./kccachetest tran -bnum 5000 10000
-	$(RUNENV) $(RUNCMD) ./kccachetest tran -th 2 -it 4 -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kccachetest tran -th 2 -it 4 -tc -bnum 5000 10000
+
+
+check-grass :
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcgrasstest order -etc -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kcgrasstest order -th 4 -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kcgrasstest order -th 4 -rnd -etc -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kcgrasstest order -th 4 -rnd -etc -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kcgrasstest order -th 4 -rnd -etc -tran \
+	  -tc -bnum 5000 -pccap 10k -rcd 500
+	$(RUNENV) $(RUNCMD) ./kcgrasstest wicked -bnum 5000 10000
+	$(RUNENV) $(RUNCMD) ./kcgrasstest wicked -th 4 -it 4 -tc -bnum 5000 -pccap 10k -rcd 1000
+	$(RUNENV) $(RUNCMD) ./kcgrasstest tran -bnum 500 10000
+	$(RUNENV) $(RUNCMD) ./kcgrasstest tran -th 2 -it 4 -tc -bnum 5000 -pccap 10k -rcd 5000
 
 
 check-hash :
@@ -497,6 +518,103 @@ check-dir :
 	$(RUNENV) $(RUNCMD) ./kcdirtest tran -th 2 -it 4 -tc casket 1000
 
 
+check-forest :
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcforestmgr create -otr -bnum 3 casket
+	$(RUNENV) $(RUNCMD) ./kcforestmgr inform -st casket
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -add casket duffy 1231
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -add casket micky 0101
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set casket fal 1007
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set casket mikio 0211
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set casket natsuki 0810
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set casket micky ""
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -app casket duffy kukuku
+	$(RUNENV) $(RUNCMD) ./kcforestmgr remove casket micky
+	$(RUNENV) $(RUNCMD) ./kcforestmgr list -pv casket > check.out
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set casket ryu 1
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set casket ken 2
+	$(RUNENV) $(RUNCMD) ./kcforestmgr remove casket duffy
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set casket ryu syo-ryu-ken
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set casket ken tatsumaki-senpu-kyaku
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -inci casket int 1234
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -inci casket int 5678
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -incd casket double 1234.5678
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -incd casket double 8765.4321
+	$(RUNENV) $(RUNCMD) ./kcforestmgr get casket mikio
+	$(RUNENV) $(RUNCMD) ./kcforestmgr get casket ryu
+	$(RUNENV) $(RUNCMD) ./kcforestmgr import casket lab/numbers.tsv
+	$(RUNENV) $(RUNCMD) ./kcforestmgr list -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kcforestmgr dump casket check.out
+	$(RUNENV) $(RUNCMD) ./kcforestmgr load -otr casket check.out
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforestmgr inform -st casket
+	$(RUNENV) $(RUNCMD) ./kcforestmgr create -otr -otl -onr \
+	  -tc -bnum 1 casket
+	$(RUNENV) $(RUNCMD) ./kcforestmgr import casket < lab/numbers.tsv
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set casket mikio kyotocabinet
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -app casket tako ikaunini
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -app casket mikio kyototyrant
+	$(RUNENV) $(RUNCMD) ./kcforestmgr set -app casket mikio kyotodystopia
+	$(RUNENV) $(RUNCMD) ./kcforestmgr get -px casket mikio > check.out
+	$(RUNENV) $(RUNCMD) ./kcforestmgr list casket > check.out
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -set \
+	  -psiz 100 -bnum 5000 -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -get \
+	  -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -getw \
+	  -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -rem \
+	  -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforesttest order \
+	  -bnum 5000 -psiz 100 -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -etc \
+	  -bnum 5000 -psiz 1000 -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -th 4 \
+	  -bnum 5000 -psiz 1000 -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -th 4 -pccap 100k -rnd -etc \
+	  -bnum 5000 -psiz 1000 -pccap 100k -rcd casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -th 4 -rnd -etc -tran \
+	  -bnum 5000 -psiz 1000 -pccap 100k casket 1000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -th 4 -rnd -etc -oat \
+	  -bnum 5000 -psiz 1000 -pccap 100k casket 1000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest order -th 4 -rnd -etc \
+	  -tc -bnum 5000 -psiz 1000 casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest queue \
+	  -bnum 5000 -psiz 500 casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest queue -rnd \
+	  -bnum 5000 -psiz 500 casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest queue -th 4 -it 4 \
+	  -bnum 5000 -psiz 500 casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest queue -th 4 -it 4 -rnd \
+	  -bnum 5000 -psiz 500 casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest wicked \
+	  -bnum 5000 -psiz 1000 -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest wicked -th 4 -it 4 \
+	  -bnum 5000 -pccap 100k -rcd casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest wicked -th 4 -it 4 -oat \
+	  -bnum 5000 -pccap 100k casket 1000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest wicked -th 4 -it 4 \
+	  -tc -bnum 10000 casket 1000
+	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforesttest tran casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforesttest tran -th 2 -it 4 -pccap 100k casket 10000
+	$(RUNENV) $(RUNCMD) ./kcforesttest tran -th 2 -it 4 \
+	  -tc -bnum 10000 -rcd casket 10000
+
+
 check-poly :
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcpolymgr create -otr "casket.kch#apow=1#fpow=2#bnum=3"
@@ -588,24 +706,27 @@ check-poly :
 	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=10000#msiz=0#dfunit=1" 1000
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=-"
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=+"
-	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=*"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=*#zcomp=def"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=%#zcomp=gz"
 	rm -rf casket*
-	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kch#zcomp=arc#zkey=mikio"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kch#zcomp=lzocrc"
 	rm -rf casket*
-	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kct#zcomp=arc#zkey=mikio"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kct#zcomp=lzmacrc"
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kcd#zcomp=arc#zkey=mikio"
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kcf#zcomp=arc#zkey=mikio"
 
 
 check-langc :
 	rm -rf casket*
-	$(RUNENV) $(RUNCMD) ./kcpolytest order "casket.kch#bnum=5000#msiz=50000" 10000
-	$(RUNENV) $(RUNCMD) ./kcpolytest order -etc \
+	$(RUNENV) $(RUNCMD) ./kclangctest order "casket.kch#bnum=5000#msiz=50000" 10000
+	$(RUNENV) $(RUNCMD) ./kclangctest order -etc \
 	  "casket.kch#bnum=5000#msiz=50000#dfunit=2" 10000
-	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd -etc \
+	$(RUNENV) $(RUNCMD) ./kclangctest order -rnd -etc \
 	  "casket.kch#bnum=5000#msiz=50000#dfunit=2" 10000
-	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd -etc -oat -tran \
-	  "casket.kch#bnum=5000#msiz=50000#dfunit=2#zcomp=arc" 10000
+	$(RUNENV) $(RUNCMD) ./kclangctest order -rnd -etc -oat -tran \
+	  "casket.kch#bnum=5000#msiz=50000#dfunit=2#zcomp=arcz" 10000
 
 
 check-valgrind :
@@ -819,6 +940,10 @@ kccachetest : kccachetest.o $(LIBRARYFILES)
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
 
 
+kcgrasstest : kcgrasstest.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
 kchashtest : kchashtest.o $(LIBRARYFILES)
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
 
@@ -840,6 +965,14 @@ kcdirtest : kcdirtest.o $(LIBRARYFILES)
 
 
 kcdirmgr : kcdirmgr.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kcforesttest : kcforesttest.o $(LIBRARYFILES)
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+
+
+kcforestmgr : kcforestmgr.o $(LIBRARYFILES)
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
 
 
@@ -869,26 +1002,26 @@ kccompare.o : kccommon.h kcutil.h kccompare.h myconf.h
 
 kcmap.o : kccommon.h kcutil.h kcmap.h myconf.h
 
+kcplantdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcplantdb.h
+
 kcprotodb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kcprotodb.h
+  kcplantdb.h kcprotodb.h
 
 kccachedb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kccachedb.h
+  kcplantdb.h kccachedb.h
 
 kchashdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kchashdb.h
-
-kctreedb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kchashdb.h kctreedb.h
+  kcplantdb.h kchashdb.h
 
 kcdirdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kcdirdb.h
+  kcplantdb.h kcdirdb.h
 
 kcpolydb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcdirdb.h kcpolydb.h
+  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h
 
 kclangc.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcdirdb.h kcpolydb.h kclangc.h
+  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
 
 kcutiltest.o kcutilcodec.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
@@ -896,31 +1029,39 @@ kcutiltest.o kcutilcodec.o : \
 
 kcprototest.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kcprotodb.h cmdcommon.h
+  kcplantdb.h kcprotodb.h cmdcommon.h
 
 kccachetest.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kccachedb.h cmdcommon.h
+  kcplantdb.h kccachedb.h cmdcommon.h
+
+kcgrasstest.o : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcplantdb.h kccachedb.h cmdcommon.h
 
 kchashtest.o kchashmgr.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kchashdb.h cmdcommon.h
+  kcplantdb.h kchashdb.h cmdcommon.h
 
 kctreetest.o kctreemgr.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kchashdb.h kctreedb.h cmdcommon.h
+  kcplantdb.h kchashdb.h cmdcommon.h
 
 kcdirtest.o kcdirmgr.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kcdirdb.h cmdcommon.h
+  kcplantdb.h kcdirdb.h cmdcommon.h
+
+kcforesttest.o kcforestmgr.o : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kcplantdb.h kcdirdb.h cmdcommon.h
 
 kcpolytest.o kcpolymgr.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcdirdb.h kcpolydb.h cmdcommon.h
+  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h cmdcommon.h
 
 kclangctest.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
-  kcprotodb.h kccachedb.h kchashdb.h kctreedb.h kcdirdb.h kcpolydb.h kclangc.h
+  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
 
 
 

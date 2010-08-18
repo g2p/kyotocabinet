@@ -147,7 +147,7 @@ int32_t kcchkinf(double num) {
  */
 const char* kcecodename(int32_t code) {
   _assert_(true);
-  return FileDB::Error::codename((FileDB::Error::Code)code);
+  return BasicDB::Error::codename((BasicDB::Error::Code)code);
 }
 
 
@@ -370,7 +370,7 @@ int32_t kcdbclear(KCDB* db) {
 int32_t kcdbsync(KCDB* db, int32_t hard, KCFILEPROC proc, void* opq) {
   _assert_(db);
   PolyDB* pdb = (PolyDB*)db;
-  class FileProcessorImpl : public FileDB::FileProcessor {
+  class FileProcessorImpl : public BasicDB::FileProcessor {
   public:
     explicit FileProcessorImpl(KCFILEPROC proc, void* opq) : proc_(proc), opq_(opq) {}
     bool process(const std::string& path, int64_t count, int64_t size) {

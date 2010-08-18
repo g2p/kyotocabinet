@@ -205,10 +205,24 @@ public:
      */
     virtual bool jump(const std::string& key) = 0;
     /**
+     * Jump the cursor to the last record.
+     * @return true on success, or false on failure.
+     * @note This method is dedicated to tree databases.  Some database types, especially hash
+     * databases, will provide a dummy implementation.
+     */
+    virtual bool jump_last() = 0;
+    /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
     virtual bool step() = 0;
+    /**
+     * Step the cursor to the previous record.
+     * @return true on success, or false on failure.
+     * @note This method is dedicated to tree databases.  Some database types, especially hash
+     * databases, will provide a dummy implementation.
+     */
+    virtual bool step_back() = 0;
     /**
      * Get the database object.
      * @return the database object.
@@ -395,16 +409,16 @@ public:
 
 
 /**
- * Basic implementation for file database.
+ * Basic implementation of database.
  * @note This class is an abstract class to prescribe the interface of file operations and
  * provide mix-in methods.  This class can be inherited but overwriting methods is forbidden.
- * Before every database operation, it is necessary to call the FileDB::open method in order to
+ * Before every database operation, it is necessary to call the BasicDB::open method in order to
  * open a database file and connect the database object to it.  To avoid data missing or
- * corruption, it is important to close every database file by the FileDB::close method when the
+ * corruption, it is important to close every database file by the BasicDB::close method when the
  * database is no longer in use.  It is forbidden for multible database objects in a process to
  * open the same database at the same time.
  */
-class FileDB : public DB {
+class BasicDB : public DB {
 public:
   class Error;
   class Cursor;
@@ -414,14 +428,15 @@ public:
    */
   enum Type {
     TYPEVOID = 0x00,                     ///< void database
-    TYPEPHASH = 0x01,                    ///< prototype hash database
-    TYPEPTREE = 0x02,                    ///< prototype tree database
-    TYPEPMISC = 0x08,                    ///< miscellaneous prototype database
-    TYPECACHE = 0x09,                    ///< cache database
-    TYPEHASH = 0x11,                     ///< file hash database
-    TYPETREE = 0x12,                     ///< file tree database
-    TYPEDIR = 0x18,                      ///< directory database
-    TYPEMISC = 0x20                      ///< miscellaneous database
+    TYPEPHASH = 0x10,                    ///< prototype hash database
+    TYPEPTREE = 0x11,                    ///< prototype tree database
+    TYPECACHE = 0x20,                    ///< cache hash database
+    TYPEGRASS = 0x21,                    ///< cache tree database
+    TYPEHASH = 0x30,                     ///< file hash database
+    TYPETREE = 0x31,                     ///< file tree database
+    TYPEDIR = 0x40,                      ///< directory hash database
+    TYPEFOREST = 0x41,                   ///< directory tree database
+    TYPEMISC = 0x80                      ///< miscellaneous database
   };
   /**
    * Interface of cursor to indicate a record.
@@ -723,7 +738,7 @@ public:
      * Get the database object.
      * @return the database object.
      */
-    virtual FileDB* db() = 0;
+    virtual BasicDB* db() = 0;
     /**
      * Get the last happened error.
      * @return the last happened error.
@@ -895,7 +910,7 @@ public:
    * Destructor.
    * @note If the database is not closed, it is closed implicitly.
    */
-  virtual ~FileDB() {
+  virtual ~BasicDB() {
     _assert_(true);
   }
   /**
@@ -912,18 +927,18 @@ public:
   /**
    * Open a database file.
    * @param path the path of a database file.
-   * @param mode the connection mode.  FileDB::OWRITER as a writer, FileDB::OREADER as a reader.
-   * The following may be added to the writer mode by bitwise-or: FileDB::OCREATE, which means
-   * it creates a new database if the file does not exist, FileDB::OTRUNCATE, which means it
-   * creates a new database regardless if the file exists, FileDB::OAUTOTRAN, which means each
-   * updating operation is performed in implicit transaction, FileDB::OAUTOSYNC, which means
-   * each updating operation is followed by implicit synchronization with the file system.  The
-   * following may be added to both of the reader mode and the writer mode by bitwise-or:
-   * FileDB::ONOLOCK, which means it opens the database file without file locking,
-   * FileDB::OTRYLOCK, which means locking is performed without blocking, File::ONOREPAIR, which
+   * @param mode the connection mode.  BasicDB::OWRITER as a writer, BasicDB::OREADER as a
+   * reader.  The following may be added to the writer mode by bitwise-or: BasicDB::OCREATE,
+   * which means it creates a new database if the file does not exist, BasicDB::OTRUNCATE, which
+   * means it creates a new database regardless if the file exists, BasicDB::OAUTOTRAN, which
+   * means each updating operation is performed in implicit transaction, BasicDB::OAUTOSYNC,
+   * which means each updating operation is followed by implicit synchronization with the file
+   * system.  The following may be added to both of the reader mode and the writer mode by
+   * bitwise-or: BasicDB::ONOLOCK, which means it opens the database file without file locking,
+   * BasicDB::OTRYLOCK, which means locking is performed without blocking, File::ONOREPAIR, which
    * means the database file is not repaired implicitly even if file destruction is detected.
    * @return true on success, or false on failure.
-   * @note Every opened database must be closed by the FileDB::close method when it is no longer
+   * @note Every opened database must be closed by the BasicDB::close method when it is no longer
    * in use.  It is not allowed for two or more database objects in the same process to keep
    * their connections to the same database file at the same time.
    */
@@ -1683,7 +1698,28 @@ public:
    */
   virtual Cursor* cursor() = 0;
   /**
-   * Get the string of a database type.
+   * Get the class name of a database type.
+   * @param type the database type.
+   * @return the string of the type name.
+   */
+  static const char* typecname(uint32_t type) {
+    _assert_(true);
+    switch (type) {
+      case TYPEVOID: return "void";
+      case TYPEPHASH: return "ProtoHashDB";
+      case TYPEPTREE: return "ProtoTreeDB";
+      case TYPECACHE: return "CacheDB";
+      case TYPEGRASS: return "GrassDB";
+      case TYPEHASH: return "HashDB";
+      case TYPETREE: return "TreeDB";
+      case TYPEDIR: return "DirDB";
+      case TYPEFOREST: return "ForestDB";
+      case TYPEMISC: return "misc";
+    }
+    return "unknown";
+  }
+  /**
+   * Get the description string of a database type.
    * @param type the database type.
    * @return the string of the type name.
    */
@@ -1693,11 +1729,12 @@ public:
       case TYPEVOID: return "void";
       case TYPEPHASH: return "prototype hash database";
       case TYPEPTREE: return "prototype tree database";
-      case TYPEPMISC: return "miscellaneous prototype database";
-      case TYPECACHE: return "cache database";
+      case TYPECACHE: return "cache hash database";
+      case TYPEGRASS: return "cache tree database";
       case TYPEHASH: return "file hash database";
       case TYPETREE: return "file tree database";
-      case TYPEDIR: return "directory database";
+      case TYPEDIR: return "directory hash database";
+      case TYPEFOREST: return "directory tree database";
       case TYPEMISC: return "miscellaneous database";
     }
     return "unknown";

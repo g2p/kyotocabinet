@@ -7,27 +7,29 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.1.1)
+AC_INIT(kyotocabinet, 1.2.6)
 
 # Package information
-MYLIBVER=3
-MYLIBREV=4
-MYFORMATVER=4
+MYLIBVER=4
+MYLIBREV=7
+MYFORMATVER=5
 
 # Targets
 MYHEADERFILES="kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h"
-MYHEADERFILES="$MYHEADERFILES kcprotodb.h kccachedb.h kchashdb.h kctreedb.h"
-MYHEADERFILES="$MYHEADERFILES kcdirdb.h kcpolydb.h kclangc.h"
+MYHEADERFILES="$MYHEADERFILES kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h"
+MYHEADERFILES="$MYHEADERFILES kcpolydb.h kclangc.h"
 MYLIBRARYFILES="libkyotocabinet.a"
 MYLIBOBJFILES="kcutil.o kcdb.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o"
-MYLIBOBJFILES="$MYLIBOBJFILES kcprotodb.o kccachedb.o kchashdb.o kctreedb.o"
+MYLIBOBJFILES="$MYLIBOBJFILES kcplantdb.o kcprotodb.o kccachedb.o kchashdb.o"
 MYLIBOBJFILES="$MYLIBOBJFILES kcdirdb.o kcpolydb.o kclangc.o"
-MYCOMMANDFILES="kcutiltest kcutilcodec kcprototest kccachetest"
+MYCOMMANDFILES="kcutiltest kcutilcodec kcprototest kccachetest kcgrasstest"
 MYCOMMANDFILES="$MYCOMMANDFILES kchashtest kchashmgr kctreetest kctreemgr"
-MYCOMMANDFILES="$MYCOMMANDFILES kcdirtest kcdirmgr kcpolytest kcpolymgr kclangctest"
-MYMAN1FILES="kcutiltest.1 kcutilcodec.1 kcprototest.1 kccachetest.1"
+MYCOMMANDFILES="$MYCOMMANDFILES kcdirtest kcdirmgr kcforesttest kcforestmgr"
+MYCOMMANDFILES="$MYCOMMANDFILES kcpolytest kcpolymgr kclangctest"
+MYMAN1FILES="kcutiltest.1 kcutilcodec.1 kcprototest.1 kccachetest.1 kcgrasstest.1"
 MYMAN1FILES="$MYMAN1FILES kchashtest.1 kchashmgr.1 kctreetest.1 kctreemgr.1"
-MYMAN1FILES="$MYMAN1FILES kcdirtest.1 kcdirmgr.1 kcpolytest.1 kcpolymgr.1 kclangctest.1"
+MYMAN1FILES="$MYMAN1FILES kcdirtest.1 kcdirmgr.1 kcforesttest.1 kcforestmgr.1"
+MYMAN1FILES="$MYMAN1FILES kcpolytest.1 kcpolymgr.1 kclangctest.1"
 MYDOCUMENTFILES="COPYING ChangeLog doc kyotocabinet.idl"
 MYPCFILES="kyotocabinet.pc"
 
@@ -70,6 +72,7 @@ then
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O0"
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
   MYCMDLDFLAGS="$MYCMDLDFLAGS -static"
+  MYRUNPATH="$MYRUNPATH:."
   enables="$enables (debug)"
 fi
 
@@ -81,6 +84,7 @@ then
   MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -O2 -fno-inline -pipe"
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O2 -fno-inline -pipe"
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
+  MYRUNPATH="$MYRUNPATH:."
   enables="$enables (devel)"
 fi
 
@@ -90,7 +94,18 @@ AC_ARG_ENABLE(profile,
 if test "$enable_profile" = "yes"
 then
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -pg -O2 -fno-inline -pipe"
+  MYRUNPATH="$MYRUNPATH:."
   enables="$enables (profile)"
+fi
+
+# Micro yield mode
+AC_ARG_ENABLE(uyield,
+  AC_HELP_STRING([--enable-uyield], [build for detecting race conditions]))
+if test "$enable_uyield" = "yes"
+then
+  MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCUYIELD"
+  MYRUNPATH="$MYRUNPATH:."
+  enables="$enables (uyield)"
 fi
 
 # Static mode
@@ -102,15 +117,6 @@ then
   enables="$enables (static)"
 fi
 
-# Micro yield mode
-AC_ARG_ENABLE(uyield,
-  AC_HELP_STRING([--enable-uyield], [build for detecting race conditions]))
-if test "$enable_uyield" = "yes"
-then
-  MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCUYIELD"
-  enables="$enables (uyield)"
-fi
-
 # Disable shared object
 AC_ARG_ENABLE(shared,
   AC_HELP_STRING([--disable-shared], [avoid to build shared libraries]))
@@ -119,22 +125,40 @@ then
   enables="$enables (no-shared)"
 fi
 
-# Disable zlib compression
-AC_ARG_ENABLE(zlib,
-  AC_HELP_STRING([--disable-zlib], [build without zlib compression]))
-if test "$enable_zlib" = "no"
-then
-  MYCPPFLAGS="$MYCPPFLAGS -D_MYNOZLIB"
-  enables="$enables (no-zlib)"
-fi
-
 # Disable atomic operations
 AC_ARG_ENABLE(atomic,
   AC_HELP_STRING([--disable-atomic], [build without atomic operations]))
 if test "$enable_atomic" = "no"
 then
-  MYCPPFLAGS="$MYCPPFLAGS -D_MYNOATOMIC"
   enables="$enables (no-atomic)"
+fi
+
+# Disable ZLIB compression
+AC_ARG_ENABLE(zlib,
+  AC_HELP_STRING([--disable-zlib], [build without ZLIB compression]))
+if test "$enable_zlib" = "no"
+then
+  enables="$enables (no-zlib)"
+else
+  MYCPPFLAGS="$MYCPPFLAGS -D_MYZLIB"
+fi
+
+# Enable LZO compression
+AC_ARG_ENABLE(lzo,
+  AC_HELP_STRING([--enable-lzo], [build with LZO compression]))
+if test "$enable_lzo" = "yes"
+then
+  MYCPPFLAGS="$MYCPPFLAGS -D_MYLZO"
+  enables="$enables (lzo)"
+fi
+
+# Enable LZMA compression
+AC_ARG_ENABLE(lzma,
+  AC_HELP_STRING([--enable-lzma], [build with LZMA compression]))
+if test "$enable_lzma" = "yes"
+then
+  MYCPPFLAGS="$MYCPPFLAGS -D_MYLZMA"
+  enables="$enables (lzma)"
 fi
 
 # Messages
@@ -188,16 +212,19 @@ fi
 printf '\n'
 
 # Atomic operations
-printf 'checking for atomic operations... '
-AC_TRY_COMPILE([], [return __sync_fetch_and_add], [MYGCCATOMIC=yes], [MYGCCATOMIC=no])
-if test "$MYGCCATOMIC" = "yes"
+if test "$enable_atomic" != "no"
 then
-  MYCPPFLAGS="$MYCPPFLAGS -D_MYGCCATOMIC"
-  printf 'yes'
-else
-  printf 'no'
+  printf 'checking for atomic operations... '
+  AC_TRY_COMPILE([], [__sync_fetch_and_add], [MYGCCATOMIC=yes], [MYGCCATOMIC=no])
+  if test "$MYGCCATOMIC" = "yes"
+  then
+    MYCPPFLAGS="$MYCPPFLAGS -D_MYGCCATOMIC"
+    printf 'yes'
+  else
+    printf 'no'
+  fi
+  printf '\n'
 fi
-printf '\n'
 
 # Underlying libraries
 AC_CHECK_LIB(c, main)
@@ -209,6 +236,14 @@ if test "$enable_zlib" != "no"
 then
   AC_CHECK_LIB(z, main)
 fi
+if test "$enable_lzo" = "yes"
+then
+  AC_CHECK_LIB(lzo2, main)
+fi
+if test "$enable_lzma" = "yes"
+then
+  AC_CHECK_LIB(lzma, main)
+fi
 AC_CHECK_LIB(kyotocabinet, main, AC_MSG_WARN([old version of Kyoto Cabinet was detected]))
 
 # Necessary headers
@@ -217,6 +252,18 @@ AC_CHECK_HEADER(stdint.h, true, AC_MSG_ERROR([stdint.h is required]))
 AC_CHECK_HEADER(unistd.h, true, AC_MSG_ERROR([unistd.h is required]))
 AC_CHECK_HEADER(dirent.h, true, AC_MSG_ERROR([dirent.h is required]))
 AC_CHECK_HEADER(pthread.h, true, AC_MSG_ERROR([pthread.h is required]))
+if test "$enable_zlib" != "no"
+then
+  AC_CHECK_HEADER(zlib.h, true, AC_MSG_ERROR([zlib.h is required]))
+fi
+if test "$enable_lzo" = "yes"
+then
+  AC_CHECK_HEADER(lzo/lzo1x.h, true, AC_MSG_ERROR([lzo/lzo1x.h is required]))
+fi
+if test "$enable_lzma" = "yes"
+then
+  AC_CHECK_HEADER(lzma.h, true, AC_MSG_ERROR([lzma.h is required]))
+fi
 
 # Shared libraries
 if test "$enable_shared" != "no" && test "$enable_profile" != "yes"
@@ -232,6 +279,13 @@ then
     MYLIBRARYFILES="$MYLIBRARYFILES libkyotocabinet.so.$MYLIBVER"
     MYLIBRARYFILES="$MYLIBRARYFILES libkyotocabinet.so"
   fi
+fi
+
+# Work around of bugs of some environments
+if uname | grep Darwin >/dev/null
+then
+  MYCFLAGS="$MYCFLAGS -Os"
+  MYCXXFLAGS="$MYCXXFLAGS -Os"
 fi
 
 

@@ -11,7 +11,8 @@
 SHELL = /bin/sh
 
 # Targets
-MYBINS = kcprotoex kccacheex kchashex kctreeex kcdirex kcpolyex kcvisex kclangcex
+MYBINS = kcprotoex kccacheex kcgrassex kchashex kctreeex kcdirex kcforestex \
+  kcpolyex kcvisex kclangcex
 
 # Building binaries
 CC = gcc
@@ -61,9 +62,11 @@ check :
 	rm -rf casket*
 	$(RUNENV) ./kcprotoex
 	$(RUNENV) ./kccacheex
+	$(RUNENV) ./kcgrassex
 	$(RUNENV) ./kchashex
 	$(RUNENV) ./kctreeex
 	$(RUNENV) ./kcdirex
+	$(RUNENV) ./kcforestex
 	$(RUNENV) ./kcpolyex
 	$(RUNENV) ./kclangcex
 
@@ -85,6 +88,10 @@ kccacheex : kccacheex.o
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
 
 
+kcgrassex : kcgrassex.o
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
+
+
 kchashex : kchashex.o
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
 
@@ -94,6 +101,10 @@ kctreeex : kctreeex.o
 
 
 kcdirex : kcdirex.o
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
+
+
+kcforestex : kcforestex.o
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
 
 

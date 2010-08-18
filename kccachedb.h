@@ -1,5 +1,5 @@
 /*************************************************************************************************
- * Cache database
+ * Cache hash database
  *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
@@ -24,6 +24,7 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcplantdb.h>
 
 namespace kyotocabinet {                 // common namespace
 
@@ -37,6 +38,7 @@ const size_t CDBDEFBNUM = 1048583LL;     ///< default bucket number
 const size_t CDBZMAPBNUM = 32768;        ///< mininum number of buckets to use mmap
 const uint32_t CDBKSIZMAX = 0xfffff;     ///< maximum size of each key
 const size_t CDBRECBUFSIZ = 48;          ///< size of the record buffer
+const size_t CDBOPAQUESIZ = 16;          ///< size of the opaque buffer
 }
 
 
@@ -50,7 +52,7 @@ const size_t CDBRECBUFSIZ = 48;          ///< size of the record buffer
  * forbidden for multible database objects in a process to open the same database at the same
  * time.
  */
-class CacheDB : public FileDB {
+class CacheDB : public BasicDB {
 public:
   class Cursor;
 private:
@@ -60,6 +62,7 @@ private:
   class Repeater;
   class Setter;
   class Remover;
+  friend class PlantDB<CacheDB, BasicDB::TYPEGRASS>;
   /** An alias of list of cursors. */
   typedef std::list<Cursor*> CursorList;
   /** An alias of list of transaction logs. */
@@ -68,7 +71,7 @@ public:
   /**
    * Cursor to indicate a record.
    */
-  class Cursor : public FileDB::Cursor {
+  class Cursor : public BasicDB::Cursor {
     friend class CacheDB;
   public:
     /**
@@ -102,33 +105,45 @@ public:
       _assert_(visitor);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
         return false;
       }
       if (writable && !(db_->omode_ & OWRITER)) {
-        db_->set_error(Error::NOPERM, "permission denied");
+        db_->set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
         return false;
       }
       if (sidx_ < 0 || !rec_) {
-        db_->set_error(Error::NOREC, "no record");
+        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
         return false;
       }
       uint32_t rksiz = rec_->ksiz & CDBKSIZMAX;
       char* dbuf = (char*)rec_ + sizeof(*rec_);
+      const char* rvbuf = dbuf + rksiz;
+      size_t rvsiz = rec_->vsiz;
+      char* zbuf = NULL;
+      size_t zsiz = 0;
+      if (db_->comp_) {
+        zbuf = db_->comp_->decompress(rvbuf, rvsiz, &zsiz);
+        if (zbuf) {
+          rvbuf = zbuf;
+          rvsiz = zsiz;
+        }
+      }
       size_t vsiz;
-      const char* vbuf = visitor->visit_full(dbuf, rksiz, dbuf + rksiz, rec_->vsiz, &vsiz);
+      const char* vbuf = visitor->visit_full(dbuf, rksiz, rvbuf, rvsiz, &vsiz);
+      delete[] zbuf;
       if (vbuf == Visitor::REMOVE) {
         uint64_t hash = db_->hash_record(dbuf, rksiz) / CDBSLOTNUM;
         Slot* slot = db_->slots_ + sidx_;
         Repeater repeater(Visitor::REMOVE, 0);
-        db_->accept_impl(slot, hash, dbuf, rksiz, &repeater, true);
+        db_->accept_impl(slot, hash, dbuf, rksiz, &repeater, db_->comp_, true);
       } else if (vbuf == Visitor::NOP) {
         if (step) step_impl();
       } else {
         uint64_t hash = db_->hash_record(dbuf, rksiz) / CDBSLOTNUM;
         Slot* slot = db_->slots_ + sidx_;
         Repeater repeater(vbuf, vsiz);
-        db_->accept_impl(slot, hash, dbuf, rksiz, &repeater, true);
+        db_->accept_impl(slot, hash, dbuf, rksiz, &repeater, db_->comp_, true);
         if (step) step_impl();
       }
       return true;
@@ -141,7 +156,7 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
         return false;
       }
       for (int32_t i = 0; i < CDBSLOTNUM; i++) {
@@ -152,7 +167,7 @@ public:
           return true;
         }
       }
-      db_->set_error(Error::NOREC, "no record");
+      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
       sidx_ = -1;
       rec_ = NULL;
       return false;
@@ -167,7 +182,7 @@ public:
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
         return false;
       }
       if (ksiz > CDBKSIZMAX) ksiz = CDBKSIZMAX;
@@ -204,7 +219,7 @@ public:
           }
         }
       }
-      db_->set_error(Error::NOREC, "no record");
+      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
       sidx_ = -1;
       rec_ = NULL;
       return false;
@@ -218,6 +233,21 @@ public:
       return jump(key.c_str(), key.size());
     }
     /**
+     * Jump the cursor to the last record.
+     * @return true on success, or false on failure.
+     * @note This is a dummy implementation for compatibility.
+     */
+    bool jump_last() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, true);
+      if (db_->omode_ == 0) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      db_->set_error(Error::NOIMPL, "not implemented");
+      return false;
+    }
+    /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
      */
@@ -225,16 +255,31 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
         return false;
       }
       if (sidx_ < 0 || !rec_) {
-        db_->set_error(Error::NOREC, "no record");
+        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
         return false;
       }
       bool err = false;
       if (!step_impl()) err = true;
       return !err;
+    }
+    /**
+     * Step the cursor to the previous record.
+     * @return true on success, or false on failure.
+     * @note This is a dummy implementation for compatibility.
+     */
+    bool step_back() {
+      _assert_(true);
+      ScopedSpinRWLock lock(&db_->mlock_, true);
+      if (db_->omode_ == 0) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      db_->set_error(Error::NOIMPL, "not implemented");
+      return false;
     }
     /**
      * Get the database object.
@@ -254,6 +299,7 @@ public:
      * @return true on success, or false on failure.
      */
     bool step_impl() {
+      _assert_(true);
       rec_ = rec_->next;
       if (!rec_) {
         for (int32_t i = sidx_ + 1; i < CDBSLOTNUM; i++) {
@@ -264,7 +310,7 @@ public:
             return true;
           }
         }
-        db_->set_error(Error::NOREC, "no record");
+        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
         sidx_ = -1;
         rec_ = NULL;
         return false;
@@ -279,11 +325,29 @@ public:
     Record* rec_;
   };
   /**
+   * Tuning Options.
+   */
+  enum Option {
+    TSMALL = 1 << 0,                     ///< dummy for compatibility
+    TLINEAR = 1 << 1,                    ///< dummy for compatibility
+    TCOMPRESS = 1 << 2                   ///< compress each record
+  };
+  /**
+   * Status flags.
+   */
+  enum Flag {
+    FOPEN = 1 << 0,                      ///< dummy for compatibility
+    FFATAL = 1 << 1                      ///< dummy for compatibility
+  };
+  /**
    * Default constructor.
    */
   explicit CacheDB() :
-    mlock_(), flock_(), error_(), omode_(0), curs_(), path_(""),
-    bnum_(CDBDEFBNUM), capcnt_(-1), capsiz_(-1), slots_(), tran_(false) {
+    mlock_(), flock_(), error_(), erstrm_(NULL), ervbs_(false),
+    omode_(0), curs_(), path_(""), type_(TYPECACHE),
+    opts_(0), bnum_(CDBDEFBNUM), capcnt_(-1), capsiz_(-1),
+    opaque_(), embcomp_(&ZLIBRAWCOMP),
+    comp_(NULL), slots_(), tran_(false) {
     _assert_(true);
   }
   /**
@@ -317,11 +381,11 @@ public:
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (writable && !(omode_ & OWRITER)) {
-      set_error(Error::NOPERM, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     if (ksiz > CDBKSIZMAX) ksiz = CDBKSIZMAX;
@@ -330,7 +394,7 @@ public:
     hash /= CDBSLOTNUM;
     Slot* slot = slots_ + sidx;
     slot->lock.lock();
-    accept_impl(slot, hash, kbuf, ksiz, visitor, false);
+    accept_impl(slot, hash, kbuf, ksiz, visitor, comp_, false);
     slot->lock.unlock();
     return true;
   }
@@ -345,11 +409,11 @@ public:
     _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (writable && !(omode_ & OWRITER)) {
-      set_error(Error::NOPERM, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     for (int32_t i = 0; i < CDBSLOTNUM; i++) {
@@ -359,16 +423,28 @@ public:
         Record* next = rec->next;
         uint32_t rksiz = rec->ksiz & CDBKSIZMAX;
         char* dbuf = (char*)rec + sizeof(*rec);
+        const char* rvbuf = dbuf + rksiz;
+        size_t rvsiz = rec->vsiz;
+        char* zbuf = NULL;
+        size_t zsiz = 0;
+        if (comp_) {
+          zbuf = comp_->decompress(rvbuf, rvsiz, &zsiz);
+          if (zbuf) {
+            rvbuf = zbuf;
+            rvsiz = zsiz;
+          }
+        }
         size_t vsiz;
-        const char* vbuf = visitor->visit_full(dbuf, rksiz, dbuf + rksiz, rec->vsiz, &vsiz);
+        const char* vbuf = visitor->visit_full(dbuf, rksiz, rvbuf, rvsiz, &vsiz);
+        delete[] zbuf;
         if (vbuf == Visitor::REMOVE) {
           uint64_t hash = hash_record(dbuf, rksiz) / CDBSLOTNUM;
           Repeater repeater(Visitor::REMOVE, 0);
-          accept_impl(slot, hash, dbuf, rksiz, &repeater, true);
+          accept_impl(slot, hash, dbuf, rksiz, &repeater, comp_, true);
         } else if (vbuf != Visitor::NOP) {
           uint64_t hash = hash_record(dbuf, rksiz) / CDBSLOTNUM;
           Repeater repeater(vbuf, vsiz);
-          accept_impl(slot, hash, dbuf, rksiz, &repeater, true);
+          accept_impl(slot, hash, dbuf, rksiz, &repeater, comp_, true);
         }
         rec = next;
       }
@@ -415,7 +491,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(Error::INVALID, "already opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
     omode_ = mode;
@@ -428,6 +504,8 @@ public:
     for (int32_t i = 0; i < CDBSLOTNUM; i++) {
       initialize_slot(slots_ + i, bnum, capcnt, capsiz);
     }
+    comp_ = (opts_ & TCOMPRESS) ? embcomp_ : NULL;
+    std::memset(opaque_, 0, sizeof(opaque_));
     return true;
   }
   /**
@@ -438,7 +516,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     tran_ = false;
@@ -460,16 +538,16 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (!(omode_ & OWRITER)) {
-      set_error(Error::NOPERM, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
     if (proc && !proc->process(path_, count_impl(), size_impl())) {
-      set_error(Error::LOGIC, "postprocessing failed");
+      set_error(__FILE__, __LINE__, Error::LOGIC, "postprocessing failed");
       err = true;
     }
     return !err;
@@ -485,12 +563,12 @@ public:
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
       if (omode_ == 0) {
-        set_error(Error::INVALID, "not opened");
+        set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
         mlock_.unlock();
         return false;
       }
       if (!(omode_ & OWRITER)) {
-        set_error(Error::NOPERM, "permission denied");
+        set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
         mlock_.unlock();
         return false;
       }
@@ -513,17 +591,17 @@ public:
     _assert_(true);
     mlock_.lock_writer();
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       mlock_.unlock();
       return false;
     }
     if (!(omode_ & OWRITER)) {
-      set_error(Error::NOPERM, "permission denied");
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
     if (tran_) {
-      set_error(Error::LOGIC, "competition avoided");
+      set_error(__FILE__, __LINE__, Error::LOGIC, "competition avoided");
       mlock_.unlock();
       return false;
     }
@@ -540,11 +618,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     if (!tran_) {
-      set_error(Error::INVALID, "not in transaction");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not in transaction");
       return false;
     }
     if (!commit) disable_cursors();
@@ -564,7 +642,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
     disable_cursors();
@@ -572,6 +650,7 @@ public:
       Slot* slot = slots_ + i;
       clear_slot(slot);
     }
+    std::memset(opaque_, 0, sizeof(opaque_));
     return true;
   }
   /**
@@ -582,7 +661,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return -1;
     }
     return count_impl();
@@ -595,7 +674,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return -1;
     }
     return size_impl();
@@ -608,7 +687,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return "";
     }
     return path_;
@@ -622,12 +701,36 @@ public:
     _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(Error::INVALID, "not opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
       return false;
     }
-    (*strmap)["type"] = "CacheDB";
-    (*strmap)["realtype"] = strprintf("%u", (unsigned)TYPECACHE);
+    (*strmap)["type"] = strprintf("%d", (int)TYPECACHE);
+    (*strmap)["realtype"] = strprintf("%u", (unsigned)type_);
     (*strmap)["path"] = path_;
+    (*strmap)["libver"] = strprintf("%u", LIBVER);
+    (*strmap)["librev"] = strprintf("%u", LIBREV);
+    (*strmap)["fmtver"] = strprintf("%u", FMTVER);
+    (*strmap)["chksum"] = strprintf("%u", 0xff);
+    (*strmap)["opts"] = strprintf("%u", opts_);
+    (*strmap)["bnum"] = strprintf("%lld", (long long)bnum_);
+    (*strmap)["capcnt"] = strprintf("%lld", (long long)capcnt_);
+    (*strmap)["capsiz"] = strprintf("%lld", (long long)capsiz_);
+    (*strmap)["recovered"] = strprintf("%d", false);
+    (*strmap)["reorganized"] = strprintf("%d", false);
+    if (strmap->count("opaque") > 0)
+      (*strmap)["opaque"] = std::string(opaque_, sizeof(opaque_));
+    if (strmap->count("bnum_used") > 0) {
+      int64_t cnt = 0;
+      for (int32_t i = 0; i < CDBSLOTNUM; i++) {
+        Slot* slot = slots_ + i;
+        Record** buckets = slot->buckets;
+        size_t bnum = slot->bnum;
+        for (size_t j = 0; j < bnum; j++) {
+          if (buckets[j]) cnt++;
+        }
+      }
+      (*strmap)["bnum_used"] = strprintf("%lld", (long long)cnt);
+    }
     (*strmap)["count"] = strprintf("%lld", (long long)count_impl());
     (*strmap)["size"] = strprintf("%lld", (long long)size_impl());
     return true;
@@ -643,6 +746,38 @@ public:
     return new Cursor(this);
   }
   /**
+   * Set the internal error reporter.
+   * @param erstrm a stream object into which internal error messages are stored.
+   * @param ervbs true to report all errors, or false to report fatal errors only.
+   * @return true on success, or false on failure.
+   */
+  bool tune_error_reporter(std::ostream* erstrm, bool ervbs) {
+    _assert_(erstrm);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ != 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      return false;
+    }
+    erstrm_ = erstrm;
+    ervbs_ = ervbs;
+    return true;
+  }
+  /**
+   * Set the optional features.
+   * @param opts the optional features by bitwise-or: DirDB::TCOMPRESS to compress each record.
+   * @return true on success, or false on failure.
+   */
+  bool tune_options(int8_t opts) {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ != 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      return false;
+    }
+    opts_ = opts;
+    return true;
+  }
+  /**
    * Set the number of buckets of the hash table.
    * @param bnum the number of buckets of the hash table.
    * @return true on success, or false on failure.
@@ -651,10 +786,25 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(Error::INVALID, "already opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
     bnum_ = bnum >= 0 ? bnum : CDBDEFBNUM;
+    return true;
+  }
+  /**
+   * Set the data compressor.
+   * @param comp the data compressor object.
+   * @return true on success, or false on failure.
+   */
+  bool tune_compressor(Compressor* comp) {
+    _assert_(comp);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ != 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      return false;
+    }
+    embcomp_ = comp;
     return true;
   }
   /**
@@ -666,7 +816,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(Error::INVALID, "already opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
     capcnt_ = count;
@@ -681,11 +831,287 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(Error::INVALID, "already opened");
+      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
       return false;
     }
     capsiz_ = size;
     return true;
+  }
+  /**
+   * Get the opaque data.
+   * @return the pointer to the opaque data region, whose size is 16 bytes.
+   */
+  char* opaque() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return NULL;
+    }
+    return opaque_;
+  }
+  /**
+   * Synchronize the opaque data.
+   * @return true on success, or false on failure.
+   */
+  bool synchronize_opaque() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return false;
+    }
+    if (!(omode_ & OWRITER)) {
+      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      return false;
+    }
+    return true;
+  }
+protected:
+  /**
+   * Set the error information.
+   * @param file the file name of the epicenter.
+   * @param line the line number of the epicenter.
+   * @param code an error code.
+   * @param message a supplement message.
+   */
+  void set_error(const char* file, int32_t line,
+                 Error::Code code, const char* message) {
+    _assert_(file && message);
+    set_error(code, message);
+    if (ervbs_ || code == Error::BROKEN || code == Error::SYSTEM)
+      report(file, line, "error", "%d: %s: %s", code, Error::codename(code), message);
+  }
+  /**
+   * Report a message for debugging.
+   * @param file the file name of the epicenter.
+   * @param line the line number of the epicenter.
+   * @param type the type string.
+   * @param format the printf-like format string.
+   * @param ... used according to the format string.
+   */
+  void report(const char* file, int32_t line, const char* type,
+              const char* format, ...) {
+    _assert_(file && line > 0 && type && format);
+    if (!erstrm_) return;
+    const std::string& path = path_.empty() ? "-" : path_;
+    std::string message;
+    va_list ap;
+    va_start(ap, format);
+    strprintf(&message, format, ap);
+    va_end(ap);
+    *erstrm_ << "[" << type << "]: " << path << ": " << file << ": " << line;
+    *erstrm_ << ": " << message << std::endl;
+  }
+  /**
+   * Set the database type.
+   * @param type the database type.
+   * @return true on success, or false on failure.
+   */
+  bool tune_type(int8_t type) {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ != 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      return false;
+    }
+    type_ = type;
+    return true;
+  }
+  /**
+   * Get the library version.
+   * @return the library version, or 0 on failure.
+   */
+  uint8_t libver() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return LIBVER;
+  }
+  /**
+   * Get the library revision.
+   * @return the library revision, or 0 on failure.
+   */
+  uint8_t librev() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return LIBREV;
+  }
+  /**
+   * Get the format version.
+   * @return the format version, or 0 on failure.
+   */
+  uint8_t fmtver() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return FMTVER;
+  }
+  /**
+   * Get the module checksum.
+   * @return the module checksum, or 0 on failure.
+   */
+  uint8_t chksum() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return 0xff;
+  }
+  /**
+   * Get the database type.
+   * @return the database type, or 0 on failure.
+   */
+  uint8_t type() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return type_;
+  }
+  /**
+   * Get the options.
+   * @return the options, or 0 on failure.
+   */
+  uint8_t opts() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return opts_;
+  }
+  /**
+   * Get the data compressor.
+   * @return the data compressor, or NULL on failure.
+   */
+  Compressor* comp() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return NULL;
+    }
+    return comp_;
+  }
+  /**
+   * Check whether the database was recovered or not.
+   * @return true if recovered, or false if not.
+   */
+  bool recovered() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return false;
+    }
+    return false;
+  }
+  /**
+   * Check whether the database was reorganized or not.
+   * @return true if recovered, or false if not.
+   */
+  bool reorganized() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return false;
+    }
+    return false;
+  }
+private:
+  /**
+   * Set the power of the alignment of record size.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool tune_alignment(int8_t apow) {
+    return true;
+  }
+  /**
+   * Set the power of the capacity of the free block pool.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool tune_fbp(int8_t fpow) {
+    return true;
+  }
+  /**
+   * Set the size of the internal memory-mapped region.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool tune_map(int64_t msiz) {
+    return true;
+  }
+  /**
+   * Set the unit step number of auto defragmentation.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool tune_defrag(int64_t dfunit) {
+    return true;
+  }
+  /**
+   * Perform defragmentation of the file.
+   * @note This is a dummy implementation for compatibility.
+   */
+  bool defrag(int64_t step) {
+    return true;
+  }
+  /**
+   * Get the status flags.
+   * @note This is a dummy implementation for compatibility.
+   */
+  uint8_t flags() {
+    return 0;
+  }
+  /**
+   * Get the alignment power.
+   * @note This is a dummy implementation for compatibility.
+   */
+  uint8_t apow() {
+    return 0;
+  }
+  /**
+   * Get the free block pool power.
+   * @note This is a dummy implementation for compatibility.
+   */
+  uint8_t fpow() {
+    return 0;
+  }
+  /**
+   * Get the bucket number.
+   * @note This is a dummy implementation for compatibility.
+   */
+  int64_t bnum() {
+    return 1;
+  }
+  /**
+   * Get the size of the internal memory-mapped region.
+   * @note This is a dummy implementation for compatibility.
+   */
+  int64_t msiz() {
+    return 0;
+  }
+  /**
+   * Get the unit step number of auto defragmentation.
+   * @note This is a dummy implementation for compatibility.
+   */
+  int64_t dfunit() {
+    return 0;
   }
 private:
   /**
@@ -708,9 +1134,13 @@ private:
     std::string value;                   ///< old value
     /** constructor for a full record */
     explicit TranLog(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) :
-      full(true), key(kbuf, ksiz), value(vbuf, vsiz) {}
+      full(true), key(kbuf, ksiz), value(vbuf, vsiz) {
+      _assert_(true);
+    }
     /** constructor for an empty record */
-    explicit TranLog(const char* kbuf, size_t ksiz) : full(false), key(kbuf, ksiz) {}
+    explicit TranLog(const char* kbuf, size_t ksiz) : full(false), key(kbuf, ksiz) {
+      _assert_(true);
+    }
   };
   /**
    * Slot table.
@@ -737,6 +1167,7 @@ private:
   private:
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
       *sp = vsiz_;
       return vbuf_;
     }
@@ -752,10 +1183,12 @@ private:
   private:
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
       *sp = vsiz_;
       return vbuf_;
     }
     const char* visit_empty(const char* kbuf, size_t ksiz, size_t* sp) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ && sp);
       *sp = vsiz_;
       return vbuf_;
     }
@@ -769,6 +1202,7 @@ private:
   private:
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
       return REMOVE;
     }
   };
@@ -779,10 +1213,12 @@ private:
    * @param kbuf the pointer to the key region.
    * @param ksiz the size of the key region.
    * @param visitor a visitor object.
+   * @param comp the data compressor.
    * @param isiter true for iterator use, or false for direct use.
    */
   void accept_impl(Slot* slot, uint64_t hash, const char* kbuf, size_t ksiz, Visitor* visitor,
-                   bool isiter) {
+                   Compressor* comp, bool isiter) {
+    _assert_(slot && kbuf && ksiz <= MEMMAXSIZ && visitor);
     size_t bidx = hash % slot->bnum;
     Record* rec = slot->buckets[bidx];
     Record** entp = slot->buckets + bidx;
@@ -806,8 +1242,20 @@ private:
           entp = &rec->right;
           rec = rec->right;
         } else {
+          const char* rvbuf = dbuf + rksiz;
+          size_t rvsiz = rec->vsiz;
+          char* zbuf = NULL;
+          size_t zsiz = 0;
+          if (comp) {
+            zbuf = comp->decompress(rvbuf, rvsiz, &zsiz);
+            if (zbuf) {
+              rvbuf = zbuf;
+              rvsiz = zsiz;
+            }
+          }
           size_t vsiz;
-          const char* vbuf = visitor->visit_full(dbuf, rksiz, dbuf + rksiz, rec->vsiz, &vsiz);
+          const char* vbuf = visitor->visit_full(dbuf, rksiz, rvbuf, rvsiz, &vsiz);
+          delete[] zbuf;
           if (vbuf == Visitor::REMOVE) {
             if (tran_) {
               TranLog log(kbuf, ksiz, dbuf + rksiz, rec->vsiz);
@@ -848,6 +1296,15 @@ private:
           } else {
             bool adj = false;
             if (vbuf != Visitor::NOP) {
+              char* zbuf = NULL;
+              size_t zsiz = 0;
+              if (comp) {
+                zbuf = comp->compress(vbuf, vsiz, &zsiz);
+                if (zbuf) {
+                  vbuf = zbuf;
+                  vsiz = zsiz;
+                }
+              }
               if (tran_) {
                 TranLog log(kbuf, ksiz, dbuf + rksiz, rec->vsiz);
                 slot->trlogs.push_back(log);
@@ -871,6 +1328,7 @@ private:
               }
               std::memcpy(dbuf + ksiz, vbuf, vsiz);
               rec->vsiz = vsiz;
+              delete[] zbuf;
             }
             if (!isiter && slot->last != rec) {
               if (!curs_.empty()) escape_cursors(rec);
@@ -891,6 +1349,15 @@ private:
     size_t vsiz;
     const char* vbuf = visitor->visit_empty(kbuf, ksiz, &vsiz);
     if (vbuf != Visitor::NOP && vbuf != Visitor::REMOVE) {
+      char* zbuf = NULL;
+      size_t zsiz = 0;
+      if (comp) {
+        zbuf = comp->compress(vbuf, vsiz, &zsiz);
+        if (zbuf) {
+          vbuf = zbuf;
+          vsiz = zsiz;
+        }
+      }
       if (tran_) {
         TranLog log(kbuf, ksiz);
         slot->trlogs.push_back(log);
@@ -912,6 +1379,7 @@ private:
       slot->last = rec;
       slot->count++;
       if (!tran_) adjust_slot_capacity(slot);
+      delete[] zbuf;
     }
   }
   /**
@@ -919,6 +1387,7 @@ private:
    * @return the number of records, or -1 on failure.
    */
   int64_t count_impl() {
+    _assert_(true);
     int64_t sum = 0;
     for (int32_t i = 0; i < CDBSLOTNUM; i++) {
       Slot* slot = slots_ + i;
@@ -932,6 +1401,7 @@ private:
    * @return the size of the database file in bytes.
    */
   int64_t size_impl() {
+    _assert_(true);
     int64_t sum = sizeof(*this);
     for (int32_t i = 0; i < CDBSLOTNUM; i++) {
       Slot* slot = slots_ + i;
@@ -949,6 +1419,7 @@ private:
    * @param capsiz the capacity of memory usage.
    */
   void initialize_slot(Slot* slot, size_t bnum, size_t capcnt, size_t capsiz) {
+    _assert_(slot);
     Record** buckets;
     if (bnum >= CDBZMAPBNUM) {
       buckets = (Record**)mapalloc(sizeof(*buckets) * bnum);
@@ -972,6 +1443,7 @@ private:
    * @param slot the slot table.
    */
   void destroy_slot(Slot* slot) {
+    _assert_(slot);
     slot->trlogs.clear();
     Record* rec = slot->last;
     while (rec) {
@@ -990,8 +1462,15 @@ private:
    * @param slot the slot table.
    */
   void clear_slot(Slot* slot) {
+    _assert_(slot);
     Record* rec = slot->last;
     while (rec) {
+      if (tran_) {
+        uint32_t rksiz = rec->ksiz & CDBKSIZMAX;
+        char* dbuf = (char*)rec + sizeof(*rec);
+        TranLog log(dbuf, rksiz, dbuf + rksiz, rec->vsiz);
+        slot->trlogs.push_back(log);
+      }
       Record* prev = rec->prev;
       xfree(rec);
       rec = prev;
@@ -1011,6 +1490,7 @@ private:
    * @param slot the slot table.
    */
   void apply_slot_trlogs(Slot* slot) {
+    _assert_(slot);
     const TranLogList& logs = slot->trlogs;
     TranLogList::const_iterator it = logs.end();
     TranLogList::const_iterator itbeg = logs.begin();
@@ -1023,10 +1503,10 @@ private:
       uint64_t hash = hash_record(kbuf, ksiz) / CDBSLOTNUM;
       if (it->full) {
         Setter setter(vbuf, vsiz);
-        accept_impl(slot, hash, kbuf, ksiz, &setter, true);
+        accept_impl(slot, hash, kbuf, ksiz, &setter, NULL, true);
       } else {
         Remover remover;
-        accept_impl(slot, hash, kbuf, ksiz, &remover, true);
+        accept_impl(slot, hash, kbuf, ksiz, &remover, NULL, true);
       }
     }
   }
@@ -1035,6 +1515,7 @@ private:
    * @param slot the slot table.
    */
   void adjust_slot_capacity(Slot* slot) {
+    _assert_(slot);
     if ((slot->count > slot->capcnt || slot->size > slot->capsiz) && slot->first) {
       Record* rec = slot->first;
       uint32_t rksiz = rec->ksiz & CDBKSIZMAX;
@@ -1044,7 +1525,7 @@ private:
       std::memcpy(kbuf, dbuf, rksiz);
       uint64_t hash = hash_record(kbuf, rksiz) / CDBSLOTNUM;
       Remover remover;
-      accept_impl(slot, hash, dbuf, rksiz, &remover, true);
+      accept_impl(slot, hash, dbuf, rksiz, &remover, NULL, true);
       if (kbuf != stack) delete[] kbuf;
     }
   }
@@ -1055,6 +1536,7 @@ private:
    * @return the hash value.
    */
   uint64_t hash_record(const char* kbuf, size_t ksiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
     return hashmurmur(kbuf, ksiz);
   }
   /**
@@ -1063,6 +1545,7 @@ private:
    * @return the result number.
    */
   uint32_t fold_hash(uint64_t hash) {
+    _assert_(true);
     return ((hash & 0xffffffff00000000ULL) >> 32) ^ ((hash & 0x0000ffffffff0000ULL) >> 16) ^
       ((hash & 0x000000000000ffffULL) << 16) ^ ((hash & 0x00000000ffff0000ULL) >> 0);
   }
@@ -1076,6 +1559,7 @@ private:
    * equivalent.
    */
   int32_t compare_keys(const char* abuf, size_t asiz, const char* bbuf, size_t bsiz) {
+    _assert_(abuf && asiz <= MEMMAXSIZ && bbuf && bsiz <= MEMMAXSIZ);
     if (asiz != bsiz) return (int32_t)asiz - (int32_t)bsiz;
     return std::memcmp(abuf, bbuf, asiz);
   }
@@ -1084,6 +1568,7 @@ private:
    * @param rec the record.
    */
   void escape_cursors(Record* rec) {
+    _assert_(rec);
     ScopedSpinLock lock(&flock_);
     if (curs_.empty()) return;
     CursorList::const_iterator cit = curs_.begin();
@@ -1100,6 +1585,7 @@ private:
    * @param nrec the new address.
    */
   void adjust_cursors(Record* orec, Record* nrec) {
+    _assert_(orec && nrec);
     ScopedSpinLock lock(&flock_);
     if (curs_.empty()) return;
     CursorList::const_iterator cit = curs_.begin();
@@ -1114,6 +1600,7 @@ private:
    * Disable all cursors.
    */
   void disable_cursors() {
+    _assert_(true);
     ScopedSpinLock lock(&flock_);
     CursorList::const_iterator cit = curs_.begin();
     CursorList::const_iterator citend = curs_.end();
@@ -1134,23 +1621,41 @@ private:
   SpinLock flock_;
   /** The last happened error. */
   TSD<Error> error_;
+  /** The internal error reporter. */
+  std::ostream* erstrm_;
+  /** The flag to report all errors. */
+  bool ervbs_;
   /** The open mode. */
   uint32_t omode_;
   /** The cursor objects. */
   CursorList curs_;
   /** The path of the database file. */
   std::string path_;
+  /** The database type. */
+  uint8_t type_;
+  /** The options. */
+  uint8_t opts_;
   /** The bucket number. */
   int64_t bnum_;
   /** The capacity of record number. */
   int64_t capcnt_;
   /** The capacity of memory usage. */
   int64_t capsiz_;
+  /** The opaque data. */
+  char opaque_[CDBOPAQUESIZ];
+  /** The embedded data compressor. */
+  Compressor* embcomp_;
+  /** The data compressor. */
+  Compressor* comp_;
   /** The slot tables. */
   Slot slots_[CDBSLOTNUM];
   /** The flag whether in transaction. */
   bool tran_;
 };
+
+
+/** An alias of the cache tree database. */
+typedef PlantDB<CacheDB, BasicDB::TYPEGRASS> GrassDB;
 
 
 }                                        // common namespace

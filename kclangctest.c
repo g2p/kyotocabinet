@@ -124,7 +124,7 @@ static void eprintf(const char* format, ...) {
 }
 
 
-/* print error message of file database */
+/* print error message of database */
 static void dberrprint(KCDB* db, int32_t line, const char* func) {
   char* path;
   const char* emsg;
@@ -138,7 +138,7 @@ static void dberrprint(KCDB* db, int32_t line, const char* func) {
 }
 
 
-/* print members of file database */
+/* print members of database */
 static void dbmetaprint(KCDB* db, int32_t verbose) {
   char* status, *rp;
   if (verbose) {

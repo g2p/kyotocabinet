@@ -27,6 +27,7 @@ const int32_t FILEPERM = 00644;          ///< default permission of a new file
 const int32_t DIRPERM = 00755;           ///< default permission of a new directory
 const int32_t PATHBUFSIZ = 8192;         ///< size of the path buffer
 const int32_t IOBUFSIZ = 1024;           ///< size of the IO buffer
+const int64_t FILEMAXSIZ = INT64_MAX - INT32_MAX;  // maximum size of a file
 const char* WALPATHEXT = "wal";          ///< extension of the WAL file
 const char WALMAGICDATA[] = "KW\n";      ///< magic data of the WAL file
 const int32_t WALMAPSIZ = 256 << 10;     ///< size of the IO buffer
@@ -291,7 +292,7 @@ const char* File::error() const {
  */
 bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(msiz >= 0);
+  _assert_(msiz >= 0 && msiz <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   ::DWORD amode = GENERIC_READ;
   ::DWORD smode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
@@ -409,7 +410,7 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
   core->path.append(path);
   return true;
 #else
-  _assert_(msiz >= 0);
+  _assert_(msiz >= 0 && msiz <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   int oflags = O_RDONLY;
   if (mode & OWRITER) {
@@ -667,7 +668,7 @@ bool File::close() {
  */
 bool File::write(int64_t off, const void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(off >= 0 && buf);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   if (core->tran && !walwrite(core, off, size, core->trbase)) return false;
@@ -722,7 +723,7 @@ bool File::write(int64_t off, const void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(off >= 0 && buf);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   if (core->tran && !walwrite(core, off, size, core->trbase)) return false;
@@ -785,7 +786,7 @@ bool File::write(int64_t off, const void* buf, size_t size) {
  */
 bool File::write_fast(int64_t off, const void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(off >= 0 && buf);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   if (core->tran && !walwrite(core, off, size, core->trbase)) return false;
   int64_t end = off + size;
@@ -806,7 +807,7 @@ bool File::write_fast(int64_t off, const void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(off >= 0 && buf);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   if (core->tran && !walwrite(core, off, size, core->trbase)) return false;
   int64_t end = off + size;
@@ -835,7 +836,7 @@ bool File::write_fast(int64_t off, const void* buf, size_t size) {
  */
 bool File::append(const void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(buf);
+  _assert_(buf && (int64_t)size <= FILEMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   core->alock.lock();
@@ -895,7 +896,7 @@ bool File::append(const void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(buf);
+  _assert_(buf && (int64_t)size <= FILEMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   core->alock.lock();
@@ -965,7 +966,7 @@ bool File::append(const void* buf, size_t size) {
  */
 bool File::read(int64_t off, void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(off >= 0 && buf);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   int64_t end = off + size;
@@ -1004,7 +1005,7 @@ bool File::read(int64_t off, void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(off >= 0 && buf);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   int64_t end = off + size;
@@ -1053,7 +1054,7 @@ bool File::read(int64_t off, void* buf, size_t size) {
  */
 bool File::read_fast(int64_t off, void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(off >= 0 && buf);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   int64_t end = off + size;
   if (end <= core->msiz) {
@@ -1085,7 +1086,7 @@ bool File::read_fast(int64_t off, void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(off >= 0 && buf);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   int64_t end = off + size;
   if (end <= core->msiz) {
@@ -1127,7 +1128,7 @@ bool File::read_fast(int64_t off, void* buf, size_t size) {
  */
 bool File::truncate(int64_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(size >= 0);
+  _assert_(size >= 0 && size <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   if (core->tran && size < core->trmsiz) {
     if (!walwrite(core, size, core->trmsiz - size, core->trbase)) return false;
@@ -1180,7 +1181,7 @@ bool File::truncate(int64_t size) {
   core->alock.unlock();
   return !err;
 #else
-  _assert_(size >= 0);
+  _assert_(size >= 0 && size <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   if (core->tran && size < core->trmsiz) {
     if (!walwrite(core, size, core->trmsiz - size, core->trbase)) return false;
@@ -1298,7 +1299,7 @@ bool File::refresh() {
  */
 bool File::begin_transaction(bool hard, int64_t off) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(off >= 0);
+  _assert_(off >= 0 && off <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   core->alock.lock();
   if (!core->walfh) {
@@ -1351,7 +1352,7 @@ bool File::begin_transaction(bool hard, int64_t off) {
   core->alock.unlock();
   return true;
 #else
-  _assert_(off >= 0);
+  _assert_(off >= 0 && off <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   core->alock.lock();
   if (core->walfd < 0) {
@@ -1522,7 +1523,7 @@ bool File::end_transaction(bool commit) {
  * Write a WAL message of transaction explicitly.
  */
 bool File::write_transaction(int64_t off, size_t size) {
-  _assert_(off >= 0);
+  _assert_(off >= 0 && off <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   return walwrite(core, off, size, 0);
 }
@@ -1617,7 +1618,7 @@ char* File::read_file(const std::string& path, int64_t* sp, int64_t limit) {
  */
 bool File::write_file(const std::string& path, const char* buf, int64_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(buf);
+  _assert_(buf && size >= 0 && size <= FILEMAXSIZ);
   ::DWORD amode = GENERIC_WRITE;
   ::DWORD smode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
   ::DWORD cmode = CREATE_ALWAYS;
@@ -1648,7 +1649,7 @@ bool File::write_file(const std::string& path, const char* buf, int64_t size) {
   if (!::CloseHandle(fh)) err = true;
   return !err;
 #else
-  _assert_(buf);
+  _assert_(buf && size >= 0 && size <= FILEMAXSIZ);
   int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, FILEPERM);
   if (fd < 0) return false;
   bool err = false;
@@ -1745,7 +1746,14 @@ std::string File::absolute_path(const std::string& path) {
 bool File::remove(const std::string& path) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
-  return ::DeleteFile(path.c_str()) != 0;
+  double wsec = 1.0 / CLOCKTICK;
+  for (int32_t i = 0; i < 10; i++) {
+    if (::DeleteFile(path.c_str())) return true;
+    if (::GetLastError() != ERROR_ACCESS_DENIED) return false;
+    if (wsec > 1.0) wsec = 1.0;
+    Thread::sleep(wsec);
+  }
+  return false;
 #else
   _assert_(true);
   return ::unlink(path.c_str()) == 0;
@@ -1759,7 +1767,14 @@ bool File::remove(const std::string& path) {
 bool File::rename(const std::string& opath, const std::string& npath) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
-  return ::MoveFileEx(opath.c_str(), npath.c_str(), MOVEFILE_REPLACE_EXISTING) != 0;
+  double wsec = 1.0 / CLOCKTICK;
+  for (int32_t i = 0; i < 10; i++) {
+    if (::MoveFileEx(opath.c_str(), npath.c_str(), MOVEFILE_REPLACE_EXISTING)) return true;
+    if (::GetLastError() != ERROR_ACCESS_DENIED) return false;
+    if (wsec > 1.0) wsec = 1.0;
+    Thread::sleep(wsec);
+  }
+  return false;
 #else
   _assert_(true);
   return ::rename(opath.c_str(), npath.c_str()) == 0;
@@ -1823,7 +1838,14 @@ bool File::make_directory(const std::string& path) {
 bool File::remove_directory(const std::string& path) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
-  return ::RemoveDirectory(path.c_str());
+  double wsec = 1.0 / CLOCKTICK;
+  for (int32_t i = 0; i < 10; i++) {
+    if (::RemoveDirectory(path.c_str())) return true;
+    if (::GetLastError() != ERROR_ACCESS_DENIED) return false;
+    if (wsec > 1.0) wsec = 1.0;
+    Thread::sleep(wsec);
+  }
+  return false;
 #else
   _assert_(true);
   return ::rmdir(path.c_str()) == 0;
@@ -2052,7 +2074,7 @@ static std::string walpath(const std::string& path) {
  */
 static bool walwrite(FileCore *core, int64_t off, size_t size, int64_t base) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(core && off >= 0 && base >= 0);
+  _assert_(core && off >= 0 && off <= FILEMAXSIZ && (int64_t)size <= FILEMAXSIZ && base >= 0);
   bool err = false;
   if (off < base) {
     int64_t diff = base - off;
@@ -2138,7 +2160,7 @@ static bool walwrite(FileCore *core, int64_t off, size_t size, int64_t base) {
   core->alock.unlock();
   return !err;
 #else
-  _assert_(core && off >= 0 && base >= 0);
+  _assert_(core && off >= 0 && off <= FILEMAXSIZ && (int64_t)size <= FILEMAXSIZ && base >= 0);
   bool err = false;
   if (off < base) {
     int64_t diff = base - off;
@@ -2529,7 +2551,7 @@ static bool walapply(FileCore* core) {
  */
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
 static bool mywrite(::HANDLE fh, int64_t off, const void* buf, size_t size) {
-  _assert_(off >= 0 && buf);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   while (true) {
     int64_t wb = win_pwrite(fh, buf, size, off);
     if (wb >= (int64_t)size) {
@@ -2548,7 +2570,7 @@ static bool mywrite(::HANDLE fh, int64_t off, const void* buf, size_t size) {
 }
 #else
 static bool mywrite(int fd, int64_t off, const void* buf, size_t size) {
-  _assert_(fd >= 0 && off >= 0 && buf);
+  _assert_(fd >= 0 && off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   while (true) {
     ssize_t wb = ::pwrite(fd, buf, size, off);
     if (wb >= (ssize_t)size) {
@@ -2573,7 +2595,7 @@ static bool mywrite(int fd, int64_t off, const void* buf, size_t size) {
  */
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
 static size_t myread(::HANDLE fh, void* buf, size_t size) {
-  _assert_(buf);
+  _assert_(buf && (int64_t)size <= FILEMAXSIZ);
   while (true) {
     int64_t rb = win_read(fh, buf, size);
     if (rb >= (int64_t)size) {
@@ -2591,7 +2613,7 @@ static size_t myread(::HANDLE fh, void* buf, size_t size) {
 }
 #else
 static size_t myread(int fd, void* buf, size_t size) {
-  _assert_(fd >= 0 && buf);
+  _assert_(fd >= 0 && buf && (int64_t)size <= FILEMAXSIZ);
   while (true) {
     ssize_t rb = ::read(fd, buf, size);
     if (rb >= (ssize_t)size) {
@@ -2615,7 +2637,7 @@ static size_t myread(int fd, void* buf, size_t size) {
  * Emulate the pwrite call
  */
 static int64_t win_pwrite(::HANDLE fh, const void* buf, size_t count, int64_t offset) {
-  _assert_(buf && offset >= 0);
+  _assert_(buf && (int64_t)count <= FILEMAXSIZ && offset >= 0 && offset <= FILEMAXSIZ);
   ::DWORD wb;
   ::LARGE_INTEGER li;
   li.QuadPart = offset;
@@ -2634,7 +2656,7 @@ static int64_t win_pwrite(::HANDLE fh, const void* buf, size_t count, int64_t of
  * Emulate the pread call
  */
 static int64_t win_pread(::HANDLE fh, void* buf, size_t count, int64_t offset) {
-  _assert_(buf && offset >= 0);
+  _assert_(buf && (int64_t)count <= FILEMAXSIZ && offset >= 0 && offset <= FILEMAXSIZ);
   ::DWORD rb;
   ::LARGE_INTEGER li;
   li.QuadPart = offset;
@@ -2653,7 +2675,7 @@ static int64_t win_pread(::HANDLE fh, void* buf, size_t count, int64_t offset) {
  * Emulate the write call
  */
 static int64_t win_write(::HANDLE fh, const void* buf, size_t count) {
-  _assert_(buf);
+  _assert_(buf && (int64_t)count <= FILEMAXSIZ);
   ::DWORD wb;
   if (!::WriteFile(fh, buf, count, &wb, NULL)) return -1;
   return wb;
@@ -2666,7 +2688,7 @@ static int64_t win_write(::HANDLE fh, const void* buf, size_t count) {
  * Emulate the read call
  */
 static int64_t win_read(::HANDLE fh, void* buf, size_t count) {
-  _assert_(buf);
+  _assert_(buf && (int64_t)count <= FILEMAXSIZ);
   ::DWORD rb;
   if (!::ReadFile(fh, buf, count, &rb, NULL)) return -1;
   return rb;
@@ -2679,7 +2701,7 @@ static int64_t win_read(::HANDLE fh, void* buf, size_t count) {
  * Emulate the ftruncate call
  */
 static int32_t win_ftruncate(::HANDLE fh, int64_t length) {
-  _assert_(length >= 0);
+  _assert_(length >= 0 && length <= FILEMAXSIZ);
   ::LARGE_INTEGER li;
   li.QuadPart = length;
   if (!::SetFilePointerEx(fh, li, NULL, FILE_BEGIN)) return -1;

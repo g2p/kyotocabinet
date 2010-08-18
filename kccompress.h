@@ -60,9 +60,9 @@ public:
 
 
 /**
- * Zlib compressor.
+ * ZLIB compressor.
  */
-class Zlib {
+class ZLIB {
 public:
   /**
    * Compression modes.
@@ -110,24 +110,169 @@ public:
 
 
 /**
- * Compressor with the Zlib.
+ * LZO compressor.
  */
-template <Zlib::Mode MODE>
-class ZlibCompressor : public Compressor {
+class LZO {
+public:
+  /**
+   * Compression modes.
+   */
+  enum Mode {
+    RAW,                                 ///< without any checksum
+    CRC                                  ///< with CRC32 checksum
+  };
+  /**
+   * Compress a serial data.
+   * @param buf the input buffer.
+   * @param size the size of the input buffer.
+   * @param sp the pointer to the variable into which the size of the region of the return
+   * value is assigned.
+   * @param mode the compression mode.
+   * @return the pointer to the result data, or NULL on failure.
+   * @note Because the region of the return value is allocated with the the new[] operator, it
+   * should be released with the delete[] operator when it is no longer in use.
+   */
+  static char* compress(const void* buf, size_t size, size_t* sp, Mode mode = RAW);
+  /**
+   * Decompress a serial data.
+   * @param buf the input buffer.
+   * @param size the size of the input buffer.
+   * @param sp the pointer to the variable into which the size of the region of the return
+   * value is assigned.
+   * @param mode the compression mode.
+   * @return the pointer to the result data, or NULL on failure.
+   * @note Because an additional zero code is appended at the end of the region of the return
+   * value, the return value can be treated as a C-style string.  Because the region of the
+   * return value is allocated with the the new[] operator, it should be released with the
+   * delete[] operator when it is no longer in use.
+   */
+  static char* decompress(const void* buf, size_t size, size_t* sp, Mode mode = RAW);
+  /**
+   * Calculate the CRC32 checksum of a serial data.
+   * @param buf the input buffer.
+   * @param size the size of the input buffer.
+   * @param seed the cyclic seed value.
+   * @return the CRC32 checksum.
+   */
+  static uint32_t calculate_crc(const void* buf, size_t size, uint32_t seed = 0);
+};
+
+
+/**
+ * LZMA compressor.
+ */
+class LZMA {
+public:
+  /**
+   * Compression modes.
+   */
+  enum Mode {
+    RAW,                                 ///< without any checksum
+    CRC,                                 ///< with CRC32 checksum
+    SHA                                  ///< with SHA256 checksum
+  };
+  /**
+   * Compress a serial data.
+   * @param buf the input buffer.
+   * @param size the size of the input buffer.
+   * @param sp the pointer to the variable into which the size of the region of the return
+   * value is assigned.
+   * @param mode the compression mode.
+   * @return the pointer to the result data, or NULL on failure.
+   * @note Because the region of the return value is allocated with the the new[] operator, it
+   * should be released with the delete[] operator when it is no longer in use.
+   */
+  static char* compress(const void* buf, size_t size, size_t* sp, Mode mode = RAW);
+  /**
+   * Decompress a serial data.
+   * @param buf the input buffer.
+   * @param size the size of the input buffer.
+   * @param sp the pointer to the variable into which the size of the region of the return
+   * value is assigned.
+   * @param mode the compression mode.
+   * @return the pointer to the result data, or NULL on failure.
+   * @note Because an additional zero code is appended at the end of the region of the return
+   * value, the return value can be treated as a C-style string.  Because the region of the
+   * return value is allocated with the the new[] operator, it should be released with the
+   * delete[] operator when it is no longer in use.
+   */
+  static char* decompress(const void* buf, size_t size, size_t* sp, Mode mode = RAW);
+  /**
+   * Calculate the CRC32 checksum of a serial data.
+   * @param buf the input buffer.
+   * @param size the size of the input buffer.
+   * @param seed the cyclic seed value.
+   * @return the CRC32 checksum.
+   */
+  static uint32_t calculate_crc(const void* buf, size_t size, uint32_t seed = 0);
+};
+
+
+/**
+ * Compressor with ZLIB.
+ */
+template <ZLIB::Mode MODE>
+class ZLIBCompressor : public Compressor {
 private:
   /**
    * Compress a serial data.
    */
   char* compress(const void* buf, size_t size, size_t* sp) {
     _assert_(buf && size <= MEMMAXSIZ && sp);
-    return Zlib::compress(buf, size, sp, MODE);
+    return ZLIB::compress(buf, size, sp, MODE);
   }
   /**
    * Decompress a serial data.
    */
   char* decompress(const void* buf, size_t size, size_t* sp) {
     _assert_(buf && size <= MEMMAXSIZ && sp);
-    return Zlib::decompress(buf, size, sp, MODE);
+    return ZLIB::decompress(buf, size, sp, MODE);
+  }
+};
+
+
+/**
+ * Compressor with LZO.
+ */
+template <LZO::Mode MODE>
+class LZOCompressor : public Compressor {
+private:
+  /**
+   * Compress a serial data.
+   */
+  char* compress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && size <= MEMMAXSIZ && sp);
+    return LZO::compress(buf, size, sp, MODE);
+  }
+  /**
+   * Decompress a serial data.
+   */
+  char* decompress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && size <= MEMMAXSIZ && sp);
+    return LZO::decompress(buf, size, sp, MODE);
+  }
+};
+
+
+/**
+ * Compressor with LZMA.
+ */
+template <LZMA::Mode MODE>
+class LZMACompressor : public Compressor {
+private:
+  /**
+   * Compress a serial data.
+   */
+  char* compress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && size <= MEMMAXSIZ && sp);
+    return LZMA::compress(buf, size, sp, MODE);
+  }
+  /**
+   * Decompress a serial data.
+   */
+  char* decompress(const void* buf, size_t size, size_t* sp) {
+    _assert_(buf && size <= MEMMAXSIZ && sp);
+    return LZMA::decompress(buf, size, sp, MODE);
   }
 };
 
@@ -140,9 +285,9 @@ public:
   /**
    * Constructor.
    */
-  ArcfourCompressor() : kbuf_(NULL), ksiz_(0), salt_(0), cycle_(false) {
+  ArcfourCompressor() : kbuf_(NULL), ksiz_(0), comp_(NULL), salt_(0), cycle_(false) {
     _assert_(true);
-    kbuf_ = new char[0];
+    kbuf_ = new char[1];
     ksiz_ = 0;
   }
   /**
@@ -166,6 +311,14 @@ public:
     ksiz_ = ksiz;
   }
   /**
+   * Set an additional data compressor.
+   * @param comp the additional data data compressor.
+   */
+  void set_compressor(Compressor* comp) {
+    _assert_(comp);
+    comp_ = comp;
+  }
+  /**
    * Begin the cycle of ciper salt.
    * @param salt the additional cipher salt.
    */
@@ -183,16 +336,23 @@ private:
     char kbuf[NUMBUFSIZ*2];
     writefixnum(kbuf, salt, sizeof(salt));
     std::memcpy(kbuf + sizeof(salt), kbuf_, ksiz_);
-    char* zbuf = new char[NUMBUFSIZ+size];
-    char* wp = zbuf;
-    writefixnum(wp, salt, sizeof(salt));
-    wp += sizeof(salt);
-    arccipher(buf, size, kbuf, sizeof(salt) + ksiz_, wp);
-    if (cycle_) {
-      size_t range = size < sizeof(uint64_t) ? size : sizeof(uint64_t);
-      salt_.add(hashmurmur(wp, range) << 32);
+    char* tbuf = NULL;
+    if (comp_) {
+      tbuf = comp_->compress(buf, size, &size);
+      if (!tbuf) return NULL;
+      buf = tbuf;
     }
-    *sp = sizeof(salt) + size;
+    size_t zsiz = sizeof(salt) + size;
+    char* zbuf = new char[zsiz];
+    writefixnum(zbuf, salt, sizeof(salt));
+    arccipher(buf, size, kbuf, sizeof(salt) + ksiz_, zbuf + sizeof(salt));
+    delete[] tbuf;
+    if (cycle_) {
+      size_t range = zsiz - sizeof(salt);
+      if (range > INT8_MAX) range = INT8_MAX;
+      salt_.add(hashmurmur(zbuf + sizeof(salt), range) << 32);
+    }
+    *sp = zsiz;
     return zbuf;
   }
   /**
@@ -208,6 +368,12 @@ private:
     size -= sizeof(uint64_t);
     char* zbuf = new char[size];
     arccipher(buf, size, kbuf, sizeof(uint64_t) + ksiz_, zbuf);
+    if (comp_) {
+      char* tbuf = comp_->decompress(zbuf, size, &size);
+      delete[] zbuf;
+      if (!tbuf) return NULL;
+      zbuf = tbuf;
+    }
     *sp = size;
     return zbuf;
   }
@@ -215,6 +381,8 @@ private:
   char* kbuf_;
   /** The size of the key. */
   size_t ksiz_;
+  /** The data compressor. */
+  Compressor* comp_;
   /** The cipher salt. */
   AtomicInt64 salt_;
   /** The flag of the salt cycle */
@@ -223,9 +391,9 @@ private:
 
 
 /**
- * Prepared variable of the compressor with the Zlib raw mode.
+ * Prepared variable of the compressor with ZLIB raw mode.
  */
-extern ZlibCompressor<Zlib::RAW> ZLIBRAWCOMP;
+extern ZLIBCompressor<ZLIB::RAW> ZLIBRAWCOMP;
 
 
 }                                        // common namespace

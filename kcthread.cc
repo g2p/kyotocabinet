@@ -24,11 +24,26 @@ namespace kyotocabinet {                 // common namespace
  */
 struct ThreadCore {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  ::HANDLE th;
-  ::DWORD id;
+  ::HANDLE th;                           ///< handle
 #else
   ::pthread_t th;                        ///< identifier
   bool alive;                            ///< alive flag
+#endif
+};
+
+
+/**
+ * CondVar internal.
+ */
+struct CondVarCore {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  ::CRITICAL_SECTION mutex;              ///< mutex
+  uint32_t wait;                         ///< wait count
+  uint32_t wake;                         ///< wake count
+  ::HANDLE sev;                          ///< signal event handle
+  ::HANDLE fev;                          ///< finish event handle
+#else
+  ::pthread_cond_t cond;                 ///< condition
 #endif
 };
 
@@ -89,8 +104,9 @@ void Thread::start() {
   _assert_(true);
   ThreadCore* core = (ThreadCore*)opq_;
   if (core->th) throw std::invalid_argument("already started");
-  core->th = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)threadrun, this, 0, &core->id);
-  if (!core->th) throw std::runtime_error("pthread_create");
+  ::DWORD id;
+  core->th = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)threadrun, this, 0, &id);
+  if (!core->th) throw std::runtime_error("CreateThread");
 #else
   _assert_(true);
   ThreadCore* core = (ThreadCore*)opq_;
@@ -111,7 +127,7 @@ void Thread::join() {
   ThreadCore* core = (ThreadCore*)opq_;
   if (!core->th) throw std::invalid_argument("not alive");
   if (::WaitForSingleObject(core->th, INFINITE) == WAIT_FAILED)
-    throw std::runtime_error("pthread_join");
+    throw std::runtime_error("WaitForSingleObject");
   ::CloseHandle(core->th);
   core->th = NULL;
 #else
@@ -260,10 +276,7 @@ Mutex::Mutex() : opq_(NULL) {
 #else
   _assert_(true);
   ::pthread_mutex_t* mutex = new ::pthread_mutex_t;
-  if (::pthread_mutex_init(mutex, NULL) != 0) {
-    delete mutex;
-    throw std::runtime_error("pthread_mutex_init");
-  }
+  if (::pthread_mutex_init(mutex, NULL) != 0) throw std::runtime_error("pthread_mutex_init");
   opq_ = (void*)mutex;
 #endif
 }
@@ -298,11 +311,7 @@ Mutex::Mutex(Type type) {
     }
   }
   ::pthread_mutex_t* mutex = new ::pthread_mutex_t;
-  if (::pthread_mutex_init(mutex, &attr) != 0) {
-    ::pthread_mutexattr_destroy(&attr);
-    delete mutex;
-    throw std::runtime_error("pthread_mutex_init");
-  }
+  if (::pthread_mutex_init(mutex, &attr) != 0) throw std::runtime_error("pthread_mutex_init");
   ::pthread_mutexattr_destroy(&attr);
   opq_ = (void*)mutex;
 #endif
@@ -425,15 +434,13 @@ void Mutex::unlock() {
 SpinLock::SpinLock() : opq_(NULL) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(true);
 #else
   _assert_(true);
   ::pthread_spinlock_t* spin = new ::pthread_spinlock_t;
-  if (::pthread_spin_init(spin, PTHREAD_PROCESS_PRIVATE) != 0) {
-    delete spin;
+  if (::pthread_spin_init(spin, PTHREAD_PROCESS_PRIVATE) != 0)
     throw std::runtime_error("pthread_spin_init");
-  }
   opq_ = (void*)spin;
 #endif
 }
@@ -445,7 +452,7 @@ SpinLock::SpinLock() : opq_(NULL) {
 SpinLock::~SpinLock() {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(true);
 #else
   _assert_(true);
@@ -465,7 +472,7 @@ void SpinLock::lock() {
   while (::InterlockedCompareExchange((LONG*)&opq_, 1, 0) != 0) {
     ::Sleep(0);
   }
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(true);
   while (!__sync_bool_compare_and_swap(&opq_, 0, 1)) {
     ::sched_yield();
@@ -485,7 +492,7 @@ bool SpinLock::lock_try() {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
   return ::InterlockedCompareExchange((LONG*)&opq_, 1, 0) == 0;
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(true);
   return __sync_bool_compare_and_swap(&opq_, 0, 1);
 #else
@@ -506,7 +513,7 @@ void SpinLock::unlock() {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
   ::InterlockedExchange((LONG*)&opq_, 0);
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(true);
   (void)__sync_lock_test_and_set(&opq_, 0);
 #else
@@ -528,10 +535,7 @@ RWLock::RWLock() : opq_(NULL) {
 #else
   _assert_(true);
   ::pthread_rwlock_t* rwlock = new ::pthread_rwlock_t;
-  if (::pthread_rwlock_init(rwlock, NULL) != 0) {
-    delete rwlock;
-    throw std::runtime_error("pthread_rwlock_init");
-  }
+  if (::pthread_rwlock_init(rwlock, NULL) != 0) throw std::runtime_error("pthread_rwlock_init");
   opq_ = (void*)rwlock;
 #endif
 }
@@ -648,7 +652,7 @@ struct SpinRWLockCore {
   LONG sem;                              ///< semaphore
   int32_t wc;                            ///< count of writers
   int32_t rc;                            ///< count of readers
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   int32_t sem;                           ///< semaphore
   int32_t wc;                            ///< count of writers
   int32_t rc;                            ///< count of readers
@@ -678,7 +682,7 @@ static void spinrwlockunlock(SpinRWLockCore* core);
  * Default constructor.
  */
 SpinRWLock::SpinRWLock() : opq_(NULL) {
-#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || defined(_KC_GCCATOMIC)
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || _KC_GCCATOMIC
   _assert_(true);
   SpinRWLockCore* core = new SpinRWLockCore;
   core->sem = 0;
@@ -701,7 +705,7 @@ SpinRWLock::SpinRWLock() : opq_(NULL) {
  * Destructor.
  */
 SpinRWLock::~SpinRWLock() {
-#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || defined(_KC_GCCATOMIC)
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || _KC_GCCATOMIC
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   delete core;
@@ -837,7 +841,7 @@ static void spinrwlocklock(SpinRWLockCore* core) {
   while (::InterlockedCompareExchange(&core->sem, 1, 0) != 0) {
     ::Sleep(0);
   }
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(core);
   while (!__sync_bool_compare_and_swap(&core->sem, 0, 1)) {
     ::sched_yield();
@@ -856,7 +860,7 @@ static void spinrwlockunlock(SpinRWLockCore* core) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(core);
   ::InterlockedExchange(&core->sem, 0);
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(core);
   (void)__sync_lock_test_and_set(&core->sem, 0);
 #else
@@ -871,17 +875,21 @@ static void spinrwlockunlock(SpinRWLockCore* core) {
  */
 CondVar::CondVar() : opq_(NULL) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  // windows
   _assert_(true);
-  throw std::runtime_error("not implemented");
+  CondVarCore* core = new CondVarCore;
+  ::InitializeCriticalSection(&core->mutex);
+  core->wait = 0;
+  core->wake = 0;
+  core->sev = ::CreateEvent(NULL, true, false, NULL);
+  if (!core->sev) throw std::runtime_error("CreateEvent");
+  core->fev = ::CreateEvent(NULL, false, false, NULL);
+  if (!core->fev) throw std::runtime_error("CreateEvent");
+  opq_ = (void*)core;
 #else
   _assert_(true);
-  ::pthread_cond_t* cond = new ::pthread_cond_t;
-  if (::pthread_cond_init(cond, NULL) != 0) {
-    delete cond;
-    throw std::runtime_error("pthread_cond_init");
-  }
-  opq_ = (void*)cond;
+  CondVarCore* core = new CondVarCore;
+  if (::pthread_cond_init(&core->cond, NULL) != 0) throw std::runtime_error("pthread_cond_init");
+  opq_ = (void*)core;
 #endif
 }
 
@@ -891,13 +899,16 @@ CondVar::CondVar() : opq_(NULL) {
  */
 CondVar::~CondVar() {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  // windows
   _assert_(true);
+  CondVarCore* core = (CondVarCore*)opq_;
+  ::CloseHandle(core->fev);
+  ::CloseHandle(core->sev);
+  ::DeleteCriticalSection(&core->mutex);
 #else
   _assert_(true);
-  ::pthread_cond_t* cond = (::pthread_cond_t*)opq_;
-  ::pthread_cond_destroy(cond);
-  delete cond;
+  CondVarCore* core = (CondVarCore*)opq_;
+  ::pthread_cond_destroy(&core->cond);
+  delete core;
 #endif
 }
 
@@ -907,13 +918,33 @@ CondVar::~CondVar() {
  */
 void CondVar::wait(Mutex* mutex) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  // windows
   _assert_(mutex);
+  CondVarCore* core = (CondVarCore*)opq_;
+  ::CRITICAL_SECTION* mymutex = (::CRITICAL_SECTION*)mutex->opq_;
+  core->wait++;
+  ::LeaveCriticalSection(mymutex);
+  while (true) {
+    ::WaitForSingleObject(core->sev, INFINITE);
+    ::EnterCriticalSection(&core->mutex);
+    if (core->wake > 0) {
+      core->wait--;
+      core->wake--;
+      if (core->wake < 1) {
+        ::ResetEvent(core->sev);
+        ::SetEvent(core->fev);
+      }
+      ::LeaveCriticalSection(&core->mutex);
+      break;
+    }
+    ::LeaveCriticalSection(&core->mutex);
+  }
+  ::EnterCriticalSection(mymutex);
 #else
   _assert_(mutex);
-  ::pthread_cond_t* cond = (::pthread_cond_t*)opq_;
+  CondVarCore* core = (CondVarCore*)opq_;
   ::pthread_mutex_t* mymutex = (::pthread_mutex_t*)mutex->opq_;
-  if (::pthread_cond_wait(cond, mymutex) != 0) throw std::runtime_error("pthread_cond_wait");
+  if (::pthread_cond_wait(&core->cond, mymutex) != 0)
+    throw std::runtime_error("pthread_cond_wait");
 #endif
 }
 
@@ -923,13 +954,37 @@ void CondVar::wait(Mutex* mutex) {
  */
 bool CondVar::wait(Mutex* mutex, double sec) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  // windows
   _assert_(mutex && sec >= 0);
-  return false;
+  if (sec <= 0) return false;
+  CondVarCore* core = (CondVarCore*)opq_;
+  ::CRITICAL_SECTION* mymutex = (::CRITICAL_SECTION*)mutex->opq_;
+  core->wait++;
+  ::LeaveCriticalSection(mymutex);
+  while (true) {
+    if (::WaitForSingleObject(core->sev, sec * 1000) == WAIT_TIMEOUT) {
+      ::EnterCriticalSection(mymutex);
+      core->wait--;
+      return false;
+    }
+    ::EnterCriticalSection(&core->mutex);
+    if (core->wake > 0) {
+      core->wait--;
+      core->wake--;
+      if (core->wake < 1) {
+        ::ResetEvent(core->sev);
+        ::SetEvent(core->fev);
+      }
+      ::LeaveCriticalSection(&core->mutex);
+      break;
+    }
+    ::LeaveCriticalSection(&core->mutex);
+  }
+  ::EnterCriticalSection(mymutex);
+  return true;
 #else
   _assert_(mutex && sec >= 0);
   if (sec <= 0) return false;
-  ::pthread_cond_t* cond = (::pthread_cond_t*)opq_;
+  CondVarCore* core = (CondVarCore*)opq_;
   ::pthread_mutex_t* mymutex = (::pthread_mutex_t*)mutex->opq_;
   struct ::timeval tv;
   struct ::timespec ts;
@@ -946,7 +1001,7 @@ bool CondVar::wait(Mutex* mutex, double sec) {
     ts.tv_sec = std::time(NULL) + 1;
     ts.tv_nsec = 0;
   }
-  int32_t ecode = ::pthread_cond_timedwait(cond, mymutex, &ts);
+  int32_t ecode = ::pthread_cond_timedwait(&core->cond, mymutex, &ts);
   if (ecode == 0) return true;
   if (ecode != ETIMEDOUT && ecode != EINTR) throw std::runtime_error("pthread_cond_timedwait");
   return false;
@@ -959,12 +1014,18 @@ bool CondVar::wait(Mutex* mutex, double sec) {
  */
 void CondVar::signal() {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  // windows
   _assert_(true);
+  CondVarCore* core = (CondVarCore*)opq_;
+  if (core->wait > 0) {
+    core->wake = 1;
+    ::SetEvent(core->sev);
+    ::WaitForSingleObject(core->fev, INFINITE);
+  }
 #else
   _assert_(true);
-  ::pthread_cond_t* cond = (::pthread_cond_t*)opq_;
-  if (::pthread_cond_signal(cond) != 0) throw std::runtime_error("pthread_cond_signal");
+  CondVarCore* core = (CondVarCore*)opq_;
+  if (::pthread_cond_signal(&core->cond) != 0)
+    throw std::runtime_error("pthread_cond_signal");
 #endif
 }
 
@@ -974,12 +1035,18 @@ void CondVar::signal() {
  */
 void CondVar::broadcast() {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  // windows
   _assert_(true);
+  CondVarCore* core = (CondVarCore*)opq_;
+  if (core->wait > 0) {
+    core->wake = core->wait;
+    ::SetEvent(core->sev);
+    ::WaitForSingleObject(core->fev, INFINITE);
+  }
 #else
   _assert_(true);
-  ::pthread_cond_t* cond = (::pthread_cond_t*)opq_;
-  if (::pthread_cond_broadcast(cond) != 0) throw std::runtime_error("pthread_cond_broadcast");
+  CondVarCore* core = (CondVarCore*)opq_;
+  if (::pthread_cond_broadcast(&core->cond) != 0)
+    throw std::runtime_error("pthread_cond_broadcast");
 #endif
 }
 
@@ -996,10 +1063,7 @@ TSDKey::TSDKey() : opq_(NULL) {
 #else
   _assert_(true);
   ::pthread_key_t* key = new ::pthread_key_t;
-  if (::pthread_key_create(key, NULL) != 0) {
-    delete key;
-    throw std::runtime_error("pthread_key_create");
-  }
+  if (::pthread_key_create(key, NULL) != 0) throw std::runtime_error("pthread_key_create");
   opq_ = (void*)key;
 #endif
 }
@@ -1017,10 +1081,7 @@ TSDKey::TSDKey(void (*dstr)(void*)) : opq_(NULL) {
 #else
   _assert_(true);
   ::pthread_key_t* key = new ::pthread_key_t;
-  if (::pthread_key_create(key, dstr) != 0) {
-    delete key;
-    throw std::runtime_error("pthread_key_create");
-  }
+  if (::pthread_key_create(key, dstr) != 0) throw std::runtime_error("pthread_key_create");
   opq_ = (void*)key;
 #endif
 }
@@ -1082,7 +1143,7 @@ int64_t AtomicInt64::set(int64_t val) {
 #if (defined(_SYS_MSVC_) || defined(_SYS_MINGW_)) && defined(_SYS_WIN64_)
   _assert_(true);
   return ::InterlockedExchange((uint64_t*)&value_, val);
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(true);
   int64_t oval = __sync_lock_test_and_set(&value_, val);
   __sync_synchronize();
@@ -1105,7 +1166,7 @@ int64_t AtomicInt64::add(int64_t val) {
 #if (defined(_SYS_MSVC_) || defined(_SYS_MINGW_)) && defined(_SYS_WIN64_)
   _assert_(true);
   return ::InterlockedExchangeAdd((uint64_t*)&value_, val);
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(true);
   int64_t oval = __sync_fetch_and_add(&value_, val);
   __sync_synchronize();
@@ -1128,7 +1189,7 @@ bool AtomicInt64::cas(int64_t oval, int64_t nval) {
 #if (defined(_SYS_MSVC_) || defined(_SYS_MINGW_)) && defined(_SYS_WIN64_)
   _assert_(true);
   return ::InterlockedCompareExchange((uint64_t*)&value_, nval, oval) == nval;
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(true);
   bool rv = __sync_bool_compare_and_swap(&value_, oval, nval);
   __sync_synchronize();
@@ -1154,7 +1215,7 @@ int64_t AtomicInt64::get() const {
 #if (defined(_SYS_MSVC_) || defined(_SYS_MINGW_)) && defined(_SYS_WIN64_)
   _assert_(true);
   return ::InterlockedExchangeAdd((uint64_t*)&value_, 0);
-#elif defined(_KC_GCCATOMIC)
+#elif _KC_GCCATOMIC
   _assert_(true);
   return __sync_fetch_and_add((int64_t*)&value_, 0);
 #else

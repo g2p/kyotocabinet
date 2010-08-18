@@ -1,5 +1,5 @@
 /*************************************************************************************************
- * The command line utility of the directory database
+ * The command line utility of the directory hash database
  *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
@@ -24,7 +24,7 @@ const char* g_progname;                  // program name
 // function prototypes
 int main(int argc, char** argv);
 static void usage();
-static void dberrprint(kc::FileDB* db, const char* info);
+static void dberrprint(kc::BasicDB* db, const char* info);
 static void ebufprint(std::ostringstream* ebuf);
 static int32_t runcreate(int argc, char** argv);
 static int32_t runinform(int argc, char** argv);
@@ -54,6 +54,7 @@ static int32_t proccheck(const char* path, int32_t oflags);
 // main routine
 int main(int argc, char** argv) {
   g_progname = argv[0];
+  kc::setstdiobin();
   if (argc < 2) usage();
   int32_t rv = 0;
   if (!std::strcmp(argv[1], "create")) {
@@ -87,7 +88,7 @@ int main(int argc, char** argv) {
 
 // print the usage and exit
 static void usage() {
-  eprintf("%s: the command line utility of the directory database of Kyoto Cabinet\n",
+  eprintf("%s: the command line utility of the directory hash database of Kyoto Cabinet\n",
           g_progname);
   eprintf("\n");
   eprintf("usage:\n");
@@ -107,9 +108,9 @@ static void usage() {
 }
 
 
-// print error message of file database
-static void dberrprint(kc::FileDB* db, const char* info) {
-  kc::FileDB::Error err = db->error();
+// print error message of database
+static void dberrprint(kc::BasicDB* db, const char* info) {
+  kc::BasicDB::Error err = db->error();
   eprintf("%s: %s: %s: %d: %s: %s\n",
           g_progname, info, db->path().c_str(), err.code(), err.name(), err.message());
 }
@@ -561,24 +562,52 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
   bool err = false;
   if (st) {
     std::map<std::string, std::string> status;
-    db.status(&status);
-    uint32_t type = kc::atoi(status["realtype"].c_str());
-    iprintf("type: %s (type=0x%02X) (%s)\n",
-            status["type"].c_str(), type, kc::FileDB::typestring(type));
-    iprintf("path: %s\n", status["path"].c_str());
-    int32_t opts = kc::atoi(status["opts"].c_str());
-    iprintf("options:");
-    if (opts & kc::DirDB::TCOMPRESS) {
-      uint32_t compchk = kc::atoi(status["compchk"].c_str());
-      iprintf(" compress (compchk=%u)", compchk);
+    status["opaque"] = "";
+    if (db.status(&status)) {
+      uint32_t type = kc::atoi(status["type"].c_str());
+      iprintf("type: %s (%s) (type=0x%02X)\n",
+              kc::BasicDB::typecname(type), kc::BasicDB::typestring(type), type);
+      uint32_t rtype = kc::atoi(status["realtype"].c_str());
+      if (rtype > 0 && rtype != type)
+        iprintf("real type: %s (%s) (realtype=0x%02X)\n",
+                kc::BasicDB::typecname(rtype), kc::BasicDB::typestring(rtype), rtype);
+      uint32_t chksum = kc::atoi(status["chksum"].c_str());
+      iprintf("format version: %s (libver=%s.%s) (chksum=0x%02X)\n", status["fmtver"].c_str(),
+              status["libver"].c_str(), status["librev"].c_str(), chksum);
+      iprintf("path: %s\n", status["path"].c_str());
+      int32_t flags = kc::atoi(status["flags"].c_str());
+      iprintf("status flags:");
+      if (flags & kc::DirDB::FOPEN) iprintf(" open");
+      if (flags & kc::DirDB::FFATAL) iprintf(" fatal");
+      iprintf(" (flags=%d)", flags);
+      if (kc::atoi(status["recovered"].c_str()) > 0) iprintf(" (recovered)");
+      if (kc::atoi(status["reorganized"].c_str()) > 0) iprintf(" (reorganized)");
+      iprintf("\n", flags);
+      int32_t opts = kc::atoi(status["opts"].c_str());
+      iprintf("options:");
+      if (opts & kc::DirDB::TSMALL) iprintf(" small");
+      if (opts & kc::DirDB::TLINEAR) iprintf(" linear");
+      if (opts & kc::DirDB::TCOMPRESS) iprintf(" compress");
+      iprintf(" (opts=%d)\n", opts);
+      if (status["opaque"].size() >= 16) {
+        const char* opaque = status["opaque"].c_str();
+        iprintf("opaque:");
+        if (std::count(opaque, opaque + 16, 0) != 16) {
+          for (int32_t i = 0; i < 16; i++) {
+            iprintf(" %02X", ((unsigned char*)opaque)[i]);
+          }
+        } else {
+          iprintf(" 0");
+        }
+        iprintf("\n");
+      }
+      int64_t count = kc::atoi(status["count"].c_str());
+      std::string cntstr = unitnumstr(count);
+      iprintf("count: %lld (%S)\n", count, &cntstr);
+      int64_t size = kc::atoi(status["size"].c_str());
+      std::string sizestr = unitnumstrbyte(size);
+      iprintf("size: %lld (%S)\n", size, &sizestr);
     }
-    iprintf(" (opts=%d)\n", opts);
-    int64_t count = kc::atoi(status["count"].c_str());
-    std::string cntstr = unitnumstr(count);
-    iprintf("count: %lld (%S)\n", count, &cntstr);
-    int64_t size = kc::atoi(status["size"].c_str());
-    std::string sizestr = unitnumstrbyte(size);
-    iprintf("size: %lld (%S)\n", size, &sizestr);
   } else {
     iprintf("count: %lld\n", (long long)db.count());
     iprintf("size: %lld\n", (long long)db.size());
@@ -754,13 +783,13 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
   if (kbuf || max >= 0) {
     kc::DirDB::Cursor cur(&db);
     if (kbuf) {
-      if (!cur.jump(kbuf, ksiz) && db.error() != kc::FileDB::Error::NOREC) {
+      if (!cur.jump(kbuf, ksiz) && db.error() != kc::BasicDB::Error::NOREC) {
         ebufprint(&ebuf);
         dberrprint(&db, "Cursor::jump failed");
         err = true;
       }
     } else {
-      if (!cur.jump() && db.error() != kc::FileDB::Error::NOREC) {
+      if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
         ebufprint(&ebuf);
         dberrprint(&db, "Cursor::jump failed");
         err = true;
@@ -768,7 +797,7 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
     }
     while (!err && max > 0) {
       if (!cur.accept(&visitor, false, true)) {
-        if (db.error() != kc::FileDB::Error::NOREC) {
+        if (db.error() != kc::BasicDB::Error::NOREC) {
           ebufprint(&ebuf);
           dberrprint(&db, "Cursor::accept failed");
           err = true;
@@ -843,7 +872,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
         break;
       }
       case 1: {
-        if (!db.remove(fields[0]) && db.error() != kc::FileDB::Error::NOREC) {
+        if (!db.remove(fields[0]) && db.error() != kc::BasicDB::Error::NOREC) {
           ebufprint(&ebuf);
           dberrprint(&db, "DB::remove failed");
           err = true;
@@ -945,7 +974,7 @@ static int32_t proccheck(const char* path, int32_t oflags) {
   ebufprint(&ebuf);
   bool err = false;
   kc::DirDB::Cursor cur(&db);
-  if (!cur.jump() && db.error() != kc::FileDB::Error::NOREC) {
+  if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
     ebufprint(&ebuf);
     dberrprint(&db, "DB::jump failed");
     err = true;
@@ -978,14 +1007,14 @@ static int32_t proccheck(const char* path, int32_t oflags) {
         if (cnt % 50000 == 0) iprintf(" (%lld)\n", (long long)cnt);
       }
     } else {
-      if (db.error() != kc::FileDB::Error::NOREC) {
+      if (db.error() != kc::BasicDB::Error::NOREC) {
         ebufprint(&ebuf);
         dberrprint(&db, "Cursor::get failed");
         err = true;
       }
       break;
     }
-    if (!cur.step() && db.error() != kc::FileDB::Error::NOREC) {
+    if (!cur.step() && db.error() != kc::BasicDB::Error::NOREC) {
       ebufprint(&ebuf);
       dberrprint(&db, "Cursor::step failed");
       err = true;

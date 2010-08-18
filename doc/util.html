@@ -33,13 +33,16 @@
 <li><a href="#kcutiltest">kcutiltest</a> : to test the utility functions.</li>
 <li><a href="#kcutilcodec">kcutilcodec</a> : encode/decode utility.</li>
 <li><a href="#kcprototest">kcprototest</a> : to test the prototype database.</li>
-<li><a href="#kccachetest">kccachetest</a> : to test the cache database.</li>
+<li><a href="#kccachetest">kccachetest</a> : to test the cache hash database.</li>
+<li><a href="#kcgrasstest">kcgrasstest</a> : to test the cache tree database.</li>
 <li><a href="#kchashtest">kchashtest</a> : to test the file hash database.</li>
 <li><a href="#kchashmgr">kchashmgr</a> : to manage the file hash database.</li>
 <li><a href="#kctreetest">kctreetest</a> : to test the file tree database.</li>
 <li><a href="#kctreemgr">kctreemgr</a> : to manage the file tree database.</li>
-<li><a href="#kcdirtest">kcdirtest</a> : to test the directory database.</li>
-<li><a href="#kcdirmgr">kcdirmgr</a> : to manage the directory database.</li>
+<li><a href="#kcdirtest">kcdirtest</a> : to test the directory hash database.</li>
+<li><a href="#kcdirmgr">kcdirmgr</a> : to manage the directory hash database.</li>
+<li><a href="#kcforesttest">kcforesttest</a> : to test the directory tree database.</li>
+<li><a href="#kcforestmgr">kcforestmgr</a> : to manage the directory tree database.</li>
 <li><a href="#kcpolytest">kcpolytest</a> : to test the polymorphic database.</li>
 <li><a href="#kcpolymgr">kcpolymgr</a> : to manage the polymorphic database.</li>
 <li><a href="#kclangctest">kclangctest</a> : to test the C language binding.</li>
@@ -54,6 +57,8 @@
 <dl class="api">
 <dt><code>kcutiltest mutex [-th <var>num</var>] [-iv <var>num</var>] <var>rnum</var></code></dt>
 <dd>Performs test of lock primitives.</dd>
+<dt><code>kcutiltest para [-th <var>num</var>] [-iv <var>num</var>] <var>rnum</var></code></dt>
+<dd>Performs test of parallel processing.</dd>
 <dt><code>kcutiltest file [-th <var>num</var>] [-rnd] [-msiz <var>num</var>] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of the file system abstraction.</dd>
 <dt><code>kcutiltest map [-rnd] [-bnum <var>num</var>] <var>rnum</var></code></dt>
@@ -85,7 +90,7 @@
 <dd>Perform hexadecimal encoding and its decoding.</dd>
 <dt><code>kcutilcodec ciph [-key <var>str</var>] [<var>file</var>]</code></dt>
 <dd>Perform Arcfour cipher and its decipher.</dd>
-<dt><code>kcutilcodec comp [-def|-gz] [-d] [<var>file</var>]</code></dt>
+<dt><code>kcutilcodec comp [-def|-gz|-lzo|-lzma] [-d] [<var>file</var>]</code></dt>
 <dd>Perform ZLIB encoding and its decoding.  By default, use the raw format.</dd>
 <dt><code>kcutilcodec hash [-fnv|-path|-crc] [<var>file</var>]</code></dt>
 <dd>Calculate the hash value.  By default, use MurMur hashing.</dd>
@@ -100,6 +105,8 @@
 <li><code>-key <var>str</var></code> : set the cipher key.</li>
 <li><code>-def</code> : use the deflate format.</li>
 <li><code>-gz</code> : use the gzip format.</li>
+<li><code>-lzo</code> : use LZO encoding.</li>
+<li><code>-lzma</code> : use LZMA encoding.</li>
 <li><code>-fnv</code> : use FNV hashing.</li>
 <li><code>-path</code> : use the path hashing of the directory database.</li>
 <li><code>-crc</code> : calculate the CRC32 checksum.</li>
@@ -145,16 +152,16 @@
 
 <h2 id="kccachetest">kccachetest</h2>
 
-<p>The command `<code>kccachetest</code>' is a utility for facility test and performance test of the cache database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
+<p>The command `<code>kccachetest</code>' is a utility for facility test and performance test of the cache hash database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kccachetest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
+<dt><code>kccachetest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-erv] <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kccachetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
+<dt><code>kccachetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-erv] <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kccachetest wicked [-th <var>num</var>] [-it <var>num</var>] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
+<dt><code>kccachetest wicked [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-erv] <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kccachetest tran [-th <var>num</var>] [-it <var>num</var>] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] <var>rnum</var></code></dt>
+<dt><code>kccachetest tran [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-erv] <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -165,9 +172,46 @@
 <li><code>-rnd</code> : performs random test.</li>
 <li><code>-etc</code> : performs miscellaneous operations.</li>
 <li><code>-tran</code> : performs transaction.</li>
+<li><code>-tc</code> : tunes the database with the compression option.</li>
 <li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
 <li><code>-capcnt <var>num</var></code> : specifies the maximum number of records.</li>
 <li><code>-capsiz <var>num</var></code> : specifies the maximum size of memory usage.</li>
+<li><code>-erv</code> : reports all errors.</li>
+<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<hr />
+
+<h2 id="kcgrasstest">kcgrasstest</h2>
+
+<p>The command `<code>kcgrasstest</code>' is a utility for facility test and performance test of the cache tree database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
+
+<dl class="api">
+<dt><code>kcgrasstest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>rnum</var></code></dt>
+<dd>Performs in-order tests.</dd>
+<dt><code>kcgrasstest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>rnum</var></code></dt>
+<dd>Performs queuing operations.</dd>
+<dt><code>kcgrasstest wicked [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>rnum</var></code></dt>
+<dd>Performs mixed operations selected at random.</dd>
+<dt><code>kcgrasstest tran [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>rnum</var></code></dt>
+<dd>Performs test of transaction.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
+<li><code>-rnd</code> : performs random test.</li>
+<li><code>-etc</code> : performs miscellaneous operations.</li>
+<li><code>-tran</code> : performs transaction.</li>
+<li><code>-tc</code> : tunes the database with the compression option.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
+<li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
+<li><code>-pccap <var>num</var></code> : specifies the capacity size of the page cache.</li>
+<li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
+<li><code>-erv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 </ul>
 
@@ -394,7 +438,7 @@
 
 <h2 id="kcdirtest">kcdirtest</h2>
 
-<p>The command `<code>kcdirtest</code>' is a utility for facility test and performance test of the directory database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
+<p>The command `<code>kcdirtest</code>' is a utility for facility test and performance test of the directory hash database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
 <dt><code>kcdirtest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-tc] [-erv] <var>path</var> <var>rnum</var></code></dt>
@@ -435,7 +479,7 @@
 
 <h2 id="kcdirmgr">kcdirmgr</h2>
 
-<p>The command `<code>kcdirmgr</code>' is a utility for test and debugging of the directory database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
+<p>The command `<code>kcdirmgr</code>' is a utility for test and debugging of the directory hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
 
 <dl class="api">
 <dt><code>kcdirmgr create [-otr] [-onl|-otl|-onr] [-tc] <var>path</var></code></dt>
@@ -470,6 +514,105 @@
 <li><code>-otl</code> : opens the database with the try locking option.</li>
 <li><code>-onr</code> : opens the database with the no auto repair option.</li>
 <li><code>-tc</code> : tunes the database with the compression option.</li>
+<li><code>-st</code> : prints miscellaneous information.</li>
+<li><code>-add</code> : performs adding operation.</li>
+<li><code>-app</code> : performs appending operation.</li>
+<li><code>-inci</code> : performs integer increment operation.</li>
+<li><code>-incd</code> : performs real number increment operation.</li>
+<li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
+<li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
+<li><code>-pz</code> : does not append line feed at the end of the output.</li>
+<li><code>-max</code> : specifies the maximum number of shown records.</li>
+<li><code>-pv</code> : prints values of records also.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<hr />
+
+<h2 id="kcforesttest">kcforesttest</h2>
+
+<p>The command `<code>kcforesttest</code>' is a utility for facility test and performance test of the directory tree database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
+
+<dl class="api">
+<dt><code>kcforesttest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs in-order tests.</dd>
+<dt><code>kcforesttest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs queuing operations.</dd>
+<dt><code>kcforesttest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs mixed operations selected at random.</dd>
+<dt><code>kcforesttest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs test of transaction.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
+<li><code>-rnd</code> : performs random test.</li>
+<li><code>-set</code> : performs setting operation only.</li>
+<li><code>-get</code> : performs getting operation only.</li>
+<li><code>-getw</code> : performs getting with a buffer operation only.</li>
+<li><code>-rem</code> : performs removing operation only.</li>
+<li><code>-etc</code> : performs miscellaneous operations.</li>
+<li><code>-tran</code> : performs transaction.</li>
+<li><code>-oat</code> : opens the database with the auto transaction option.</li>
+<li><code>-oas</code> : opens the database with the auto synchronization option.</li>
+<li><code>-onl</code> : opens the database with the no locking option.</li>
+<li><code>-otl</code> : opens the database with the try locking option.</li>
+<li><code>-onr</code> : opens the database with the no auto repair option.</li>
+<li><code>-tc</code> : tunes the database with the compression option.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
+<li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
+<li><code>-pccap <var>num</var></code> : specifies the capacity size of the page cache.</li>
+<li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
+<li><code>-erv</code> : reports all errors.</li>
+<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
+<li><code>-hard</code> : performs physical synchronization.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<hr />
+
+<h2 id="kcforestmgr">kcforestmgr</h2>
+
+<p>The command `<code>kcforestmgr</code>' is a utility for test and debugging of the file tree database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
+
+<dl class="api">
+<dt><code>kcforestmgr create [-otr] [-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-rcd] <var>path</var></code></dt>
+<dd>Creates a database file.</dd>
+<dt><code>kcforestmgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
+<dd>Prints status information.</dd>
+<dt><code>kcforestmgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
+<dd>Stores a record.</dd>
+<dt><code>kcforestmgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
+<dd>Removes a record.</dd>
+<dt><code>kcforestmgr get [-onl|-otl|-onr] [-sx] [-px] [-pz] <var>path</var> <var>key</var></code></dt>
+<dd>Prints the value of a record.</dd>
+<dt><code>kcforestmgr list [-onl|-otl|-onr] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
+<dd>Prints keys of all records, separated by line feeds.</dd>
+<dt><code>kcforestmgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
+<dd>Imports records from a TSV file.</dd>
+<dt><code>kcforestmgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
+<dd>Dump records into a snapshot file.</dd>
+<dt><code>kcforestmgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
+<dd>Load records from a snapshot file.</dd>
+<dt><code>kcforestmgr check [-onl|-otl|-onr] <var>path</var></code></dt>
+<dd>Checks consistency.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-otr</code> : opens the database with the truncation option.</li>
+<li><code>-onl</code> : opens the database with the no locking option.</li>
+<li><code>-otl</code> : opens the database with the try locking option.</li>
+<li><code>-onr</code> : opens the database with the no auto repair option.</li>
+<li><code>-tc</code> : tunes the database with the compression option.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
+<li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
+<li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
 <li><code>-st</code> : prints miscellaneous information.</li>
 <li><code>-add</code> : performs adding operation.</li>
 <li><code>-app</code> : performs appending operation.</li>
