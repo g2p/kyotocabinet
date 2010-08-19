@@ -194,11 +194,17 @@
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a543b0095fb011f3ae42424460190d25a">kccurget</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur, size_t *ksp, const char **vbp, size_t *vsp, int32_t step)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get a pair of the key and the value of the current record.  <a href="#a543b0095fb011f3ae42424460190d25a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a086c2e825133e414430ebd9fa010c9e0">kccurjump</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record.  <a href="#a086c2e825133e414430ebd9fa010c9e0"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record for forward scan.  <a href="#a086c2e825133e414430ebd9fa010c9e0"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a6b02b505678f971be270e3ba9a1b4d76">kccurjumpkey</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur, const char *kbuf, size_t ksiz)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record.  <a href="#a6b02b505678f971be270e3ba9a1b4d76"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for forward scan.  <a href="#a6b02b505678f971be270e3ba9a1b4d76"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#aea97152d108e403d57d6de9b9b9c905c">kccurjumpback</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the last record for backward scan.  <a href="#aea97152d108e403d57d6de9b9b9c905c"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a6a64ab5f495da06c7361f010caa9371a">kccurjumpbackkey</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur, const char *kbuf, size_t ksiz)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for backward scan.  <a href="#a6a64ab5f495da06c7361f010caa9371a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a8eb7192456824eaad2e15444704e9055">kccurstep</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the next record.  <a href="#a8eb7192456824eaad2e15444704e9055"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#afeb16bd9461ab3f5dc2d21fa3ba28213">kccurstepback</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the previous record.  <a href="#afeb16bd9461ab3f5dc2d21fa3ba28213"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="unionKCDB.html">KCDB</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a20a80ae0156692ad33cd0b8bfcf7eeab">kccurdb</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the database object.  <a href="#a20a80ae0156692ad33cd0b8bfcf7eeab"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a479ed6830ab7fb85b146bff54f67df23">kccurecode</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
@@ -2302,7 +2308,7 @@
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor to the first record. </p>
+<p>Jump the cursor to the first record for forward scan. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>cur</em>&nbsp;</td><td>a cursor object. </td></tr>
@@ -2344,7 +2350,7 @@
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor to a record. </p>
+<p>Jump the cursor to a record for forward scan. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>cur</em>&nbsp;</td><td>a cursor object. </td></tr>
@@ -2354,6 +2360,79 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aea97152d108e403d57d6de9b9b9c905c"></a><!-- doxytag: member="kclangc.h::kccurjumpback" ref="aea97152d108e403d57d6de9b9b9c905c" args="(KCCUR *cur)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kccurjumpback </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="unionKCCUR.html">KCCUR</a> *&nbsp;</td>
+          <td class="paramname"> <em>cur</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Jump the cursor to the last record for backward scan. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>cur</em>&nbsp;</td><td>a cursor object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This method is dedicated to tree databases. Some database types, especially hash databases, may provide a dummy implementation. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a6a64ab5f495da06c7361f010caa9371a"></a><!-- doxytag: member="kclangc.h::kccurjumpbackkey" ref="a6a64ab5f495da06c7361f010caa9371a" args="(KCCUR *cur, const char *kbuf, size_t ksiz)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kccurjumpbackkey </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="unionKCCUR.html">KCCUR</a> *&nbsp;</td>
+          <td class="paramname"> <em>cur</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>kbuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>ksiz</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Jump the cursor to a record for backward scan. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>cur</em>&nbsp;</td><td>a cursor object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>kbuf</em>&nbsp;</td><td>the pointer to the key region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>ksiz</em>&nbsp;</td><td>the size of the key region. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This method is dedicated to tree databases. Some database types, especially hash databases, will provide a dummy implementation. </dd></dl>
 
 </div>
 </div>
@@ -2381,6 +2460,34 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="afeb16bd9461ab3f5dc2d21fa3ba28213"></a><!-- doxytag: member="kclangc.h::kccurstepback" ref="afeb16bd9461ab3f5dc2d21fa3ba28213" args="(KCCUR *cur)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kccurstepback </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="unionKCCUR.html">KCCUR</a> *&nbsp;</td>
+          <td class="paramname"> <em>cur</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Step the cursor to the previous record. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>cur</em>&nbsp;</td><td>a cursor object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This method is dedicated to tree databases. Some database types, especially hash databases, may provide a dummy implementation. </dd></dl>
 
 </div>
 </div>
@@ -2512,7 +2619,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:50 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:45 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

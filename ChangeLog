@@ -1,8 +1,16 @@
+2010-08-18  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcplantdb.h (PlantDB::rcomp): new method.
+
+	* kctreemgr.cc (runlist, proclist): descending order was added.
+
+	- Release: 1.2.7
+
 2010-08-17  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcthread.cc (CondVar): Win32 support was added.
 
-	* kcdb.h (jump_last, step_back): new functions.
+	* kcdb.h (jump_back, step_back): new functions.
 
 	* kcplantdb.h (jump_last, step_back): new functions.
 

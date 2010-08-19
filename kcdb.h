@@ -188,29 +188,44 @@ public:
      */
     virtual std::pair<std::string, std::string>* get_pair(bool step = false) = 0;
     /**
-     * Jump the cursor to the first record.
+     * Jump the cursor to the first record for forward scan.
      * @return true on success, or false on failure.
      */
     virtual bool jump() = 0;
     /**
-     * Jump the cursor to a record.
+     * Jump the cursor to a record for forward scan.
      * @param kbuf the pointer to the key region.
      * @param ksiz the size of the key region.
      * @return true on success, or false on failure.
      */
     virtual bool jump(const char* kbuf, size_t ksiz) = 0;
     /**
-     * Jump the cursor to a record.
-     * @note Equal to the original Cursor::set method except that the parameter is std::string.
+     * Jump the cursor to a record for forward scan.
+     * @note Equal to the original Cursor::jump method except that the parameter is std::string.
      */
     virtual bool jump(const std::string& key) = 0;
     /**
-     * Jump the cursor to the last record.
+     * Jump the cursor to the last record for backward scan.
      * @return true on success, or false on failure.
      * @note This method is dedicated to tree databases.  Some database types, especially hash
      * databases, will provide a dummy implementation.
      */
-    virtual bool jump_last() = 0;
+    virtual bool jump_back() = 0;
+    /**
+     * Jump the cursor to a record for backward scan.
+     * @param kbuf the pointer to the key region.
+     * @param ksiz the size of the key region.
+     * @return true on success, or false on failure.
+     * @note This method is dedicated to tree databases.  Some database types, especially hash
+     * databases, will provide a dummy implementation.
+     */
+    virtual bool jump_back(const char* kbuf, size_t ksiz) = 0;
+    /**
+     * Jump the cursor to a record for backward scan.
+     * @note Equal to the original Cursor::jump_back method except that the parameter is
+     * std::string.
+     */
+    virtual bool jump_back(const std::string& key) = 0;
     /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.

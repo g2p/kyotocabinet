@@ -618,12 +618,42 @@ int32_t kccurjumpkey(KCCUR* cur, const char* kbuf, size_t ksiz) {
 
 
 /**
+ * Jump the cursor to the last record for backward scan.
+ */
+int32_t kccurjumpback(KCCUR* cur) {
+  _assert_(cur);
+  PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
+  return pcur->jump_back();
+}
+
+
+/**
+ * Jump the cursor to a record for backward scan.
+ */
+int32_t kccurjumpbackkey(KCCUR* cur, const char* kbuf, size_t ksiz) {
+  _assert_(cur && kbuf && ksiz <= MEMMAXSIZ);
+  PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
+  return pcur->jump_back(kbuf, ksiz);
+}
+
+
+/**
  * Step the cursor to the next record.
  */
 int32_t kccurstep(KCCUR* cur) {
   _assert_(cur);
   PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
   return pcur->step();
+}
+
+
+/**
+ * Step the cursor to the previous record.
+ */
+int32_t kccurstepback(KCCUR* cur) {
+  _assert_(cur);
+  PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
+  return pcur->step_back();
 }
 
 

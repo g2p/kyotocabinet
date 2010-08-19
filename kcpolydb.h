@@ -84,7 +84,7 @@ public:
       return cur_->accept(visitor, writable, step);
     }
     /**
-     * Jump the cursor to the first record.
+     * Jump the cursor to the first record for forward scan.
      * @return true on success, or false on failure.
      */
     bool jump() {
@@ -96,7 +96,7 @@ public:
       return cur_->jump();
     }
     /**
-     * Jump the cursor onto a record.
+     * Jump the cursor to a record for forward scan.
      * @param kbuf the pointer to the key region.
      * @param ksiz the size of the key region.
      * @return true on success, or false on failure.
@@ -110,7 +110,7 @@ public:
       return cur_->jump(kbuf, ksiz);
     }
     /**
-     * Jump the cursor to a record.
+     * Jump the cursor to a record for forward scan.
      * @note Equal to the original Cursor::jump method except that the parameter is std::string.
      */
     bool jump(const std::string& key) {
@@ -122,18 +122,43 @@ public:
       return jump(key.c_str(), key.size());
     }
     /**
-     * Jump the cursor to the last record.
+     * Jump the cursor to the last record for backward scan.
      * @return true on success, or false on failure.
      * @note This method is dedicated to tree databases.  Some database types, especially hash
      * databases, may provide a dummy implementation.
      */
-    bool jump_last() {
+    bool jump_back() {
       _assert_(true);
       if (db_->type_ == TYPEVOID) {
         db_->set_error(Error::INVALID, "not opened");
         return false;
       }
-      return cur_->jump_last();
+      return cur_->jump_back();
+    }
+    /**
+     * Jump the cursor to a record for backward scan.
+     * @param kbuf the pointer to the key region.
+     * @param ksiz the size of the key region.
+     * @return true on success, or false on failure.
+     * @note This method is dedicated to tree databases.  Some database types, especially hash
+     * databases, will provide a dummy implementation.
+     */
+    bool jump_back(const char* kbuf, size_t ksiz) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ);
+      if (db_->type_ == TYPEVOID) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      return cur_->jump_back(kbuf, ksiz);
+    }
+    /**
+     * Jump the cursor to a record for backward scan.
+     * @note Equal to the original Cursor::jump_back method except that the parameter is
+     * std::string.
+     */
+    bool jump_back(const std::string& key) {
+      _assert_(true);
+      return jump_back(key.c_str(), key.size());
     }
     /**
      * Step the cursor to the next record.

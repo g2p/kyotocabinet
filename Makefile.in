@@ -369,7 +369,7 @@ check-tree :
 	$(RUNENV) $(RUNCMD) ./kctreemgr get casket mikio
 	$(RUNENV) $(RUNCMD) ./kctreemgr get casket ryu
 	$(RUNENV) $(RUNCMD) ./kctreemgr import casket lab/numbers.tsv
-	$(RUNENV) $(RUNCMD) ./kctreemgr list -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kctreemgr list -des -pv -px casket > check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr defrag -onl casket
@@ -543,7 +543,7 @@ check-forest :
 	$(RUNENV) $(RUNCMD) ./kcforestmgr get casket mikio
 	$(RUNENV) $(RUNCMD) ./kcforestmgr get casket ryu
 	$(RUNENV) $(RUNCMD) ./kcforestmgr import casket lab/numbers.tsv
-	$(RUNENV) $(RUNCMD) ./kcforestmgr list -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kcforestmgr list -des -pv -px casket > check.out
 	$(RUNENV) $(RUNCMD) ./kcforestmgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kcforestmgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket

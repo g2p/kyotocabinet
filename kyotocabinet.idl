@@ -84,7 +84,8 @@ module kyotocabinet {
     string get_value(in boolean step);
     boolean jump();
     boolean jump_(in string key);
-    boolean jump_last();
+    boolean jump_back();
+    boolean jump_back(in string key);
     boolean step();
     boolean step_back();
     DB db();

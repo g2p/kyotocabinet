@@ -702,7 +702,7 @@ char* kccurget(KCCUR* cur, size_t* ksp, const char** vbp, size_t* vsp, int32_t s
 
 
 /**
- * Jump the cursor to the first record.
+ * Jump the cursor to the first record for forward scan.
  * @param cur a cursor object.
  * @return true on success, or false on failure.
  */
@@ -710,7 +710,7 @@ int32_t kccurjump(KCCUR* cur);
 
 
 /**
- * Jump the cursor to a record.
+ * Jump the cursor to a record for forward scan.
  * @param cur a cursor object.
  * @param kbuf the pointer to the key region.
  * @param ksiz the size of the key region.
@@ -720,11 +720,43 @@ int32_t kccurjumpkey(KCCUR* cur, const char* kbuf, size_t ksiz);
 
 
 /**
+ * Jump the cursor to the last record for backward scan.
+ * @param cur a cursor object.
+ * @return true on success, or false on failure.
+ * @note This method is dedicated to tree databases.  Some database types, especially hash
+ * databases, may provide a dummy implementation.
+ */
+int32_t kccurjumpback(KCCUR* cur);
+
+
+/**
+ * Jump the cursor to a record for backward scan.
+ * @param cur a cursor object.
+ * @param kbuf the pointer to the key region.
+ * @param ksiz the size of the key region.
+ * @return true on success, or false on failure.
+ * @note This method is dedicated to tree databases.  Some database types, especially hash
+ * databases, will provide a dummy implementation.
+ */
+int32_t kccurjumpbackkey(KCCUR* cur, const char* kbuf, size_t ksiz);
+
+
+/**
  * Step the cursor to the next record.
  * @param cur a cursor object.
  * @return true on success, or false on failure.
  */
 int32_t kccurstep(KCCUR* cur);
+
+
+/**
+ * Step the cursor to the previous record.
+ * @param cur a cursor object.
+ * @return true on success, or false on failure.
+ * @note This method is dedicated to tree databases.  Some database types, especially hash
+ * databases, may provide a dummy implementation.
+ */
+int32_t kccurstepback(KCCUR* cur);
 
 
 /**

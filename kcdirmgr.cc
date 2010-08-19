@@ -781,6 +781,7 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
     bool px_;
   } visitor(pv, px);
   if (kbuf || max >= 0) {
+    if (max < 0) max = INT64_MAX;
     kc::DirDB::Cursor cur(&db);
     if (kbuf) {
       if (!cur.jump(kbuf, ksiz) && db.error() != kc::BasicDB::Error::NOREC) {

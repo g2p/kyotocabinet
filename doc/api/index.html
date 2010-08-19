@@ -200,7 +200,7 @@ Example</a></h2>
 
   <span class="comment">/* traverse records */</span>
   cur = <a class="code" href="kclangc_8h.html#adccaf4771f7804511791af33a316e0ba" title="Create a cursor object.">kcdbcursor</a>(db);
-  <a class="code" href="kclangc_8h.html#a086c2e825133e414430ebd9fa010c9e0" title="Jump the cursor to the first record.">kccurjump</a>(cur);
+  <a class="code" href="kclangc_8h.html#a086c2e825133e414430ebd9fa010c9e0" title="Jump the cursor to the first record for forward scan.">kccurjump</a>(cur);
   <span class="keywordflow">while</span> ((kbuf = <a class="code" href="kclangc_8h.html#a543b0095fb011f3ae42424460190d25a" title="Get a pair of the key and the value of the current record.">kccurget</a>(cur, &amp;ksiz, &amp;cvbuf, &amp;vsiz, 1)) != NULL) {
     printf(<span class="stringliteral">&quot;%s:%s\n&quot;</span>, kbuf, cvbuf);
     <a class="code" href="kclangc_8h.html#aefcd68bc9b902c7968223e471c9ec38e" title="Release a region allocated in the library.">kcfree</a>(kbuf);
@@ -229,7 +229,7 @@ Example</a></h2>
   <span class="keywordflow">return</span> 0;
 }
 </pre></div> </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:50 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:45 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

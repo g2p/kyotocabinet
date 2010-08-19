@@ -46,7 +46,7 @@ static int32_t procremove(const char* path, const char* kbuf, size_t ksiz, int32
 static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
                        int32_t oflags, bool px, bool pz);
 static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t oflags,
-                        int64_t max, bool pv, bool px);
+                        bool des, int64_t max, bool pv, bool px);
 static int32_t procimport(const char* path, const char* file, int32_t oflags, bool sx);
 static int32_t procdump(const char* path, const char* file, int32_t oflags);
 static int32_t procload(const char* path, const char* file, int32_t oflags);
@@ -104,7 +104,8 @@ static void usage() {
           g_progname);
   eprintf("  %s remove [-onl|-otl|-onr] [-sx] path key\n", g_progname);
   eprintf("  %s get [-onl|-otl|-onr] [-sx] [-px] [-pz] path key\n", g_progname);
-  eprintf("  %s list [-onl|-otl|-onr] [-max num] [-sx] [-pv] [-px] path [key]\n", g_progname);
+  eprintf("  %s list [-onl|-otl|-onr] [-des] [-max num] [-sx] [-pv] [-px] path [key]\n",
+          g_progname);
   eprintf("  %s import [-onl|-otl|-onr] [-sx] path [file]\n", g_progname);
   eprintf("  %s dump [-onl|-otl|-onr] path [file]\n", g_progname);
   eprintf("  %s load [-otr] [-onl|-otl|-onr] path [file]\n", g_progname);
@@ -382,6 +383,7 @@ static int32_t runlist(int argc, char** argv) {
   const char* path = NULL;
   const char* kstr = NULL;
   int32_t oflags = 0;
+  bool des = false;
   int64_t max = -1;
   bool sx = false;
   bool pv = false;
@@ -394,6 +396,8 @@ static int32_t runlist(int argc, char** argv) {
         oflags |= kc::TreeDB::OTRYLOCK;
       } else if (!std::strcmp(argv[i], "-onr")) {
         oflags |= kc::TreeDB::ONOREPAIR;
+      } else if (!std::strcmp(argv[i], "-des")) {
+        des = true;
       } else if (!std::strcmp(argv[i], "-max")) {
         if (++i >= argc) usage();
         max = kc::atoix(argv[i]);
@@ -428,7 +432,7 @@ static int32_t runlist(int argc, char** argv) {
       kbuf[ksiz] = '\0';
     }
   }
-  int32_t rv = proclist(path, kbuf, ksiz, oflags, max, pv, px);
+  int32_t rv = proclist(path, kbuf, ksiz, oflags, des, max, pv, px);
   delete[] kbuf;
   return rv;
 }
@@ -864,7 +868,7 @@ static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
 
 // perform list command
 static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t oflags,
-                        int64_t max, bool pv, bool px) {
+                        bool des, int64_t max, bool pv, bool px) {
   kc::TreeDB db;
   std::ostringstream ebuf;
   db.tune_error_reporter(&ebuf, false);
@@ -892,31 +896,60 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
     bool pv_;
     bool px_;
   } visitor(pv, px);
-  if (kbuf || max >= 0) {
+  if (kbuf || des || max >= 0) {
+    if (max < 0) max = INT64_MAX;
     kc::TreeDB::Cursor cur(&db);
-    if (kbuf) {
-      if (!cur.jump(kbuf, ksiz) && db.error() != kc::BasicDB::Error::NOREC) {
-        ebufprint(&ebuf);
-        dberrprint(&db, "Cursor::jump failed");
-        err = true;
-      }
-    } else {
-      if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
-        ebufprint(&ebuf);
-        dberrprint(&db, "Cursor::jump failed");
-        err = true;
-      }
-    }
-    while (!err && max > 0) {
-      if (!cur.accept(&visitor, false, true)) {
-        if (db.error() != kc::BasicDB::Error::NOREC) {
+    if (des) {
+      if (kbuf) {
+        if (!cur.jump_back(kbuf, ksiz) && db.error() != kc::BasicDB::Error::NOREC) {
           ebufprint(&ebuf);
-          dberrprint(&db, "Cursor::accept failed");
+          dberrprint(&db, "Cursor::jump failed");
           err = true;
         }
-        break;
+      } else {
+        if (!cur.jump_back() && db.error() != kc::BasicDB::Error::NOREC) {
+          ebufprint(&ebuf);
+          dberrprint(&db, "Cursor::jump failed");
+          err = true;
+        }
       }
-      max--;
+      while (!err && max > 0) {
+        if (!cur.accept(&visitor, false, false)) {
+          if (db.error() != kc::BasicDB::Error::NOREC) {
+            ebufprint(&ebuf);
+            dberrprint(&db, "Cursor::accept failed");
+            err = true;
+          }
+          break;
+        }
+        cur.step_back();
+        max--;
+      }
+    } else {
+      if (kbuf) {
+        if (!cur.jump(kbuf, ksiz) && db.error() != kc::BasicDB::Error::NOREC) {
+          ebufprint(&ebuf);
+          dberrprint(&db, "Cursor::jump failed");
+          err = true;
+        }
+      } else {
+        if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
+          ebufprint(&ebuf);
+          dberrprint(&db, "Cursor::jump failed");
+          err = true;
+        }
+      }
+      while (!err && max > 0) {
+        if (!cur.accept(&visitor, false, true)) {
+          if (db.error() != kc::BasicDB::Error::NOREC) {
+            ebufprint(&ebuf);
+            dberrprint(&db, "Cursor::accept failed");
+            err = true;
+          }
+          break;
+        }
+        max--;
+      }
     }
   } else {
     if (!db.iterate(&visitor, false)) {

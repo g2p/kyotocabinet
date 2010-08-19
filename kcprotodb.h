@@ -179,7 +179,7 @@ public:
       return true;
     }
     /**
-     * Jump the cursor to the first record.
+     * Jump the cursor to the first record for forward scan.
      * @return true on success, or false on failure.
      */
     bool jump() {
@@ -197,7 +197,7 @@ public:
       return true;
     }
     /**
-     * Jump the cursor onto a record.
+     * Jump the cursor to a record for forward scan.
      * @param kbuf the pointer to the key region.
      * @param ksiz the size of the key region.
      * @return true on success, or false on failure.
@@ -218,7 +218,7 @@ public:
       return true;
     }
     /**
-     * Jump the cursor to a record.
+     * Jump the cursor to a record for forward scan.
      * @note Equal to the original Cursor::jump method except that the parameter is std::string.
      */
     bool jump(const std::string& key) {
@@ -226,10 +226,10 @@ public:
       return jump(key.c_str(), key.size());
     }
     /**
-     * Jump the cursor to the last record.
+     * Jump the cursor to the last record for backward scan.
      * @return true on success, or false on failure.
      */
-    bool jump_last() {
+    bool jump_back() {
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
@@ -246,6 +246,56 @@ public:
         return false;
       }
       return true;
+    }
+    /**
+     * Jump the cursor to a record for backward scan.
+     * @param kbuf the pointer to the key region.
+     * @param ksiz the size of the key region.
+     * @return true on success, or false on failure.
+     */
+    bool jump_back(const char* kbuf, size_t ksiz) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ);
+      ScopedSpinRWLock lock(&db_->mlock_, true);
+      if (db_->omode_ == 0) {
+        db_->set_error(Error::INVALID, "not opened");
+        return false;
+      }
+      std::string key(kbuf, ksiz);
+      it_ = map_find(&db_->recs_, key);
+      if (it_ == db_->recs_.end()) {
+        if (it_ == db_->recs_.begin()) {
+          db_->set_error(Error::NOREC, "no record");
+          return false;
+        }
+        if (!iter_back(&it_)) {
+          db_->set_error(Error::NOIMPL, "not implemented");
+          return false;
+        }
+      } else {
+        std::string key(kbuf, ksiz);
+        if (key < it_->first) {
+          if (it_ == db_->recs_.begin()) {
+            db_->set_error(Error::NOREC, "no record");
+            it_ = db_->recs_.end();
+            return false;
+          }
+          if (!iter_back(&it_)) {
+            db_->set_error(Error::NOIMPL, "not implemented");
+            it_ = db_->recs_.end();
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+    /**
+     * Jump the cursor to a record for backward scan.
+     * @note Equal to the original Cursor::jump_back method except that the parameter is
+     * std::string.
+     */
+    bool jump_back(const std::string& key) {
+      _assert_(true);
+      return jump_back(key.c_str(), key.size());
     }
     /**
      * Step the cursor to the next record.

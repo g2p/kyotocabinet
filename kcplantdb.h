@@ -165,7 +165,7 @@ public:
       return !err;
     }
     /**
-     * Jump the cursor to the first record.
+     * Jump the cursor to the first record for forward scan.
      * @return true on success, or false on failure.
      */
     bool jump() {
@@ -181,7 +181,7 @@ public:
       return !err;
     }
     /**
-     * Jump the cursor onto a record.
+     * Jump the cursor to a record for forward scan.
      * @param kbuf the pointer to the key region.
      * @param ksiz the size of the key region.
      * @return true on success, or false on failure.
@@ -196,11 +196,14 @@ public:
       if (kbuf_) clear_position();
       set_position(kbuf, ksiz, 0);
       bool err = false;
-      if (!adjust_position()) err = true;
+      if (!adjust_position()) {
+        if (kbuf_) clear_position();
+        err = true;
+      }
       return !err;
     }
     /**
-     * Jump the cursor to a record.
+     * Jump the cursor to a record for forward scan.
      * @note Equal to the original Cursor::jump method except that the parameter is std::string.
      */
     bool jump(const std::string& key) {
@@ -208,12 +211,12 @@ public:
       return jump(key.c_str(), key.size());
     }
     /**
-     * Jump the cursor to the last record.
+     * Jump the cursor to the last record for backward scan.
      * @return true on success, or false on failure.
      * @note This method is dedicated to tree databases.  Some database types, especially hash
      * databases, may provide a dummy implementation.
      */
-    bool jump_last() {
+    bool jump_back() {
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, false);
       if (db_->omode_ == 0) {
@@ -224,6 +227,54 @@ public:
       bool err = false;
       if (!set_position_back(db_->last_)) err = true;
       return !err;
+    }
+    /**
+     * Jump the cursor to a record for backward scan.
+     * @param kbuf the pointer to the key region.
+     * @param ksiz the size of the key region.
+     * @return true on success, or false on failure.
+     */
+    bool jump_back(const char* kbuf, size_t ksiz) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ);
+      ScopedSpinRWLock lock(&db_->mlock_, false);
+      if (db_->omode_ == 0) {
+        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        return false;
+      }
+      if (kbuf_) clear_position();
+      set_position(kbuf, ksiz, 0);
+      bool err = false;
+      if (adjust_position()) {
+        if (db_->reccomp_.comp->compare(kbuf, ksiz, kbuf_, ksiz_) < 0) {
+          bool hit = false;
+          if (lid_ > 0 && !back_position_spec(&hit)) err = true;
+          if (!err && !hit) {
+            if (!db_->mlock_.promote()) {
+              db_->mlock_.unlock();
+              db_->mlock_.lock_writer();
+            }
+            if (kbuf_) {
+              if (!back_position_atom()) err = true;
+            } else {
+              db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+              err = true;
+            }
+          }
+        }
+      } else {
+        if (kbuf_) clear_position();
+        if (!set_position_back(db_->last_)) err = true;
+      }
+      return !err;
+    }
+    /**
+     * Jump the cursor to a record for backward scan.
+     * @note Equal to the original Cursor::jump_back method except that the parameter is
+     * std::string.
+     */
+    bool jump_back(const std::string& key) {
+      _assert_(true);
+      return jump_back(key.c_str(), key.size());
     }
     /**
      * Step the cursor to the next record.
@@ -708,6 +759,7 @@ public:
       typename RecordArray::const_iterator ritend = node->recs.end();
       typename RecordArray::const_iterator rit = std::lower_bound(recs.begin(), ritend,
                                                                   rec, db_->reccomp_);
+      clear_position();
       if (rit == ritend) {
         node->lock.unlock();
         if (!set_position(node->next)) err = true;
@@ -1755,6 +1807,19 @@ protected:
                  Error::Code code, const char* message) {
     _assert_(file && line > 0 && message);
     db_.set_error(file, line, code, message);
+  }
+  /**
+   * Get the record comparator.
+   * @return the record comparator object.
+   */
+  Comparator* rcomp() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ == 0) {
+      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      return 0;
+    }
+    return reccomp_.comp;
   }
 private:
   /**

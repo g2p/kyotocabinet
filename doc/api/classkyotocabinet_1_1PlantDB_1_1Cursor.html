@@ -45,13 +45,17 @@
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a8141035fcfb80991033d2be00e74059d">accept</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, bool step=false)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to the current record.  <a href="#a8141035fcfb80991033d2be00e74059d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a170dc516ec00ce604a54d1f463762fc7">jump</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record.  <a href="#a170dc516ec00ce604a54d1f463762fc7"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record for forward scan.  <a href="#a170dc516ec00ce604a54d1f463762fc7"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a85ea7ab0eb2ba27300f211b62b2c1d24">jump</a> (const char *kbuf, size_t ksiz)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor onto a record.  <a href="#a85ea7ab0eb2ba27300f211b62b2c1d24"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for forward scan.  <a href="#a85ea7ab0eb2ba27300f211b62b2c1d24"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a339d2bf45a0db189cbcc275d393edce4">jump</a> (const std::string &amp;key)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record.  <a href="#a339d2bf45a0db189cbcc275d393edce4"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a72e9616c32496fc14bf3c69af36a16ac">jump_last</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the last record.  <a href="#a72e9616c32496fc14bf3c69af36a16ac"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for forward scan.  <a href="#a339d2bf45a0db189cbcc275d393edce4"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a5978f16b3b67db9f96e5915a7814abb8">jump_back</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the last record for backward scan.  <a href="#a5978f16b3b67db9f96e5915a7814abb8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a0fad966245dbe96e3fbaf1c5b336d3ca">jump_back</a> (const char *kbuf, size_t ksiz)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for backward scan.  <a href="#a0fad966245dbe96e3fbaf1c5b336d3ca"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a1e20c9b0b33046839bb4ade297efa3b2">jump_back</a> (const std::string &amp;key)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for backward scan.  <a href="#a1e20c9b0b33046839bb4ade297efa3b2"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a97e5de36c7013633822978ba4464566f">step</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the next record.  <a href="#a97e5de36c7013633822978ba4464566f"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#abaee4c4ed39a012fafa89568ad5b979f">step_back</a> ()</td></tr>
@@ -186,7 +190,7 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor to the first record. </p>
+<p>Jump the cursor to the first record for forward scan. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a9b7e9982b948d66a4d2a0295229ac4c1">kyotocabinet::DB::Cursor</a>.</p>
@@ -220,7 +224,7 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor onto a record. </p>
+<p>Jump the cursor to a record for forward scan. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>kbuf</em>&nbsp;</td><td>the pointer to the key region. </td></tr>
@@ -252,21 +256,21 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor to a record. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a170dc516ec00ce604a54d1f463762fc7" title="Jump the cursor to the first record.">Cursor::jump</a> method except that the parameter is std::string. </dd></dl>
+<p>Jump the cursor to a record for forward scan. </p>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a170dc516ec00ce604a54d1f463762fc7" title="Jump the cursor to the first record for forward scan.">Cursor::jump</a> method except that the parameter is std::string. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a3b38a11631f37d104209e5feade154b4">kyotocabinet::DB::Cursor</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a72e9616c32496fc14bf3c69af36a16ac"></a><!-- doxytag: member="kyotocabinet::PlantDB::Cursor::jump_last" ref="a72e9616c32496fc14bf3c69af36a16ac" args="()" -->
+<a class="anchor" id="a5978f16b3b67db9f96e5915a7814abb8"></a><!-- doxytag: member="kyotocabinet::PlantDB::Cursor::jump_back" ref="a5978f16b3b67db9f96e5915a7814abb8" args="()" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::Cursor::jump_last </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::Cursor::jump_back </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -276,11 +280,77 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor to the last record. </p>
+<p>Jump the cursor to the last record for backward scan. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>This method is dedicated to tree databases. Some database types, especially hash databases, may provide a dummy implementation. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a567337fcb49d1c3bde6552b05a2f1f1e">kyotocabinet::DB::Cursor</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a65452f182db3cd688885c460a761fa9c">kyotocabinet::DB::Cursor</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a0fad966245dbe96e3fbaf1c5b336d3ca"></a><!-- doxytag: member="kyotocabinet::PlantDB::Cursor::jump_back" ref="a0fad966245dbe96e3fbaf1c5b336d3ca" args="(const char *kbuf, size_t ksiz)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::Cursor::jump_back </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>kbuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>ksiz</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Jump the cursor to a record for backward scan. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>kbuf</em>&nbsp;</td><td>the pointer to the key region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>ksiz</em>&nbsp;</td><td>the size of the key region. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a4456015ac4c0248aebcabb03e195e860">kyotocabinet::DB::Cursor</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a1e20c9b0b33046839bb4ade297efa3b2"></a><!-- doxytag: member="kyotocabinet::PlantDB::Cursor::jump_back" ref="a1e20c9b0b33046839bb4ade297efa3b2" args="(const std::string &amp;key)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::Cursor::jump_back </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>key</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Jump the cursor to a record for backward scan. </p>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1PlantDB_1_1Cursor.html#a5978f16b3b67db9f96e5915a7814abb8" title="Jump the cursor to the last record for backward scan.">Cursor::jump_back</a> method except that the parameter is std::string. </dd></dl>
+
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a9d392717ad801064a36220a91f907c1d">kyotocabinet::DB::Cursor</a>.</p>
 
 </div>
 </div>
@@ -357,7 +427,7 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:51 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:46 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

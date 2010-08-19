@@ -138,6 +138,8 @@
 <tr><td colspan="2"><h2>Protected Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a0c6455f73cd37bfe5365ad5b845ff859">set_error</a> (const char *file, int32_t line, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a0c6455f73cd37bfe5365ad5b845ff859"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1Comparator.html">Comparator</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#aed5f381acc0fb8e1c5274c714fd6c2f8">rcomp</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the record comparator.  <a href="#aed5f381acc0fb8e1c5274c714fd6c2f8"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <h3>template&lt;class BASEDB, uint8_t DBTYPE&gt;<br/>
@@ -1243,8 +1245,30 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="aed5f381acc0fb8e1c5274c714fd6c2f8"></a><!-- doxytag: member="kyotocabinet::PlantDB::rcomp" ref="aed5f381acc0fb8e1c5274c714fd6c2f8" args="()" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1Comparator.html">Comparator</a>* <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::rcomp </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:51 2010 for Kyoto Cabinet by&nbsp;
+<div class="memdoc">
+
+<p>Get the record comparator. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the record comparator object. </dd></dl>
+
+</div>
+</div>
+</div>
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:46 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

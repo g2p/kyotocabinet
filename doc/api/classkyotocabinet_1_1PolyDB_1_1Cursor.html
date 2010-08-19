@@ -45,13 +45,17 @@
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#af6b39a3fef57170ddd67f32073406878">accept</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, bool step=false)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to the current record.  <a href="#af6b39a3fef57170ddd67f32073406878"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a118a79dd4d4e89cf146cfb14907f60ec">jump</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record.  <a href="#a118a79dd4d4e89cf146cfb14907f60ec"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the first record for forward scan.  <a href="#a118a79dd4d4e89cf146cfb14907f60ec"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a169e9d0c536fe894f980be8aaf6ffe41">jump</a> (const char *kbuf, size_t ksiz)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor onto a record.  <a href="#a169e9d0c536fe894f980be8aaf6ffe41"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for forward scan.  <a href="#a169e9d0c536fe894f980be8aaf6ffe41"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a68d2a137e3119605ec11c42f1e54b19f">jump</a> (const std::string &amp;key)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record.  <a href="#a68d2a137e3119605ec11c42f1e54b19f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#afbb0e9aaddacf489184e8049968e865f">jump_last</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the last record.  <a href="#afbb0e9aaddacf489184e8049968e865f"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for forward scan.  <a href="#a68d2a137e3119605ec11c42f1e54b19f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#aa3952d6531123faf14555c0b7d6f00df">jump_back</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to the last record for backward scan.  <a href="#aa3952d6531123faf14555c0b7d6f00df"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a0af9b7a86df7cb095816118e18365d7f">jump_back</a> (const char *kbuf, size_t ksiz)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for backward scan.  <a href="#a0af9b7a86df7cb095816118e18365d7f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#af4d7755d11f0210ee7c0f747868dec65">jump_back</a> (const std::string &amp;key)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Jump the cursor to a record for backward scan.  <a href="#af4d7755d11f0210ee7c0f747868dec65"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a1ee17261d64b6833d6c6f8c1bb56cbd5">step</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Step the cursor to the next record.  <a href="#a1ee17261d64b6833d6c6f8c1bb56cbd5"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#ae157c64d32a9d271cc8f3211d0410abf">step_back</a> ()</td></tr>
@@ -175,7 +179,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor to the first record. </p>
+<p>Jump the cursor to the first record for forward scan. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a9b7e9982b948d66a4d2a0295229ac4c1">kyotocabinet::DB::Cursor</a>.</p>
@@ -207,7 +211,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor onto a record. </p>
+<p>Jump the cursor to a record for forward scan. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>kbuf</em>&nbsp;</td><td>the pointer to the key region. </td></tr>
@@ -237,19 +241,19 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor to a record. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a118a79dd4d4e89cf146cfb14907f60ec" title="Jump the cursor to the first record.">Cursor::jump</a> method except that the parameter is std::string. </dd></dl>
+<p>Jump the cursor to a record for forward scan. </p>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#a118a79dd4d4e89cf146cfb14907f60ec" title="Jump the cursor to the first record for forward scan.">Cursor::jump</a> method except that the parameter is std::string. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a3b38a11631f37d104209e5feade154b4">kyotocabinet::DB::Cursor</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="afbb0e9aaddacf489184e8049968e865f"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump_last" ref="afbb0e9aaddacf489184e8049968e865f" args="()" -->
+<a class="anchor" id="aa3952d6531123faf14555c0b7d6f00df"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump_back" ref="aa3952d6531123faf14555c0b7d6f00df" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool kyotocabinet::PolyDB::Cursor::jump_last </td>
+          <td class="memname">bool kyotocabinet::PolyDB::Cursor::jump_back </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -259,11 +263,74 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 </div>
 <div class="memdoc">
 
-<p>Jump the cursor to the last record. </p>
+<p>Jump the cursor to the last record for backward scan. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>This method is dedicated to tree databases. Some database types, especially hash databases, may provide a dummy implementation. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a567337fcb49d1c3bde6552b05a2f1f1e">kyotocabinet::DB::Cursor</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a65452f182db3cd688885c460a761fa9c">kyotocabinet::DB::Cursor</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a0af9b7a86df7cb095816118e18365d7f"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump_back" ref="a0af9b7a86df7cb095816118e18365d7f" args="(const char *kbuf, size_t ksiz)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::PolyDB::Cursor::jump_back </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>kbuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>ksiz</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Jump the cursor to a record for backward scan. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>kbuf</em>&nbsp;</td><td>the pointer to the key region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>ksiz</em>&nbsp;</td><td>the size of the key region. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This method is dedicated to tree databases. Some database types, especially hash databases, will provide a dummy implementation. </dd></dl>
+
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a4456015ac4c0248aebcabb03e195e860">kyotocabinet::DB::Cursor</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="af4d7755d11f0210ee7c0f747868dec65"></a><!-- doxytag: member="kyotocabinet::PolyDB::Cursor::jump_back" ref="af4d7755d11f0210ee7c0f747868dec65" args="(const std::string &amp;key)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::PolyDB::Cursor::jump_back </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>key</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Jump the cursor to a record for backward scan. </p>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1PolyDB_1_1Cursor.html#aa3952d6531123faf14555c0b7d6f00df" title="Jump the cursor to the last record for backward scan.">Cursor::jump_back</a> method except that the parameter is std::string. </dd></dl>
+
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a9d392717ad801064a36220a91f907c1d">kyotocabinet::DB::Cursor</a>.</p>
 
 </div>
 </div>
@@ -335,7 +402,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PolyDB</b></td></tr>
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Aug 19 02:26:51 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:46 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

@@ -77,6 +77,7 @@ bool getline(std::istream* is, std::string* str);
 void splitstr(const std::string& str, char delim, std::vector<std::string>* elems);
 std::string unitnumstr(int64_t num);
 std::string unitnumstrbyte(int64_t num);
+void printdb(kc::DB* db, bool px = false);
 
 
 // get the random seed
@@ -214,6 +215,25 @@ inline std::string unitnumstrbyte(int64_t num) {
   return kc::strprintf("%lld B", (long long)num);
 }
 
+
+// print all record of a database
+inline void printdb(kc::DB* db, bool px) {
+  class Printer : public kc::DB::Visitor {
+  public:
+    Printer(bool px) : px_(px) {}
+  private:
+    const char* visit_full(const char* kbuf, size_t ksiz,
+                           const char* vbuf, size_t vsiz, size_t* sp) {
+      printdata(kbuf, ksiz, px_);
+      iputchar('\t');
+      printdata(vbuf, vsiz, px_);
+      iputchar('\n');
+      return NOP;
+    }
+    bool px_;
+  } printer(px);
+  db->iterate(&printer, false);
+}
 
 
 #endif                                   // duplication check

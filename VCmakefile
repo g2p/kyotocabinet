@@ -278,7 +278,7 @@ check-tree :
 	kctreemgr get casket mikio
 	kctreemgr get casket ryu
 	kctreemgr import casket lab/numbers.tsv
-	kctreemgr list -pv -px casket > check.out
+	kctreemgr list -des -pv -px casket > check.out
 	kctreemgr dump casket check.out
 	kctreemgr load -otr casket check.out
 	kctreemgr defrag -onl casket
@@ -454,7 +454,7 @@ check-forest :
 	kcforestmgr get casket mikio
 	kcforestmgr get casket ryu
 	kcforestmgr import casket lab/numbers.tsv
-	kcforestmgr list -pv -px casket > check.out
+	kcforestmgr list -des -pv -px casket > check.out
 	kcforestmgr dump casket check.out
 	kcforestmgr load -otr casket check.out
 	kcforestmgr check -onr casket

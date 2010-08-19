@@ -1627,10 +1627,19 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
               }
               case 6: {
                 if (myrand(10) == 0) {
-                  if (!cur->jump(kbuf, ksiz) &&
-                      db_->error() != kc::BasicDB::Error::NOREC) {
-                    dberrprint(db_, __LINE__, "Cursor::jump");
-                    err_ = true;
+                  if (myrand(4) == 0) {
+                    if (!cur->jump_back(kbuf, ksiz) &&
+                        db_->error() != kc::BasicDB::Error::NOIMPL &&
+                        db_->error() != kc::BasicDB::Error::NOREC) {
+                      dberrprint(db_, __LINE__, "Cursor::jump_back");
+                      err_ = true;
+                    }
+                  } else {
+                    if (!cur->jump(kbuf, ksiz) &&
+                        db_->error() != kc::BasicDB::Error::NOREC) {
+                      dberrprint(db_, __LINE__, "Cursor::jump");
+                      err_ = true;
+                    }
                   }
                 } else {
                   class VisitorImpl : public kc::DB::Visitor {
