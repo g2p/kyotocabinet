@@ -1,6 +1,24 @@
+2010-08-20  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcfile.cc (File::remove_recursively): new function.
+
+	* kcdb.h (BasicDB::Logger): new class.
+
+	* kcdb.h (BasicDB::ProgressChecker): new class.
+
+	* kcfile.cc (File::remove, File::rename): timeout on Win32 was modified.
+
+	* kcpolydb.h (PolyDB::open): "erstrm" and "ervbs" were replaced by "log" and "logvbs".
+
+	* kcpolydb.h (PolyDB::merge): new function.
+
+	* kcpolymgr.cc (runmerge, procmerge): new functions.
+
+	- Release: 1.2.8
+
 2010-08-18  Mikio Hirabayashi  <info@fallabs.com>
 
-	* kcplantdb.h (PlantDB::rcomp): new method.
+	* kcplantdb.h (PlantDB::rcomp): new function.
 
 	* kctreemgr.cc (runlist, proclist): descending order was added.
 
@@ -62,7 +80,7 @@
 
 	* kcompress.h (ArcfourComressor::ArcfourComressor): suppressed a warning.
 
-	* kccompress.h (ArcfourCompressor::set_compressor): new method.
+	* kccompress.h (ArcfourCompressor::set_compressor): new function.
 
 	* kcpolydb.h (PolyDB::open): "zcomp=arcz" was added.
 
@@ -356,7 +374,7 @@
 
 2010-02-13  Mikio Hirabayashi  <info@fallabs.com>
 
-	* kcdb.h (DB::get): new method.
+	* kcdb.h (DB::get): new function.
 
 	* kccompress.h (ZlibRawCompressor): new class.
 

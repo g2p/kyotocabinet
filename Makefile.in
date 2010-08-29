@@ -91,7 +91,7 @@ all : $(LIBRARYFILES) $(COMMANDFILES)
 clean :
 	rm -rf $(LIBRARYFILES) $(LIBOBJFILES) $(COMMANDFILES) $(CGIFILES) \
 	  *.o *.gch a.out check.in check.out gmon.out *.vlog words.tsv \
-	  casket* *.kch *.wal *.tmpkc* *.kcss *~ hoge moge tako ika
+	  casket* *.kch *.kct *.kcd *.kcf *.wal *.tmpkc* *.kcss *~ hoge moge tako ika
 
 
 version :
@@ -181,8 +181,8 @@ check-util :
 	$(RUNENV) $(RUNCMD) ./kcutilcodec --version
 	$(RUNENV) $(RUNCMD) ./kcutilcodec hex Makefile > check.in
 	$(RUNENV) $(RUNCMD) ./kcutilcodec hex -d check.in > check.out
-	$(RUNENV) $(RUNCMD) ./kcutilcodec ciph -key 'hoge' Makefile > check.in
-	$(RUNENV) $(RUNCMD) ./kcutilcodec ciph -key 'hoge' check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilcodec ciph -key "hoge" Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilcodec ciph -key "hoge" check.in > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -gz Makefile > check.in
 	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -gz -d check.in > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -lzo Makefile > check.in
@@ -704,18 +704,30 @@ check-poly :
 	$(RUNENV) $(RUNCMD) ./kcpolytest tran -th 2 -it 4 casket.kct 10000
 	$(RUNENV) $(RUNCMD) ./kcpolytest tran -th 2 -it 4 \
 	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=10000#msiz=0#dfunit=1" 1000
+	rm -rf casket*
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd "casket.kch#opts=s#bnum=256" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd "casket.kct#opts=l#psiz=256" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd "casket.kcd#opts=c#bnum=256" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd "casket.kcf#opts=c#psiz=256" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolymgr merge -add "casket#type=kct" \
+	  casket.kch casket.kct casket.kcd casket.kcf
+	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=-"
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=+"
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=*#zcomp=def"
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=%#zcomp=gz"
 	rm -rf casket*
-	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kch#zcomp=lzocrc"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc \
+	  "casket#type=kch#log=-#logkinds=info#zcomp=lzocrc"
 	rm -rf casket*
-	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kct#zcomp=lzmacrc"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc \
+	  "casket#type=kct#log=-#logkinds=info1#zcomp=lzmacrc"
 	rm -rf casket*
-	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kcd#zcomp=arc#zkey=mikio"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc \
+	  "casket#type=kcd#zcomp=arc#zkey=mikio"
 	rm -rf casket*
-	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=kcf#zcomp=arc#zkey=mikio"
+	$(RUNENV) $(RUNCMD) ./kcpolytest misc \
+	  "casket#type=kcf#zcomp=arc#zkey=mikio"
 
 
 check-langc :
@@ -990,8 +1002,6 @@ kclangctest : kclangctest.o $(LIBRARYFILES)
 
 kcutil.o : kccommon.h kcutil.h myconf.h
 
-kcdb.o : kccommon.h kcutil.h kcdb.h myconf.h
-
 kcthread.o : kccommon.h kcutil.h kcthread.h myconf.h
 
 kcfile.o : kccommon.h kcutil.h kcthread.h kcfile.h myconf.h
@@ -1001,6 +1011,8 @@ kccompress.o : kccommon.h kcutil.h kccompress.h myconf.h
 kccompare.o : kccommon.h kcutil.h kccompare.h myconf.h
 
 kcmap.o : kccommon.h kcutil.h kcmap.h myconf.h
+
+kcdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h
 
 kcplantdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
   kcplantdb.h

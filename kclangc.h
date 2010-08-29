@@ -81,6 +81,16 @@ enum {
 };
 
 
+/**
+ * Merge modes.
+ */
+enum {
+  KCMSET,                                /**< overwrite the existing value */
+  KCMADD,                                /**< keep the existing value */
+  KCMAPPEND                              /**< append the new value */
+};
+
+
 /** The package version. */
 extern const char* const KCVERSION;
 
@@ -274,17 +284,17 @@ void kcdbdel(KCDB* db);
  * database will be a directory tree database.  Otherwise, this function fails.  Tuning
  * parameters can trail the name, separated by "#".  Each parameter is composed of the name
  * and the value, separated by "=".  If the "type" parameter is specified, the database type
- * is determined by the value in "-", "+", "*", "%", "kch", "kct", "kcd", and "kcf".  The
+ * is determined by the value in "-", "+", "*", "%", "kch", "kct", "kcd", and "kcf".  All
+ * database types support the logging parameters of "log", "logkinds", and "logpx".  The
  * prototype hash database and the prototype tree database do not support any other tuning
  * parameter.  The cache hash database supports "opts", "bnum", "zcomp", "capcount", "capsize",
- * "erstrm", "ervbs", and "zkey".  The cache tree database supports all parameters of the
- * cache hash database except for capacity limitation, and supports "psiz", "rcomp", "pccap"
- * in addition.  The file hash database supports "apow", "fpow", "opts", "bnum", "msiz",
- * "dfunit", "zcomp", "erstrm", "ervbs", and "zkey".  The file tree database supports all
- * parameters of the file hash database and "psiz", "rcomp", "pccap" in addition.  The
- * directory hash database supports "opts", "zcomp", "erstrm", "ervbs", and "zkey".  The
- * directory tree database supports all parameters of the file hash database and "psiz",
- * "rcomp", "pccap" in addition.
+ * and "zkey".  The cache tree database supports all parameters of the cache hash database
+ * except for capacity limitation, and supports "psiz", "rcomp", "pccap" in addition.  The
+ * file hash database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", and
+ * "zkey".  The file tree database supports all parameters of the file hash database and
+ * "psiz", "rcomp", "pccap" in addition.  The directory hash database supports "opts", "zcomp",
+ * and "zkey".  The directory tree database supports all parameters of the directory hash
+ * database and "psiz", "rcomp", "pccap" in addition.
  * @param mode the connection mode.  KCOWRITER as a writer, KCOREADER as a reader.
  * The following may be added to the writer mode by bitwise-or: KCOCREATE, which means
  * it creates a new database if the file does not exist, KCOTRUNCATE, which means it
@@ -296,21 +306,22 @@ void kcdbdel(KCDB* db);
  * KCOTRYLOCK, which means locking is performed without blocking, KCONOREPAIR, which
  * means the database file is not repaired implicitly even if file destruction is detected.
  * @return true on success, or false on failure.
- * @note The tuning parameter "opts" is for the original "tune_options" and the value can
- * contain "s" for the small option, "l" for the linear option, and "c" for the compress
- * option.  "bnum" corresponds to "tune_bucket".  "zcomp" is for "tune_compressor" and the
- * value can be "zlib" for the ZLIB raw compressor, "def" for the ZLIB deflate compressor,
- * "gz" for the ZLIB gzip compressor, "lzo" for the LZO compressor, "lzma" for the LZMA
- * compressor, or "arc" for the Arcfour cipher.  "erstrm" and "ervbs" are for
- * "tune_error_reporter" and the formar value can be "stdout" or "stderr" and the latter value
- * can be "true" or "false".  "zkey" specifies the cipher key of the compressor.  "capcount"
- * is for "cap_count".  "capsize" is for "cap_size".  "psiz" is for "tune_page".  "rcomp" is
- * for "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for
- * the decimal comparator.  "pccap" is for "tune_page_cache".  "apow" is for "tune_alignment".
- * "fpow" is for "tune_fbp".  "msiz" is for "tune_map".  "dfunit" is for "tune_defrag".
- * Every opened database must be closed by the PolyDB::close method when it is no longer in
- * use.  It is not allowed for two or more database objects in the same process to keep their
- * connections to the same database file at the same time.
+ * @note The tuning parameter "log" is for the original "tune_logger" and the value specifies
+ * the path of the log file, or "-" for the standard output, or "+" for the standard error.
+ * "logkinds" specifies kinds of logged messages and the value can be "debug", "info", "warn",
+ * or "error".  "logpx" specifies the prefix of each log message.  "opts" is for "tune_options"
+ * and the value can contain "s" for the small option, "l" for the linear option, and "c" for
+ * the compress option.  "bnum" corresponds to "tune_bucket".  "zcomp" is for "tune_compressor"
+ * and the value can be "zlib" for the ZLIB raw compressor, "def" for the ZLIB deflate
+ * compressor, "gz" for the ZLIB gzip compressor, "lzo" for the LZO compressor, "lzma" for the
+ * LZMA compressor, or "arc" for the Arcfour cipher.  "zkey" specifies the cipher key of the
+ * compressor.  "capcount" is for "cap_count".  "capsize" is for "cap_size".  "psiz" is for
+ * "tune_page".  "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical
+ * comparator or "dec" for the decimal comparator.  "pccap" is for "tune_page_cache".  "apow"
+ * is for "tune_alignment".  "fpow" is for "tune_fbp".  "msiz" is for "tune_map".  "dfunit" is
+ * for "tune_defrag".  Every opened database must be closed by the kcdbclose method when it is
+ * no longer in use.  It is not allowed for two or more database objects in the same process to
+ * keep their connections to the same database file at the same time.
  */
 int32_t kcdbopen(KCDB* db, const char* path, uint32_t mode);
 
@@ -599,6 +610,18 @@ char* kcdbpath(KCDB* db);
  * no longer in use.
  */
 char* kcdbstatus(KCDB* db);
+
+
+/**
+ * Merge records from other databases.
+ * @param db a database object.
+ * @param srcary an array of the source detabase objects.
+ * @param srcnum the number of the elements of the source array.
+ * @param mode the merge mode.  KCMSET to overwrite the existing value, KCMADD to keep the
+ * existing value, KCMAPPEND to append the new value.
+ * @return true on success, or false on failure.
+ */
+int32_t kcdbmerge(KCDB* db, KCDB** srcary, size_t srcnum, uint32_t mode);
 
 
 /**

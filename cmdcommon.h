@@ -77,7 +77,9 @@ bool getline(std::istream* is, std::string* str);
 void splitstr(const std::string& str, char delim, std::vector<std::string>* elems);
 std::string unitnumstr(int64_t num);
 std::string unitnumstrbyte(int64_t num);
-void printdb(kc::DB* db, bool px = false);
+kc::BasicDB::ProgressChecker* stdchecker(const char* prefix, std::ostream* strm);
+kc::BasicDB::Logger* stdlogger(const char* progname, std::ostream* strm);
+void printdb(kc::BasicDB* db, bool px = false);
 
 
 // get the random seed
@@ -113,7 +115,7 @@ inline void iprintf(const char* format, ...) {
   std::string msg;
   va_list ap;
   va_start(ap, format);
-  kc::strprintf(&msg, format, ap);
+  kc::vstrprintf(&msg, format, ap);
   va_end(ap);
   std::cout << msg;
   std::cout.flush();
@@ -132,7 +134,7 @@ inline void eprintf(const char* format, ...) {
   std::string msg;
   va_list ap;
   va_start(ap, format);
-  kc::strprintf(&msg, format, ap);
+  kc::vstrprintf(&msg, format, ap);
   va_end(ap);
   std::cerr << msg;
   std::cerr.flush();
@@ -216,11 +218,58 @@ inline std::string unitnumstrbyte(int64_t num) {
 }
 
 
+// get the progress checker to print the parameters
+inline kc::BasicDB::ProgressChecker* stdchecker(const char* prefix, std::ostream* strm) {
+  class CheckerImpl : public kc::BasicDB::ProgressChecker {
+  public:
+    explicit CheckerImpl(std::ostream* strm, const char* prefix) :
+      strm_(strm), prefix_(prefix) {}
+    bool check(const char* name, const char* message, int64_t curcnt, int64_t allcnt) {
+      *strm_ << prefix_ << ": " << name << ": " << message << ": " <<
+        curcnt << "/" << allcnt << std::endl;
+      return true;
+    }
+  private:
+    std::ostream* strm_;
+    const char* prefix_;
+  };
+  static CheckerImpl checker(strm, prefix);
+  return &checker;
+}
+
+
+// get the logger into the standard stream
+inline kc::BasicDB::Logger* stdlogger(const char* prefix, std::ostream* strm) {
+  class LoggerImpl : public kc::BasicDB::Logger {
+  public:
+    explicit LoggerImpl(std::ostream* strm, const char* prefix) :
+      strm_(strm), prefix_(prefix) {}
+    void log(const char* file, int32_t line, const char* func, Kind kind,
+             const char* message) {
+      const char* kstr = "MISC";
+      switch (kind) {
+        case kc::BasicDB::Logger::DEBUG: kstr = "DEBUG"; break;
+        case kc::BasicDB::Logger::INFO: kstr = "INFO"; break;
+        case kc::BasicDB::Logger::WARN: kstr = "WARN"; break;
+        case kc::BasicDB::Logger::ERROR: kstr = "ERROR"; break;
+      }
+      *strm_ << prefix_ << ": [" << kstr << "]: " <<
+        file << ": " << line << ": " << func << ": " << message << std::endl;
+    }
+  private:
+    std::ostream* strm_;
+    const char* prefix_;
+  };
+  static LoggerImpl logger(strm, prefix);
+  return &logger;
+}
+
+
 // print all record of a database
-inline void printdb(kc::DB* db, bool px) {
+inline void printdb(kc::BasicDB* db, bool px) {
   class Printer : public kc::DB::Visitor {
   public:
-    Printer(bool px) : px_(px) {}
+    explicit Printer(bool px) : px_(px) {}
   private:
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {

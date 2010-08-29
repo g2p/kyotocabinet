@@ -75,8 +75,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a581534674acefaf79ccfb64c01257b6c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a21b949bdd3a0b8fbb9b40ba1f7e3e825">accept</a> (const char *kbuf, size_t ksiz, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to a record.  <a href="#a21b949bdd3a0b8fbb9b40ba1f7e3e825"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#ab20af0d4173c6f25a4ae425b7c2ddabb">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#ab20af0d4173c6f25a4ae425b7c2ddabb"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#abd20793d6349fdc38a6cb5c7d85af8de">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#abd20793d6349fdc38a6cb5c7d85af8de"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#ad261c3aee01e0add954c633f2d67e57c">error</a> () const </td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the last happened error.  <a href="#ad261c3aee01e0add954c633f2d67e57c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#aed2ad079b80010681e1ad8529ba028a2">set_error</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
@@ -85,8 +85,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#a9bd13f6a03519f525aee2b3c9ccf8674"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a6661d84682336411eac6b38baf16c64d">close</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#a6661d84682336411eac6b38baf16c64d"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a5e3867941baa6a3faf0708df99ab9eae">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#a5e3867941baa6a3faf0708df99ab9eae"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a897d968c5d8c59ef65baa760eeb3bf49">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#a897d968c5d8c59ef65baa760eeb3bf49"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a7e3ad76e45dab99b13901d93a38262ce">begin_transaction</a> (bool hard=false)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#a7e3ad76e45dab99b13901d93a38262ce"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a079d7249a694c9f3a434aa374b8b9f37">begin_transaction_try</a> (bool hard=false)</td></tr>
@@ -105,8 +105,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#a1eecb3071cfc5e407c58ae47514fda38"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a93f1873138591d62a508c0cfef53d7ba">cursor</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#a93f1873138591d62a508c0cfef53d7ba"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a8a3e3d4bbeb221a94e09264144fa3d60">tune_error_reporter</a> (std::ostream *erstrm, bool ervbs)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal error reporter.  <a href="#a8a3e3d4bbeb221a94e09264144fa3d60"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#ab3d62373c720573e45ee5efa35db63f6">tune_logger</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html">Logger</a> *logger, uint32_t kinds=Logger::WARN|Logger::ERROR)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal logger.  <a href="#ab3d62373c720573e45ee5efa35db63f6"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a2ab55750ee54517bbb906605d87608e8">tune_alignment</a> (int8_t apow)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the power of the alignment of record size.  <a href="#a2ab55750ee54517bbb906605d87608e8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#ab3c7b8ef2fabf8decb7873a6440a7c10">tune_fbp</a> (int8_t fpow)</td></tr>
@@ -135,11 +135,13 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Perform defragmentation of the file.  <a href="#ab86002863d338d5d895af0cbdddccb9e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#aa1fabb709560f368e86975eeddd8593b">flags</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the status flags.  <a href="#aa1fabb709560f368e86975eeddd8593b"></a><br/></td></tr>
-<tr><td colspan="2"><h2>Protected Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a0c6455f73cd37bfe5365ad5b845ff859">set_error</a> (const char *file, int32_t line, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a0c6455f73cd37bfe5365ad5b845ff859"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1Comparator.html">Comparator</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#aed5f381acc0fb8e1c5274c714fd6c2f8">rcomp</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the record comparator.  <a href="#aed5f381acc0fb8e1c5274c714fd6c2f8"></a><br/></td></tr>
+<tr><td colspan="2"><h2>Protected Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#a73aec7dc352ec9fa444eca7643443090">set_error</a> (const char *file, int32_t line, const char *func, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a73aec7dc352ec9fa444eca7643443090"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html#ac375b62b78297a36224605077001139f">report</a> (const char *file, int32_t line, const char *func, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a> kind, const char *format,...)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report a message for debugging.  <a href="#ac375b62b78297a36224605077001139f"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <h3>template&lt;class BASEDB, uint8_t DBTYPE&gt;<br/>
@@ -313,7 +315,7 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ab20af0d4173c6f25a4ae425b7c2ddabb"></a><!-- doxytag: member="kyotocabinet::PlantDB::iterate" ref="ab20af0d4173c6f25a4ae425b7c2ddabb" args="(Visitor *visitor, bool writable=true)" -->
+<a class="anchor" id="abd20793d6349fdc38a6cb5c7d85af8de"></a><!-- doxytag: member="kyotocabinet::PlantDB::iterate" ref="abd20793d6349fdc38a6cb5c7d85af8de" args="(Visitor *visitor, bool writable=true, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -329,7 +331,13 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&nbsp;</td>
-          <td class="paramname"> <em>writable</em> = <code>true</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>writable</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -345,13 +353,14 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>visitor</em>&nbsp;</td><td>a visitor object. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>writable</em>&nbsp;</td><td>true for writable operation, or false for read-only operation. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>the whole iteration is performed atomically and other threads are blocked. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a0f7e9d6791ca15b1a6b08cbb57c5379e">kyotocabinet::DB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a809c175a7a69deaa56ed6b9cef9fa973">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -483,7 +492,7 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a5e3867941baa6a3faf0708df99ab9eae"></a><!-- doxytag: member="kyotocabinet::PlantDB::synchronize" ref="a5e3867941baa6a3faf0708df99ab9eae" args="(bool hard=false, FileProcessor *proc=NULL)" -->
+<a class="anchor" id="a897d968c5d8c59ef65baa760eeb3bf49"></a><!-- doxytag: member="kyotocabinet::PlantDB::synchronize" ref="a897d968c5d8c59ef65baa760eeb3bf49" args="(bool hard=false, FileProcessor *proc=NULL, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -499,7 +508,13 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *&nbsp;</td>
-          <td class="paramname"> <em>proc</em> = <code>NULL</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>proc</em> = <code>NULL</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -515,12 +530,13 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>hard</em>&nbsp;</td><td>true for physical synchronization with the device, or false for logical synchronization with the file system. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>proc</em>&nbsp;</td><td>a postprocessor object. If it is NULL, no postprocessing is performed. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#abb532f56482420a71ebc5650e4296ce1">kyotocabinet::BasicDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#acf7a2e70f3c1e72be5241f0d611f3d70">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -769,23 +785,23 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a8a3e3d4bbeb221a94e09264144fa3d60"></a><!-- doxytag: member="kyotocabinet::PlantDB::tune_error_reporter" ref="a8a3e3d4bbeb221a94e09264144fa3d60" args="(std::ostream *erstrm, bool ervbs)" -->
+<a class="anchor" id="ab3d62373c720573e45ee5efa35db63f6"></a><!-- doxytag: member="kyotocabinet::PlantDB::tune_logger" ref="ab3d62373c720573e45ee5efa35db63f6" args="(Logger *logger, uint32_t kinds=Logger::WARN|Logger::ERROR)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::tune_error_reporter </td>
+          <td class="memname">bool <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::tune_logger </td>
           <td>(</td>
-          <td class="paramtype">std::ostream *&nbsp;</td>
-          <td class="paramname"> <em>erstrm</em>, </td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html">Logger</a> *&nbsp;</td>
+          <td class="paramname"> <em>logger</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&nbsp;</td>
-          <td class="paramname"> <em>ervbs</em></td><td>&nbsp;</td>
+          <td class="paramtype">uint32_t&nbsp;</td>
+          <td class="paramname"> <em>kinds</em> = <code>Logger::WARN&nbsp;|&nbsp;Logger::ERROR</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -796,15 +812,14 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 </div>
 <div class="memdoc">
 
-<p>Set the internal error reporter. </p>
+<p>Set the internal logger. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>erstrm</em>&nbsp;</td><td>a stream object into which internal error messages are stored. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>ervbs</em>&nbsp;</td><td>true to report all errors, or false to report fatal errors only. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>logger</em>&nbsp;</td><td>the logger object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>kinds</em>&nbsp;</td><td>kinds of logged messages by bitwise-or: <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960ac39609b521fbe09d9c41b45561b114b6" title="debugging">Logger::DEBUG</a> for debugging, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6bf810306530147894e41520a3d918b9" title="normal information">Logger::INFO</a> for normal information, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6a985b6bc2e4f16c3cb394a3de9972dd" title="warning">Logger::WARN</a> for warning, and <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a2fc4717ffb4886b57aa5d343adf7d7ad" title="error">Logger::ERROR</a> for fatal error. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
 </div>
 </div>
@@ -1193,7 +1208,29 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a0c6455f73cd37bfe5365ad5b845ff859"></a><!-- doxytag: member="kyotocabinet::PlantDB::set_error" ref="a0c6455f73cd37bfe5365ad5b845ff859" args="(const char *file, int32_t line, Error::Code code, const char *message)" -->
+<a class="anchor" id="aed5f381acc0fb8e1c5274c714fd6c2f8"></a><!-- doxytag: member="kyotocabinet::PlantDB::rcomp" ref="aed5f381acc0fb8e1c5274c714fd6c2f8" args="()" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classkyotocabinet_1_1Comparator.html">Comparator</a>* <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::rcomp </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get the record comparator. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the record comparator object. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a73aec7dc352ec9fa444eca7643443090"></a><!-- doxytag: member="kyotocabinet::PlantDB::set_error" ref="a73aec7dc352ec9fa444eca7643443090" args="(const char *file, int32_t line, const char *func, Error::Code code, const char *message)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -1210,6 +1247,12 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
           <td></td>
           <td class="paramtype">int32_t&nbsp;</td>
           <td class="paramname"> <em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>func</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1235,8 +1278,9 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 <p>Set the error information. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the epicenter. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the epicenter. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>func</em>&nbsp;</td><td>the function name of the program source code. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>code</em>&nbsp;</td><td>an error code. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>message</em>&nbsp;</td><td>a supplement message. </td></tr>
   </table>
@@ -1245,30 +1289,74 @@ template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="aed5f381acc0fb8e1c5274c714fd6c2f8"></a><!-- doxytag: member="kyotocabinet::PlantDB::rcomp" ref="aed5f381acc0fb8e1c5274c714fd6c2f8" args="()" -->
+<a class="anchor" id="ac375b62b78297a36224605077001139f"></a><!-- doxytag: member="kyotocabinet::PlantDB::report" ref="ac375b62b78297a36224605077001139f" args="(const char *file, int32_t line, const char *func, Logger::Kind kind, const char *format,...)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class BASEDB , uint8_t DBTYPE&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classkyotocabinet_1_1Comparator.html">Comparator</a>* <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::rcomp </td>
+          <td class="memname">void <a class="el" href="classkyotocabinet_1_1PlantDB.html">kyotocabinet::PlantDB</a>&lt; BASEDB, DBTYPE &gt;::report </td>
           <td>(</td>
-          <td class="paramname"></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td><code> [protected]</code></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramname"> <em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a>&nbsp;</td>
+          <td class="paramname"> <em>kind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&nbsp;</td>
+          <td class="paramname"> <em>...</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [protected]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
-<p>Get the record comparator. </p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>the record comparator object. </dd></dl>
+<p>Report a message for debugging. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>func</em>&nbsp;</td><td>the function name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>kind</em>&nbsp;</td><td>the kind of the event. <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960ac39609b521fbe09d9c41b45561b114b6" title="debugging">Logger::DEBUG</a> for debugging, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6bf810306530147894e41520a3d918b9" title="normal information">Logger::INFO</a> for normal information, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6a985b6bc2e4f16c3cb394a3de9972dd" title="warning">Logger::WARN</a> for warning, and <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a2fc4717ffb4886b57aa5d343adf7d7ad" title="error">Logger::ERROR</a> for fatal error. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>...</em>&nbsp;</td><td>used according to the format string. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:46 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Aug 29 15:04:36 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

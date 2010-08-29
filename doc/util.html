@@ -155,13 +155,13 @@
 <p>The command `<code>kccachetest</code>' is a utility for facility test and performance test of the cache hash database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kccachetest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-erv] <var>rnum</var></code></dt>
+<dt><code>kccachetest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-lv] <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kccachetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-erv] <var>rnum</var></code></dt>
+<dt><code>kccachetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-lv] <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kccachetest wicked [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-erv] <var>rnum</var></code></dt>
+<dt><code>kccachetest wicked [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-lv] <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kccachetest tran [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-erv] <var>rnum</var></code></dt>
+<dt><code>kccachetest tran [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-capcnt <var>num</var>] [-capsiz <var>num</var>] [-lv] <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -176,7 +176,7 @@
 <li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
 <li><code>-capcnt <var>num</var></code> : specifies the maximum number of records.</li>
 <li><code>-capsiz <var>num</var></code> : specifies the maximum size of memory usage.</li>
-<li><code>-erv</code> : reports all errors.</li>
+<li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 </ul>
 
@@ -189,13 +189,13 @@
 <p>The command `<code>kcgrasstest</code>' is a utility for facility test and performance test of the cache tree database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kcgrasstest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>rnum</var></code></dt>
+<dt><code>kcgrasstest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kcgrasstest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>rnum</var></code></dt>
+<dt><code>kcgrasstest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kcgrasstest wicked [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>rnum</var></code></dt>
+<dt><code>kcgrasstest wicked [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kcgrasstest tran [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>rnum</var></code></dt>
+<dt><code>kcgrasstest tran [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -211,7 +211,7 @@
 <li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
 <li><code>-pccap <var>num</var></code> : specifies the capacity size of the page cache.</li>
 <li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
-<li><code>-erv</code> : reports all errors.</li>
+<li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 </ul>
 
@@ -224,13 +224,13 @@
 <p>The command `<code>kchashtest</code>' is a utility for facility test and performance test of the file hash database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kchashtest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kchashtest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kchashtest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kchashtest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kchashtest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kchashtest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kchashtest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kchashtest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -258,7 +258,7 @@
 <li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
 <li><code>-msiz <var>num</var></code> : specifies the size of the memory-mapped region.</li>
 <li><code>-dfunit <var>num</var></code> : specifies the unit step number of auto defragmentation.</li>
-<li><code>-erv</code> : reports all errors.</li>
+<li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 <li><code>-hard</code> : performs physical synchronization.</li>
 </ul>
@@ -330,13 +330,13 @@
 <p>The command `<code>kctreetest</code>' is a utility for facility test and performance test of the file tree database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kctreetest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kctreetest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kctreetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kctreetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kctreetest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kctreetest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kctreetest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kctreetest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -367,7 +367,7 @@
 <li><code>-dfunit <var>num</var></code> : specifies the unit step number of auto defragmentation.</li>
 <li><code>-pccap <var>num</var></code> : specifies the capacity size of the page cache.</li>
 <li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
-<li><code>-erv</code> : reports all errors.</li>
+<li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 <li><code>-hard</code> : performs physical synchronization.</li>
 </ul>
@@ -441,13 +441,13 @@
 <p>The command `<code>kcdirtest</code>' is a utility for facility test and performance test of the directory hash database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kcdirtest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-tc] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcdirtest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-tc] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kcdirtest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-tc] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcdirtest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-tc] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kcdirtest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-tc] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcdirtest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-tc] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kcdirtest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-tc] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcdirtest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-tc] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -468,7 +468,7 @@
 <li><code>-otl</code> : opens the database with the try locking option.</li>
 <li><code>-onr</code> : opens the database with the no auto repair option.</li>
 <li><code>-tc</code> : tunes the database with the compression option.</li>
-<li><code>-erv</code> : reports all errors.</li>
+<li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 <li><code>-hard</code> : performs physical synchronization.</li>
 </ul>
@@ -535,13 +535,13 @@
 <p>The command `<code>kcforesttest</code>' is a utility for facility test and performance test of the directory tree database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kcforesttest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcforesttest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kcforesttest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcforesttest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kcforesttest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcforesttest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kcforesttest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-erv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcforesttest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -566,7 +566,7 @@
 <li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
 <li><code>-pccap <var>num</var></code> : specifies the capacity size of the page cache.</li>
 <li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
-<li><code>-erv</code> : reports all errors.</li>
+<li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 <li><code>-hard</code> : performs physical synchronization.</li>
 </ul>
@@ -672,7 +672,7 @@
 
 <h2 id="kcpolymgr">kcpolymgr</h2>
 
-<p>The command `<code>kcpolymgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
+<p>The command `<code>kcpolymgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.  `<var>src</var>' specifies other database files.</p>
 
 <dl class="api">
 <dt><code>kcpolymgr create [-otr] [-onl|-otl|-onr] <var>path</var></code></dt>
@@ -693,8 +693,8 @@
 <dd>Dump records into a snapshot file.</dd>
 <dt><code>kcpolymgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Load records from a snapshot file.</dd>
-<dt><code>kcpolymgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
-<dd>Performs defragmentation.</dd>
+<dt><code>kcpolymgr merge [-onl|-otl|-onr] [-add|-app] <var>path</var> <var>src</var>...</code></dt>
+<dd>Merge records from other databases.</dd>
 <dt><code>kcpolymgr check [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Checks consistency.</dd>
 </dl>

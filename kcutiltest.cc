@@ -100,7 +100,7 @@ static void errprint(int32_t line, const char* format, ...) {
   kc::strprintf(&msg, "%s: %d: ", g_progname, line);
   va_list ap;
   va_start(ap, format);
-  kc::strprintf(&msg, format, ap);
+  kc::vstrprintf(&msg, format, ap);
   va_end(ap);
   kc::strprintf(&msg, "\n");
   std::cout << msg;
@@ -1657,6 +1657,19 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   }
   if (!kc::File::remove_directory(tmppath)) {
     errprint(__LINE__, "File::remove_directory");
+    err = true;
+  }
+  if (!kc::File::make_directory(tmppath)) {
+    errprint(__LINE__, "File::make_directory");
+    err = true;
+  }
+  const std::string chldpath = tmppath + kc::File::PATHCHR + "hoge";
+  if (!kc::File::write_file(chldpath, tmppath.c_str(), tmppath.size())) {
+    errprint(__LINE__, "File::write_file");
+    err = true;
+  }
+  if (!kc::File::remove_recursively(tmppath)) {
+    errprint(__LINE__, "File::make_recursively");
     err = true;
   }
   const std::string& cwdpath = kc::File::get_current_directory();

@@ -58,6 +58,7 @@ extern "C" {
 #include <list>
 #include <map>
 #include <set>
+#include <queue>
 
 #include <ios>
 #include <iostream>
@@ -128,6 +129,15 @@ using tr1::unordered_set;
 #define _testyield_()                    ///< for debugging
 #define _assert_(KC_a)                   ///< for debugging
 #endif
+
+#if defined(__GNUC__)
+#define __KCFUNC__  __func__             ///< for debugging
+#elif defined(_MSC_VER)
+#define __KCFUNC__  __FUNCTION__         ///< for debugging
+#else
+#define __KCFUNC__  "-"                  ///< for debugging
+#endif
+#define _KCCODELINE_  __FILE__, __LINE__, __KCFUNC__  ///< for debugging
 
 /**
  * All symbols of Kyoto Cabinet.

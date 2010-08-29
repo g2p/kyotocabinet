@@ -35,19 +35,19 @@ static int32_t runtran(int argc, char** argv);
 static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd, int32_t mode,
                          bool tran, int32_t oflags, int32_t apow, int32_t fpow,
                          int32_t opts, int64_t bnum, int32_t psiz, int64_t msiz,
-                         int64_t dfunit, int64_t pccap, kc::Comparator* rcomp, bool erv);
+                         int64_t dfunit, int64_t pccap, kc::Comparator* rcomp, bool lv);
 static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
                          int32_t oflags, int32_t apow, int32_t fpow, int32_t opts, int64_t bnum,
                          int32_t psiz, int64_t msiz, int64_t dfunit, int64_t pccap,
-                         kc::Comparator* rcomp, bool erv);
+                         kc::Comparator* rcomp, bool lv);
 static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t itnum,
                           int32_t oflags, int32_t apow, int32_t fpow, int32_t opts, int64_t bnum,
                           int32_t psiz, int64_t msiz, int64_t dfunit, int64_t pccap,
-                          kc::Comparator* rcomp, bool erv);
+                          kc::Comparator* rcomp, bool lv);
 static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool hard,
                         int32_t oflags, int32_t apow, int32_t fpow, int32_t opts, int64_t bnum,
                         int32_t psiz, int64_t msiz, int64_t dfunit, int64_t pccap,
-                        kc::Comparator* rcomp, bool erv);
+                        kc::Comparator* rcomp, bool lv);
 
 
 // main routine
@@ -89,17 +89,17 @@ static void usage() {
   eprintf("usage:\n");
   eprintf("  %s order [-th num] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran]"
           " [-oat|-oas|-onl|-otl|-onr] [-apow num] [-fpow num] [-ts] [-tl] [-tc] [-bnum num]"
-          " [-psiz num] [-msiz num] [-dfunit num] [-pccap num] [-rcd] [-erv] path rnum\n",
+          " [-psiz num] [-msiz num] [-dfunit num] [-pccap num] [-rcd] [-lv] path rnum\n",
           g_progname);
   eprintf("  %s queue [-th num] [-it num] [-rnd] [-oat|-oas|-onl|-otl|-onr]"
           " [-apow num] [-fpow num] [-ts] [-tl] [-tc] [-bnum num] [-psiz num] [-msiz num]"
-          " [-dfunit num] [-pccap num] [-rcd] [-erv] path rnum\n", g_progname);
+          " [-dfunit num] [-pccap num] [-rcd] [-lv] path rnum\n", g_progname);
   eprintf("  %s wicked [-th num] [-it num] [-oat|-oas|-onl|-otl|-onr]"
           " [-apow num] [-fpow num] [-ts] [-tl] [-tc] [-bnum num] [-psiz num] [-msiz num]"
-          " [-dfunit num] [-pccap num] [-rcd] [-erv] path rnum\n", g_progname);
+          " [-dfunit num] [-pccap num] [-rcd] [-lv] path rnum\n", g_progname);
   eprintf("  %s tran [-th num] [-it num] [-hard] [-oat|-oas|-onl|-otl|-onr]"
           " [-apow num] [-fpow num] [-ts] [-tl] [-tc] [-bnum num] [-psiz num] [-msiz num]"
-          " [-dfunit num] [-pccap num] [-rcd] [-erv] path rnum\n", g_progname);
+          " [-dfunit num] [-pccap num] [-rcd] [-lv] path rnum\n", g_progname);
   eprintf("\n");
   std::exit(1);
 }
@@ -232,7 +232,7 @@ static int32_t runorder(int argc, char** argv) {
   int64_t dfunit = -1;
   int64_t pccap = 0;
   kc::Comparator* rcomp = NULL;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!path && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -291,8 +291,8 @@ static int32_t runorder(int argc, char** argv) {
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
         rcomp = &kc::DECIMALCOMP;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -309,7 +309,7 @@ static int32_t runorder(int argc, char** argv) {
   if (rnum < 1 || thnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
   int32_t rv = procorder(path, rnum, thnum, rnd, mode, tran, oflags,
-                         apow, fpow, opts, bnum, psiz, msiz, dfunit, pccap, rcomp, erv);
+                         apow, fpow, opts, bnum, psiz, msiz, dfunit, pccap, rcomp, lv);
   return rv;
 }
 
@@ -331,7 +331,7 @@ static int32_t runqueue(int argc, char** argv) {
   int64_t dfunit = -1;
   int64_t pccap = 0;
   kc::Comparator* rcomp = NULL;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!path && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -381,8 +381,8 @@ static int32_t runqueue(int argc, char** argv) {
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
         rcomp = &kc::DECIMALCOMP;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -399,7 +399,7 @@ static int32_t runqueue(int argc, char** argv) {
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
   int32_t rv = procqueue(path, rnum, thnum, itnum, rnd, oflags,
-                         apow, fpow, opts, bnum, psiz, msiz, dfunit, pccap, rcomp, erv);
+                         apow, fpow, opts, bnum, psiz, msiz, dfunit, pccap, rcomp, lv);
   return rv;
 }
 
@@ -420,7 +420,7 @@ static int32_t runwicked(int argc, char** argv) {
   int64_t dfunit = -1;
   int64_t pccap = 0;
   kc::Comparator* rcomp = NULL;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!path && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -468,8 +468,8 @@ static int32_t runwicked(int argc, char** argv) {
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
         rcomp = &kc::DECIMALCOMP;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -486,7 +486,7 @@ static int32_t runwicked(int argc, char** argv) {
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
   int32_t rv = procwicked(path, rnum, thnum, itnum, oflags,
-                          apow, fpow, opts, bnum, psiz, msiz, dfunit, pccap, rcomp, erv);
+                          apow, fpow, opts, bnum, psiz, msiz, dfunit, pccap, rcomp, lv);
   return rv;
 }
 
@@ -508,7 +508,7 @@ static int32_t runtran(int argc, char** argv) {
   int64_t dfunit = -1;
   int64_t pccap = 0;
   kc::Comparator* rcomp = NULL;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!path && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -558,8 +558,8 @@ static int32_t runtran(int argc, char** argv) {
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
         rcomp = &kc::DECIMALCOMP;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -576,7 +576,7 @@ static int32_t runtran(int argc, char** argv) {
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
   int32_t rv = proctran(path, rnum, thnum, itnum, hard, oflags,
-                        apow, fpow, opts, bnum, psiz, msiz, dfunit, pccap, rcomp, erv);
+                        apow, fpow, opts, bnum, psiz, msiz, dfunit, pccap, rcomp, lv);
   return rv;
 }
 
@@ -585,18 +585,19 @@ static int32_t runtran(int argc, char** argv) {
 static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd, int32_t mode,
                          bool tran, int32_t oflags, int32_t apow, int32_t fpow,
                          int32_t opts, int64_t bnum, int32_t psiz, int64_t msiz,
-                         int64_t dfunit, int64_t pccap, kc::Comparator* rcomp, bool erv) {
+                         int64_t dfunit, int64_t pccap, kc::Comparator* rcomp, bool lv) {
   iprintf("<In-order Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  rnd=%d  mode=%d  tran=%d"
           "  oflags=%d  apow=%d  fpow=%d  opts=%d  bnum=%lld  psiz=%d  msiz=%lld"
-          "  dfunit=%lld  pccap=%lld  rcomp=%p  erv=%d\n\n",
+          "  dfunit=%lld  pccap=%lld  rcomp=%p  lv=%d\n\n",
           g_randseed, path, (long long)rnum, thnum, rnd, mode, tran, oflags, apow, fpow, opts,
           (long long)bnum, psiz, (long long)msiz, (long long)dfunit, (long long)pccap,
-          rcomp, erv);
+          rcomp, lv);
   bool err = false;
   kc::TreeDB db;
   iprintf("opening the database:\n");
   double stime = kc::time();
-  db.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (apow >= 0) db.tune_alignment(apow);
   if (fpow >= 0) db.tune_fbp(fpow);
   if (opts > 0) db.tune_options(opts);
@@ -1621,16 +1622,17 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
 static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
                          int32_t oflags, int32_t apow, int32_t fpow, int32_t opts, int64_t bnum,
                          int32_t psiz, int64_t msiz, int64_t dfunit, int64_t pccap,
-                         kc::Comparator* rcomp, bool erv) {
+                         kc::Comparator* rcomp, bool lv) {
   iprintf("<Queue Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d  rnd=%d"
           "  oflags=%d  apow=%d  fpow=%d  opts=%d  bnum=%lld  psiz=%d  msiz=%lld"
-          "  dfunit=%lld  pccap=%lld  rcomp=%p  erv=%d\n\n",
+          "  dfunit=%lld  pccap=%lld  rcomp=%p  lv=%d\n\n",
           g_randseed, path, (long long)rnum, thnum, itnum, rnd, oflags, apow, fpow, opts,
           (long long)bnum, psiz, (long long)msiz, (long long)dfunit, (long long)pccap,
-          rcomp, erv);
+          rcomp, lv);
   bool err = false;
   kc::TreeDB db;
-  db.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (apow >= 0) db.tune_alignment(apow);
   if (fpow >= 0) db.tune_fbp(fpow);
   if (opts > 0) db.tune_options(opts);
@@ -1827,16 +1829,17 @@ static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t 
 static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t itnum,
                           int32_t oflags, int32_t apow, int32_t fpow, int32_t opts, int64_t bnum,
                           int32_t psiz, int64_t msiz, int64_t dfunit, int64_t pccap,
-                          kc::Comparator* rcomp, bool erv) {
+                          kc::Comparator* rcomp, bool lv) {
   iprintf("<Wicked Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d"
           "  oflags=%d  apow=%d  fpow=%d  opts=%d  bnum=%lld  psiz=%d  msiz=%lld"
-          "  dfunit=%lld  pccap=%lld  rcomp=%p  erv=%d\n\n",
+          "  dfunit=%lld  pccap=%lld  rcomp=%p  lv=%d\n\n",
           g_randseed, path, (long long)rnum, thnum, itnum, oflags, apow, fpow, opts,
           (long long)bnum, psiz, (long long)msiz, (long long)dfunit, (long long)pccap,
-          rcomp, erv);
+          rcomp, lv);
   bool err = false;
   kc::TreeDB db;
-  db.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (apow >= 0) db.tune_alignment(apow);
   if (fpow >= 0) db.tune_fbp(fpow);
   if (opts > 0) db.tune_options(opts);
@@ -2120,18 +2123,20 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
 static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool hard,
                         int32_t oflags, int32_t apow, int32_t fpow, int32_t opts, int64_t bnum,
                         int32_t psiz, int64_t msiz, int64_t dfunit, int64_t pccap,
-                        kc::Comparator* rcomp, bool erv) {
+                        kc::Comparator* rcomp, bool lv) {
   iprintf("<Transaction Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d  hard=%d"
           "  oflags=%d  apow=%d  fpow=%d  opts=%d  bnum=%lld  psiz=%d  msiz=%lld"
-          "  dfunit=%lld  pccap=%lld  rcomp=%p  erv=%d\n\n",
+          "  dfunit=%lld  pccap=%lld  rcomp=%p  lv=%d\n\n",
           g_randseed, path, (long long)rnum, thnum, itnum, hard, oflags, apow, fpow, opts,
           (long long)bnum, psiz, (long long)msiz, (long long)dfunit, (long long)pccap,
-          rcomp, erv);
+          rcomp, lv);
   bool err = false;
   kc::TreeDB db;
   kc::TreeDB paradb;
-  db.tune_error_reporter(&std::cout, erv);
-  paradb.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+  paradb.tune_logger(stdlogger(g_progname, &std::cout),
+                     lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (apow >= 0) db.tune_alignment(apow);
   if (fpow >= 0) db.tune_fbp(fpow);
   if (opts > 0) db.tune_options(opts);

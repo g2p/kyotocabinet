@@ -129,17 +129,17 @@ public:
       _assert_(visitor);
       db_->mlock_.lock_reader();
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         db_->mlock_.unlock();
         return false;
       }
       if (writable && !(db_->writer_)) {
-        db_->set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+        db_->set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
         db_->mlock_.unlock();
         return false;
       }
       if (!kbuf_) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         db_->mlock_.unlock();
         return false;
       }
@@ -157,7 +157,7 @@ public:
             if (!accept_atom(visitor, step, &retry)) err = true;
           }
         } else {
-          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
           err = true;
         }
       }
@@ -172,7 +172,7 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, false);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (kbuf_) clear_position();
@@ -190,7 +190,7 @@ public:
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, false);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (kbuf_) clear_position();
@@ -220,7 +220,7 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, false);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (kbuf_) clear_position();
@@ -238,7 +238,7 @@ public:
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, false);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (kbuf_) clear_position();
@@ -256,7 +256,7 @@ public:
             if (kbuf_) {
               if (!back_position_atom()) err = true;
             } else {
-              db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+              db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
               err = true;
             }
           }
@@ -285,7 +285,7 @@ public:
       DB::Visitor visitor;
       if (!accept(&visitor, false, true)) return false;
       if (!kbuf_) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
       return true;
@@ -298,12 +298,12 @@ public:
       _assert_(true);
       db_->mlock_.lock_reader();
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         db_->mlock_.unlock();
         return false;
       }
       if (!kbuf_) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         db_->mlock_.unlock();
         return false;
       }
@@ -318,7 +318,7 @@ public:
         if (kbuf_) {
           if (!back_position_atom()) err = true;
         } else {
-          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
           err = true;
         }
       }
@@ -376,8 +376,8 @@ public:
       while (id > 0) {
         LeafNode* node = db_->load_leaf_node(id, false);
         if (!node) {
-          db_->set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
-          db_->db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+          db_->set_error(_KCCODELINE_, Error::BROKEN, "missing leaf node");
+          db_->db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)id);
           return false;
         }
         ScopedSpinRWLock lock(&node->lock, false);
@@ -389,7 +389,7 @@ public:
           id = node->next;
         }
       }
-      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+      db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
       return false;
     }
     /**
@@ -402,8 +402,8 @@ public:
       while (id > 0) {
         LeafNode* node = db_->load_leaf_node(id, false);
         if (!node) {
-          db_->set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
-          db_->db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+          db_->set_error(_KCCODELINE_, Error::BROKEN, "missing leaf node");
+          db_->db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)id);
           return false;
         }
         ScopedSpinRWLock lock(&node->lock, false);
@@ -415,7 +415,7 @@ public:
           id = node->prev;
         }
       }
-      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+      db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
       return false;
     }
     /**
@@ -554,7 +554,7 @@ public:
                 if (!db_->reorganize_tree(node, hist, hnum)) err = true;
                 if (atran && !db_->tran_ && !db_->fix_auto_transaction_tree()) err = true;
               } else {
-                db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+                db_->set_error(_KCCODELINE_, Error::BROKEN, "search failed");
                 err = true;
               }
             } else if (flush) {
@@ -597,7 +597,7 @@ public:
       int32_t hnum = 0;
       LeafNode* node = db_->search_tree(link, true, hist, &hnum);
       if (!node) {
-        db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+        db_->set_error(_KCCODELINE_, Error::BROKEN, "search failed");
         if (lbuf != lstack) delete[] lbuf;
         return false;
       }
@@ -607,7 +607,7 @@ public:
         if (!set_position(node->next)) return false;
         node = db_->load_leaf_node(lid_, false);
         if (!node) {
-          db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+          db_->set_error(_KCCODELINE_, Error::BROKEN, "search failed");
           return false;
         }
         lsiz = sizeof(Link) + ksiz_;
@@ -618,7 +618,7 @@ public:
         std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
         node = db_->search_tree(link, true, hist, &hnum);
         if (node->id != lid_) {
-          db_->set_error(__FILE__, __LINE__, Error::BROKEN, "invalid tree");
+          db_->set_error(_KCCODELINE_, Error::BROKEN, "invalid tree");
           if (lbuf != lstack) delete[] lbuf;
           return false;
         }
@@ -711,13 +711,13 @@ public:
         clear_position();
         if (set_position(node->next)) {
           if (lid_ == lid) {
-            db_->set_error(__FILE__, __LINE__, Error::BROKEN, "invalid leaf node");
+            db_->set_error(_KCCODELINE_, Error::BROKEN, "invalid leaf node");
             err = true;
           } else {
             *retryp = true;
           }
         } else {
-          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
           err = true;
         }
       }
@@ -742,7 +742,7 @@ public:
       int32_t hnum = 0;
       LeafNode* node = db_->search_tree(link, true, hist, &hnum);
       if (!node) {
-        db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+        db_->set_error(_KCCODELINE_, Error::BROKEN, "search failed");
         if (lbuf != lstack) delete[] lbuf;
         return false;
       }
@@ -795,14 +795,19 @@ public:
       if (node) {
         node->lock.lock_reader();
         RecordArray& recs = node->recs;
-        if (!recs.empty()) {
+        if (recs.empty()) {
+          node->lock.unlock();
+        } else {
           Record* frec = recs.front();
           Record* lrec = recs.back();
           if (db_->reccomp_(rec, frec)) {
             hit = true;
             clear_position();
+            node->lock.unlock();
             if (!set_position_back(node->prev)) err = true;
-          } else if (!db_->reccomp_(lrec, rec)) {
+          } else if (db_->reccomp_(lrec, rec)) {
+            node->lock.unlock();
+          } else {
             hit = true;
             typename RecordArray::iterator ritbeg = recs.begin();
             typename RecordArray::iterator ritend = recs.end();
@@ -810,14 +815,15 @@ public:
                                                                   rec, db_->reccomp_);
             clear_position();
             if (rit == ritbeg) {
+              node->lock.unlock();
               if (!set_position_back(node->prev)) err = true;
             } else {
               rit--;
               set_position(*rit, node->id);
+              node->lock.unlock();
             }
           }
         }
-        node->lock.unlock();
       }
       if (rbuf != rstack) delete[] rbuf;
       *hitp = hit;
@@ -840,7 +846,7 @@ public:
       int32_t hnum = 0;
       LeafNode* node = db_->search_tree(link, true, hist, &hnum);
       if (!node) {
-        db_->set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+        db_->set_error(_KCCODELINE_, Error::BROKEN, "search failed");
         if (lbuf != lstack) delete[] lbuf;
         return false;
       }
@@ -947,12 +953,12 @@ public:
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     mlock_.lock_reader();
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       mlock_.unlock();
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
@@ -967,7 +973,7 @@ public:
     int32_t hnum = 0;
     LeafNode* node = search_tree(link, true, hist, &hnum);
     if (!node) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+      set_error(_KCCODELINE_, Error::BROKEN, "search failed");
       if (lbuf != lstack) delete[] lbuf;
       mlock_.unlock();
       return false;
@@ -1016,7 +1022,7 @@ public:
         if (!reorganize_tree(node, hist, hnum)) err = true;
         if (atran && !tran_ && !fix_auto_transaction_tree()) err = true;
       } else {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+        set_error(_KCCODELINE_, Error::BROKEN, "search failed");
         err = true;
       }
       mlock_.unlock();
@@ -1043,18 +1049,24 @@ public:
    * Iterate to accept a visitor for each record.
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  bool iterate(Visitor *visitor, bool writable = true) {
+  bool iterate(Visitor *visitor, bool writable = true, ProgressChecker* checker = NULL) {
     _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+      return false;
+    }
+    int64_t allcnt = count_;
+    if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
       return false;
     }
     bool err = false;
@@ -1068,11 +1080,12 @@ public:
     }
     int64_t id = first_;
     int64_t flcnt = 0;
-    while (id > 0) {
+    int64_t curcnt = 0;
+    while (!err && id > 0) {
       LeafNode* node = load_leaf_node(id, false);
       if (!node) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
-        db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+        set_error(_KCCODELINE_, Error::BROKEN, "missing leaf node");
+        db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)id);
         return false;
       }
       id = node->next;
@@ -1099,6 +1112,12 @@ public:
       while (kit != kitend) {
         Record* rec = *kit;
         if (accept_impl(node, rec, visitor)) reorg = true;
+        curcnt++;
+        if (checker && !checker->check("iterate", "processing", curcnt, allcnt)) {
+          set_error(Error::LOGIC, "checker failed");
+          err = true;
+          break;
+        }
         kit++;
       }
       if (reorg) {
@@ -1117,7 +1136,7 @@ public:
         if (node) {
           if (!reorganize_tree(node, hist, hnum)) err = true;
         } else {
-          set_error(__FILE__, __LINE__, Error::BROKEN, "search failed");
+          set_error(_KCCODELINE_, Error::BROKEN, "search failed");
           err = true;
         }
         if (lbuf != lstack) delete[] lbuf;
@@ -1135,6 +1154,10 @@ public:
         xfree(*kit);
         kit++;
       }
+    }
+    if (checker && !checker->check("iterate", "ending", -1, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
+      err = true;
     }
     if (atran && !commit_transaction()) err = true;
     if (autosync_ && !autotran_ && writable && !fix_auto_synchronization()) err = true;
@@ -1180,7 +1203,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     if (DBTYPE == TYPEGRASS) {
@@ -1202,7 +1225,7 @@ public:
     if (!db_.tune_buckets(bnum_)) return false;
     if (!db_.open(path, mode)) return false;
     if (db_.type() != DBTYPE) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "invalid database type");
+      set_error(_KCCODELINE_, Error::INVALID, "invalid database type");
       db_.close();
       return false;
     }
@@ -1255,10 +1278,11 @@ public:
     }
     if (psiz_ < 1 || root_ < 1 || first_ < 1 || last_ < 1 ||
         lcnt_ < 1 || icnt_ < 0 || count_ < 0 || bnum_ < 1) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data");
-      db_.report(__FILE__, __LINE__, "info", "psiz=%ld root=%ld first=%ld last=%ld"
-                 " lcnt=%ld icnt=%ld count=%ld bnum=%ld", (long)psiz_, (long)root_,
-                 (long)first_, (long)last_, (long)lcnt_, (long)icnt_, (long)count_, (long)bnum_);
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid meta data");
+      db_.report(_KCCODELINE_, Logger::WARN, "psiz=%lld root=%lld first=%lld last=%lld"
+                 " lcnt=%lld icnt=%lld count=%lld bnum=%lld",
+                 (long long)psiz_, (long long)root_, (long long)first_, (long long)last_,
+                 (long long)lcnt_, (long long)icnt_, (long long)count_, (long long)bnum_);
       delete_inner_cache();
       delete_leaf_cache();
       db_.close();
@@ -1278,7 +1302,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     bool err = false;
@@ -1286,9 +1310,9 @@ public:
     int64_t lsiz = calc_leaf_cache_size();
     int64_t isiz = calc_inner_cache_size();
     if (cusage_ != lsiz + isiz) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid cache usage");
-      db_.report(__FILE__, __LINE__, "info", "cusage=%ld lsiz=%ld isiz=%ld",
-                 (long)cusage_, (long)lsiz, (long)isiz);
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid cache usage");
+      db_.report(_KCCODELINE_, Logger::WARN, "cusage=%lld lsiz=%lld isiz=%lld",
+                 (long long)cusage_, (long long)lsiz, (long long)isiz);
       err = true;
     }
     if (!flush_leaf_cache(true)) err = true;
@@ -1298,9 +1322,10 @@ public:
     int64_t lcnt = calc_leaf_cache_count();
     int64_t icnt = calc_inner_cache_count();
     if (cusage_ != 0 || lsiz != 0 || isiz != 0 || lcnt != 0 || icnt != 0) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "remaining cache");
-      db_.report(__FILE__, __LINE__, "info", "cusage=%ld lsiz=%ld isiz=%ld lcnt=%ld icnt=%ld",
-                 (long)cusage_, (long)lsiz, (long)isiz, (long)lcnt, (long)icnt);
+      set_error(_KCCODELINE_, Error::BROKEN, "remaining cache");
+      db_.report(_KCCODELINE_, Logger::WARN, "cusage=%lld lsiz=%lld isiz=%lld"
+                 " lcnt=%lld icnt=%lld", (long long)cusage_, (long long)lsiz, (long long)isiz,
+                 (long long)lcnt, (long long)icnt);
       err = true;
     }
     delete_inner_cache();
@@ -1315,31 +1340,57 @@ public:
    * @param hard true for physical synchronization with the device, or false for logical
    * synchronization with the file system.
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+  bool synchronize(bool hard = false, FileProcessor* proc = NULL,
+                   ProgressChecker* checker = NULL) {
     _assert_(true);
     mlock_.lock_reader();
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       mlock_.unlock();
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
     bool err = false;
+    if (checker && !checker->check("synchronize", "cleaning the leaf node cache", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      mlock_.unlock();
+      return false;
+    }
     if (!clean_leaf_cache()) err = true;
+    if (checker && !checker->check("synchronize", "cleaning the inner node cache", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      mlock_.unlock();
+      return false;
+    }
     if (!clean_inner_cache()) err = true;
-    if (!clean_leaf_cache()) err = true;
     if (!mlock_.promote()) {
       mlock_.unlock();
       mlock_.lock_writer();
     }
+    if (checker && !checker->check("synchronize", "flushing the leaf node cache", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      mlock_.unlock();
+      return false;
+    }
     if (!flush_leaf_cache(true)) err = true;
+    if (checker && !checker->check("synchronize", "flushing the inner node cache", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      mlock_.unlock();
+      return false;
+    }
     if (!flush_inner_cache(true)) err = true;
+    if (checker && !checker->check("synchronize", "dumping the meta data", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      mlock_.unlock();
+      return false;
+    }
     if (!dump_meta()) err = true;
     class Wrapper : public FileProcessor {
     public:
@@ -1352,7 +1403,7 @@ public:
       FileProcessor* proc_;
       int64_t count_;
     } wrapper(proc, count_);
-    if (!db_.synchronize(hard, &wrapper)) err = true;
+    if (!db_.synchronize(hard, &wrapper, checker)) err = true;
     mlock_.unlock();
     return !err;
   }
@@ -1367,12 +1418,12 @@ public:
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
       if (omode_ == 0) {
-        set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        set_error(_KCCODELINE_, Error::INVALID, "not opened");
         mlock_.unlock();
         return false;
       }
       if (!writer_) {
-        set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+        set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
         mlock_.unlock();
         return false;
       }
@@ -1399,17 +1450,17 @@ public:
     _assert_(true);
     mlock_.lock_writer();
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       mlock_.unlock();
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
     if (tran_) {
-      set_error(__FILE__, __LINE__, Error::LOGIC, "competition avoided");
+      set_error(_KCCODELINE_, Error::LOGIC, "competition avoided");
       mlock_.unlock();
       return false;
     }
@@ -1430,11 +1481,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!tran_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not in transaction");
+      set_error(_KCCODELINE_, Error::INVALID, "not in transaction");
       return false;
     }
     bool err = false;
@@ -1454,11 +1505,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     disable_cursors();
@@ -1487,7 +1538,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return count_;
@@ -1500,7 +1551,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return db_.size();
@@ -1513,7 +1564,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return "";
     }
     return db_.path();
@@ -1527,7 +1578,7 @@ public:
     _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!db_.status(strmap)) return false;
@@ -1579,19 +1630,20 @@ public:
     return new Cursor(this);
   }
   /**
-   * Set the internal error reporter.
-   * @param erstrm a stream object into which internal error messages are stored.
-   * @param ervbs true to report all errors, or false to report fatal errors only.
-   * @return true on success, or false on failure.
+   * Set the internal logger.
+   * @param logger the logger object.
+   * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
+   * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
+   * error.
    */
-  bool tune_error_reporter(std::ostream* erstrm, bool ervbs) {
-    _assert_(erstrm);
+  bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) {
+    _assert_(logger);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    return db_.tune_error_reporter(erstrm, ervbs);
+    return db_.tune_logger(logger, kinds);
   }
   /**
    * Set the power of the alignment of record size.
@@ -1602,7 +1654,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     apow_ = apow >= 0 ? apow : PDBDEFAPOW;
@@ -1617,7 +1669,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     fpow_ = fpow >= 0 ? fpow : PDBDEFFPOW;
@@ -1634,7 +1686,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     opts_ = opts;
@@ -1649,7 +1701,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     bnum_ = bnum > 0 ? bnum : PDBDEFBNUM;
@@ -1664,7 +1716,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     psiz_ = psiz > 0 ? psiz : PDBDEFPSIZ;
@@ -1679,7 +1731,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     return db_.tune_map(msiz);
@@ -1693,7 +1745,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     return db_.tune_defrag(dfunit);
@@ -1707,7 +1759,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     pccap_ = pccap > 0 ? pccap : PDBDEFPCCAP;
@@ -1722,7 +1774,7 @@ public:
     _assert_(comp);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     return db_.tune_compressor(comp);
@@ -1736,7 +1788,7 @@ public:
     _assert_(rcomp);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     reccomp_.comp = rcomp;
@@ -1750,7 +1802,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return NULL;
     }
     return db_.opaque();
@@ -1763,7 +1815,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_.synchronize_opaque();
@@ -1777,7 +1829,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_.defrag(step);
@@ -1790,23 +1842,10 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return db_.flags();
-  }
-protected:
-  /**
-   * Set the error information.
-   * @param file the file name of the epicenter.
-   * @param line the line number of the epicenter.
-   * @param code an error code.
-   * @param message a supplement message.
-   */
-  void set_error(const char* file, int32_t line,
-                 Error::Code code, const char* message) {
-    _assert_(file && line > 0 && message);
-    db_.set_error(file, line, code, message);
   }
   /**
    * Get the record comparator.
@@ -1816,10 +1855,44 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return reccomp_.comp;
+  }
+protected:
+  /**
+   * Set the error information.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param code an error code.
+   * @param message a supplement message.
+   */
+  void set_error(const char* file, int32_t line, const char* func,
+                 Error::Code code, const char* message) {
+    _assert_(file && line > 0 && func && message);
+    db_.set_error(file, line, func, code, message);
+  }
+  /**
+   * Report a message for debugging.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
+   * @param format the printf-like format string.
+   * @param ... used according to the format string.
+   */
+  void report(const char* file, int32_t line, const char* func, Logger::Kind kind,
+              const char* format, ...) {
+    _assert_(file && line > 0 && func && format);
+    std::string message;
+    va_list ap;
+    va_start(ap, format);
+    vstrprintf(&message, format, ap);
+    db_.report(file, line, func, kind, message.c_str());
+    va_end(ap);
   }
 private:
   /**
@@ -2306,8 +2379,8 @@ private:
     if (newnode->next > 0) {
       LeafNode* nextnode = load_leaf_node(newnode->next, false);
       if (!nextnode) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "missing leaf node");
-        db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)newnode->next);
+        set_error(_KCCODELINE_, Error::BROKEN, "missing leaf node");
+        db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)newnode->next);
         return NULL;
       }
       nextnode->prev = newnode->id;
@@ -2581,8 +2654,8 @@ private:
     while (id > PDBINIDBASE) {
       InnerNode* node = load_inner_node(id);
       if (!node) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-        db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)id);
+        set_error(_KCCODELINE_, Error::BROKEN, "missing inner node");
+        db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)id);
         return NULL;
       }
       hist[hnum++] = id;
@@ -2632,8 +2705,8 @@ private:
         int64_t parent = hist[--hnum];
         InnerNode* inode = load_inner_node(parent);
         if (!inode) {
-          set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-          db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)parent);
+          set_error(_KCCODELINE_, Error::BROKEN, "missing inner node");
+          db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)parent);
           delete[] kbuf;
           return false;
         }
@@ -2674,16 +2747,16 @@ private:
       if (!escape_cursors(node->id, node->next)) return false;
       InnerNode* inode = load_inner_node(hist[--hnum]);
       if (!inode) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-        db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)hist[hnum]);
+        set_error(_KCCODELINE_, Error::BROKEN, "missing inner node");
+        db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)hist[hnum]);
         return false;
       }
       if (sub_link_tree(inode, node->id, hist, hnum)) {
         if (node->prev > 0) {
           LeafNode* tnode = load_leaf_node(node->prev, false);
           if (!tnode) {
-            set_error(__FILE__, __LINE__, Error::BROKEN, "missing node");
-            db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)node->prev);
+            set_error(_KCCODELINE_, Error::BROKEN, "missing node");
+            db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)node->prev);
             return false;
           }
           tnode->next = node->next;
@@ -2693,8 +2766,8 @@ private:
         if (node->next > 0) {
           LeafNode* tnode = load_leaf_node(node->next, false);
           if (!tnode) {
-            set_error(__FILE__, __LINE__, Error::BROKEN, "missing node");
-            db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)node->next);
+            set_error(_KCCODELINE_, Error::BROKEN, "missing node");
+            db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)node->next);
             return false;
           }
           tnode->prev = node->prev;
@@ -2753,8 +2826,8 @@ private:
       } else if (hnum > 0) {
         InnerNode* pnode = load_inner_node(hist[--hnum]);
         if (!pnode) {
-          set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-          db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)hist[hnum]);
+          set_error(_KCCODELINE_, Error::BROKEN, "missing inner node");
+          db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)hist[hnum]);
           return false;
         }
         node->dead = true;
@@ -2765,8 +2838,8 @@ private:
       while (child > PDBINIDBASE) {
         node = load_inner_node(child);
         if (!node) {
-          set_error(__FILE__, __LINE__, Error::BROKEN, "missing inner node");
-          db_.report(__FILE__, __LINE__, "info", "id=%ld", (long)child);
+          set_error(_KCCODELINE_, Error::BROKEN, "missing inner node");
+          db_.report(_KCCODELINE_, Logger::WARN, "id=%lld", (long long)child);
           return false;
         }
         if (node->dead) {
@@ -2787,7 +2860,7 @@ private:
       }
       lit++;
     }
-    set_error(__FILE__, __LINE__, Error::BROKEN, "invalid tree");
+    set_error(_KCCODELINE_, Error::BROKEN, "invalid tree");
     return false;
   }
   /**
@@ -2846,8 +2919,8 @@ private:
     int32_t hsiz = db_.get(PDBMETAKEY, sizeof(PDBMETAKEY) - 1, head, sizeof(head));
     if (hsiz < 0) return false;
     if (hsiz != sizeof(head)) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data record");
-      db_.report(__FILE__, __LINE__, "info", "hsiz=%d", hsiz);
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid meta data record");
+      db_.report(_KCCODELINE_, Logger::WARN, "hsiz=%d", hsiz);
       return false;
     }
     const char* rp = head;
@@ -2858,7 +2931,7 @@ private:
       reccomp_.comp = &DECIMALCOMP;
       linkcomp_.comp = &DECIMALCOMP;
     } else if (*(uint8_t*)rp != 0xff || !reccomp_.comp) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "comparator is invalid");
+      set_error(_KCCODELINE_, Error::BROKEN, "comparator is invalid");
       return false;
     }
     rp = head + PDBMOFFNUMS;
@@ -3038,8 +3111,8 @@ private:
       id = node->next;
       flush_leaf_node(node, false);
     }
-    db_.report(__FILE__, __LINE__, "info", "recalculated the record count from %ld to %ld",
-               (long)count_, (long)count);
+    db_.report(_KCCODELINE_, Logger::WARN, "recalculated the record count from %lld to %lld",
+               (long long)count_, (long long)count);
     count_ = count;
     if (!dump_meta()) err = true;
     delete_inner_cache();
@@ -3057,10 +3130,10 @@ private:
     PlantDB tdb;
     tdb.tune_comparator(reccomp_.comp);
     if (!tdb.open(npath, OWRITER | OCREATE | OTRUNCATE)) {
-      set_error(__FILE__, __LINE__, tdb.error().code(), "opening the destination failed");
+      set_error(_KCCODELINE_, tdb.error().code(), "opening the destination failed");
       return false;
     }
-    db_.report(__FILE__, __LINE__, "info", "reorganizing the database");
+    db_.report(_KCCODELINE_, Logger::WARN, "reorganizing the database");
     bool err = false;
     create_leaf_cache();
     create_inner_cache();
@@ -3081,7 +3154,7 @@ private:
               Record* rec = *rit;
               char* dbuf = (char*)rec + sizeof(*rec);
               if (!tdb.set(dbuf, rec->ksiz, dbuf + rec->ksiz, rec->vsiz)) {
-                set_error(__FILE__, __LINE__, tdb.error().code(),
+                set_error(_KCCODELINE_, tdb.error().code(),
                           "opening the destination failed");
                 err = true;
               }
@@ -3098,7 +3171,7 @@ private:
     delete_inner_cache();
     delete_leaf_cache();
     if (!tdb.close()) {
-      set_error(__FILE__, __LINE__, tdb.error().code(), "opening the destination failed");
+      set_error(_KCCODELINE_, tdb.error().code(), "opening the destination failed");
       err = true;
     }
     BASEDB hdb;
@@ -3116,11 +3189,11 @@ private:
       delete cur;
       if (!db_.synchronize(false, NULL)) err = true;
       if (!hdb.close()) {
-        set_error(__FILE__, __LINE__, hdb.error().code(), "opening the destination failed");
+        set_error(_KCCODELINE_, hdb.error().code(), "opening the destination failed");
         err = true;
       }
     } else {
-      set_error(__FILE__, __LINE__, hdb.error().code(), "opening the destination failed");
+      set_error(_KCCODELINE_, hdb.error().code(), "opening the destination failed");
       err = true;
     }
     File::remove(npath);

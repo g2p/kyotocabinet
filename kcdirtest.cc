@@ -33,13 +33,13 @@ static int32_t runqueue(int argc, char** argv);
 static int32_t runwicked(int argc, char** argv);
 static int32_t runtran(int argc, char** argv);
 static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd, int32_t mode,
-                         bool tran, int32_t oflags, int32_t opts, bool erv);
+                         bool tran, int32_t oflags, int32_t opts, bool lv);
 static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t itnum,
-                         bool rnd, int32_t oflags, int32_t opts, bool erv);
+                         bool rnd, int32_t oflags, int32_t opts, bool lv);
 static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t itnum,
-                          int32_t oflags, int32_t opts, bool erv);
+                          int32_t oflags, int32_t opts, bool lv);
 static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool hard,
-                        int32_t oflags, int32_t opts, bool erv);
+                        int32_t oflags, int32_t opts, bool lv);
 
 
 // main routine
@@ -80,12 +80,12 @@ static void usage() {
   eprintf("\n");
   eprintf("usage:\n");
   eprintf("  %s order [-th num] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran]"
-          " [-oat|-oas|-onl|-otl|-onr] [-tc] [-erv] path rnum\n", g_progname);
-  eprintf("  %s queue [-th num] [-it num] [-rnd] [-oat|-oas|-onl|-otl|-onr] [-tc] [-erv]"
+          " [-oat|-oas|-onl|-otl|-onr] [-tc] [-lv] path rnum\n", g_progname);
+  eprintf("  %s queue [-th num] [-it num] [-rnd] [-oat|-oas|-onl|-otl|-onr] [-tc] [-lv]"
           " path rnum\n", g_progname);
-  eprintf("  %s wicked [-th num] [-it num] [-oat|-oas|-onl|-otl|-onr] [-tc] [-erv]"
+  eprintf("  %s wicked [-th num] [-it num] [-oat|-oas|-onl|-otl|-onr] [-tc] [-lv]"
           " path rnum\n", g_progname);
-  eprintf("  %s tran [-th num] [-it num] [-hard] [-oat|-oas|-onl|-otl|-onr] [-tc] [-erv]"
+  eprintf("  %s tran [-th num] [-it num] [-hard] [-oat|-oas|-onl|-otl|-onr] [-tc] [-lv]"
           " path rnum\n", g_progname);
   eprintf("\n");
   std::exit(1);
@@ -169,7 +169,7 @@ static int32_t runorder(int argc, char** argv) {
   bool tran = false;
   int32_t oflags = 0;
   int32_t opts = 0;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!path && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -201,8 +201,8 @@ static int32_t runorder(int argc, char** argv) {
         oflags |= kc::DirDB::ONOREPAIR;
       } else if (!std::strcmp(argv[i], "-tc")) {
         opts |= kc::DirDB::TCOMPRESS;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -218,7 +218,7 @@ static int32_t runorder(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procorder(path, rnum, thnum, rnd, mode, tran, oflags, opts, erv);
+  int32_t rv = procorder(path, rnum, thnum, rnd, mode, tran, oflags, opts, lv);
   return rv;
 }
 
@@ -232,7 +232,7 @@ static int32_t runqueue(int argc, char** argv) {
   bool rnd = false;
   int32_t oflags = 0;
   int32_t opts = 0;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!path && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -255,8 +255,8 @@ static int32_t runqueue(int argc, char** argv) {
         oflags |= kc::DirDB::ONOREPAIR;
       } else if (!std::strcmp(argv[i], "-tc")) {
         opts |= kc::DirDB::TCOMPRESS;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -272,7 +272,7 @@ static int32_t runqueue(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procqueue(path, rnum, thnum, itnum, rnd, oflags, opts, erv);
+  int32_t rv = procqueue(path, rnum, thnum, itnum, rnd, oflags, opts, lv);
   return rv;
 }
 
@@ -285,7 +285,7 @@ static int32_t runwicked(int argc, char** argv) {
   int32_t itnum = 1;
   int32_t oflags = 0;
   int32_t opts = 0;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!path && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -306,8 +306,8 @@ static int32_t runwicked(int argc, char** argv) {
         oflags |= kc::DirDB::ONOREPAIR;
       } else if (!std::strcmp(argv[i], "-tc")) {
         opts |= kc::DirDB::TCOMPRESS;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -323,7 +323,7 @@ static int32_t runwicked(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procwicked(path, rnum, thnum, itnum, oflags, opts, erv);
+  int32_t rv = procwicked(path, rnum, thnum, itnum, oflags, opts, lv);
   return rv;
 }
 
@@ -337,7 +337,7 @@ static int32_t runtran(int argc, char** argv) {
   bool hard = false;
   int32_t oflags = 0;
   int32_t opts = 0;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!path && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -360,8 +360,8 @@ static int32_t runtran(int argc, char** argv) {
         oflags |= kc::DirDB::ONOREPAIR;
       } else if (!std::strcmp(argv[i], "-tc")) {
         opts |= kc::DirDB::TCOMPRESS;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -377,22 +377,23 @@ static int32_t runtran(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = proctran(path, rnum, thnum, itnum, hard, oflags, opts, erv);
+  int32_t rv = proctran(path, rnum, thnum, itnum, hard, oflags, opts, lv);
   return rv;
 }
 
 
 // perform order command
 static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd, int32_t mode,
-                         bool tran, int32_t oflags, int32_t opts, bool erv) {
+                         bool tran, int32_t oflags, int32_t opts, bool lv) {
   iprintf("<In-order Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  rnd=%d  mode=%d  tran=%d"
-          "  oflags=%d  opts=%d  erv=%d\n\n",
-          g_randseed, path, (long long)rnum, thnum, rnd, mode, tran, oflags, opts, erv);
+          "  oflags=%d  opts=%d  lv=%d\n\n",
+          g_randseed, path, (long long)rnum, thnum, rnd, mode, tran, oflags, opts, lv);
   bool err = false;
   kc::DirDB db;
   iprintf("opening the database:\n");
   double stime = kc::time();
-  db.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   uint32_t omode = kc::DirDB::OWRITER | kc::DirDB::OCREATE | kc::DirDB::OTRUNCATE;
   if (mode == 'r') {
@@ -1405,13 +1406,14 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
 
 // perform queue command
 static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t itnum,
-                         bool rnd, int32_t oflags, int32_t opts, bool erv) {
+                         bool rnd, int32_t oflags, int32_t opts, bool lv) {
   iprintf("<Queue Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d  rnd=%d"
-          "  oflags=%d  opts=%d  erv=%d\n\n",
-          g_randseed, path, (long long)rnum, thnum, itnum, rnd, oflags, opts, erv);
+          "  oflags=%d  opts=%d  lv=%d\n\n",
+          g_randseed, path, (long long)rnum, thnum, itnum, rnd, oflags, opts, lv);
   bool err = false;
   kc::DirDB db;
-  db.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     if (itnum > 1) iprintf("iteration %d:\n", itcnt);
@@ -1598,13 +1600,14 @@ static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t 
 
 // perform wicked command
 static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t itnum,
-                          int32_t oflags, int32_t opts, bool erv) {
+                          int32_t oflags, int32_t opts, bool lv) {
   iprintf("<Wicked Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d"
-          "  oflags=%d  opts=%d  erv=%d\n\n",
-          g_randseed, path, (long long)rnum, thnum, itnum, oflags, opts, erv);
+          "  oflags=%d  opts=%d  lv=%d\n\n",
+          g_randseed, path, (long long)rnum, thnum, itnum, oflags, opts, lv);
   bool err = false;
   kc::DirDB db;
-  db.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     if (itnum > 1) iprintf("iteration %d:\n", itcnt);
@@ -1858,15 +1861,17 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
 
 // perform tran command
 static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool hard,
-                        int32_t oflags, int32_t opts, bool erv) {
+                        int32_t oflags, int32_t opts, bool lv) {
   iprintf("<Transaction Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d  hard=%d"
-          "  oflags=%d  opts=%d  erv=%d\n\n",
-          g_randseed, path, (long long)rnum, thnum, itnum, hard, oflags, opts, erv);
+          "  oflags=%d  opts=%d  lv=%d\n\n",
+          g_randseed, path, (long long)rnum, thnum, itnum, hard, oflags, opts, lv);
   bool err = false;
   kc::DirDB db;
   kc::DirDB paradb;
-  db.tune_error_reporter(&std::cout, erv);
-  paradb.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+  paradb.tune_logger(stdlogger(g_progname, &std::cout),
+                     lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     iprintf("iteration %d updating:\n", itcnt);

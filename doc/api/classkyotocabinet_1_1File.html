@@ -121,6 +121,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Make a directory.  <a href="#a667155059ea251443b6622357b21312e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#aaf1f02e02232a928b2156b876663f428">remove_directory</a> (const std::string &amp;path)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove a directory.  <a href="#aaf1f02e02232a928b2156b876663f428"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#a0a1a45f047f6f955f1a93efb1fb38ee3">remove_recursively</a> (const std::string &amp;path)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove a file or a directory recursively.  <a href="#a0a1a45f047f6f955f1a93efb1fb38ee3"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static std::string&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#af944354dd0c019cb4f1c479aeb1c75a0">get_current_directory</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the path of the current working directory.  <a href="#af944354dd0c019cb4f1c479aeb1c75a0"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1File.html#a48e489a86f873e086e556a83d3550b1b">set_current_directory</a> (const std::string &amp;path)</td></tr>
@@ -1216,6 +1218,33 @@
 
 </div>
 </div>
+<a class="anchor" id="a0a1a45f047f6f955f1a93efb1fb38ee3"></a><!-- doxytag: member="kyotocabinet::File::remove_recursively" ref="a0a1a45f047f6f955f1a93efb1fb38ee3" args="(const std::string &amp;path)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool kyotocabinet::File::remove_recursively </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>path</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Remove a file or a directory recursively. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>path</em>&nbsp;</td><td>the path of a file or a directory. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="af944354dd0c019cb4f1c479aeb1c75a0"></a><!-- doxytag: member="kyotocabinet::File::get_current_directory" ref="af944354dd0c019cb4f1c479aeb1c75a0" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -1375,7 +1404,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:45 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Aug 29 15:04:36 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

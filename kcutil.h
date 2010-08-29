@@ -259,7 +259,7 @@ bool chkinf(double num);
  * `S' treats the pointer to a std::string object.
  * @param ap used according to the format string.
  */
-void strprintf(std::string* dest, const char* format, va_list ap);
+void vstrprintf(std::string* dest, const char* format, va_list ap);
 
 
 /**
@@ -937,7 +937,7 @@ inline bool chkinf(double num) {
 /**
  * Append a formatted string at the end of a string.
  */
-inline void strprintf(std::string* dest, const char* format, va_list ap) {
+inline void vstrprintf(std::string* dest, const char* format, va_list ap) {
   _assert_(dest && format);
   while (*format != '\0') {
     if (*format == '%') {
@@ -1039,7 +1039,7 @@ inline void strprintf(std::string* dest, const char* format, ...) {
   _assert_(dest && format);
   va_list ap;
   va_start(ap, format);
-  strprintf(dest, format, ap);
+  vstrprintf(dest, format, ap);
   va_end(ap);
 }
 
@@ -1052,7 +1052,7 @@ inline std::string strprintf(const char* format, ...) {
   std::string str;
   va_list ap;
   va_start(ap, format);
-  strprintf(&str, format, ap);
+  vstrprintf(&str, format, ap);
   va_end(ap);
   return str;
 }

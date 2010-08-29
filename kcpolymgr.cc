@@ -34,6 +34,7 @@ static int32_t runlist(int argc, char** argv);
 static int32_t runimport(int argc, char** argv);
 static int32_t rundump(int argc, char** argv);
 static int32_t runload(int argc, char** argv);
+static int32_t runmerge(int argc, char** argv);
 static int32_t runcheck(int argc, char** argv);
 static int32_t proccreate(const char* path, int32_t oflags);
 static int32_t procinform(const char* path, int32_t oflags, bool st);
@@ -47,6 +48,8 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
 static int32_t procimport(const char* path, const char* file, int32_t oflags, bool sx);
 static int32_t procdump(const char* path, const char* file, int32_t oflags);
 static int32_t procload(const char* path, const char* file, int32_t oflags);
+static int32_t procmerge(const char* path, int32_t oflags, kc::PolyDB::MergeMode mode,
+                         const std::vector<std::string>& srcpaths);
 static int32_t proccheck(const char* path, int32_t oflags);
 
 
@@ -74,6 +77,8 @@ int main(int argc, char** argv) {
     rv = rundump(argc, argv);
   } else if (!std::strcmp(argv[1], "load")) {
     rv = runload(argc, argv);
+  } else if (!std::strcmp(argv[1], "merge")) {
+    rv = runmerge(argc, argv);
   } else if (!std::strcmp(argv[1], "check")) {
     rv = runcheck(argc, argv);
   } else if (!std::strcmp(argv[1], "version") || !std::strcmp(argv[1], "--version")) {
@@ -102,6 +107,7 @@ static void usage() {
   eprintf("  %s import [-onl|-otl|-onr] [-sx] path [file]\n", g_progname);
   eprintf("  %s dump [-onl|-otl|-onr] path [file]\n", g_progname);
   eprintf("  %s load [-otr] [-onl|-otl|-onr] path [file]\n", g_progname);
+  eprintf("  %s merge [-onl|-otl|-onr] [-add|-app] path src...\n", g_progname);
   eprintf("  %s check [-onl|-otl|-onr] path\n", g_progname);
   eprintf("\n");
   std::exit(1);
@@ -480,6 +486,39 @@ static int32_t runload(int argc, char** argv) {
   }
   if (!path) usage();
   int32_t rv = procload(path, file, oflags);
+  return rv;
+}
+
+
+// parse arguments of merge command
+static int32_t runmerge(int argc, char** argv) {
+  const char* path = NULL;
+  int32_t oflags = 0;
+  kc::PolyDB::MergeMode mode = kc::PolyDB::MSET;
+  std::vector<std::string> srcpaths;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!path && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "-onl")) {
+        oflags |= kc::PolyDB::ONOLOCK;
+      } else if (!std::strcmp(argv[i], "-otl")) {
+        oflags |= kc::PolyDB::OTRYLOCK;
+      } else if (!std::strcmp(argv[i], "-onr")) {
+        oflags |= kc::PolyDB::ONOREPAIR;
+      } else if (!std::strcmp(argv[i], "-add")) {
+        mode = kc::PolyDB::MADD;
+      } else if (!std::strcmp(argv[i], "-app")) {
+        mode = kc::PolyDB::MAPPEND;
+      } else {
+        usage();
+      }
+    } else if (!path) {
+      path = argv[i];
+    } else {
+      srcpaths.push_back(argv[i]);
+    }
+  }
+  if (!path && srcpaths.size() < 1) usage();
+  int32_t rv = procmerge(path, oflags, mode, srcpaths);
   return rv;
 }
 
@@ -872,6 +911,71 @@ static int32_t procload(const char* path, const char* file, int32_t oflags) {
 
 
 // perform check command
+static int32_t procmerge(const char* path, int32_t oflags, kc::PolyDB::MergeMode mode,
+                         const std::vector<std::string>& srcpaths) {
+  kc::PolyDB db;
+  if (!db.open(path, kc::PolyDB::OWRITER | kc::PolyDB::OCREATE | oflags)) {
+    dberrprint(&db, "DB::open failed");
+    return 1;
+  }
+  bool err = false;
+  kc::BasicDB** srcary = new kc::BasicDB*[srcpaths.size()];
+  size_t srcnum = 0;
+  std::vector<std::string>::const_iterator it = srcpaths.begin();
+  std::vector<std::string>::const_iterator itend = srcpaths.end();
+  while (it != itend) {
+    const std::string srcpath = *it;
+    kc::PolyDB* srcdb = new kc::PolyDB;
+    if (srcdb->open(srcpath, kc::PolyDB::OREADER | oflags)) {
+      srcary[srcnum++] = srcdb;
+    } else {
+      dberrprint(srcdb, "DB::open failed");
+      err = true;
+      delete srcdb;
+    }
+    it++;
+  }
+  class CheckerImpl : public kc::BasicDB::ProgressChecker {
+  public:
+    explicit CheckerImpl() : cnt_(0) {}
+    int64_t count() {
+      return cnt_;
+    }
+  private:
+    bool check(const char* name, const char* message, int64_t curcnt, int64_t allcnt) {
+      cnt_ = curcnt;
+      if (curcnt % 1000 == 0 && !std::strcmp(message, "processing")) {
+        iputchar('.');
+        if (curcnt % 50000 == 0) iprintf(" (%lld)\n", (long long)curcnt);
+      }
+      return true;
+    }
+    int64_t cnt_;
+  } checker;
+  if (!db.merge(srcary, srcnum, mode, &checker)) {
+    dberrprint(&db, "DB::merge failed");
+    err = true;
+  }
+  iprintf(" (end)\n");
+  for (size_t i = 0; i < srcnum; i++) {
+    kc::BasicDB* srcdb = srcary[i];
+    if (!srcdb->close()) {
+      dberrprint(srcdb, "DB::close failed");
+      err = true;
+    }
+    delete srcdb;
+  }
+  delete[] srcary;
+  if (!db.close()) {
+    dberrprint(&db, "DB::close failed");
+    err = true;
+  }
+  if (!err) iprintf("%lld records were merged successfully\n", (long long)checker.count());
+  return err ? 1 : 0;
+}
+
+
+// perform check command
 static int32_t proccheck(const char* path, int32_t oflags) {
   kc::PolyDB db;
   if (!db.open(path, kc::PolyDB::OREADER | oflags)) {
@@ -928,7 +1032,7 @@ static int32_t proccheck(const char* path, int32_t oflags) {
   }
   kc::File::Status sbuf;
   if (kc::File::status(path, &sbuf)) {
-    if (db.size() != sbuf.size) {
+    if (!sbuf.isdir && db.size() != sbuf.size) {
       dberrprint(&db, "DB::size failed");
       err = true;
     }

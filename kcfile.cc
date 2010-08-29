@@ -1752,6 +1752,7 @@ bool File::remove(const std::string& path) {
     if (::GetLastError() != ERROR_ACCESS_DENIED) return false;
     if (wsec > 1.0) wsec = 1.0;
     Thread::sleep(wsec);
+    wsec *= 2;
   }
   return false;
 #else
@@ -1773,6 +1774,7 @@ bool File::rename(const std::string& opath, const std::string& npath) {
     if (::GetLastError() != ERROR_ACCESS_DENIED) return false;
     if (wsec > 1.0) wsec = 1.0;
     Thread::sleep(wsec);
+    wsec *= 2;
   }
   return false;
 #else
@@ -1844,12 +1846,54 @@ bool File::remove_directory(const std::string& path) {
     if (::GetLastError() != ERROR_ACCESS_DENIED) return false;
     if (wsec > 1.0) wsec = 1.0;
     Thread::sleep(wsec);
+    wsec *= 2;
   }
   return false;
 #else
   _assert_(true);
   return ::rmdir(path.c_str()) == 0;
 #endif
+}
+
+
+/**
+ * Remove a file or a directory recursively.
+ */
+bool File::remove_recursively(const std::string& path) {
+  bool err = false;
+  std::vector<std::string> list;
+  list.push_back(path);
+  while (!list.empty()) {
+    const std::string& cpath = list.back();
+    Status sbuf;
+    if (status(cpath, &sbuf)) {
+      if (sbuf.isdir) {
+        if (remove_directory(cpath)) {
+          list.pop_back();
+        } else {
+          DirStream dir;
+          if (dir.open(cpath)) {
+            std::string ccname;
+            while (dir.read(&ccname)) {
+              const std::string& ccpath = cpath + MYPATHCHR + ccname;
+              if (!remove(ccpath)) list.push_back(ccpath);
+            }
+            if (!dir.close()) err = true;
+          } else {
+            list.pop_back();
+            err = true;
+          }
+        }
+      } else {
+        if (!remove(cpath)) err = true;
+        list.pop_back();
+      }
+    } else {
+      list.pop_back();
+      err = true;
+    }
+  }
+  return !err;
 }
 
 

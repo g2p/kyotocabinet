@@ -7,20 +7,20 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.7)
+AC_INIT(kyotocabinet, 1.2.8)
 
 # Package information
-MYLIBVER=4
-MYLIBREV=8
+MYLIBVER=5
+MYLIBREV=0
 MYFORMATVER=5
 
 # Targets
-MYHEADERFILES="kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h"
-MYHEADERFILES="$MYHEADERFILES kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h"
+MYHEADERFILES="kccommon.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h"
+MYHEADERFILES="$MYHEADERFILES kcdb.h kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h"
 MYHEADERFILES="$MYHEADERFILES kcpolydb.h kclangc.h"
 MYLIBRARYFILES="libkyotocabinet.a"
-MYLIBOBJFILES="kcutil.o kcdb.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o"
-MYLIBOBJFILES="$MYLIBOBJFILES kcplantdb.o kcprotodb.o kccachedb.o kchashdb.o"
+MYLIBOBJFILES="kcutil.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o"
+MYLIBOBJFILES="$MYLIBOBJFILES kcdb.o kcplantdb.o kcprotodb.o kccachedb.o kchashdb.o"
 MYLIBOBJFILES="$MYLIBOBJFILES kcdirdb.o kcpolydb.o kclangc.o"
 MYCOMMANDFILES="kcutiltest kcutilcodec kcprototest kccachetest kcgrasstest"
 MYCOMMANDFILES="$MYCOMMANDFILES kchashtest kchashmgr kctreetest kctreemgr"

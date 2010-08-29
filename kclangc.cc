@@ -504,6 +504,16 @@ char* kcdbstatus(KCDB* db) {
 
 
 /**
+ * Merge records from other databases.
+ */
+int32_t kcdbmerge(KCDB* db, KCDB** srcary, size_t srcnum, uint32_t mode) {
+  _assert_(db && srcary && srcnum <= MEMMAXSIZ);
+  PolyDB* pdb = (PolyDB*)db;
+  return pdb->merge((BasicDB**)srcary, srcnum, (PolyDB::MergeMode)mode);
+}
+
+
+/**
  * Create a cursor object.
  */
 KCCUR* kcdbcursor(KCDB* db) {

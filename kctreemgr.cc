@@ -25,7 +25,6 @@ const char* g_progname;                  // program name
 int main(int argc, char** argv);
 static void usage();
 static void dberrprint(kc::BasicDB* db, const char* info);
-static void ebufprint(std::ostringstream* ebuf);
 static int32_t runcreate(int argc, char** argv);
 static int32_t runinform(int argc, char** argv);
 static int32_t runset(int argc, char** argv);
@@ -121,21 +120,6 @@ static void dberrprint(kc::BasicDB* db, const char* info) {
   kc::BasicDB::Error err = db->error();
   eprintf("%s: %s: %s: %d: %s: %s\n",
           g_progname, info, db->path().c_str(), err.code(), err.name(), err.message());
-}
-
-
-// print the content of the error buffer
-static void ebufprint(std::ostringstream* ebuf) {
-  const std::string& str = ebuf->str();
-  std::vector<std::string> lines;
-  kc::strsplit(str, '\n', &lines);
-  std::vector<std::string>::iterator it = lines.begin();
-  std::vector<std::string>::iterator itend = lines.end();
-  while (it != itend) {
-    if (!it->empty()) eprintf("%s: %s\n", g_progname, it->c_str());
-    it++;
-  }
-  ebuf->str("");
 }
 
 
@@ -591,8 +575,7 @@ static int32_t runcheck(int argc, char** argv) {
 static int32_t proccreate(const char* path, int32_t oflags, int32_t apow, int32_t fpow,
                           int32_t opts, int64_t bnum, int32_t psiz, kc::Comparator* rcomp) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (apow >= 0) db.tune_alignment(apow);
   if (fpow >= 0) db.tune_fbp(fpow);
   if (opts > 0) db.tune_options(opts);
@@ -600,14 +583,11 @@ static int32_t proccreate(const char* path, int32_t oflags, int32_t apow, int32_
   if (psiz > 0) db.tune_page(psiz);
   if (rcomp) db.tune_comparator(rcomp);
   if (!db.open(path, kc::TreeDB::OWRITER | kc::TreeDB::OCREATE | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -618,14 +598,11 @@ static int32_t proccreate(const char* path, int32_t oflags, int32_t apow, int32_
 // perform inform command
 static int32_t procinform(const char* path, int32_t oflags, bool st) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OREADER | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   if (st) {
     std::map<std::string, std::string> status;
@@ -729,7 +706,6 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
     iprintf("size: %lld\n", (long long)db.size());
   }
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -741,19 +717,15 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
 static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
                        const char* vbuf, size_t vsiz, int32_t oflags, int32_t mode) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OWRITER | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   switch (mode) {
     default: {
       if (!db.set(kbuf, ksiz, vbuf, vsiz)) {
-        ebufprint(&ebuf);
         dberrprint(&db, "DB::set failed");
         err = true;
       }
@@ -761,7 +733,6 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
     }
     case 'a': {
       if (!db.add(kbuf, ksiz, vbuf, vsiz)) {
-        ebufprint(&ebuf);
         dberrprint(&db, "DB::add failed");
         err = true;
       }
@@ -769,7 +740,6 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
     }
     case 'c': {
       if (!db.append(kbuf, ksiz, vbuf, vsiz)) {
-        ebufprint(&ebuf);
         dberrprint(&db, "DB::append failed");
         err = true;
       }
@@ -778,7 +748,6 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
     case 'i': {
       int64_t onum = db.increment(kbuf, ksiz, kc::atoi(vbuf));
       if (onum == INT64_MIN) {
-        ebufprint(&ebuf);
         dberrprint(&db, "DB::increment failed");
         err = true;
       } else {
@@ -789,7 +758,6 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
     case 'd': {
       double onum = db.increment(kbuf, ksiz, kc::atof(vbuf));
       if (kc::chknan(onum)) {
-        ebufprint(&ebuf);
         dberrprint(&db, "DB::increment failed");
         err = true;
       } else {
@@ -799,7 +767,6 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
     }
   }
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -810,22 +777,17 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
 // perform remove command
 static int32_t procremove(const char* path, const char* kbuf, size_t ksiz, int32_t oflags) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OWRITER | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   if (!db.remove(kbuf, ksiz)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::remove failed");
     err = true;
   }
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -837,14 +799,11 @@ static int32_t procremove(const char* path, const char* kbuf, size_t ksiz, int32
 static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
                        int32_t oflags, bool px, bool pz) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OREADER | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   size_t vsiz;
   char* vbuf = db.get(kbuf, ksiz, &vsiz);
@@ -853,12 +812,10 @@ static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
     if (!pz) iprintf("\n");
     delete[] vbuf;
   } else {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::get failed");
     err = true;
   }
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -870,14 +827,11 @@ static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
 static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t oflags,
                         bool des, int64_t max, bool pv, bool px) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OREADER | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   class VisitorImpl : public kc::DB::Visitor {
   public:
@@ -902,13 +856,11 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
     if (des) {
       if (kbuf) {
         if (!cur.jump_back(kbuf, ksiz) && db.error() != kc::BasicDB::Error::NOREC) {
-          ebufprint(&ebuf);
           dberrprint(&db, "Cursor::jump failed");
           err = true;
         }
       } else {
         if (!cur.jump_back() && db.error() != kc::BasicDB::Error::NOREC) {
-          ebufprint(&ebuf);
           dberrprint(&db, "Cursor::jump failed");
           err = true;
         }
@@ -916,7 +868,6 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
       while (!err && max > 0) {
         if (!cur.accept(&visitor, false, false)) {
           if (db.error() != kc::BasicDB::Error::NOREC) {
-            ebufprint(&ebuf);
             dberrprint(&db, "Cursor::accept failed");
             err = true;
           }
@@ -928,13 +879,11 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
     } else {
       if (kbuf) {
         if (!cur.jump(kbuf, ksiz) && db.error() != kc::BasicDB::Error::NOREC) {
-          ebufprint(&ebuf);
           dberrprint(&db, "Cursor::jump failed");
           err = true;
         }
       } else {
         if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
-          ebufprint(&ebuf);
           dberrprint(&db, "Cursor::jump failed");
           err = true;
         }
@@ -942,7 +891,6 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
       while (!err && max > 0) {
         if (!cur.accept(&visitor, false, true)) {
           if (db.error() != kc::BasicDB::Error::NOREC) {
-            ebufprint(&ebuf);
             dberrprint(&db, "Cursor::accept failed");
             err = true;
           }
@@ -953,13 +901,11 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
     }
   } else {
     if (!db.iterate(&visitor, false)) {
-      ebufprint(&ebuf);
       dberrprint(&db, "DB::iterate failed");
       err = true;
     }
   }
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -980,14 +926,11 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
     is = &ifs;
   }
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OWRITER | kc::TreeDB::OCREATE | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   int64_t cnt = 0;
   std::string line;
@@ -1010,7 +953,6 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
     switch (fields.size()) {
       case 2: {
         if (!db.set(fields[0], fields[1])) {
-          ebufprint(&ebuf);
           dberrprint(&db, "DB::set failed");
           err = true;
         }
@@ -1018,7 +960,6 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
       }
       case 1: {
         if (!db.remove(fields[0]) && db.error() != kc::BasicDB::Error::NOREC) {
-          ebufprint(&ebuf);
           dberrprint(&db, "DB::remove failed");
           err = true;
         }
@@ -1030,7 +971,6 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
   }
   if (cnt % 50 > 0) iprintf(" (%d)\n", cnt);
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -1041,30 +981,24 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
 // perform dump command
 static int32_t procdump(const char* path, const char* file, int32_t oflags) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OREADER | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   if (file) {
     if (!db.dump_snapshot(file)) {
-      ebufprint(&ebuf);
       dberrprint(&db, "DB::dump_snapshot");
       err = true;
     }
   } else {
     if (!db.dump_snapshot(&std::cout)) {
-      ebufprint(&ebuf);
       dberrprint(&db, "DB::dump_snapshot");
       err = true;
     }
   }
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -1075,30 +1009,24 @@ static int32_t procdump(const char* path, const char* file, int32_t oflags) {
 // perform load command
 static int32_t procload(const char* path, const char* file, int32_t oflags) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OWRITER | kc::TreeDB::OCREATE | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   if (file) {
     if (!db.load_snapshot(file)) {
-      ebufprint(&ebuf);
       dberrprint(&db, "DB::load_snapshot");
       err = true;
     }
   } else {
     if (!db.load_snapshot(&std::cin)) {
-      ebufprint(&ebuf);
       dberrprint(&db, "DB::load_snapshot");
       err = true;
     }
   }
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -1109,22 +1037,17 @@ static int32_t procload(const char* path, const char* file, int32_t oflags) {
 // perform defrag command
 static int32_t procdefrag(const char* path, int32_t oflags) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OWRITER | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   if (!db.defrag(0)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::defrag failed");
     err = true;
   }
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }
@@ -1135,18 +1058,14 @@ static int32_t procdefrag(const char* path, int32_t oflags) {
 // perform check command
 static int32_t proccheck(const char* path, int32_t oflags) {
   kc::TreeDB db;
-  std::ostringstream ebuf;
-  db.tune_error_reporter(&ebuf, false);
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::TreeDB::OREADER | oflags)) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::open failed");
     return 1;
   }
-  ebufprint(&ebuf);
   bool err = false;
   kc::TreeDB::Cursor cur(&db);
   if (!cur.jump() && db.error() != kc::BasicDB::Error::NOREC) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::jump failed");
     err = true;
   }
@@ -1162,13 +1081,11 @@ static int32_t proccheck(const char* path, int32_t oflags) {
       char* rbuf = db.get(kbuf, ksiz, &rsiz);
       if (rbuf) {
         if (rsiz != vsiz || std::memcmp(rbuf, vbuf, rsiz)) {
-          ebufprint(&ebuf);
           dberrprint(&db, "DB::get failed");
           err = true;
         }
         delete[] rbuf;
       } else {
-        ebufprint(&ebuf);
         dberrprint(&db, "DB::get failed");
         err = true;
       }
@@ -1179,38 +1096,32 @@ static int32_t proccheck(const char* path, int32_t oflags) {
       }
     } else {
       if (db.error() != kc::BasicDB::Error::NOREC) {
-        ebufprint(&ebuf);
         dberrprint(&db, "Cursor::get failed");
         err = true;
       }
       break;
     }
     if (!cur.step() && db.error() != kc::BasicDB::Error::NOREC) {
-      ebufprint(&ebuf);
       dberrprint(&db, "Cursor::step failed");
       err = true;
     }
   }
   iprintf(" (end)\n");
   if (db.count() != cnt) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::count failed");
     err = true;
   }
   kc::File::Status sbuf;
   if (kc::File::status(path, &sbuf)) {
     if (db.size() != sbuf.size) {
-      ebufprint(&ebuf);
       dberrprint(&db, "DB::size failed");
       err = true;
     }
   } else {
-    ebufprint(&ebuf);
     dberrprint(&db, "File::status failed");
     err = true;
   }
   if (!db.close()) {
-    ebufprint(&ebuf);
     dberrprint(&db, "DB::close failed");
     err = true;
   }

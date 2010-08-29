@@ -44,6 +44,10 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html" title="Error data.">Error</a> data.  <a href="classkyotocabinet_1_1BasicDB_1_1Error.html#_details">More...</a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Interface to process the database file.  <a href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html#_details">More...</a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html">Logger</a></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Interface to log internal information and errors.  <a href="classkyotocabinet_1_1BasicDB_1_1Logger.html#_details">More...</a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Interface to check progress status of long process.  <a href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html#_details">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2>Public Types</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7f">Type</a> { <br/>
 &nbsp;&nbsp;<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa5be3e804fc9e1c8770b0bc37ce75afe9">TYPEVOID</a> =  0x00, 
@@ -89,10 +93,12 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#a6f8ee2f3bde5f5389119fe43696f9bdc"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a8863ffedb9604742305ece7ccdb23c2a">close</a> ()=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#a8863ffedb9604742305ece7ccdb23c2a"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#abb532f56482420a71ebc5650e4296ce1">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)=0</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#abb532f56482420a71ebc5650e4296ce1"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#aa550c1fb06c14baafb5db4bf7b442e9a">copy</a> (const std::string &amp;dest)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a copy of the database file.  <a href="#aa550c1fb06c14baafb5db4bf7b442e9a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a809c175a7a69deaa56ed6b9cef9fa973">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#a809c175a7a69deaa56ed6b9cef9fa973"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#acf7a2e70f3c1e72be5241f0d611f3d70">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#acf7a2e70f3c1e72be5241f0d611f3d70"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a258665509711eb2952544ebee55ed861">copy</a> (const std::string &amp;dest, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a copy of the database file.  <a href="#a258665509711eb2952544ebee55ed861"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a7999f8bf717cfd22ceed42bc54755f00">begin_transaction</a> (bool hard=false)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#a7999f8bf717cfd22ceed42bc54755f00"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a2cfd959c679cdb7716eab913ac227a6c">begin_transaction_try</a> (bool hard=false)=0</td></tr>
@@ -139,14 +145,14 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#aaeb3e8ab339c7d4bdbdfcb6bc0592a12"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#abad0525bdccdcab5b587846a69ff0fe3">get</a> (const char *kbuf, size_t ksiz, char *vbuf, size_t max)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#abad0525bdccdcab5b587846a69ff0fe3"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#ab05d3784f72a3816626731e6f5e8a938">dump_snapshot</a> (std::ostream *dest)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Dump records into a data stream.  <a href="#ab05d3784f72a3816626731e6f5e8a938"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a9cf67bf55ef9fffac848e6a8b8318519">dump_snapshot</a> (const std::string &amp;dest)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Dump records into a file.  <a href="#a9cf67bf55ef9fffac848e6a8b8318519"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#ac5859d441499888396b3a10c094abdc8">load_snapshot</a> (std::istream *src)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Load records from a data stream.  <a href="#ac5859d441499888396b3a10c094abdc8"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a52b6bf622f8a0cf57941aa4da55fe085">load_snapshot</a> (const std::string &amp;src)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Load records from a file.  <a href="#a52b6bf622f8a0cf57941aa4da55fe085"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a15e2b3b12551cd055ec652250780147d">dump_snapshot</a> (std::ostream *dest, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Dump records into a data stream.  <a href="#a15e2b3b12551cd055ec652250780147d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a39186bb54797a65ca3b642b157a4b7f0">dump_snapshot</a> (const std::string &amp;dest, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Dump records into a file.  <a href="#a39186bb54797a65ca3b642b157a4b7f0"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a0845ad7a308380fc2ad9b8e70f593f3e">load_snapshot</a> (std::istream *src, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Load records from a data stream.  <a href="#a0845ad7a308380fc2ad9b8e70f593f3e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#aef62097d8ad0f443db61fd46ef8afb0f">load_snapshot</a> (const std::string &amp;src, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Load records from a file.  <a href="#aef62097d8ad0f443db61fd46ef8afb0f"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#af270fcad9cfa1dce1b661c33c07165d6">cursor</a> ()=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#af270fcad9cfa1dce1b661c33c07165d6"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Static Public Member Functions</h2></td></tr>
@@ -396,7 +402,54 @@
 
 </div>
 </div>
-<a class="anchor" id="abb532f56482420a71ebc5650e4296ce1"></a><!-- doxytag: member="kyotocabinet::BasicDB::synchronize" ref="abb532f56482420a71ebc5650e4296ce1" args="(bool hard=false, FileProcessor *proc=NULL)=0" -->
+<a class="anchor" id="a809c175a7a69deaa56ed6b9cef9fa973"></a><!-- doxytag: member="kyotocabinet::BasicDB::iterate" ref="a809c175a7a69deaa56ed6b9cef9fa973" args="(Visitor *visitor, bool writable=true, ProgressChecker *checker=NULL)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool kyotocabinet::BasicDB::iterate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *&nbsp;</td>
+          <td class="paramname"> <em>visitor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>writable</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Iterate to accept a visitor for each record. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>visitor</em>&nbsp;</td><td>a visitor object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>writable</em>&nbsp;</td><td>true for writable operation, or false for read-only operation. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. </dd></dl>
+
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a668ed0f22f9b9538ffcde8466fc2f5ec">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a6687ee72cae51c608a622a6db973d39d">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a38780730815dfcf830c348c889477587">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#abd20793d6349fdc38a6cb5c7d85af8de">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a27be5998494e81a5fa4be24e6047f4de">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#abefeb7da685d9c99a7dbc8c88a7b2f49">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="acf7a2e70f3c1e72be5241f0d611f3d70"></a><!-- doxytag: member="kyotocabinet::BasicDB::synchronize" ref="acf7a2e70f3c1e72be5241f0d611f3d70" args="(bool hard=false, FileProcessor *proc=NULL, ProgressChecker *checker=NULL)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -410,7 +463,13 @@
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *&nbsp;</td>
-          <td class="paramname"> <em>proc</em> = <code>NULL</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>proc</em> = <code>NULL</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -426,16 +485,17 @@
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>hard</em>&nbsp;</td><td>true for physical synchronization with the device, or false for logical synchronization with the file system. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>proc</em>&nbsp;</td><td>a postprocessor object. If it is NULL, no postprocessing is performed. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#af010bf2acb088252f32b972768b5edd9">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a1c32fe00fd465ecb6735792735e7f6bf">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a5d1f6d19e805c5ee4b303fdd4094f9cb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a5e3867941baa6a3faf0708df99ab9eae">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a4f6b56a2ac204965879b30b68728a01d">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a6806c38530287e95712fb2bc7e070af7">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a142e5aede110bcdbe8bc5821259738a7">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#af66e7b519cc379afe31fef0dcd374ce5">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a95c76a2cef3f0d6e3843c1b8f45a51fb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a897d968c5d8c59ef65baa760eeb3bf49">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#ace50ae3d13ba63e258673c80cca7b5c8">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a0b8e02efc1451ecf5ad610671274de58">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aa550c1fb06c14baafb5db4bf7b442e9a"></a><!-- doxytag: member="kyotocabinet::BasicDB::copy" ref="aa550c1fb06c14baafb5db4bf7b442e9a" args="(const std::string &amp;dest)" -->
+<a class="anchor" id="a258665509711eb2952544ebee55ed861"></a><!-- doxytag: member="kyotocabinet::BasicDB::copy" ref="a258665509711eb2952544ebee55ed861" args="(const std::string &amp;dest, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -443,9 +503,18 @@
           <td class="memname">bool kyotocabinet::BasicDB::copy </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
-          <td class="paramname"> <em>dest</em></td>
-          <td>&nbsp;)&nbsp;</td>
+          <td class="paramname"> <em>dest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
@@ -455,6 +524,7 @@
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the path of the destination file. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1319,7 +1389,7 @@
 
 </div>
 </div>
-<a class="anchor" id="ab05d3784f72a3816626731e6f5e8a938"></a><!-- doxytag: member="kyotocabinet::BasicDB::dump_snapshot" ref="ab05d3784f72a3816626731e6f5e8a938" args="(std::ostream *dest)" -->
+<a class="anchor" id="a15e2b3b12551cd055ec652250780147d"></a><!-- doxytag: member="kyotocabinet::BasicDB::dump_snapshot" ref="a15e2b3b12551cd055ec652250780147d" args="(std::ostream *dest, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1327,9 +1397,18 @@
           <td class="memname">bool kyotocabinet::BasicDB::dump_snapshot </td>
           <td>(</td>
           <td class="paramtype">std::ostream *&nbsp;</td>
-          <td class="paramname"> <em>dest</em></td>
-          <td>&nbsp;)&nbsp;</td>
+          <td class="paramname"> <em>dest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
@@ -1339,6 +1418,7 @@
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the destination stream. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1346,7 +1426,7 @@
 
 </div>
 </div>
-<a class="anchor" id="a9cf67bf55ef9fffac848e6a8b8318519"></a><!-- doxytag: member="kyotocabinet::BasicDB::dump_snapshot" ref="a9cf67bf55ef9fffac848e6a8b8318519" args="(const std::string &amp;dest)" -->
+<a class="anchor" id="a39186bb54797a65ca3b642b157a4b7f0"></a><!-- doxytag: member="kyotocabinet::BasicDB::dump_snapshot" ref="a39186bb54797a65ca3b642b157a4b7f0" args="(const std::string &amp;dest, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1354,9 +1434,18 @@
           <td class="memname">bool kyotocabinet::BasicDB::dump_snapshot </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
-          <td class="paramname"> <em>dest</em></td>
-          <td>&nbsp;)&nbsp;</td>
+          <td class="paramname"> <em>dest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
@@ -1366,6 +1455,7 @@
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the path of the destination file. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1373,7 +1463,7 @@
 
 </div>
 </div>
-<a class="anchor" id="ac5859d441499888396b3a10c094abdc8"></a><!-- doxytag: member="kyotocabinet::BasicDB::load_snapshot" ref="ac5859d441499888396b3a10c094abdc8" args="(std::istream *src)" -->
+<a class="anchor" id="a0845ad7a308380fc2ad9b8e70f593f3e"></a><!-- doxytag: member="kyotocabinet::BasicDB::load_snapshot" ref="a0845ad7a308380fc2ad9b8e70f593f3e" args="(std::istream *src, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1381,9 +1471,18 @@
           <td class="memname">bool kyotocabinet::BasicDB::load_snapshot </td>
           <td>(</td>
           <td class="paramtype">std::istream *&nbsp;</td>
-          <td class="paramname"> <em>src</em></td>
-          <td>&nbsp;)&nbsp;</td>
+          <td class="paramname"> <em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
@@ -1393,6 +1492,7 @@
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>src</em>&nbsp;</td><td>the source stream. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1400,7 +1500,7 @@
 
 </div>
 </div>
-<a class="anchor" id="a52b6bf622f8a0cf57941aa4da55fe085"></a><!-- doxytag: member="kyotocabinet::BasicDB::load_snapshot" ref="a52b6bf622f8a0cf57941aa4da55fe085" args="(const std::string &amp;src)" -->
+<a class="anchor" id="aef62097d8ad0f443db61fd46ef8afb0f"></a><!-- doxytag: member="kyotocabinet::BasicDB::load_snapshot" ref="aef62097d8ad0f443db61fd46ef8afb0f" args="(const std::string &amp;src, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1408,9 +1508,18 @@
           <td class="memname">bool kyotocabinet::BasicDB::load_snapshot </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
-          <td class="paramname"> <em>src</em></td>
-          <td>&nbsp;)&nbsp;</td>
+          <td class="paramname"> <em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
@@ -1420,6 +1529,7 @@
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>src</em>&nbsp;</td><td>the path of the source file. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1507,7 +1617,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:45 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Aug 29 15:04:35 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

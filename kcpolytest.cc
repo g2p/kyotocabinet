@@ -2107,14 +2107,40 @@ static int32_t procmisc(const char* path) {
     kc::BasicDB* idb = pdb->reveal_inner_db();
     if (idb) {
       const std::type_info& info = typeid(*idb);
-      if (info == typeid(kc::HashDB) || info == typeid(kc::TreeDB)) {
+      const char* ext = NULL;
+      if (info == typeid(kc::HashDB)) {
+        ext = "kch";
+      } else if (info == typeid(kc::TreeDB)) {
+        ext = "kct";
+      } else if (info == typeid(kc::DirDB)) {
+        ext = "kcd";
+      } else if (info == typeid(kc::ForestDB)) {
+        ext = "kcf";
+      }
+      if (ext) {
+        const std::string& dpath = idb->path() + kc::File::EXTCHR + "tmp" +
+          kc::File::EXTCHR + ext;
         iprintf("copying the database file:\n");
-        const std::string& dpath = idb->path() + kc::File::EXTCHR + "tmp";
         if (!idb->copy(dpath)) {
           dberrprint(db, __LINE__, "DB::copy");
           err = true;
         }
-        kc::File::remove(dpath.c_str());
+        iprintf("merging the database files:\n");
+        kc::PolyDB srcdb;
+        if (!srcdb.open(dpath, kc::PolyDB::OREADER)) {
+          dberrprint(&srcdb, __LINE__, "DB::open");
+          err = true;
+        }
+        kc::BasicDB* bdb = &srcdb;
+        if (!pdb->merge(&bdb, 1, kc::PolyDB::MAPPEND)) {
+          dberrprint(db, __LINE__, "DB::merge");
+          err = true;
+        }
+        if (!srcdb.close()) {
+          dberrprint(&srcdb, __LINE__, "DB::close");
+          err = true;
+        }
+        kc::File::remove_recursively(dpath.c_str());
       }
     }
   }

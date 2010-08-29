@@ -74,10 +74,19 @@ module kyotocabinet {
     boolean process(in string path, in long long count, in long long size);
   };
   //----------------------------------------------------------------
+  // event logger
+  //----------------------------------------------------------------
+  interface Logger {
+    const long INFO = 0;
+    const long WARN = 1;
+    const long ERROR = 2;
+    void log(in string file, in long line, in string func, in long kind, in string message);
+  };
+  //----------------------------------------------------------------
   // cursor
   //----------------------------------------------------------------
   interface Cursor {
-    boolean accept(in Visitor visitor, in boolean writable, in boolean step);
+    boolean accept(inout Visitor visitor, in boolean writable, in boolean step);
     boolean set_value(in string value, in boolean step);
     boolean remove();
     string get_key(in boolean step);
@@ -85,7 +94,7 @@ module kyotocabinet {
     boolean jump();
     boolean jump_(in string key);
     boolean jump_back();
-    boolean jump_back(in string key);
+    boolean jump_back_(in string key);
     boolean step();
     boolean step_back();
     DB db();
@@ -134,16 +143,19 @@ module kyotocabinet {
   // prototype hash database
   //----------------------------------------------------------------
   interface ProtoHashDB :DB {
+    boolean tune_logger(inout Logger logger);
   };
   //----------------------------------------------------------------
   // prototype tree database
   //----------------------------------------------------------------
   interface ProtoTreeDB :DB {
+    boolean tune_logger(inout Logger logger);
   };
   //----------------------------------------------------------------
   // cache hash database
   //----------------------------------------------------------------
   interface CacheDB :DB {
+    boolean tune_logger(inout Logger logger);
     boolean tune_options(in long opts);
     boolean tune_buckets(in long long bnum);
     boolean cap_count(in long long count);
@@ -153,6 +165,7 @@ module kyotocabinet {
   // cache tree database
   //----------------------------------------------------------------
   interface GrassDB :DB {
+    boolean tune_logger(inout Logger logger);
     boolean tune_options(in long opts);
     boolean tune_buckets(in long long bnum);
     boolean tune_page(in long psiz);
@@ -165,6 +178,7 @@ module kyotocabinet {
     const long TSMALL = 1 << 0;
     const long TLINEAR = 1 << 1;
     const long TCOMPRESS = 1 << 2;
+    boolean tune_logger(inout Logger logger);
     boolean tune_alignment(in long apow);
     boolean tune_fbp(in long fpow);
     boolean tune_options(in long opts);
@@ -179,6 +193,7 @@ module kyotocabinet {
     const long TSMALL = 1 << 0;
     const long TLINEAR = 1 << 1;
     const long TCOMPRESS = 1 << 2;
+    boolean tune_logger(inout Logger logger);
     boolean tune_alignment(in long apow);
     boolean tune_fbp(in long fpow);
     boolean tune_options(in long opts);
@@ -193,6 +208,7 @@ module kyotocabinet {
   //----------------------------------------------------------------
   interface DirDB :DB {
     const long TCOMPRESS = 1 << 2;
+    boolean tune_logger(inout Logger logger);
     boolean tune_options(in long opts);
   };
   //----------------------------------------------------------------
@@ -200,6 +216,7 @@ module kyotocabinet {
   //----------------------------------------------------------------
   interface ForestDB :DB {
     const long TCOMPRESS = 1 << 2;
+    boolean tune_logger(inout Logger logger);
     boolean tune_options(in long opts);
     boolean tune_buckets(in long long bnum);
     boolean tune_page(in long psiz);

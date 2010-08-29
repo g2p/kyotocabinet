@@ -616,16 +616,26 @@ check-poly :
 	kcpolytest tran -th 2 -it 4 casket.kct 10000
 	kcpolytest tran -th 2 -it 4 \
 	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=10000#msiz=0#dfunit=1" 1000
+	-del casket* /F /Q > NUL: 2>&1
+	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
+	kcpolytest order -rnd "casket.kch#opts=s#bnum=256" 1000
+	kcpolytest order -rnd "casket.kct#opts=l#psiz=256" 1000
+	kcpolytest order -rnd "casket.kcd#opts=c#bnum=256" 1000
+	kcpolytest order -rnd "casket.kcf#opts=c#psiz=256" 1000
+	kcpolymgr merge -add "casket#type=kct" \
+	  casket.kch casket.kct casket.kcd casket.kcf
+	-del casket* /F /Q > NUL: 2>&1
+	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
 	kcpolytest misc "casket#type=-"
 	kcpolytest misc "casket#type=+"
 	kcpolytest misc "casket#type=*"
 	kcpolytest misc "casket#type=%"
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
-	kcpolytest misc "casket#type=kch#zcomp=arc#zkey=mikio"
+	kcpolytest misc "casket#type=kch#log=-#logkinds=info#zcomp=lzocrc"
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
-	kcpolytest misc "casket#type=kct#zcomp=arc#zkey=mikio"
+	kcpolytest misc "casket#type=kct#log=-#logkinds=info1#zcomp=lzmacrc"
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
 	kcpolytest misc "casket#type=kcd#zcomp=arc#zkey=mikio"

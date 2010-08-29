@@ -18,6 +18,12 @@
 
 #include <kccommon.h>
 #include <kcutil.h>
+#include <kcdb.h>
+#include <kcthread.h>
+#include <kcfile.h>
+#include <kccompress.h>
+#include <kccompare.h>
+#include <kcmap.h>
 
 namespace kyotocabinet {                 // common namespace
 
@@ -261,14 +267,6 @@ public:
    * same record are blocked.
    */
   virtual bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) = 0;
-  /**
-   * Iterate to accept a visitor for each record.
-   * @param visitor a visitor object.
-   * @param writable true for writable operation, or false for read-only operation.
-   * @return true on success, or false on failure.
-   * @note The whole iteration is performed atomically and other threads are blocked.
-   */
-  virtual bool iterate(Visitor *visitor, bool writable = true) = 0;
   /**
    * Set the value of a record.
    * @param kbuf the pointer to the key region.
@@ -888,6 +886,22 @@ public:
     const char* message_;
   };
   /**
+   * Interface to check progress status of long process.
+   */
+  class ProgressChecker {
+  public:
+    /**
+     * Check the progress status.
+     * @param name the name of the process.
+     * @param message a supplement message.
+     * @param curcnt the count of the current step of the progress, or -1 if not applicable.
+     * @param allcnt the estimation count of all steps of the progress, or -1 if not applicable.
+     * @return true to continue the process, or false to stop the process.
+     */
+    virtual bool check(const char* name, const char* message,
+                       int64_t curcnt, int64_t allcnt) = 0;
+  };
+  /**
    * Interface to process the database file.
    */
   class FileProcessor {
@@ -906,6 +920,38 @@ public:
      * @return true on success, or false on failure.
      */
     virtual bool process(const std::string& path, int64_t count, int64_t size) = 0;
+  };
+  /**
+   * Interface to log internal information and errors.
+   */
+  class Logger {
+  public:
+    /**
+     * Event kinds.
+     */
+    enum Kind {
+      DEBUG = 1 << 0,                    ///< debugging
+      INFO = 1 << 1,                     ///< normal information
+      WARN = 1 << 2,                     ///< warning
+      ERROR = 1 << 3                     ///< error
+    };
+    /**
+     * Destructor.
+     */
+    virtual ~Logger() {
+      _assert_(true);
+    }
+    /**
+     * Process a log message.
+     * @param file the file name of the program source code.
+     * @param line the line number of the program source code.
+     * @param func the function name of the program source code.
+     * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+     * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
+     * @param message the supplement message.
+     */
+    virtual void log(const char* file, int32_t line, const char* func, Kind kind,
+                     const char* message) = 0;
   };
   /**
    * Open modes.
@@ -964,25 +1010,81 @@ public:
    */
   virtual bool close() = 0;
   /**
+   * Iterate to accept a visitor for each record.
+   * @param visitor a visitor object.
+   * @param writable true for writable operation, or false for read-only operation.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
+   * @return true on success, or false on failure.
+   * @note The whole iteration is performed atomically and other threads are blocked.
+   */
+  virtual bool iterate(Visitor *visitor, bool writable = true,
+                       ProgressChecker* checker = NULL) = 0;
+  /**
    * Synchronize updated contents with the file and the device.
    * @param hard true for physical synchronization with the device, or false for logical
    * synchronization with the file system.
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL) = 0;
+  virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL,
+                           ProgressChecker* checker = NULL) = 0;
   /**
    * Create a copy of the database file.
    * @param dest the path of the destination file.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool copy(const std::string& dest) {
+  bool copy(const std::string& dest, ProgressChecker* checker = NULL) {
     _assert_(true);
     class FileProcessorImpl : public FileProcessor {
     public:
-      FileProcessorImpl(const std::string& dest) : dest_(dest) {}
+      explicit FileProcessorImpl(const std::string& dest, ProgressChecker* checker,
+                                 BasicDB* db) :
+        dest_(dest), checker_(checker), db_(db) {}
     private:
       bool process(const std::string& path, int64_t count, int64_t size) {
+        File::Status sbuf;
+        if (!File::status(path, &sbuf)) return false;
+        if (sbuf.isdir) {
+          if (!File::make_directory(dest_)) return false;
+          bool err = false;
+          DirStream dir;
+          if (dir.open(path)) {
+            if (checker_ && !checker_->check("copy", "beginning", 0, -1)) {
+              db_->set_error(Error::LOGIC, "checker failed");
+              err = true;
+            }
+            std::string name;
+            int64_t curcnt = 0;
+            while (!err && dir.read(&name)) {
+              const std::string& spath = path + File::PATHCHR + name;
+              const std::string& dpath = dest_ + File::PATHCHR + name;
+              int64_t dsiz;
+              char* dbuf = File::read_file(spath, &dsiz);
+              if (dbuf) {
+                if (!File::write_file(dpath, dbuf, dsiz)) err = true;
+                delete[] dbuf;
+              } else {
+                err = true;
+              }
+              curcnt++;
+              if (checker_ && !checker_->check("copy", "processing", curcnt, -1)) {
+                db_->set_error(Error::LOGIC, "checker failed");
+                err = true;
+                break;
+              }
+            }
+            if (checker_ && !checker_->check("copy", "ending", -1, -1)) {
+              db_->set_error(Error::LOGIC, "checker failed");
+              err = true;
+            }
+            if (!dir.close()) err = true;
+          } else {
+            err = true;
+          }
+          return !err;
+        }
         std::ofstream ofs;
         ofs.open(dest_.c_str(),
                  std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
@@ -990,9 +1092,14 @@ public:
         bool err = false;
         std::ifstream ifs;
         ifs.open(path.c_str(), std::ios_base::in | std::ios_base::binary);
+        if (checker_ && !checker_->check("copy", "beginning", 0, size)) {
+          db_->set_error(Error::LOGIC, "checker failed");
+          err = true;
+        }
         if (ifs) {
           char buf[DBIOBUFSIZ];
-          while (!ifs.eof()) {
+          int64_t curcnt = 0;
+          while (!err && !ifs.eof()) {
             size_t n = ifs.read(buf, sizeof(buf)).gcount();
             if (n > 0) {
               ofs.write(buf, n);
@@ -1001,10 +1108,20 @@ public:
                 break;
               }
             }
+            curcnt += n;
+            if (checker_ && !checker_->check("copy", "processing", curcnt, size)) {
+              db_->set_error(Error::LOGIC, "checker failed");
+              err = true;
+              break;
+            }
           }
           ifs.close();
           if (ifs.bad()) err = true;
         } else {
+          err = true;
+        }
+        if (checker_ && !checker_->check("copy", "ending", -1, size)) {
+          db_->set_error(Error::LOGIC, "checker failed");
           err = true;
         }
         ofs.close();
@@ -1012,9 +1129,11 @@ public:
         return !err;
       }
       const std::string& dest_;
+      ProgressChecker* checker_;
+      BasicDB* db_;
     };
-    FileProcessorImpl proc(dest);
-    return synchronize(false, &proc);
+    FileProcessorImpl proc(dest, checker, this);
+    return synchronize(false, &proc, checker);
   }
   /**
    * Begin transaction.
@@ -1556,9 +1675,10 @@ public:
   /**
    * Dump records into a data stream.
    * @param dest the destination stream.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool dump_snapshot(std::ostream* dest) {
+  bool dump_snapshot(std::ostream* dest, ProgressChecker* checker = NULL) {
     _assert_(dest);
     if (dest->fail()) {
       set_error(Error::INVALID, "invalid stream");
@@ -1585,7 +1705,7 @@ public:
     VisitorImpl visitor(dest);
     bool err = false;
     dest->write(DBSSMAGICDATA, sizeof(DBSSMAGICDATA));
-    if (iterate(&visitor, false)) {
+    if (iterate(&visitor, false, checker)) {
       unsigned char c = 0xff;
       dest->write((char*)&c, 1);
       if (dest->fail()) {
@@ -1600,9 +1720,10 @@ public:
   /**
    * Dump records into a file.
    * @param dest the path of the destination file.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool dump_snapshot(const std::string& dest) {
+  bool dump_snapshot(const std::string& dest, ProgressChecker* checker = NULL) {
     _assert_(true);
     std::ofstream ofs;
     ofs.open(dest.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
@@ -1611,7 +1732,7 @@ public:
       return false;
     }
     bool err = false;
-    if (!dump_snapshot(&ofs)) err = true;
+    if (!dump_snapshot(&ofs, checker)) err = true;
     ofs.close();
     if (!ofs) {
       set_error(Error::SYSTEM, "close failed");
@@ -1622,9 +1743,10 @@ public:
   /**
    * Load records from a data stream.
    * @param src the source stream.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool load_snapshot(std::istream* src) {
+  bool load_snapshot(std::istream* src, ProgressChecker* checker = NULL) {
     _assert_(src);
     if (src->fail()) {
       set_error(Error::INVALID, "invalid stream");
@@ -1641,7 +1763,12 @@ public:
       return false;
     }
     bool err = false;
-    while (true) {
+    if (checker && !checker->check("load_snapshot", "beginning", 0, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      err = true;
+    }
+    int64_t curcnt = 0;
+    while (!err) {
       int32_t c = src->get();
       if (src->fail()) {
         set_error(Error::SYSTEM, "stream input error");
@@ -1680,15 +1807,26 @@ public:
         err = true;
         break;
       }
+      curcnt++;
+      if (checker && !checker->check("load_snapshot", "processing", curcnt, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        err = true;
+        break;
+      }
+    }
+    if (checker && !checker->check("load_snapshot", "ending", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      err = true;
     }
     return !err;
   }
   /**
    * Load records from a file.
    * @param src the path of the source file.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool load_snapshot(const std::string& src) {
+  bool load_snapshot(const std::string& src, ProgressChecker* checker = NULL) {
     _assert_(true);
     std::ifstream ifs;
     ifs.open(src.c_str(), std::ios_base::in | std::ios_base::binary);
@@ -1697,7 +1835,7 @@ public:
       return false;
     }
     bool err = false;
-    if (!load_snapshot(&ifs)) err = true;
+    if (!load_snapshot(&ifs, checker)) err = true;
     ifs.close();
     if (ifs.bad()) {
       set_error(Error::SYSTEM, "close failed");

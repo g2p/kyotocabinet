@@ -34,16 +34,16 @@ static int32_t runwicked(int argc, char** argv);
 static int32_t runtran(int argc, char** argv);
 static int32_t procorder(int64_t rnum, int32_t thnum, bool rnd, bool etc, bool tran,
                          int32_t opts, int64_t bnum, int32_t psiz, int64_t pccap,
-                         kc::Comparator* rcomp, bool erv);
+                         kc::Comparator* rcomp, bool lv);
 static int32_t procqueue(int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
                          int32_t opts, int64_t bnum, int32_t psiz, int64_t pccap,
-                         kc::Comparator* rcomp, bool erv);
+                         kc::Comparator* rcomp, bool lv);
 static int32_t procwicked(int64_t rnum, int32_t thnum, int32_t itnum,
                           int32_t opts, int64_t bnum, int32_t psiz, int64_t pccap,
-                          kc::Comparator* rcomp, bool erv);
+                          kc::Comparator* rcomp, bool lv);
 static int32_t proctran(int64_t rnum, int32_t thnum, int32_t itnum,
                         int32_t opts, int64_t bnum, int32_t psiz, int64_t pccap,
-                        kc::Comparator* rcomp, bool erv);
+                        kc::Comparator* rcomp, bool lv);
 
 
 // main routine
@@ -84,13 +84,13 @@ static void usage() {
   eprintf("\n");
   eprintf("usage:\n");
   eprintf("  %s order [-th num] [-rnd] [-etc] [-tran] [-tc] [-bnum num] [-psiz num] [-pccap num]"
-          " [-rcd] [-erv] rnum\n", g_progname);
+          " [-rcd] [-lv] rnum\n", g_progname);
   eprintf("  %s queue [-th num] [-it num] [-rnd] [-tc] [-bnum num] [-psiz num] [-pccap num]"
-          " [-rcd] [-erv] rnum\n", g_progname);
+          " [-rcd] [-lv] rnum\n", g_progname);
   eprintf("  %s wicked [-th num] [-it num] [-tc] [-bnum num] [-psiz num] [-pccap num]"
-          " [-rcd] [-erv] rnum\n", g_progname);
+          " [-rcd] [-lv] rnum\n", g_progname);
   eprintf("  %s tran [-th num] [-it num] [-tc] [-bnum num] [-psiz num] [-pccap num]"
-          " [-rcd] [-erv] rnum\n", g_progname);
+          " [-rcd] [-lv] rnum\n", g_progname);
   eprintf("\n");
   std::exit(1);
 }
@@ -204,7 +204,7 @@ static int32_t runorder(int argc, char** argv) {
   int64_t psiz = -1;
   int64_t pccap = 0;
   kc::Comparator* rcomp = NULL;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!rstr && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -229,8 +229,8 @@ static int32_t runorder(int argc, char** argv) {
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
         rcomp = &kc::DECIMALCOMP;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -244,7 +244,7 @@ static int32_t runorder(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procorder(rnum, thnum, rnd, etc, tran, opts, bnum, psiz, pccap, rcomp, erv);
+  int32_t rv = procorder(rnum, thnum, rnd, etc, tran, opts, bnum, psiz, pccap, rcomp, lv);
   return rv;
 }
 
@@ -260,7 +260,7 @@ static int32_t runqueue(int argc, char** argv) {
   int64_t psiz = -1;
   int64_t pccap = 0;
   kc::Comparator* rcomp = NULL;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!rstr && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -284,8 +284,8 @@ static int32_t runqueue(int argc, char** argv) {
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
         rcomp = &kc::DECIMALCOMP;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -299,7 +299,7 @@ static int32_t runqueue(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procqueue(rnum, thnum, itnum, rnd, opts, bnum, psiz, pccap, rcomp, erv);
+  int32_t rv = procqueue(rnum, thnum, itnum, rnd, opts, bnum, psiz, pccap, rcomp, lv);
   return rv;
 }
 
@@ -314,7 +314,7 @@ static int32_t runwicked(int argc, char** argv) {
   int64_t psiz = -1;
   int64_t pccap = 0;
   kc::Comparator* rcomp = NULL;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!rstr && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -336,8 +336,8 @@ static int32_t runwicked(int argc, char** argv) {
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
         rcomp = &kc::DECIMALCOMP;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -351,7 +351,7 @@ static int32_t runwicked(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procwicked(rnum, thnum, itnum, opts, bnum, psiz, pccap, rcomp, erv);
+  int32_t rv = procwicked(rnum, thnum, itnum, opts, bnum, psiz, pccap, rcomp, lv);
   return rv;
 }
 
@@ -366,7 +366,7 @@ static int32_t runtran(int argc, char** argv) {
   int64_t psiz = -1;
   int64_t pccap = 0;
   kc::Comparator* rcomp = NULL;
-  bool erv = false;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
     if (!rstr && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "-th")) {
@@ -388,8 +388,8 @@ static int32_t runtran(int argc, char** argv) {
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
         rcomp = &kc::DECIMALCOMP;
-      } else if (!std::strcmp(argv[i], "-erv")) {
-        erv = true;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
@@ -403,7 +403,7 @@ static int32_t runtran(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = proctran(rnum, thnum, itnum, opts, bnum, psiz, pccap, rcomp, erv);
+  int32_t rv = proctran(rnum, thnum, itnum, opts, bnum, psiz, pccap, rcomp, lv);
   return rv;
 }
 
@@ -411,16 +411,17 @@ static int32_t runtran(int argc, char** argv) {
 // perform order command
 static int32_t procorder(int64_t rnum, int32_t thnum, bool rnd, bool etc, bool tran,
                          int32_t opts, int64_t bnum, int32_t psiz, int64_t pccap,
-                         kc::Comparator* rcomp, bool erv) {
+                         kc::Comparator* rcomp, bool lv) {
   iprintf("<In-order Test>\n  seed=%u  rnum=%lld  thnum=%d  rnd=%d  etc=%d  tran=%d"
-          "  opts=%d  bnum=%lld  psiz=%d  pccap=%lld  rcomp=%p  erv=%d\n\n",
+          "  opts=%d  bnum=%lld  psiz=%d  pccap=%lld  rcomp=%p  lv=%d\n\n",
           g_randseed, (long long)rnum, thnum, rnd, etc, tran,
-          opts, (long long)bnum, psiz, (long long)pccap, rcomp, erv);
+          opts, (long long)bnum, psiz, (long long)pccap, rcomp, lv);
   bool err = false;
   kc::GrassDB db;
   iprintf("opening the database:\n");
   double stime = kc::time();
-  db.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   if (bnum > 0) db.tune_buckets(bnum);
   if (psiz > 0) db.tune_page(psiz);
@@ -1419,14 +1420,15 @@ static int32_t procorder(int64_t rnum, int32_t thnum, bool rnd, bool etc, bool t
 // perform queue command
 static int32_t procqueue(int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
                          int32_t opts, int64_t bnum, int32_t psiz, int64_t pccap,
-                         kc::Comparator* rcomp, bool erv) {
+                         kc::Comparator* rcomp, bool lv) {
   iprintf("<Queue Test>\n  seed=%u  rnum=%lld  thnum=%d  itnum=%d  rnd=%d"
-          "  opts=%d  bnum=%lld  psiz=%d  pccap=%lld  rcomp=%p  erv=%d\n\n",
+          "  opts=%d  bnum=%lld  psiz=%d  pccap=%lld  rcomp=%p  lv=%d\n\n",
           g_randseed, (long long)rnum, thnum, itnum, rnd,
-          opts, (long long)bnum, psiz, (long long)pccap, rcomp, erv);
+          opts, (long long)bnum, psiz, (long long)pccap, rcomp, lv);
   bool err = false;
   kc::GrassDB db;
-  db.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   if (bnum > 0) db.tune_buckets(bnum);
   if (psiz > 0) db.tune_page(psiz);
@@ -1618,14 +1620,15 @@ static int32_t procqueue(int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
 // perform wicked command
 static int32_t procwicked(int64_t rnum, int32_t thnum, int32_t itnum,
                           int32_t opts, int64_t bnum, int32_t psiz, int64_t pccap,
-                          kc::Comparator* rcomp, bool erv) {
+                          kc::Comparator* rcomp, bool lv) {
   iprintf("<Wicked Test>\n  seed=%u  rnum=%lld  thnum=%d  itnum=%d"
-          "  opts=%d  bnum=%lld  psiz=%d  pccap=%lld  rcomp=%p  erv=%d\n\n",
+          "  opts=%d  bnum=%lld  psiz=%d  pccap=%lld  rcomp=%p  lv=%d\n\n",
           g_randseed, (long long)rnum, thnum, itnum,
-          opts, (long long)bnum, psiz, (long long)pccap, rcomp, erv);
+          opts, (long long)bnum, psiz, (long long)pccap, rcomp, lv);
   bool err = false;
   kc::GrassDB db;
-  db.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   if (bnum > 0) db.tune_buckets(bnum);
   if (psiz > 0) db.tune_page(psiz);
@@ -1889,16 +1892,18 @@ static int32_t procwicked(int64_t rnum, int32_t thnum, int32_t itnum,
 // perform tran command
 static int32_t proctran(int64_t rnum, int32_t thnum, int32_t itnum,
                         int32_t opts, int64_t bnum, int32_t psiz, int64_t pccap,
-                        kc::Comparator* rcomp, bool erv) {
+                        kc::Comparator* rcomp, bool lv) {
   iprintf("<Transaction Test>\n  seed=%u  rnum=%lld  thnum=%d  itnum=%d"
-          "  opts=%d  bnum=%lld  psiz=%d  pccap=%lld  rcomp=%p  erv=%d\n\n",
+          "  opts=%d  bnum=%lld  psiz=%d  pccap=%lld  rcomp=%p  lv=%d\n\n",
           g_randseed, (long long)rnum, thnum, itnum,
-          opts, (long long)bnum, psiz, (long long)pccap, rcomp, erv);
+          opts, (long long)bnum, psiz, (long long)pccap, rcomp, lv);
   bool err = false;
   kc::GrassDB db;
   kc::GrassDB paradb;
-  db.tune_error_reporter(&std::cout, erv);
-  paradb.tune_error_reporter(&std::cout, erv);
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+  paradb.tune_logger(stdlogger(g_progname, &std::cout),
+                     lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   if (bnum > 0) db.tune_buckets(bnum);
   if (psiz > 0) db.tune_page(psiz);

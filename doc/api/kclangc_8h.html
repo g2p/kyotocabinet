@@ -92,6 +92,12 @@
  }</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><p>Open modes. </p>
  <a href="kclangc_8h.html#adf764cbdea00d65edcd07bb9953ad2b7">More...</a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="kclangc_8h.html#a99fb83031ce9923c84392b4e92f956b5a667ff146032bee5aad8d51689ea97586">KCMSET</a>, 
+<a class="el" href="kclangc_8h.html#a99fb83031ce9923c84392b4e92f956b5a57460294be785b3fd21eeef5083c21fd">KCMADD</a>, 
+<a class="el" href="kclangc_8h.html#a99fb83031ce9923c84392b4e92f956b5a6af08f4fb0a0543d25c0469462195a8a">KCMAPPEND</a>
+ }</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><p>Merge modes. </p>
+ <a href="kclangc_8h.html#a99fb83031ce9923c84392b4e92f956b5">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2>Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a2a6017a10f1734bcd21364f2f0620719">kcmalloc</a> (size_t size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Allocate a region on memory.  <a href="#a2a6017a10f1734bcd21364f2f0620719"></a><br/></td></tr>
@@ -177,6 +183,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the path of the database file.  <a href="#a87de7082c3f19fd255b431f0ccb92f44"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a156561acce1ad4f2db9c00f1b5c01e7b">kcdbstatus</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#a156561acce1ad4f2db9c00f1b5c01e7b"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a20e630cadb0b3518c13c9ca6cff60aed">kcdbmerge</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, <a class="el" href="unionKCDB.html">KCDB</a> **srcary, size_t srcnum, uint32_t mode)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Merge records from other databases.  <a href="#a20e630cadb0b3518c13c9ca6cff60aed"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="unionKCCUR.html">KCCUR</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#adccaf4771f7804511791af33a316e0ba">kcdbcursor</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#adccaf4771f7804511791af33a316e0ba"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a88d85075827598fa94c6fd4c3430389f">kccurdel</a> (<a class="el" href="unionKCCUR.html">KCCUR</a> *cur)</td></tr>
@@ -391,6 +399,34 @@
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="adf764cbdea00d65edcd07bb9953ad2b7a5fec9b7c910416b0f80dbbca897e5d82"></a><!-- doxytag: member="KCONOREPAIR" ref="adf764cbdea00d65edcd07bb9953ad2b7a5fec9b7c910416b0f80dbbca897e5d82" args="" -->KCONOREPAIR</em>&nbsp;</td><td>
 <p>open without auto repair </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a99fb83031ce9923c84392b4e92f956b5"></a><!-- doxytag: member="kclangc.h::@2" ref="a99fb83031ce9923c84392b4e92f956b5" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Merge modes. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="a99fb83031ce9923c84392b4e92f956b5a667ff146032bee5aad8d51689ea97586"></a><!-- doxytag: member="KCMSET" ref="a99fb83031ce9923c84392b4e92f956b5a667ff146032bee5aad8d51689ea97586" args="" -->KCMSET</em>&nbsp;</td><td>
+<p>overwrite the existing value </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a99fb83031ce9923c84392b4e92f956b5a57460294be785b3fd21eeef5083c21fd"></a><!-- doxytag: member="KCMADD" ref="a99fb83031ce9923c84392b4e92f956b5a57460294be785b3fd21eeef5083c21fd" args="" -->KCMADD</em>&nbsp;</td><td>
+<p>keep the existing value </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a99fb83031ce9923c84392b4e92f956b5a6af08f4fb0a0543d25c0469462195a8a"></a><!-- doxytag: member="KCMAPPEND" ref="a99fb83031ce9923c84392b4e92f956b5a6af08f4fb0a0543d25c0469462195a8a" args="" -->KCMAPPEND</em>&nbsp;</td><td>
+<p>append the new value </p>
 </td></tr>
 </table>
 </dd>
@@ -820,13 +856,13 @@
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>db</em>&nbsp;</td><td>a database object. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>path</em>&nbsp;</td><td>the path of a database file. If it is "-", the database will be a prototype hash database. If it is "+", the database will be a prototype tree database. If it is "*", the database will be a cache hash database. If it is "%", the database will be a cache tree database. If its suffix is ".kch", the database will be a file hash database. If its suffix is ".kct", the database will be a file tree database. If its suffix is ".kcd", the database will be a directory hash database. If its suffix is ".kcf", the database will be a directory tree database. Otherwise, this function fails. Tuning parameters can trail the name, separated by "#". Each parameter is composed of the name and the value, separated by "=". If the "type" parameter is specified, the database type is determined by the value in "-", "+", "*", "%", "kch", "kct", "kcd", and "kcf". The prototype hash database and the prototype tree database do not support any other tuning parameter. The cache hash database supports "opts", "bnum", "zcomp", "capcount", "capsize", "erstrm", "ervbs", and "zkey". The cache tree database supports all parameters of the cache hash database except for capacity limitation, and supports "psiz", "rcomp", "pccap" in addition. The file hash database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", "erstrm", "ervbs", and "zkey". The file tree database supports all parameters of the file hash database and "psiz", "rcomp", "pccap" in addition. The directory hash database supports "opts", "zcomp", "erstrm", "ervbs", and "zkey". The directory tree database supports all parameters of the file hash database and "psiz", "rcomp", "pccap" in addition. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>path</em>&nbsp;</td><td>the path of a database file. If it is "-", the database will be a prototype hash database. If it is "+", the database will be a prototype tree database. If it is "*", the database will be a cache hash database. If it is "%", the database will be a cache tree database. If its suffix is ".kch", the database will be a file hash database. If its suffix is ".kct", the database will be a file tree database. If its suffix is ".kcd", the database will be a directory hash database. If its suffix is ".kcf", the database will be a directory tree database. Otherwise, this function fails. Tuning parameters can trail the name, separated by "#". Each parameter is composed of the name and the value, separated by "=". If the "type" parameter is specified, the database type is determined by the value in "-", "+", "*", "%", "kch", "kct", "kcd", and "kcf". All database types support the logging parameters of "log", "logkinds", and "logpx". The prototype hash database and the prototype tree database do not support any other tuning parameter. The cache hash database supports "opts", "bnum", "zcomp", "capcount", "capsize", and "zkey". The cache tree database supports all parameters of the cache hash database except for capacity limitation, and supports "psiz", "rcomp", "pccap" in addition. The file hash database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", and "zkey". The file tree database supports all parameters of the file hash database and "psiz", "rcomp", "pccap" in addition. The directory hash database supports "opts", "zcomp", and "zkey". The directory tree database supports all parameters of the directory hash database and "psiz", "rcomp", "pccap" in addition. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the connection mode. KCOWRITER as a writer, KCOREADER as a reader. The following may be added to the writer mode by bitwise-or: KCOCREATE, which means it creates a new database if the file does not exist, KCOTRUNCATE, which means it creates a new database regardless if the file exists, KCOAUTOTRAN, which means each updating operation is performed in implicit transaction, KCOAUTOSYNC, which means each updating operation is followed by implicit synchronization with the file system. The following may be added to both of the reader mode and the writer mode by bitwise-or: KCONOLOCK, which means it opens the database file without file locking, KCOTRYLOCK, which means locking is performed without blocking, KCONOREPAIR, which means the database file is not repaired implicitly even if file destruction is detected. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The tuning parameter "opts" is for the original "tune_options" and the value can contain "s" for the small option, "l" for the linear option, and "c" for the compress option. "bnum" corresponds to "tune_bucket". "zcomp" is for "tune_compressor" and the value can be "zlib" for the ZLIB raw compressor, "def" for the ZLIB deflate compressor, "gz" for the ZLIB gzip compressor, "lzo" for the LZO compressor, "lzma" for the LZMA compressor, or "arc" for the Arcfour cipher. "erstrm" and "ervbs" are for "tune_error_reporter" and the formar value can be "stdout" or "stderr" and the latter value can be "true" or "false". "zkey" specifies the cipher key of the compressor. "capcount" is for "cap_count". "capsize" is for "cap_size". "psiz" is for "tune_page". "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for the decimal comparator. "pccap" is for "tune_page_cache". "apow" is for "tune_alignment". "fpow" is for "tune_fbp". "msiz" is for "tune_map". "dfunit" is for "tune_defrag". Every opened database must be closed by the PolyDB::close method when it is no longer in use. It is not allowed for two or more database objects in the same process to keep their connections to the same database file at the same time. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The tuning parameter "log" is for the original "tune_logger" and the value specifies the path of the log file, or "-" for the standard output, or "+" for the standard error. "logkinds" specifies kinds of logged messages and the value can be "debug", "info", "warn", or "error". "logpx" specifies the prefix of each log message. "opts" is for "tune_options" and the value can contain "s" for the small option, "l" for the linear option, and "c" for the compress option. "bnum" corresponds to "tune_bucket". "zcomp" is for "tune_compressor" and the value can be "zlib" for the ZLIB raw compressor, "def" for the ZLIB deflate compressor, "gz" for the ZLIB gzip compressor, "lzo" for the LZO compressor, "lzma" for the LZMA compressor, or "arc" for the Arcfour cipher. "zkey" specifies the cipher key of the compressor. "capcount" is for "cap_count". "capsize" is for "cap_size". "psiz" is for "tune_page". "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for the decimal comparator. "pccap" is for "tune_page_cache". "apow" is for "tune_alignment". "fpow" is for "tune_fbp". "msiz" is for "tune_map". "dfunit" is for "tune_defrag". Every opened database must be closed by the kcdbclose method when it is no longer in use. It is not allowed for two or more database objects in the same process to keep their connections to the same database file at the same time. </dd></dl>
 
 </div>
 </div>
@@ -1952,6 +1988,57 @@
 
 </div>
 </div>
+<a class="anchor" id="a20e630cadb0b3518c13c9ca6cff60aed"></a><!-- doxytag: member="kclangc.h::kcdbmerge" ref="a20e630cadb0b3518c13c9ca6cff60aed" args="(KCDB *db, KCDB **srcary, size_t srcnum, uint32_t mode)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kcdbmerge </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="unionKCDB.html">KCDB</a> *&nbsp;</td>
+          <td class="paramname"> <em>db</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="unionKCDB.html">KCDB</a> **&nbsp;</td>
+          <td class="paramname"> <em>srcary</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>srcnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&nbsp;</td>
+          <td class="paramname"> <em>mode</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Merge records from other databases. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>db</em>&nbsp;</td><td>a database object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>srcary</em>&nbsp;</td><td>an array of the source detabase objects. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>srcnum</em>&nbsp;</td><td>the number of the elements of the source array. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the merge mode. KCMSET to overwrite the existing value, KCMADD to keep the existing value, KCMAPPEND to append the new value. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="adccaf4771f7804511791af33a316e0ba"></a><!-- doxytag: member="kclangc.h::kcdbcursor" ref="adccaf4771f7804511791af33a316e0ba" args="(KCDB *db)" -->
 <div class="memitem">
 <div class="memproto">
@@ -2619,7 +2706,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:45 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Aug 29 15:04:35 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

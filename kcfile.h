@@ -307,6 +307,12 @@ public:
    */
   static bool remove_directory(const std::string& path);
   /**
+   * Remove a file or a directory recursively.
+   * @param path the path of a file or a directory.
+   * @return true on success, or false on failure.
+   */
+  static bool remove_recursively(const std::string& path);
+  /**
    * Get the path of the current working directory.
    * @return the path of the current working directory, or an empty string on failure.
    */

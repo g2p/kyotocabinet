@@ -132,15 +132,15 @@ public:
       _assert_(visitor);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (writable && !(db_->writer_)) {
-        db_->set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+        db_->set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
         return false;
       }
       if (off_ < 1) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
       Record rec;
@@ -157,7 +157,7 @@ public:
       if (db_->comp_) {
         zbuf = db_->comp_->decompress(vbuf, vsiz, &zsiz);
         if (!zbuf) {
-          db_->set_error(__FILE__, __LINE__, Error::SYSTEM, "data decompression failed");
+          db_->set_error(_KCCODELINE_, Error::SYSTEM, "data decompression failed");
           delete[] rec.bbuf;
           return false;
         }
@@ -191,7 +191,7 @@ public:
         if (db_->comp_) {
           zbuf = db_->comp_->compress(vbuf, vsiz, &zsiz);
           if (!zbuf) {
-            db_->set_error(__FILE__, __LINE__, Error::SYSTEM, "data compression failed");
+            db_->set_error(_KCCODELINE_, Error::SYSTEM, "data compression failed");
             delete[] rec.bbuf;
             return false;
           }
@@ -245,12 +245,12 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       off_ = 0;
       if (db_->lsiz_ <= db_->roff_) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
       off_ = db_->roff_;
@@ -267,7 +267,7 @@ public:
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       off_ = 0;
@@ -282,9 +282,9 @@ public:
         rec.off = off;
         if (!db_->read_record(&rec, rbuf)) return false;
         if (rec.psiz == UINT16_MAX) {
-          db_->set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
-          db_->report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-                      (long)db_->psiz_, (long)rec.off, (long)db_->file_.size());
+          db_->set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
+          db_->report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+                      (long long)db_->psiz_, (long long)rec.off, (long long)db_->file_.size());
           return false;
         }
         uint32_t tpivot = db_->linear_ ? pivot :
@@ -312,7 +312,7 @@ public:
           }
         }
       }
-      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+      db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
       return false;
     }
     /**
@@ -373,11 +373,11 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (off_ < 1) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
       bool err = false;
@@ -423,9 +423,9 @@ public:
     bool step_impl(Record* rec, char* rbuf, int64_t skip) {
       _assert_(rec && rbuf && skip >= 0);
       if (off_ >= end_) {
-        db_->set_error(__FILE__, __LINE__, Error::BROKEN, "cursor after the end");
-        db_->report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-                    (long)db_->psiz_, (long)rec->off, (long)db_->file_.size());
+        db_->set_error(_KCCODELINE_, Error::BROKEN, "cursor after the end");
+        db_->report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+                    (long long)db_->psiz_, (long long)rec->off, (long long)db_->file_.size());
         return false;
       }
       while (off_ < end_) {
@@ -440,7 +440,7 @@ public:
           off_ += rec->rsiz;
         }
       }
-      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+      db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
       off_ = 0;
       return false;
     }
@@ -474,7 +474,7 @@ public:
    * Default constructor.
    */
   explicit HashDB() :
-    mlock_(), rlock_(), flock_(), atlock_(), error_(), erstrm_(NULL), ervbs_(false),
+    mlock_(), rlock_(), flock_(), atlock_(), error_(), logger_(NULL), logkinds_(0),
     omode_(0), writer_(false), autotran_(false), autosync_(false), reorg_(false), trim_(false),
     file_(), fbp_(), curs_(), path_(""),
     libver_(0), librev_(0), fmtver_(0), chksum_(0), type_(TYPEHASH),
@@ -517,12 +517,12 @@ public:
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     mlock_.lock_reader();
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       mlock_.unlock();
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
@@ -553,22 +553,23 @@ public:
    * Iterate to accept a visitor for each record.
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  bool iterate(Visitor *visitor, bool writable = true) {
+  bool iterate(Visitor *visitor, bool writable = true, ProgressChecker* checker = NULL) {
     _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
-    if (!iterate_impl(visitor)) err = true;
+    if (!iterate_impl(visitor, checker)) err = true;
     return !err;
   }
   /**
@@ -612,7 +613,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     writer_ = false;
@@ -639,10 +640,10 @@ public:
       } else if (std::strstr(emsg, "(file not found)") || std::strstr(emsg, "(invalid path)")) {
         code = Error::NOFILE;
       }
-      set_error(__FILE__, __LINE__, code, emsg);
+      set_error(_KCCODELINE_, code, emsg);
       return false;
     }
-    if (file_.recovered()) report(__FILE__, __LINE__, "info", "recovered by the WAL file");
+    if (file_.recovered()) report(_KCCODELINE_, Logger::WARN, "recovered by the WAL file");
     if ((mode & OWRITER) && file_.size() < 1) {
       calc_meta();
       libver_ = LIBVER;
@@ -651,7 +652,7 @@ public:
       chksum_ = calc_checksum();
       lsiz_ = roff_;
       if (!file_.truncate(lsiz_)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
         file_.close();
         return false;
       }
@@ -660,7 +661,7 @@ public:
         return false;
       }
       if (autosync_ && !File::synchronize_whole()) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "synchronizing the file system failed");
         file_.close();
         return false;
       }
@@ -672,8 +673,8 @@ public:
     calc_meta();
     uint8_t chksum = calc_checksum();
     if (chksum != chksum_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "invalid module checksum");
-      report(__FILE__, __LINE__, "info", "saved=%02X calculated=%02X",
+      set_error(_KCCODELINE_, Error::INVALID, "invalid module checksum");
+      report(_KCCODELINE_, Logger::WARN, "saved=%02X calculated=%02X",
              (unsigned)chksum_, (unsigned)chksum);
       file_.close();
       return false;
@@ -685,16 +686,17 @@ public:
     }
     if (type_ == 0 || apow_ > HDBMAXAPOW || fpow_ > HDBMAXFPOW ||
         bnum_ < 1 || count_ < 0 || lsiz_ < roff_) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data");
-      report(__FILE__, __LINE__, "info", "type=0x%02X apow=%d fpow=%d bnum=%ld count=%ld"
-             " lsiz=%ld fsiz=%ld", (unsigned)type_, (int)apow_, (int)fpow_, (long)bnum_,
-             (long)count_, (long)lsiz_, (long)file_.size());
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid meta data");
+      report(_KCCODELINE_, Logger::WARN, "type=0x%02X apow=%d fpow=%d bnum=%lld count=%lld"
+             " lsiz=%lld fsiz=%lld", (unsigned)type_, (int)apow_, (int)fpow_, (long long)bnum_,
+             (long long)count_, (long long)lsiz_, (long long)file_.size());
       file_.close();
       return false;
     }
     if (file_.size() < lsiz_) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "inconsistent file size");
-      report(__FILE__, __LINE__, "info", "lsiz=%ld fsiz=%ld", (long)lsiz_, (long)file_.size());
+      set_error(_KCCODELINE_, Error::BROKEN, "inconsistent file size");
+      report(_KCCODELINE_, Logger::WARN, "lsiz=%lld fsiz=%lld",
+             (long long)lsiz_, (long long)file_.size());
       file_.close();
       return false;
     }
@@ -728,7 +730,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     bool err = false;
@@ -739,7 +741,7 @@ public:
       if (!dump_meta()) err = true;
     }
     if (!file_.close()) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     fbp_.clear();
@@ -752,22 +754,24 @@ public:
    * @param hard true for physical synchronization with the device, or false for logical
    * synchronization with the file system.
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+  bool synchronize(bool hard = false, FileProcessor* proc = NULL,
+                   ProgressChecker* checker = NULL) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     rlock_.lock_reader_all();
     bool err = false;
-    if (!synchronize_impl(hard, proc)) err = true;
+    if (!synchronize_impl(hard, proc, checker)) err = true;
     rlock_.unlock_all();
     return !err;
   }
@@ -782,12 +786,12 @@ public:
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
       if (omode_ == 0) {
-        set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        set_error(_KCCODELINE_, Error::INVALID, "not opened");
         mlock_.unlock();
         return false;
       }
       if (!writer_) {
-        set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+        set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
         mlock_.unlock();
         return false;
       }
@@ -815,17 +819,17 @@ public:
     _assert_(true);
     mlock_.lock_writer();
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       mlock_.unlock();
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
     if (tran_) {
-      set_error(__FILE__, __LINE__, Error::LOGIC, "competition avoided");
+      set_error(_KCCODELINE_, Error::LOGIC, "competition avoided");
       mlock_.unlock();
       return false;
     }
@@ -847,11 +851,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!tran_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not in transaction");
+      set_error(_KCCODELINE_, Error::INVALID, "not in transaction");
       return false;
     }
     bool err = false;
@@ -871,16 +875,16 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     disable_cursors();
     if (!file_.truncate(HDBHEADSIZ)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     fbp_.clear();
@@ -895,7 +899,7 @@ public:
     dfcur_ = roff_;
     std::memset(opaque_, 0, sizeof(opaque_));
     if (!file_.truncate(lsiz_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     if (!dump_meta()) err = true;
@@ -910,7 +914,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return count_;
@@ -923,7 +927,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return lsiz_;
@@ -936,7 +940,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return "";
     }
     return path_;
@@ -950,7 +954,7 @@ public:
     _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     (*strmap)["type"] = strprintf("%d", (int)TYPEHASH);
@@ -1005,20 +1009,21 @@ public:
     return new Cursor(this);
   }
   /**
-   * Set the internal error reporter.
-   * @param erstrm a stream object into which internal error messages are stored.
-   * @param ervbs true to report all errors, or false to report fatal errors only.
-   * @return true on success, or false on failure.
+   * Set the internal logger.
+   * @param logger the logger object.
+   * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
+   * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
+   * error.
    */
-  bool tune_error_reporter(std::ostream* erstrm, bool ervbs) {
-    _assert_(erstrm);
+  bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) {
+    _assert_(logger);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    erstrm_ = erstrm;
-    ervbs_ = ervbs;
+    logger_ = logger;
+    logkinds_ = kinds;
     return true;
   }
   /**
@@ -1030,7 +1035,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     apow_ = apow >= 0 ? apow : HDBDEFAPOW;
@@ -1046,7 +1051,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     fpow_ = fpow >= 0 ? fpow : HDBDEFFPOW;
@@ -1063,7 +1068,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     opts_ = opts;
@@ -1078,7 +1083,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     bnum_ = bnum > 0 ? bnum : HDBDEFBNUM;
@@ -1094,7 +1099,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     msiz_ = msiz >= 0 ? msiz : HDBDEFMSIZ;
@@ -1109,7 +1114,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     dfunit_ = dfunit > 0 ? dfunit : 0;
@@ -1124,7 +1129,7 @@ public:
     _assert_(comp);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     embcomp_ = comp;
@@ -1138,7 +1143,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return NULL;
     }
     return opaque_;
@@ -1151,11 +1156,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
@@ -1171,11 +1176,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
@@ -1196,7 +1201,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return flags_;
@@ -1204,54 +1209,62 @@ public:
 protected:
   /**
    * Set the error information.
-   * @param file the file name of the epicenter.
-   * @param line the line number of the epicenter.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
    * @param code an error code.
    * @param message a supplement message.
    */
-  void set_error(const char* file, int32_t line,
+  void set_error(const char* file, int32_t line, const char* func,
                  Error::Code code, const char* message) {
-    _assert_(file && message);
+    _assert_(file && line > 0 && func && message);
     set_error(code, message);
-    if (ervbs_ || code == Error::BROKEN || code == Error::SYSTEM)
-      report(file, line, "error", "%d: %s: %s", code, Error::codename(code), message);
+    if (logger_) {
+      Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
+        Logger::ERROR : Logger::INFO;
+      if (kind & logkinds_)
+        report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
+    }
   }
   /**
    * Report a message for debugging.
-   * @param file the file name of the epicenter.
-   * @param line the line number of the epicenter.
-   * @param type the type string.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
    * @param format the printf-like format string.
    * @param ... used according to the format string.
    */
-  void report(const char* file, int32_t line, const char* type,
+  void report(const char* file, int32_t line, const char* func, Logger::Kind kind,
               const char* format, ...) {
-    _assert_(file && line > 0 && type && format);
-    if (!erstrm_) return;
-    const std::string& path = path_.empty() ? "-" : path_;
+    _assert_(file && line > 0 && func && format);
+    if (!logger_ && !(kind & logkinds_)) return;
     std::string message;
+    strprintf(&message, "%s: ", path_.empty() ? "-" : path_.c_str());
     va_list ap;
     va_start(ap, format);
-    strprintf(&message, format, ap);
+    vstrprintf(&message, format, ap);
     va_end(ap);
-    *erstrm_ << "[" << type << "]: " << path << ": " << file << ": " << line;
-    *erstrm_ << ": " << message << std::endl;
+    logger_->log(file, line, func, kind, message.c_str());
   }
   /**
    * Report the content of a binary buffer for debugging.
    * @param file the file name of the epicenter.
    * @param line the line number of the epicenter.
-   * @param type the type string.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
    * @param name the name of the information.
    * @param buf the binary buffer.
    * @param size the size of the binary buffer
    */
-  void report_binary(const char* file, int32_t line, const char* type,
+  void report_binary(const char* file, int32_t line, const char* func, Logger::Kind kind,
                      const char* name, const char* buf, size_t size) {
-    _assert_(file && line > 0 && type && name && buf && size <= MEMMAXSIZ);
-    if (!erstrm_) return;
+    _assert_(file && line > 0 && func && name && buf && size <= MEMMAXSIZ);
+    if (!logger_) return;
     char* hex = hexencode(buf, size);
-    report(file, line, type, "%s=%s", name, hex);
+    report(file, line, func, kind, "%s=%s", name, hex);
     delete[] hex;
   }
   /**
@@ -1263,7 +1276,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     type_ = type;
@@ -1277,7 +1290,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return libver_;
@@ -1290,7 +1303,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return librev_;
@@ -1303,7 +1316,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return fmtver_;
@@ -1316,7 +1329,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return chksum_;
@@ -1329,7 +1342,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return type_;
@@ -1342,7 +1355,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return apow_;
@@ -1355,7 +1368,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return fpow_;
@@ -1368,7 +1381,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return opts_;
@@ -1381,7 +1394,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return bnum_;
@@ -1394,7 +1407,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return msiz_;
@@ -1407,7 +1420,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return dfunit_;
@@ -1420,7 +1433,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return NULL;
     }
     return comp_;
@@ -1433,7 +1446,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return file_.recovered();
@@ -1446,7 +1459,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return reorg_;
@@ -1536,9 +1549,9 @@ private:
       rec.off = off;
       if (!read_record(&rec, rbuf)) return false;
       if (rec.psiz == UINT16_MAX) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
-        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-               (long)psiz_, (long)rec.off, (long)file_.size());
+        set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+               (long long)psiz_, (long long)rec.off, (long long)file_.size());
         return false;
       }
       uint32_t tpivot = linear_ ? pivot : fold_hash(hash_record(rec.kbuf, rec.ksiz));
@@ -1573,7 +1586,7 @@ private:
           if (comp_) {
             zbuf = comp_->decompress(vbuf, vsiz, &zsiz);
             if (!zbuf) {
-              set_error(__FILE__, __LINE__, Error::SYSTEM, "data decompression failed");
+              set_error(_KCCODELINE_, Error::SYSTEM, "data decompression failed");
               delete[] rec.bbuf;
               return false;
             }
@@ -1617,7 +1630,7 @@ private:
             if (comp_ && !isiter) {
               zbuf = comp_->compress(vbuf, vsiz, &zsiz);
               if (!zbuf) {
-                set_error(__FILE__, __LINE__, Error::SYSTEM, "data compression failed");
+                set_error(_KCCODELINE_, Error::SYSTEM, "data compression failed");
                 delete[] rec.bbuf;
                 return false;
               }
@@ -1715,7 +1728,7 @@ private:
       if (comp_) {
         zbuf = comp_->compress(vbuf, vsiz, &zsiz);
         if (!zbuf) {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, "data compression failed");
+          set_error(_KCCODELINE_, Error::SYSTEM, "data compression failed");
           return false;
         }
         vbuf = zbuf;
@@ -1784,14 +1797,21 @@ private:
   /**
    * Iterate to accept a visitor for each record.
    * @param visitor a visitor object.
+   * @param checker a progress checker object.
    * @return true on success, or false on failure.
    */
-  bool iterate_impl(Visitor* visitor) {
+  bool iterate_impl(Visitor* visitor, ProgressChecker* checker) {
     _assert_(visitor);
+    int64_t allcnt = count_;
+    if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
+    }
     int64_t off = roff_;
     int64_t end = lsiz_;
     Record rec;
     char rbuf[HDBRECBUFSIZ];
+    int64_t curcnt = 0;
     while (off > 0 && off < end) {
       rec.off = off;
       if (!read_record(&rec, rbuf)) return false;
@@ -1809,7 +1829,7 @@ private:
         if (comp_) {
           zbuf = comp_->decompress(vbuf, vsiz, &zsiz);
           if (!zbuf) {
-            set_error(__FILE__, __LINE__, Error::SYSTEM, "data decompression failed");
+            set_error(_KCCODELINE_, Error::SYSTEM, "data decompression failed");
             delete[] rec.bbuf;
             return false;
           }
@@ -1836,7 +1856,7 @@ private:
           if (comp_) {
             zbuf = comp_->compress(vbuf, vsiz, &zsiz);
             if (!zbuf) {
-              set_error(__FILE__, __LINE__, Error::SYSTEM, "data compression failed");
+              set_error(_KCCODELINE_, Error::SYSTEM, "data compression failed");
               delete[] rec.bbuf;
               return false;
             }
@@ -1870,7 +1890,16 @@ private:
           }
         }
         off += rec.rsiz;
+        curcnt++;
+        if (checker && !checker->check("iterate", "processing", curcnt, allcnt)) {
+          set_error(Error::LOGIC, "checker failed");
+          return false;
+        }
       }
+    }
+    if (checker && !checker->check("iterate", "ending", -1, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
     }
     return true;
   }
@@ -1879,20 +1908,39 @@ private:
    * @param hard true for physical synchronization with the device, or false for logical
    * synchronization with the file system.
    * @param proc a postprocessor object.
+   * @param checker a progress checker object.
    * @return true on success, or false on failure.
    */
-  bool synchronize_impl(bool hard, FileProcessor* proc) {
+  bool synchronize_impl(bool hard, FileProcessor* proc, ProgressChecker* checker) {
     _assert_(true);
     bool err = false;
+    if (checker && !checker->check("synchronize", "dumping the free blocks", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
+    }
     if (hard && !dump_free_blocks()) err = true;
+    if (checker && !checker->check("synchronize", "dumping the meta data", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
+    }
     if (!dump_meta()) err = true;
+    if (checker && !checker->check("synchronize", "synchronizing the file", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
+    }
     if (!file_.synchronize(hard)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
-    if (proc && !proc->process(path_, count_, lsiz_)) {
-      set_error(__FILE__, __LINE__, Error::LOGIC, "postprocessing failed");
-      err = true;
+    if (proc) {
+      if (checker && !checker->check("synchronize", "running the post processor", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        return false;
+      }
+      if (!proc->process(path_, count_, lsiz_)) {
+        set_error(_KCCODELINE_, Error::LOGIC, "postprocessing failed");
+        err = true;
+      }
     }
     return !err;
   }
@@ -1906,7 +1954,7 @@ private:
     bool err = false;
     if (!dump_meta()) err = true;
     if (!file_.synchronize(true)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     return !err;
@@ -2044,7 +2092,7 @@ private:
     std::memcpy(head + HDBMOFFSIZE, &num, sizeof(num));
     std::memcpy(head + HDBMOFFOPAQUE, opaque_, sizeof(opaque_));
     if (!file_.write(0, head, sizeof(head))) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     return true;
@@ -2063,7 +2111,7 @@ private:
     num = hton64(lsiz_);
     std::memcpy(head + HDBMOFFSIZE - HDBMOFFCOUNT, &num, sizeof(num));
     if (!file_.write_fast(HDBMOFFCOUNT, head, sizeof(head))) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     return true;
@@ -2075,7 +2123,7 @@ private:
   bool dump_opaque() {
     _assert_(true);
     if (!file_.write_fast(HDBMOFFOPAQUE, opaque_, sizeof(opaque_))) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     return true;
@@ -2088,17 +2136,17 @@ private:
     _assert_(true);
     char head[HDBHEADSIZ];
     if (file_.size() < (int64_t)sizeof(head)) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "missing magic data of the file");
+      set_error(_KCCODELINE_, Error::INVALID, "missing magic data of the file");
       return false;
     }
     if (!file_.read(0, head, sizeof(head))) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-             (long)psiz_, (long)0, (long)file_.size());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+             (long long)psiz_, (long long)0, (long long)file_.size());
       return false;
     }
     if (std::memcmp(head, HDBMAGICDATA, sizeof(HDBMAGICDATA))) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "invalid magic data of the file");
+      set_error(_KCCODELINE_, Error::INVALID, "invalid magic data of the file");
       return false;
     }
     std::memcpy(&libver_, head + HDBMOFFLIBVER, sizeof(libver_));
@@ -2132,9 +2180,9 @@ private:
     _assert_(true);
     uint8_t flags;
     if (!file_.read(HDBMOFFFLAGS, &flags, sizeof(flags))) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-             (long)psiz_, (long)HDBMOFFFLAGS, (long)file_.size());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+             (long long)psiz_, (long long)HDBMOFFFLAGS, (long long)file_.size());
       return false;
     }
     if (sign) {
@@ -2143,7 +2191,7 @@ private:
       flags &= ~flag;
     }
     if (!file_.write(HDBMOFFFLAGS, &flags, sizeof(flags))) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     flags_ = flags;
@@ -2167,7 +2215,7 @@ private:
     if (embcomp_) db.tune_compressor(embcomp_);
     const std::string& npath = path + File::EXTCHR + HDBTMPPATHEXT;
     if (db.open(npath, OWRITER | OCREATE | OTRUNCATE)) {
-      report(__FILE__, __LINE__, "info", "reorganizing the database");
+      report(_KCCODELINE_, Logger::WARN, "reorganizing the database");
       lsiz_ = file_.size();
       psiz_ = lsiz_;
       if (copy_records(&db)) {
@@ -2184,28 +2232,28 @@ private:
                 if (psiz > (int64_t)sizeof(buf)) psiz = sizeof(buf);
                 if (src.read(off, buf, psiz)) {
                   if (!dest->write(off, buf, psiz)) {
-                    set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+                    set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
                     err = true;
                     break;
                   }
                 } else {
-                  set_error(__FILE__, __LINE__, Error::SYSTEM, src.error());
+                  set_error(_KCCODELINE_, Error::SYSTEM, src.error());
                   err = true;
                   break;
                 }
                 off += psiz;
               }
               if (!dest->truncate(size)) {
-                set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+                set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
                 err = true;
               }
               if (dest != &file_) {
                 if (!dest->close()) {
-                  set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+                  set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
                   err = true;
                 }
                 if (!file_.refresh()) {
-                  set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+                  set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
                   err = true;
                 }
               }
@@ -2214,25 +2262,25 @@ private:
               reorg_ = true;
               if (dest != &file_) delete dest;
             } else {
-              set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+              set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
               err = true;
             }
             src.close();
           } else {
-            set_error(__FILE__, __LINE__, Error::SYSTEM, src.error());
+            set_error(_KCCODELINE_, Error::SYSTEM, src.error());
             err = true;
           }
         } else {
-          set_error(__FILE__, __LINE__, db.error().code(), "closing the destination failed");
+          set_error(_KCCODELINE_, db.error().code(), "closing the destination failed");
           err = true;
         }
       } else {
-        set_error(__FILE__, __LINE__, db.error().code(), "record copying failed");
+        set_error(_KCCODELINE_, db.error().code(), "record copying failed");
         err = true;
       }
       File::remove(npath);
     } else {
-      set_error(__FILE__, __LINE__, db.error().code(), "opening the destination failed");
+      set_error(_KCCODELINE_, db.error().code(), "opening the destination failed");
       err = true;
     }
     return !err;
@@ -2244,8 +2292,8 @@ private:
    */
   bool copy_records(HashDB* dest) {
     _assert_(dest);
-    std::ostream* erstrm = erstrm_;
-    erstrm_ = NULL;
+    Logger* logger = logger_;
+    logger_ = NULL;
     int64_t off = roff_;
     int64_t end = psiz_;
     Record rec;
@@ -2267,7 +2315,7 @@ private:
         if (comp_) {
           zbuf = comp_->decompress(vbuf, vsiz, &zsiz);
           if (!zbuf) {
-            set_error(__FILE__, __LINE__, Error::SYSTEM, "data decompression failed");
+            set_error(_KCCODELINE_, Error::SYSTEM, "data decompression failed");
             delete[] rec.bbuf;
             break;
           }
@@ -2284,7 +2332,7 @@ private:
         off += rec.rsiz;
       }
     }
-    erstrm_ = erstrm;
+    logger_ = logger;
     return true;
   }
   /**
@@ -2295,26 +2343,26 @@ private:
   bool trim_file(const std::string& path) {
     _assert_(true);
     bool err = false;
-    report(__FILE__, __LINE__, "info", "trimming the database");
+    report(_KCCODELINE_, Logger::WARN, "trimming the database");
     File* dest = writer_ ? &file_ : new File();
     if (dest == &file_ || dest->open(path, File::OWRITER | File::ONOLOCK, 0)) {
       if (!dest->truncate(lsiz_)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+        set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
         err = true;
       }
       if (dest != &file_) {
         if (!dest->close()) {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+          set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
           err = true;
         }
         if (!file_.refresh()) {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+          set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
           err = true;
         }
       }
       trim_ = true;
     } else {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, dest->error());
+      set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
       err = true;
     }
     if (dest != &file_) delete dest;
@@ -2365,7 +2413,7 @@ private:
     char buf[sizeof(uint64_t)];
     writefixnum(buf, off >> apow_, width_);
     if (!file_.write_fast(boff_ + bidx * width_, buf, width_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     return true;
@@ -2379,9 +2427,9 @@ private:
     _assert_(bidx >= 0);
     char buf[sizeof(uint64_t)];
     if (!file_.read_fast(boff_ + bidx * width_, buf, width_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-             (long)psiz_, (long)boff_ + bidx * width_, (long)file_.size());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+             (long long)psiz_, (long long)boff_ + bidx * width_, (long long)file_.size());
       return -1;
     }
     return readfixnum(buf, width_) << apow_;
@@ -2397,7 +2445,7 @@ private:
     char buf[sizeof(uint64_t)];
     writefixnum(buf, off >> apow_, width_);
     if (!file_.write_fast(entoff, buf, width_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     return true;
@@ -2411,9 +2459,9 @@ private:
   bool read_record(Record* rec, char* rbuf) {
     _assert_(rec && rbuf);
     if (rec->off < roff_) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid record offset");
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-             (long)psiz_, (long)rec->off, (long)file_.size());
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid record offset");
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+             (long long)psiz_, (long long)rec->off, (long long)file_.size());
       return false;
     }
     size_t rsiz = psiz_ - rec->off;
@@ -2421,17 +2469,17 @@ private:
       rsiz = HDBRECBUFSIZ;
     } else {
       if (rsiz < rhsiz_) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "too short record region");
-        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
-               (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
+        set_error(_KCCODELINE_, Error::BROKEN, "too short record region");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld",
+               (long long)psiz_, (long long)rec->off, (long long)rsiz, (long long)file_.size());
         return false;
       }
       rsiz = rhsiz_;
     }
     if (!file_.read_fast(rec->off, rbuf, rsiz)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
-             (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld",
+             (long long)psiz_, (long long)rec->off, (long long)rsiz, (long long)file_.size());
       return false;
     }
     const char* rp = rbuf;
@@ -2441,26 +2489,26 @@ private:
       ((uint8_t*)&snum)[1] = *(uint8_t*)(rp + 1);
     } else if (*(uint8_t*)rp >= 0x80) {
       if (*(uint8_t*)(rp++) != HDBFBMAGIC || *(uint8_t*)(rp++) != HDBFBMAGIC) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data of a free block");
-        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
-               (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
-        report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
+        set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a free block");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld",
+               (long long)psiz_, (long long)rec->off, (long long)rsiz, (long long)file_.size());
+        report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
         return false;
       }
       rec->rsiz = readfixnum(rp, width_) << apow_;
       rp += width_;
       if (*(uint8_t*)(rp++) != HDBPADMAGIC || *(uint8_t*)(rp++) != HDBPADMAGIC) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data of a free block");
-        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
-               (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
-        report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
+        set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a free block");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld",
+               (long long)psiz_, (long long)rec->off, (long long)rsiz, (long long)file_.size());
+        report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
         return false;
       }
       if (rec->rsiz < rhsiz_) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "invalid size of a free block");
-        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
-               (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
-        report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
+        set_error(_KCCODELINE_, Error::BROKEN, "invalid size of a free block");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld",
+               (long long)psiz_, (long long)rec->off, (long long)rsiz, (long long)file_.size());
+        report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
         return false;
       }
       rec->psiz = UINT16_MAX;
@@ -2474,10 +2522,10 @@ private:
       rec->bbuf = NULL;
       return true;
     } else if (*rp == 0) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "nullified region");
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
-             (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size());
-      report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
+      set_error(_KCCODELINE_, Error::BROKEN, "nullified region");
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld",
+             (long long)psiz_, (long long)rec->off, (long long)rsiz, (long long)file_.size());
+      report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
       return false;
     } else {
       std::memcpy(&snum, rp, sizeof(snum));
@@ -2498,10 +2546,11 @@ private:
     uint64_t num;
     size_t step = readvarnum(rp, rsiz, &num);
     if (step < 1) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid key length");
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld snum=%04X",
-             (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size(), snum);
-      report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid key length");
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld snum=%04X",
+             (long long)psiz_, (long long)rec->off, (long long)rsiz,
+             (long long)file_.size(), snum);
+      report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
       return false;
     }
     rec->ksiz = num;
@@ -2509,10 +2558,11 @@ private:
     rsiz -= step;
     step = readvarnum(rp, rsiz, &num);
     if (step < 1) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid value length");
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld snum=%04X",
-             (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size(), snum);
-      report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid value length");
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld snum=%04X",
+             (long long)psiz_, (long long)rec->off, (long long)rsiz,
+             (long long)file_.size(), snum);
+      report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
       return false;
     }
     rec->vsiz = num;
@@ -2534,10 +2584,11 @@ private:
           rp += rec->vsiz;
           rsiz -= rec->vsiz;
           if (rsiz > 0 && *(uint8_t*)rp != HDBPADMAGIC) {
-            set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data of a record");
-            report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld snum=%04X",
-                   (long)psiz_, (long)rec->off, (long)rsiz, (long)file_.size(), snum);
-            report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
+            set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a record");
+            report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld"
+                   " snum=%04X", (long long)psiz_, (long long)rec->off, (long long)rsiz,
+                   (long long)file_.size(), snum);
+            report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
             return false;
           }
         }
@@ -2557,9 +2608,9 @@ private:
     size_t bsiz = rec->ksiz + rec->vsiz;
     char* bbuf = new char[bsiz];
     if (!file_.read_fast(rec->boff, bbuf, bsiz)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-             (long)psiz_, (long)rec->boff, (long)file_.size());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+             (long long)psiz_, (long long)rec->boff, (long long)file_.size());
       delete[] bbuf;
       return false;
     }
@@ -2603,12 +2654,12 @@ private:
     bool err = false;
     if (over) {
       if (!file_.write_fast(rec->off, rbuf, rec->rsiz)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
         err = true;
       }
     } else {
       if (!file_.write(rec->off, rbuf, rec->rsiz)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
         err = true;
       }
     }
@@ -2706,9 +2757,9 @@ private:
       rec.off = off;
       if (!read_record(&rec, rbuf)) return false;
       if (rec.psiz == UINT16_MAX) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
-        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-               (long)psiz_, (long)rec.off, (long)file_.size());
+        set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+               (long long)psiz_, (long long)rec.off, (long long)file_.size());
         return false;
       }
       uint32_t tpivot = linear_ ? pivot : fold_hash(hash_record(rec.kbuf, rec.ksiz));
@@ -2744,8 +2795,9 @@ private:
         }
       }
     }
-    set_error(__FILE__, __LINE__, Error::BROKEN, "no record to shift");
-    report(__FILE__, __LINE__, "info", "psiz=%ld fsiz=%ld", (long)psiz_, (long)file_.size());
+    set_error(_KCCODELINE_, Error::BROKEN, "no record to shift");
+    report(_KCCODELINE_, Logger::WARN, "psiz=%lld fsiz=%lld",
+           (long long)psiz_, (long long)file_.size());
     return false;
   }
   /**
@@ -2765,7 +2817,7 @@ private:
     *(wp++) = HDBPADMAGIC;
     *(wp++) = HDBPADMAGIC;
     if (!file_.write_fast(off, rbuf, wp - rbuf)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     return true;
@@ -2859,7 +2911,7 @@ private:
     *(wp++) = 0;
     bool err = false;
     if (!file_.write(HDBHEADSIZ, rbuf, wp - rbuf)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     delete[] rbuf;
@@ -2878,7 +2930,7 @@ private:
     *(wp++) = 0;
     bool err = false;
     if (!file_.write(HDBHEADSIZ, rbuf, wp - rbuf)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     return !err;
@@ -2893,9 +2945,9 @@ private:
     size_t size = boff_ - HDBHEADSIZ;
     char* rbuf = new char[size];
     if (!file_.read(HDBHEADSIZ, rbuf, size)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
-      report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-             (long)psiz_, (long)HDBHEADSIZ, (long)file_.size());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
+      report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+             (long long)psiz_, (long long)HDBHEADSIZ, (long long)file_.size());
       delete[] rbuf;
       return false;
     }
@@ -2906,9 +2958,9 @@ private:
       uint64_t off;
       size_t step = readvarnum(rp, size, &off);
       if (step < 1 || off < 1) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "invalid free block offset");
-        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-               (long)psiz_, (long)off, (long)file_.size());
+        set_error(_KCCODELINE_, Error::BROKEN, "invalid free block offset");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+               (long long)psiz_, (long long)off, (long long)file_.size());
         delete[] rbuf;
         delete[] blocks;
         return false;
@@ -2918,9 +2970,9 @@ private:
       uint64_t rsiz;
       step = readvarnum(rp, size, &rsiz);
       if (step < 1 || rsiz < 1) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "invalid free block size");
-        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld rsiz=%ld fsiz=%ld",
-               (long)psiz_, (long)off, (long)rsiz, (long)file_.size());
+        set_error(_KCCODELINE_, Error::BROKEN, "invalid free block size");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld",
+               (long long)psiz_, (long long)off, (long long)rsiz, (long long)file_.size());
         delete[] rbuf;
         delete[] blocks;
         return false;
@@ -3020,10 +3072,10 @@ private:
       prec.off = rec->left;
       if (!read_record(&prec, rbuf)) return false;
       if (prec.psiz == UINT16_MAX) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
-        report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-               (long)psiz_, (long)prec.off, (long)file_.size());
-        report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rhsiz_);
+        set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+               (long long)psiz_, (long long)prec.off, (long long)file_.size());
+        report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rhsiz_);
         return false;
       }
       delete[] prec.bbuf;
@@ -3034,10 +3086,10 @@ private:
           prec.off = off;
           if (!read_record(&prec, rbuf)) return false;
           if (prec.psiz == UINT16_MAX) {
-            set_error(__FILE__, __LINE__, Error::BROKEN, "free block in the chain");
-            report(__FILE__, __LINE__, "info", "psiz=%ld off=%ld fsiz=%ld",
-                   (long)psiz_, (long)prec.off, (long)file_.size());
-            report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rhsiz_);
+            set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
+            report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
+                   (long long)psiz_, (long long)prec.off, (long long)file_.size());
+            report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rhsiz_);
             return false;
           }
           delete[] prec.bbuf;
@@ -3069,11 +3121,11 @@ private:
     _assert_(true);
     if (!dump_meta()) return false;
     if (!file_.begin_transaction(trhard_, boff_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     if (!file_.write_transaction(HDBMOFFBNUM, HDBHEADSIZ - HDBMOFFBNUM)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       file_.end_transaction(false);
       return false;
     }
@@ -3096,12 +3148,12 @@ private:
     _assert_(true);
     atlock_.lock();
     if (!file_.begin_transaction(autosync_, boff_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       atlock_.unlock();
       return false;
     }
     if (!file_.write_transaction(HDBMOFFCOUNT, HDBMOFFOPAQUE - HDBMOFFCOUNT)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       file_.end_transaction(false);
       atlock_.unlock();
       return false;
@@ -3117,7 +3169,7 @@ private:
     bool err = false;
     if (!dump_meta()) err = true;
     if (!file_.end_transaction(true)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     trfbp_.clear();
@@ -3132,7 +3184,7 @@ private:
     bool err = false;
     if (!dump_auto_meta()) err = true;
     if (!file_.end_transaction(true)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     atlock_.unlock();
@@ -3146,7 +3198,7 @@ private:
     _assert_(true);
     bool err = false;
     if (!file_.end_transaction(false)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     if (!load_meta()) err = true;
@@ -3164,7 +3216,7 @@ private:
     _assert_(true);
     bool err = false;
     if (!file_.end_transaction(false)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     if (!load_meta()) err = true;
@@ -3184,10 +3236,10 @@ private:
   Mutex atlock_;
   /** The last happened error. */
   TSD<Error> error_;
-  /** The internal error reporter. */
-  std::ostream* erstrm_;
-  /** The flag to report all errors. */
-  bool ervbs_;
+  /** The internal logger. */
+  Logger* logger_;
+  /** The kinds of logged messages. */
+  uint32_t logkinds_;
   /** The open mode. */
   uint32_t omode_;
   /** The flag for writer. */

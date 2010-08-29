@@ -39,6 +39,9 @@ namespace kyotocabinet {                 // common namespace
 class PolyDB : public BasicDB {
 public:
   class Cursor;
+private:
+  class StreamLogger;
+  struct MergeLine;
 public:
   /**
    * Cursor to indicate a record.
@@ -205,9 +208,18 @@ public:
     BasicDB::Cursor* cur_;
   };
   /**
+   * Merge modes.
+   */
+  enum MergeMode {
+    MSET,                                ///< overwrite the existing value
+    MADD,                                ///< keep the existing value
+    MAPPEND                              ///< append the new value
+  };
+  /**
    * Default constructor.
    */
-  explicit PolyDB() : type_(TYPEVOID), db_(NULL), error_(), zcomp_(NULL) {
+  explicit PolyDB() :
+    type_(TYPEVOID), db_(NULL), error_(), logstrm_(NULL), logger_(NULL), zcomp_(NULL) {
     _assert_(true);
   }
   /**
@@ -215,7 +227,8 @@ public:
    * @param db the internal database object.  Its possession is transferred inside and the
    * object is deleted automatically.
    */
-  explicit PolyDB(BasicDB* db) : type_(TYPEMISC), db_(db), error_(), zcomp_(NULL) {
+  explicit PolyDB(BasicDB* db) :
+    type_(TYPEMISC), db_(db), error_(), logstrm_(NULL), logger_(NULL), zcomp_(NULL) {
     _assert_(db);
   }
   /**
@@ -226,6 +239,8 @@ public:
     _assert_(true);
     if (type_ != TYPEVOID) close();
     delete zcomp_;
+    delete logger_;
+    delete logstrm_;
   }
   /**
    * Accept a visitor to a record.
@@ -249,16 +264,17 @@ public:
    * Iterate to accept a visitor for each record.
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  bool iterate(Visitor *visitor, bool writable = true) {
+  bool iterate(Visitor *visitor, bool writable = true, ProgressChecker* checker = NULL) {
     _assert_(visitor);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
       return false;
     }
-    return db_->iterate(visitor, writable);
+    return db_->iterate(visitor, writable, checker);
   }
   /**
    * Get the last happened error.
@@ -277,7 +293,7 @@ public:
   void set_error(Error::Code code, const char* message) {
     _assert_(message);
     if (type_ == TYPEVOID) {
-      error_->set(code, message);
+      error_.set(code, message);
       return;
     }
     db_->set_error(code, message);
@@ -293,17 +309,17 @@ public:
    * database will be a directory tree database.  Otherwise, this function fails.  Tuning
    * parameters can trail the name, separated by "#".  Each parameter is composed of the name
    * and the value, separated by "=".  If the "type" parameter is specified, the database type
-   * is determined by the value in "-", "+", "*", "%", "kch", "kct", "kcd", and "kcf".  The
+   * is determined by the value in "-", "+", "*", "%", "kch", "kct", "kcd", and "kcf".  All
+   * database types support the logging parameters of "log", "logkinds", and "logpx".  The
    * prototype hash database and the prototype tree database do not support any other tuning
    * parameter.  The cache hash database supports "opts", "bnum", "zcomp", "capcount", "capsize",
-   * "erstrm", "ervbs", and "zkey".  The cache tree database supports all parameters of the
-   * cache hash database except for capacity limitation, and supports "psiz", "rcomp", "pccap"
-   * in addition.  The file hash database supports "apow", "fpow", "opts", "bnum", "msiz",
-   * "dfunit", "zcomp", "erstrm", "ervbs", and "zkey".  The file tree database supports all
-   * parameters of the file hash database and "psiz", "rcomp", "pccap" in addition.  The
-   * directory hash database supports "opts", "zcomp", "erstrm", "ervbs", and "zkey".  The
-   * directory tree database supports all parameters of the file hash database and "psiz",
-   * "rcomp", "pccap" in addition.
+   * and "zkey".  The cache tree database supports all parameters of the cache hash database
+   * except for capacity limitation, and supports "psiz", "rcomp", "pccap" in addition.  The
+   * file hash database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", and
+   * "zkey".  The file tree database supports all parameters of the file hash database and
+   * "psiz", "rcomp", "pccap" in addition.  The directory hash database supports "opts", "zcomp",
+   * and "zkey".  The directory tree database supports all parameters of the directory hash
+   * database and "psiz", "rcomp", "pccap" in addition.
    * @param mode the connection mode.  PolyDB::OWRITER as a writer, PolyDB::OREADER as a
    * reader.  The following may be added to the writer mode by bitwise-or: PolyDB::OCREATE,
    * which means it creates a new database if the file does not exist, PolyDB::OTRUNCATE, which
@@ -316,21 +332,22 @@ public:
    * which means the database file is not repaired implicitly even if file destruction is
    * detected.
    * @return true on success, or false on failure.
-   * @note The tuning parameter "opts" is for the original "tune_options" and the value can
-   * contain "s" for the small option, "l" for the linear option, and "c" for the compress
-   * option.  "bnum" corresponds to "tune_bucket".  "zcomp" is for "tune_compressor" and the
-   * value can be "zlib" for the ZLIB raw compressor, "def" for the ZLIB deflate compressor,
-   * "gz" for the ZLIB gzip compressor, "lzo" for the LZO compressor, "lzma" for the LZMA
-   * compressor, or "arc" for the Arcfour cipher.  "erstrm" and "ervbs" are for
-   * "tune_error_reporter" and the formar value can be "stdout" or "stderr" and the latter value
-   * can be "true" or "false".  "zkey" specifies the cipher key of the compressor.  "capcount"
-   * is for "cap_count".  "capsize" is for "cap_size".  "psiz" is for "tune_page".  "rcomp" is
-   * for "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for
-   * the decimal comparator.  "pccap" is for "tune_page_cache".  "apow" is for "tune_alignment".
-   * "fpow" is for "tune_fbp".  "msiz" is for "tune_map".  "dfunit" is for "tune_defrag".
-   * Every opened database must be closed by the PolyDB::close method when it is no longer in
-   * use.  It is not allowed for two or more database objects in the same process to keep their
-   * connections to the same database file at the same time.
+   * @note The tuning parameter "log" is for the original "tune_logger" and the value specifies
+   * the path of the log file, or "-" for the standard output, or "+" for the standard error.
+   * "logkinds" specifies kinds of logged messages and the value can be "debug", "info", "warn",
+   * or "error".  "logpx" specifies the prefix of each log message.  "opts" is for "tune_options"
+   * and the value can contain "s" for the small option, "l" for the linear option, and "c" for
+   * the compress option.  "bnum" corresponds to "tune_bucket".  "zcomp" is for "tune_compressor"
+   * and the value can be "zlib" for the ZLIB raw compressor, "def" for the ZLIB deflate
+   * compressor, "gz" for the ZLIB gzip compressor, "lzo" for the LZO compressor, "lzma" for the
+   * LZMA compressor, or "arc" for the Arcfour cipher.  "zkey" specifies the cipher key of the
+   * compressor.  "capcount" is for "cap_count".  "capsize" is for "cap_size".  "psiz" is for
+   * "tune_page".  "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical
+   * comparator or "dec" for the decimal comparator.  "pccap" is for "tune_page_cache".  "apow"
+   * is for "tune_alignment".  "fpow" is for "tune_fbp".  "msiz" is for "tune_map".  "dfunit" is
+   * for "tune_defrag".  Every opened database must be closed by the PolyDB::close method when
+   * it is no longer in use.  It is not allowed for two or more database objects in the same
+   * process to keep their connections to the same database file at the same time.
    */
   bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
     _assert_(true);
@@ -343,6 +360,9 @@ public:
     strsplit(path, '#', &elems);
     std::string fpath;
     Type type = TYPEVOID;
+    std::string logname = "";
+    std::string logpx = "";
+    uint32_t logkinds = Logger::WARN | Logger::WARN;
     int64_t bnum = -1;
     int64_t capcount = -1;
     int64_t capsize = -1;
@@ -353,14 +373,11 @@ public:
     bool tcompress = false;
     int64_t msiz = -1;
     int64_t dfunit = -1;
-    Compressor* zcomp = NULL;
+    std::string zcompname = "";
     int64_t psiz = -1;
     Comparator* rcomp = NULL;
     int64_t pccap = 0;
-    std::ostream* erstrm = NULL;
-    bool ervbs = false;
     std::string zkey = "";
-    ArcfourCompressor* arccomp = NULL;
     std::vector<std::string>::iterator it = elems.begin();
     std::vector<std::string>::iterator itend = elems.end();
     if (it != itend) {
@@ -382,7 +399,15 @@ public:
       pv = std::strrchr(fstr, File::EXTCHR);
       if (pv) {
         pv++;
-        if (!std::strcmp(pv, "kch") || !std::strcmp(pv, "hdb")) {
+        if (!std::strcmp(pv, "kcph") || !std::strcmp(pv, "phdb")) {
+          type = TYPEPHASH;
+        } else if (!std::strcmp(pv, "kcpt") || !std::strcmp(pv, "ptdb")) {
+          type = TYPEPTREE;
+        } else if (!std::strcmp(pv, "kcc") || !std::strcmp(pv, "cdb")) {
+          type = TYPECACHE;
+        } else if (!std::strcmp(pv, "kcg") || !std::strcmp(pv, "gdb")) {
+          type = TYPEGRASS;
+        } else if (!std::strcmp(pv, "kch") || !std::strcmp(pv, "hdb")) {
           type = TYPEHASH;
         } else if (!std::strcmp(pv, "kct") || !std::strcmp(pv, "tdb")) {
           type = TYPETREE;
@@ -399,13 +424,17 @@ public:
         const char* key = fields[0].c_str();
         const char* value = fields[1].c_str();
         if (!std::strcmp(key, "type")) {
-          if (!std::strcmp(value, "-") || !std::strcmp(value, "phash")) {
+          if (!std::strcmp(value, "-") || !std::strcmp(value, "kcph") ||
+              !std::strcmp(value, "phdb") || !std::strcmp(value, "phash")) {
             type = TYPEPHASH;
-          } else if (!std::strcmp(value, "+") || !std::strcmp(value, "ptree")) {
+          } else if (!std::strcmp(value, "+") || !std::strcmp(value, "kcpt") ||
+                     !std::strcmp(value, "ptdb") || !std::strcmp(value, "ptree")) {
             type = TYPEPTREE;
-          } else if (!std::strcmp(value, "*") || !std::strcmp(value, "cache")) {
+          } else if (!std::strcmp(value, "*") || !std::strcmp(value, "kcc") ||
+                     !std::strcmp(value, "cdb") || !std::strcmp(value, "cache")) {
             type = TYPECACHE;
-          } else if (!std::strcmp(value, "%") || !std::strcmp(value, "grass")) {
+          } else if (!std::strcmp(value, "%") || !std::strcmp(value, "kcg") ||
+                     !std::strcmp(value, "gdb") || !std::strcmp(value, "grass")) {
             type = TYPEGRASS;
           } else if (!std::strcmp(value, "kch") || !std::strcmp(value, "hdb") ||
                      !std::strcmp(value, "hash")) {
@@ -420,6 +449,22 @@ public:
                      !std::strcmp(value, "for") || !std::strcmp(value, "forest")) {
             type = TYPEFOREST;
           }
+        } else if (!std::strcmp(key, "log") || !std::strcmp(key, "logger")) {
+          logname = value;
+        } else if (!std::strcmp(key, "logkinds") || !std::strcmp(key, "logkind")) {
+          if (!std::strcmp(value, "debug") || !std::strcmp(value, "debugging")) {
+            logkinds = Logger::DEBUG | Logger::INFO | Logger::WARN | Logger::ERROR;
+          } else if (!std::strcmp(value, "info") || !std::strcmp(value, "information")) {
+            logkinds = Logger::INFO | Logger::WARN | Logger::ERROR;
+          } else if (!std::strcmp(value, "warn") || !std::strcmp(value, "warning")) {
+            logkinds = Logger::WARN | Logger::ERROR;
+          } else if (!std::strcmp(value, "error") || !std::strcmp(value, "fatal")) {
+            logkinds = Logger::ERROR;
+          } else {
+            logkinds = atoix(value);
+          }
+        } else if (!std::strcmp(key, "logpx") || !std::strcmp(key, "lpx")) {
+          logpx = value;
         } else if (!std::strcmp(key, "bnum") || !std::strcmp(key, "buckets")) {
           bnum = atoix(value);
         } else if (!std::strcmp(key, "capcount") || !std::strcmp(key, "cap_count")) {
@@ -439,33 +484,7 @@ public:
         } else if (!std::strcmp(key, "dfunit") || !std::strcmp(key, "defrag")) {
           dfunit = atoix(value);
         } else if (!std::strcmp(key, "zcomp") || !std::strcmp(key, "compressor")) {
-          delete zcomp;
-          zcomp = NULL;
-          arccomp = NULL;
-          if (!std::strcmp(value, "zlib") || !std::strcmp(value, "raw")) {
-            zcomp = new ZLIBCompressor<ZLIB::RAW>;
-          } else if (!std::strcmp(value, "def") || !std::strcmp(value, "deflate")) {
-            zcomp = new ZLIBCompressor<ZLIB::DEFLATE>;
-          } else if (!std::strcmp(value, "gz") || !std::strcmp(value, "gzip")) {
-            zcomp = new ZLIBCompressor<ZLIB::GZIP>;
-          } else if (!std::strcmp(value, "lzo") || !std::strcmp(value, "oz")) {
-            zcomp = new LZOCompressor<LZO::RAW>;
-          } else if (!std::strcmp(value, "lzocrc") || !std::strcmp(value, "ozcrc")) {
-            zcomp = new LZOCompressor<LZO::CRC>;
-          } else if (!std::strcmp(value, "lzma") || !std::strcmp(value, "xz")) {
-            zcomp = new LZMACompressor<LZMA::RAW>;
-          } else if (!std::strcmp(value, "lzmacrc") || !std::strcmp(value, "xzcrc")) {
-            zcomp = new LZMACompressor<LZMA::CRC>;
-          } else if (!std::strcmp(value, "lzmasha") || !std::strcmp(value, "xzsha")) {
-            zcomp = new LZMACompressor<LZMA::SHA>;
-          } else if (!std::strcmp(value, "arc") || !std::strcmp(value, "rc4")) {
-            arccomp = new ArcfourCompressor();
-            zcomp = arccomp;
-          } else if (!std::strcmp(value, "arcz") || !std::strcmp(value, "rc4z")) {
-            arccomp = new ArcfourCompressor();
-            arccomp->set_compressor(&ZLIBRAWCOMP);
-            zcomp = arccomp;
-          }
+          zcompname = value;
         } else if (!std::strcmp(key, "psiz") || !std::strcmp(key, "page")) {
           psiz = atoix(value);
         } else if (!std::strcmp(key, "pccap") || !std::strcmp(key, "cache")) {
@@ -476,16 +495,6 @@ public:
           } else if (!std::strcmp(value, "dec") || !std::strcmp(value, "decimal")) {
             rcomp = &DECIMALCOMP;
           }
-        } else if (!std::strcmp(key, "erstrm") || !std::strcmp(key, "reporter")) {
-          if (!std::strcmp(value, "stdout") || !std::strcmp(value, "cout") ||
-              atoix(value) == 1) {
-            erstrm = &std::cout;
-          } else if (!std::strcmp(value, "stderr") || !std::strcmp(value, "cerr") ||
-                     atoix(value) == 2) {
-            erstrm = &std::cerr;
-          }
-        } else if (!std::strcmp(key, "ervbs") || !std::strcmp(key, "erv")) {
-          ervbs = !std::strcmp(value, "true") || atoix(value) > 0;
         } else if (!std::strcmp(key, "zkey") || !std::strcmp(key, "pass") ||
                    !std::strcmp(key, "password")) {
           zkey = value;
@@ -493,10 +502,58 @@ public:
       }
       it++;
     }
-    if (zcomp) {
-      delete zcomp_;
-      zcomp_ = zcomp;
-      tcompress = true;
+    delete logger_;
+    delete logstrm_;
+    logstrm_ = NULL;
+    logger_ = NULL;
+    if (!logname.empty()) {
+      std::ostream* logstrm = NULL;
+      if (logname == "-" || logname == "[stdout]" || logname == "[cout]") {
+        logstrm = &std::cout;
+      } else if (logname == "+" || logname == "[stderr]" || logname == "[cerr]") {
+        logstrm = &std::cerr;
+      } else {
+        std::ofstream *ofs = new std::ofstream;
+        ofs->open(logname.c_str(),
+                  std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+        if (!*ofs) ofs->open(logname.c_str(), std::ios_base::out | std::ios_base::binary);
+        if (ofs) {
+          logstrm = ofs;
+          logstrm_ = ofs;
+        } else {
+          delete ofs;
+        }
+      }
+      if (logstrm) logger_ = new StreamLogger(logstrm, logpx.c_str());
+    }
+    delete zcomp_;
+    zcomp_ = NULL;
+    ArcfourCompressor* arccomp = NULL;
+    if (!zcompname.empty()) {
+      if (zcompname == "zlib" || zcompname == "raw") {
+        zcomp_ = new ZLIBCompressor<ZLIB::RAW>;
+      } else if (zcompname == "def" || zcompname == "deflate") {
+        zcomp_ = new ZLIBCompressor<ZLIB::DEFLATE>;
+      } else if (zcompname == "gz" || zcompname == "gzip") {
+        zcomp_ = new ZLIBCompressor<ZLIB::GZIP>;
+      } else if (zcompname == "lzo" || zcompname == "oz") {
+        zcomp_ = new LZOCompressor<LZO::RAW>;
+      } else if (zcompname == "lzocrc" || zcompname == "ozcrc") {
+        zcomp_ = new LZOCompressor<LZO::CRC>;
+      } else if (zcompname == "lzma" || zcompname == "xz") {
+        zcomp_ = new LZMACompressor<LZMA::RAW>;
+      } else if (zcompname == "lzmacrc" || zcompname == "xzcrc") {
+        zcomp_ = new LZMACompressor<LZMA::CRC>;
+      } else if (zcompname == "lzmasha" || zcompname == "xzsha") {
+        zcomp_ = new LZMACompressor<LZMA::SHA>;
+      } else if (zcompname == "arc" || zcompname == "rc4") {
+        arccomp = new ArcfourCompressor();
+        zcomp_ = arccomp;
+      } else if (zcompname == "arcz" || zcompname == "rc4z") {
+        arccomp = new ArcfourCompressor();
+        arccomp->set_compressor(&ZLIBRAWCOMP);
+        zcomp_ = arccomp;
+      }
     }
     BasicDB *db;
     switch (type) {
@@ -506,11 +563,13 @@ public:
       }
       case TYPEPHASH: {
         ProtoHashDB* phdb = new ProtoHashDB();
+        if (logger_) phdb->tune_logger(logger_, logkinds);
         db = phdb;
         break;
       }
       case TYPEPTREE: {
         ProtoTreeDB *ptdb = new ProtoTreeDB();
+        if (logger_) ptdb->tune_logger(logger_, logkinds);
         db = ptdb;
         break;
       }
@@ -518,12 +577,12 @@ public:
         int8_t opts = 0;
         if (tcompress) opts |= CacheDB::TCOMPRESS;
         CacheDB* cdb = new CacheDB();
+        if (logger_) cdb->tune_logger(logger_, logkinds);
         if (opts > 0) cdb->tune_options(opts);
         if (bnum > 0) cdb->tune_buckets(bnum);
-        if (zcomp) cdb->tune_compressor(zcomp);
+        if (zcomp_) cdb->tune_compressor(zcomp_);
         if (capcount > 0) cdb->cap_count(capcount);
         if (capsize > 0) cdb->cap_size(capsize);
-        if (erstrm) cdb->tune_error_reporter(erstrm, ervbs);
         db = cdb;
         break;
       }
@@ -531,13 +590,13 @@ public:
         int8_t opts = 0;
         if (tcompress) opts |= GrassDB::TCOMPRESS;
         GrassDB* gdb = new GrassDB();
+        if (logger_) gdb->tune_logger(logger_, logkinds);
         if (opts > 0) gdb->tune_options(opts);
         if (bnum > 0) gdb->tune_buckets(bnum);
         if (psiz > 0) gdb->tune_page(psiz);
-        if (zcomp) gdb->tune_compressor(zcomp);
+        if (zcomp_) gdb->tune_compressor(zcomp_);
         if (pccap > 0) gdb->tune_page_cache(pccap);
         if (rcomp) gdb->tune_comparator(rcomp);
-        if (erstrm) gdb->tune_error_reporter(erstrm, ervbs);
         db = gdb;
         break;
       }
@@ -547,14 +606,14 @@ public:
         if (tlinear) opts |= HashDB::TLINEAR;
         if (tcompress) opts |= HashDB::TCOMPRESS;
         HashDB* hdb = new HashDB();
+        if (logger_) hdb->tune_logger(logger_, logkinds);
         if (apow >= 0) hdb->tune_alignment(apow);
         if (fpow >= 0) hdb->tune_fbp(fpow);
         if (opts > 0) hdb->tune_options(opts);
         if (bnum > 0) hdb->tune_buckets(bnum);
         if (msiz >= 0) hdb->tune_map(msiz);
         if (dfunit > 0) hdb->tune_defrag(dfunit);
-        if (zcomp) hdb->tune_compressor(zcomp);
-        if (erstrm) hdb->tune_error_reporter(erstrm, ervbs);
+        if (zcomp_) hdb->tune_compressor(zcomp_);
         db = hdb;
         break;
       }
@@ -564,6 +623,7 @@ public:
         if (tlinear) opts |= TreeDB::TLINEAR;
         if (tcompress) opts |= TreeDB::TCOMPRESS;
         TreeDB* tdb = new TreeDB();
+        if (logger_) tdb->tune_logger(logger_, logkinds);
         if (apow >= 0) tdb->tune_alignment(apow);
         if (fpow >= 0) tdb->tune_fbp(fpow);
         if (opts > 0) tdb->tune_options(opts);
@@ -571,10 +631,9 @@ public:
         if (psiz > 0) tdb->tune_page(psiz);
         if (msiz >= 0) tdb->tune_map(msiz);
         if (dfunit > 0) tdb->tune_defrag(dfunit);
-        if (zcomp) tdb->tune_compressor(zcomp);
+        if (zcomp_) tdb->tune_compressor(zcomp_);
         if (pccap > 0) tdb->tune_page_cache(pccap);
         if (rcomp) tdb->tune_comparator(rcomp);
-        if (erstrm) tdb->tune_error_reporter(erstrm, ervbs);
         db = tdb;
         break;
       }
@@ -582,8 +641,9 @@ public:
         int8_t opts = 0;
         if (tcompress) opts |= DirDB::TCOMPRESS;
         DirDB* ddb = new DirDB();
+        if (logger_) ddb->tune_logger(logger_, logkinds);
         if (opts > 0) ddb->tune_options(opts);
-        if (zcomp) ddb->tune_compressor(zcomp);
+        if (zcomp_) ddb->tune_compressor(zcomp_);
         db = ddb;
         break;
       }
@@ -591,13 +651,13 @@ public:
         int8_t opts = 0;
         if (tcompress) opts |= TreeDB::TCOMPRESS;
         ForestDB* fdb = new ForestDB();
+        if (logger_) fdb->tune_logger(logger_, logkinds);
         if (opts > 0) fdb->tune_options(opts);
         if (bnum > 0) fdb->tune_buckets(bnum);
         if (psiz > 0) fdb->tune_page(psiz);
-        if (zcomp) fdb->tune_compressor(zcomp);
+        if (zcomp_) fdb->tune_compressor(zcomp_);
         if (pccap > 0) fdb->tune_page_cache(pccap);
         if (rcomp) fdb->tune_comparator(rcomp);
-        if (erstrm) fdb->tune_error_reporter(erstrm, ervbs);
         db = fdb;
         break;
       }
@@ -636,9 +696,13 @@ public:
       err = true;
     }
     delete zcomp_;
+    delete logger_;
+    delete logstrm_;
     delete db_;
     type_ = TYPEVOID;
     db_ = NULL;
+    logstrm_ = NULL;
+    logger_ = NULL;
     zcomp_ = NULL;
     return !err;
   }
@@ -647,15 +711,17 @@ public:
    * @param hard true for physical synchronization with the device, or false for logical
    * synchronization with the file system.
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+  bool synchronize(bool hard = false, FileProcessor* proc = NULL,
+                   ProgressChecker* checker = NULL) {
     _assert_(true);
     if (type_ == TYPEVOID) {
       set_error(Error::INVALID, "not opened");
       return false;
     }
-    return db_->synchronize(hard, proc);
+    return db_->synchronize(hard, proc, checker);
   }
   /**
    * Begin transaction.
@@ -760,16 +826,6 @@ public:
     return db_->status(strmap);
   }
   /**
-   * Create a cursor object.
-   * @return the return value is the created cursor object.
-   * @note Because the object of the return value is allocated by the constructor, it should be
-   * released with the delete operator when it is no longer in use.
-   */
-  Cursor* cursor() {
-    _assert_(true);
-    return new Cursor(this);
-  }
-  /**
    * Reveal the inner database object.
    * @return the inner database object, or NULL on failure.
    */
@@ -781,7 +837,160 @@ public:
     }
     return db_;
   }
+  /**
+   * Merge records from other databases.
+   * @param srcary an array of the source detabase objects.
+   * @param srcnum the number of the elements of the source array.
+   * @param mode the merge mode.  PolyDB::MSET to overwrite the existing value, PolyDB::MADD to
+   * keep the existing value, PolyDB::MAPPEND to append the new value.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
+   * @return true on success, or false on failure.
+   */
+  bool merge(BasicDB** srcary, size_t srcnum, MergeMode mode = MSET,
+             ProgressChecker* checker = NULL) {
+    _assert_(srcary && srcnum <= MEMMAXSIZ);
+    if (type_ == TYPEVOID) {
+      set_error(Error::INVALID, "not opened");
+      return false;
+    }
+    bool err = false;
+    Comparator* comp;
+    switch (type_) {
+      case TYPEGRASS: {
+        comp = ((GrassDB*)db_)->rcomp();
+        break;
+      }
+      case TYPETREE: {
+        comp = ((TreeDB*)db_)->rcomp();
+        break;
+      }
+      case TYPEFOREST: {
+        comp = ((ForestDB*)db_)->rcomp();
+        break;
+      }
+      default: {
+        comp = NULL;
+        break;
+      }
+    }
+    if (!comp) comp = &LEXICALCOMP;
+    std::priority_queue<MergeLine> lines;
+    int64_t allcnt = 0;
+    for (size_t i = 0; i < srcnum; i++) {
+      MergeLine line;
+      line.cur = srcary[i]->cursor();
+      line.comp = comp;
+      line.cur->jump();
+      line.kbuf = line.cur->get(&line.ksiz, &line.vbuf, &line.vsiz, true);
+      if (line.kbuf) {
+        lines.push(line);
+        int64_t count = srcary[i]->count();
+        if (count > 0) allcnt += count;
+      } else {
+        delete line.cur;
+      }
+    }
+    if (checker && !checker->check("merge", "beginning", 0, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
+      err = true;
+    }
+    int64_t curcnt = 0;
+    while (!err && !lines.empty()) {
+      MergeLine line = lines.top();
+      lines.pop();
+      switch (mode) {
+        case MSET: {
+          if (!db_->set(line.kbuf, line.ksiz, line.vbuf, line.vsiz)) err = true;
+          break;
+        }
+        case MADD: {
+          if (!db_->add(line.kbuf, line.ksiz, line.vbuf, line.vsiz) &&
+              db_->error() != Error::DUPREC) err = true;
+          break;
+        }
+        case MAPPEND: {
+          if (!db_->append(line.kbuf, line.ksiz, line.vbuf, line.vsiz)) err = true;
+          break;
+        }
+      }
+      delete[] line.kbuf;
+      line.kbuf = line.cur->get(&line.ksiz, &line.vbuf, &line.vsiz, true);
+      if (line.kbuf) {
+        lines.push(line);
+      } else {
+        delete line.cur;
+      }
+      curcnt++;
+      if (checker && !checker->check("merge", "processing", curcnt, allcnt)) {
+        set_error(Error::LOGIC, "checker failed");
+        err = true;
+        break;
+      }
+    }
+    if (checker && !checker->check("merge", "ending", -1, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
+      err = true;
+    }
+    while (!lines.empty()) {
+      MergeLine line = lines.top();
+      lines.pop();
+      delete[] line.kbuf;
+      delete line.cur;
+    }
+    return !err;
+  }
+  /**
+   * Create a cursor object.
+   * @return the return value is the created cursor object.
+   * @note Because the object of the return value is allocated by the constructor, it should be
+   * released with the delete operator when it is no longer in use.
+   */
+  Cursor* cursor() {
+    _assert_(true);
+    return new Cursor(this);
+  }
 private:
+  /**
+   * Stream logger implementation.
+   */
+  class StreamLogger : public Logger {
+  public:
+    /** constructor */
+    StreamLogger(std::ostream* strm, const char* prefix) : strm_(strm), prefix_(prefix) {}
+    /** print a log message */
+    void log(const char* file, int32_t line, const char* func, Kind kind,
+             const char* message) {
+      _assert_(file && line > 0 && func && message);
+      const char* kstr = "MISC";
+      switch (kind) {
+        case Logger::DEBUG: kstr = "DEBUG"; break;
+        case Logger::INFO: kstr = "INFO"; break;
+        case Logger::WARN: kstr = "WARN"; break;
+        case Logger::ERROR: kstr = "ERROR"; break;
+      }
+      if (!prefix_.empty()) *strm_ << prefix_ << ": ";
+      *strm_ << "[" << kstr << "]: " << file << ": " << line << ": " << func << ": " <<
+        message << std::endl;
+    }
+  private:
+    std::ostream* strm_;                 ///< output stream
+    std::string prefix_;                 ///< prefix of each message
+  };
+  /**
+   * Front line of a merging list.
+   */
+  struct MergeLine {
+    BasicDB::Cursor* cur;                ///< cursor
+    Comparator* comp;                    ///< comparator
+    char* kbuf;                          ///< pointer to the key
+    size_t ksiz;                         ///< size of the key
+    const char* vbuf;                    ///< pointer to the value
+    size_t vsiz;                         ///< size of the value
+    /** comparing operator */
+    bool operator <(const MergeLine& right) const {
+      return comp->compare(kbuf, ksiz, right.kbuf, right.ksiz) > 0;
+    }
+  };
   /** Dummy constructor to forbid the use. */
   PolyDB(const PolyDB&);
   /** Dummy Operator to forbid the use. */
@@ -791,7 +1000,11 @@ private:
   /** The internal database. */
   BasicDB* db_;
   /** The last happened error. */
-  TSD<Error> error_;
+  Error error_;
+  /** The internal log file. */
+  std::ostream* logstrm_;
+  /** The internal logger. */
+  Logger* logger_;
   /** The custom compressor. */
   Compressor* zcomp_;
 };

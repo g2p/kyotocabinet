@@ -107,15 +107,15 @@ public:
       _assert_(visitor);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (writable && !(db_->writer_)) {
-        db_->set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+        db_->set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
         return false;
       }
       if (!alive_) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
       bool err = false;
@@ -137,7 +137,7 @@ public:
       } else {
         while (true) {
           if (!dir_.read(&name_)) {
-            db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+            db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
             disable();
             break;
           }
@@ -157,7 +157,7 @@ public:
               } while (*name_.c_str() == *DDBMAGICFILE);
             }
           } else {
-            db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+            db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
             err = true;
           }
           break;
@@ -174,17 +174,17 @@ public:
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (alive_ && !disable()) return false;
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (!dir_.open(db_->path_)) {
-        db_->set_error(__FILE__, __LINE__, Error::SYSTEM, "opening a directory failed");
+        db_->set_error(_KCCODELINE_, Error::SYSTEM, "opening a directory failed");
         return false;
       }
       alive_ = true;
       do {
         if (!dir_.read(&name_)) {
-          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
           disable();
           return false;
         }
@@ -202,13 +202,13 @@ public:
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (alive_ && !disable()) return false;
       if (!dir_.open(db_->path_)) {
-        db_->set_error(__FILE__, __LINE__, Error::SYSTEM, "opening a directory failed");
+        db_->set_error(_KCCODELINE_, Error::SYSTEM, "opening a directory failed");
         return false;
       }
       alive_ = true;
       while (true) {
         if (!dir_.read(&name_)) {
-          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
           disable();
           return false;
         }
@@ -222,7 +222,7 @@ public:
           }
           delete[] rec.rbuf;
         } else {
-          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
           disable();
           return false;
         }
@@ -287,16 +287,16 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (!alive_) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
       do {
         if (!dir_.read(&name_)) {
-          db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+          db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
           disable();
           return false;
         }
@@ -333,7 +333,7 @@ public:
     bool disable() {
       bool err = false;
       if (!dir_.close()) {
-        db_->set_error(__FILE__, __LINE__, Error::SYSTEM, "closing a directory failed");
+        db_->set_error(_KCCODELINE_, Error::SYSTEM, "closing a directory failed");
         err = true;
       }
       alive_ = false;
@@ -371,7 +371,7 @@ public:
    * Default constructor.
    */
   explicit DirDB() :
-    mlock_(), rlock_(), error_(), erstrm_(NULL), ervbs_(false),
+    mlock_(), rlock_(), error_(), logger_(NULL), logkinds_(0),
     omode_(0), writer_(false), autotran_(false), autosync_(false), recov_(false), reorg_(false),
     file_(), curs_(), path_(""),
     libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEDIR),
@@ -410,12 +410,12 @@ public:
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       mlock_.unlock();
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
@@ -435,22 +435,23 @@ public:
    * Iterate to accept a visitor for each record.
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  bool iterate(Visitor *visitor, bool writable = true) {
+  bool iterate(Visitor *visitor, bool writable = true, ProgressChecker* checker = NULL) {
     _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (writable && !writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
-    if (!iterate_impl(visitor)) err = true;
+    if (!iterate_impl(visitor, checker)) err = true;
     return !err;
   }
   /**
@@ -493,7 +494,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     writer_ = false;
@@ -525,7 +526,7 @@ public:
     bool hot = false;
     if (writer_ && (mode & OTRUNCATE) && File::status(magicpath)) {
       if (!file_.open(magicpath, fmode)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
         return false;
       }
       if (!remove_files(cpath)) {
@@ -537,20 +538,20 @@ public:
         File::remove_directory(walpath);
       }
       if (!file_.close()) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
         return false;
       }
       const std::string& buf = format_magic(0, 0);
       if (!File::write_file(magicpath, buf.c_str(), buf.size())) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "writing a file failed");
         return false;
       }
       if (File::status(metapath) && !File::remove(metapath)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "removing a file failed");
         return false;
       }
       if (File::status(opqpath) && !File::remove(opqpath)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "removing a file failed");
         return false;
       }
       hot = true;
@@ -558,29 +559,29 @@ public:
     File::Status sbuf;
     if (File::status(cpath, &sbuf)) {
       if (!sbuf.isdir) {
-        set_error(__FILE__, __LINE__, Error::NOPERM, "invalid path (not directory)");
+        set_error(_KCCODELINE_, Error::NOPERM, "invalid path (not directory)");
         return false;
       }
       if (!File::status(magicpath)) {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data");
+        set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data");
         return false;
       }
       if (!file_.open(magicpath, fmode)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
         return false;
       }
     } else if (writer_ && (mode & OCREATE)) {
       hot = true;
       if (!File::make_directory(cpath)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "making a directory failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "making a directory failed");
         return false;
       }
       if (!file_.open(magicpath, fmode)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
         return false;
       }
     } else {
-      set_error(__FILE__, __LINE__, Error::NOFILE, "open failed (file not found)");
+      set_error(_KCCODELINE_, Error::NOFILE, "open failed (file not found)");
       return false;
     }
     if (hot) {
@@ -597,7 +598,7 @@ public:
       }
       std::memset(opaque_, 0, sizeof(opaque_));
       if (autosync_ && !File::synchronize_whole()) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "synchronizing the file system failed");
         file_.close();
         return false;
       }
@@ -627,7 +628,7 @@ public:
           dir.close();
           File::remove_directory(walpath);
           recov_ = true;
-          report(__FILE__, __LINE__, "info", "recovered by the WAL directory");
+          report(_KCCODELINE_, Logger::WARN, "recovered by the WAL directory");
         }
       }
       if (!load_meta(metapath)) {
@@ -637,8 +638,8 @@ public:
       comp_ = (opts_ & TCOMPRESS) ? embcomp_ : NULL;
       uint8_t chksum = calc_checksum();
       if (chksum != chksum_) {
-        set_error(__FILE__, __LINE__, Error::INVALID, "invalid module checksum");
-        report(__FILE__, __LINE__, "info", "saved=%02X calculated=%02X",
+        set_error(_KCCODELINE_, Error::INVALID, "invalid module checksum");
+        report(_KCCODELINE_, Logger::WARN, "saved=%02X calculated=%02X",
                (unsigned)chksum_, (unsigned)chksum);
         file_.close();
         return false;
@@ -652,21 +653,21 @@ public:
         if (!writer_ && !(mode & ONOLOCK)) {
           const std::string& buf = format_magic(count_, size_);
           if (!File::write_file(magicpath, buf.c_str(), buf.size())) {
-            set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
+            set_error(_KCCODELINE_, Error::SYSTEM, "writing a file failed");
             file_.close();
             return false;
           }
           if (!file_.refresh()) {
-            set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+            set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
             file_.close();
             return false;
           }
         }
-        report(__FILE__, __LINE__, "info", "re-calculated magic data");
+        report(_KCCODELINE_, Logger::WARN, "re-calculated magic data");
       }
     }
     if (writer_ && !file_.truncate(0)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       file_.close();
       return false;
     }
@@ -694,7 +695,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     bool err = false;
@@ -705,7 +706,7 @@ public:
       if (!dump_opaque()) err = true;
     }
     if (!file_.close()) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     omode_ = 0;
@@ -716,22 +717,24 @@ public:
    * @param hard true for physical synchronization with the device, or false for logical
    * synchronization with the file system.
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+  bool synchronize(bool hard = false, FileProcessor* proc = NULL,
+                   ProgressChecker* checker = NULL) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     rlock_.lock_reader_all();
     bool err = false;
-    if (!synchronize_impl(hard, proc)) err = true;
+    if (!synchronize_impl(hard, proc, checker)) err = true;
     rlock_.unlock_all();
     return !err;
   }
@@ -746,12 +749,12 @@ public:
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
       if (omode_ == 0) {
-        set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        set_error(_KCCODELINE_, Error::INVALID, "not opened");
         mlock_.unlock();
         return false;
       }
       if (!writer_) {
-        set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+        set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
         mlock_.unlock();
         return false;
       }
@@ -779,17 +782,17 @@ public:
     _assert_(true);
     mlock_.lock_writer();
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       mlock_.unlock();
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
     if (tran_) {
-      set_error(__FILE__, __LINE__, Error::LOGIC, "competition avoided");
+      set_error(_KCCODELINE_, Error::LOGIC, "competition avoided");
       mlock_.unlock();
       return false;
     }
@@ -811,11 +814,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!tran_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not in transaction");
+      set_error(_KCCODELINE_, Error::INVALID, "not in transaction");
       return false;
     }
     bool err = false;
@@ -835,11 +838,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
@@ -854,20 +857,20 @@ public:
           const std::string& walpath = walpath_ + File::PATHCHR + name;
           if (File::status(walpath)) {
             if (!File::remove(rpath)) {
-              set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
+              set_error(_KCCODELINE_, Error::SYSTEM, "removing a file failed");
               err = true;
             }
           } else if (!File::rename(rpath, walpath)) {
-            set_error(__FILE__, __LINE__, Error::SYSTEM, "renaming a file failed");
+            set_error(_KCCODELINE_, Error::SYSTEM, "renaming a file failed");
             err = true;
           }
         }
         if (!dir.close()) {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, "closing a directory failed");
+          set_error(_KCCODELINE_, Error::SYSTEM, "closing a directory failed");
           err = true;
         }
       } else {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "opening a directory failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "opening a directory failed");
         err = true;
       }
     } else {
@@ -888,7 +891,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return count_;
@@ -901,7 +904,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return size_impl();
@@ -914,7 +917,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return "";
     }
     return path_;
@@ -928,7 +931,7 @@ public:
     _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     (*strmap)["type"] = strprintf("%d", (int)TYPEDIR);
@@ -958,20 +961,21 @@ public:
     return new Cursor(this);
   }
   /**
-   * Set the internal error reporter.
-   * @param erstrm a stream object into which internal error messages are stored.
-   * @param ervbs true to report all errors, or false to report fatal errors only.
-   * @return true on success, or false on failure.
+   * Set the internal logger.
+   * @param logger the logger object.
+   * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
+   * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
+   * error.
    */
-  bool tune_error_reporter(std::ostream* erstrm, bool ervbs) {
-    _assert_(erstrm);
+  bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) {
+    _assert_(logger);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    erstrm_ = erstrm;
-    ervbs_ = ervbs;
+    logger_ = logger;
+    logkinds_ = kinds;
     return true;
   }
   /**
@@ -983,7 +987,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     opts_ = opts;
@@ -998,7 +1002,7 @@ public:
     _assert_(comp);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     embcomp_ = comp;
@@ -1012,7 +1016,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return NULL;
     }
     return opaque_;
@@ -1025,11 +1029,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!writer_) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
@@ -1039,54 +1043,62 @@ public:
 protected:
   /**
    * Set the error information.
-   * @param file the file name of the epicenter.
-   * @param line the line number of the epicenter.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
    * @param code an error code.
    * @param message a supplement message.
    */
-  void set_error(const char* file, int32_t line,
+  void set_error(const char* file, int32_t line, const char* func,
                  Error::Code code, const char* message) {
-    _assert_(file && message);
+    _assert_(file && line > 0 && func && message);
     set_error(code, message);
-    if (ervbs_ || code == Error::BROKEN || code == Error::SYSTEM)
-      report(file, line, "error", "%d: %s: %s", code, Error::codename(code), message);
+    if (logger_) {
+      Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
+        Logger::ERROR : Logger::INFO;
+      if (kind & logkinds_)
+        report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
+    }
   }
   /**
    * Report a message for debugging.
-   * @param file the file name of the epicenter.
-   * @param line the line number of the epicenter.
-   * @param type the type string.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
    * @param format the printf-like format string.
    * @param ... used according to the format string.
    */
-  void report(const char* file, int32_t line, const char* type,
+  void report(const char* file, int32_t line, const char* func, Logger::Kind kind,
               const char* format, ...) {
-    _assert_(file && line > 0 && type && format);
-    if (!erstrm_) return;
-    const std::string& path = path_.empty() ? "-" : path_;
+    _assert_(file && line > 0 && func && format);
+    if (!logger_ && !(kind & logkinds_)) return;
     std::string message;
+    strprintf(&message, "%s: ", path_.empty() ? "-" : path_.c_str());
     va_list ap;
     va_start(ap, format);
-    strprintf(&message, format, ap);
+    vstrprintf(&message, format, ap);
     va_end(ap);
-    *erstrm_ << "[" << type << "]: " << path << ": " << file << ": " << line;
-    *erstrm_ << ": " << message << std::endl;
+    logger_->log(file, line, func, kind, message.c_str());
   }
   /**
    * Report the content of a binary buffer for debugging.
    * @param file the file name of the epicenter.
    * @param line the line number of the epicenter.
-   * @param type the type string.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
    * @param name the name of the information.
    * @param buf the binary buffer.
    * @param size the size of the binary buffer
    */
-  void report_binary(const char* file, int32_t line, const char* type,
+  void report_binary(const char* file, int32_t line, const char* func, Logger::Kind kind,
                      const char* name, const char* buf, size_t size) {
-    _assert_(file && line > 0 && type && name && buf && size <= MEMMAXSIZ);
-    if (!erstrm_) return;
+    _assert_(file && line > 0 && func && name && buf && size <= MEMMAXSIZ);
+    if (!logger_) return;
     char* hex = hexencode(buf, size);
-    report(file, line, type, "%s=%s", name, hex);
+    report(file, line, func, kind, "%s=%s", name, hex);
     delete[] hex;
   }
   /**
@@ -1098,7 +1110,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     type_ = type;
@@ -1112,7 +1124,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return libver_;
@@ -1125,7 +1137,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return librev_;
@@ -1138,7 +1150,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return fmtver_;
@@ -1151,7 +1163,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return chksum_;
@@ -1164,7 +1176,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return type_;
@@ -1177,7 +1189,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return opts_;
@@ -1190,7 +1202,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return NULL;
     }
     return comp_;
@@ -1203,7 +1215,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return recov_;
@@ -1216,7 +1228,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return reorg_;
@@ -1326,7 +1338,7 @@ private:
     _assert_(true);
     const std::string& buf = format_magic(count_, size_);
     if (!file_.write(0, buf.c_str(), buf.size())) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
     return true;
@@ -1375,7 +1387,7 @@ private:
     size_ = 0;
     DirStream dir;
     if (!dir.open(cpath)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "opening a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "opening a directory failed");
       return false;
     }
     bool err = false;
@@ -1388,12 +1400,12 @@ private:
         count_ += 1;
         size_ += sbuf.size - 4;
       } else {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "checking the status of a file failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "checking the status of a file failed");
         err = true;
       }
     }
     if (!dir.close()) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "closing a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "closing a directory failed");
       err = true;
     }
     return !err;
@@ -1438,7 +1450,7 @@ private:
     wp += std::sprintf(wp, "%u\n", opts_);
     wp += std::sprintf(wp, "%s\n", DDBMAGICEOF);
     if (!File::write_file(metapath, buf, wp - buf)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "writing a file failed");
       err = true;
     }
     return !err;
@@ -1453,14 +1465,14 @@ private:
     int64_t size;
     char* buf = File::read_file(metapath, &size, DDBMETABUFSIZ);
     if (!buf) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "reading a file failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "reading a file failed");
       return false;
     }
     std::string str(buf, size);
     delete[] buf;
     std::vector<std::string> elems;
     if (strsplit(str, '\n', &elems) < 7 || elems[6] != DDBMAGICEOF) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid meta data file");
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid meta data file");
       return false;
     }
     libver_ = atoi(elems[0].c_str());
@@ -1480,7 +1492,7 @@ private:
     bool err = false;
     const std::string& opath = path_ + File::PATHCHR + DDBOPAQUEFILE;
     if (!File::write_file(opath, opaque_, sizeof(opaque_))) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "writing a file failed");
       err = true;
     }
     return !err;
@@ -1509,7 +1521,7 @@ private:
     _assert_(true);
     DirStream dir;
     if (!dir.open(cpath)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "opening a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "opening a directory failed");
       return false;
     }
     bool err = false;
@@ -1518,12 +1530,12 @@ private:
       if (*name.c_str() == *DDBMAGICFILE) continue;
       const std::string& rpath = cpath + File::PATHCHR + name;
       if (!File::remove(rpath)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "removing a file failed");
         err = true;
       }
     }
     if (!dir.close()) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "closing a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "closing a directory failed");
       err = true;
     }
     return !err;
@@ -1544,7 +1556,7 @@ private:
       size_t zsiz;
       char* zbuf = comp_->decompress(rbuf, rsiz, &zsiz);
       if (!zbuf) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "data decompression failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "data decompression failed");
         delete[] rbuf;
         return false;
       }
@@ -1554,9 +1566,9 @@ private:
     }
     const char* rp = rbuf;
     if (rsiz < 4 || *(const unsigned char*)rp != DDBRECMAGIC) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "invalid magic data of a record");
-      report(__FILE__, __LINE__, "info", "rpath=%s", rpath.c_str());
-      report_binary(__FILE__, __LINE__, "info", "rbuf", rbuf, rsiz);
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a record");
+      report(_KCCODELINE_, Logger::WARN, "rpath=%s", rpath.c_str());
+      report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
       delete[] rbuf;
       return false;
     }
@@ -1567,7 +1579,7 @@ private:
     rsiz -= step;
     size_t ksiz = num;
     if (rsiz < 2) {
-      report(__FILE__, __LINE__, "info", "rpath=%s", rpath.c_str());
+      report(_KCCODELINE_, Logger::WARN, "rpath=%s", rpath.c_str());
       delete[] rbuf;
       return false;
     }
@@ -1577,8 +1589,8 @@ private:
     size_t vsiz = num;
     if (rsiz < 1 + (int64_t)ksiz + (int64_t)vsiz ||
         ((const unsigned char*)rp)[ksiz+vsiz] != DDBRECMAGIC) {
-      set_error(__FILE__, __LINE__, Error::BROKEN, "too short record");
-      report(__FILE__, __LINE__, "info", "rpath=%s", rpath.c_str());
+      set_error(_KCCODELINE_, Error::BROKEN, "too short record");
+      report(_KCCODELINE_, Logger::WARN, "rpath=%s", rpath.c_str());
       delete[] rbuf;
       return false;
     }
@@ -1620,7 +1632,7 @@ private:
       size_t zsiz;
       char* zbuf = comp_->compress(rbuf, rsiz, &zsiz);
       if (!zbuf) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "data compression failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "data compression failed");
         delete[] rbuf;
         *wsp = 0;
         return false;
@@ -1632,17 +1644,17 @@ private:
     if (autotran_ && !tran_) {
       const std::string& tpath = path_ + File::PATHCHR + DDBATRANPREFIX + name;
       if (!File::write_file(tpath, rbuf, rsiz)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "writing a file failed");
         err = true;
       }
       if (!File::rename(tpath, rpath)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "renaming a file failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "renaming a file failed");
         err = true;
         File::remove(tpath);
       }
     } else {
       if (!File::write_file(rpath, rbuf, rsiz)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "writing a file failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "writing a file failed");
         err = true;
       }
     }
@@ -1710,7 +1722,7 @@ private:
         if (!accept_visit_full(kbuf, ksiz, rec.vbuf, rec.vsiz, rec.rsiz,
                                visitor, rpath, name)) err = true;
       } else {
-        set_error(__FILE__, __LINE__, Error::LOGIC, "collision of the hash values");
+        set_error(_KCCODELINE_, Error::LOGIC, "collision of the hash values");
         err = true;
       }
       delete[] rec.rbuf;
@@ -1743,16 +1755,16 @@ private:
         const std::string& walpath = walpath_ + File::PATHCHR + name;
         if (File::status(walpath)) {
           if (!File::remove(rpath)) {
-            set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
+            set_error(_KCCODELINE_, Error::SYSTEM, "removing a file failed");
             err = true;
           }
         } else if (!File::rename(rpath, walpath)) {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, "renaming a file failed");
+          set_error(_KCCODELINE_, Error::SYSTEM, "renaming a file failed");
           err = true;
         }
       } else {
         if (!File::remove(rpath)) {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
+          set_error(_KCCODELINE_, Error::SYSTEM, "removing a file failed");
           err = true;
         }
       }
@@ -1760,14 +1772,14 @@ private:
       count_ -= 1;
       size_ -= osiz;
       if (autosync_ && !File::synchronize_whole()) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "synchronizing the file system failed");
         err = true;
       }
     } else if (rbuf != Visitor::NOP) {
       if (tran_) {
         const std::string& walpath = walpath_ + File::PATHCHR + name;
         if (!File::status(walpath) && !File::rename(rpath, walpath)) {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, "renaming a file failed");
+          set_error(_KCCODELINE_, Error::SYSTEM, "renaming a file failed");
           err = true;
         }
       }
@@ -1775,7 +1787,7 @@ private:
       if (!write_record(rpath, name, kbuf, ksiz, rbuf, rsiz, &wsiz)) err = true;
       size_ += (int64_t)wsiz - (int64_t)osiz;
       if (autosync_ && !File::synchronize_whole()) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "synchronizing the file system failed");
         err = true;
       }
     }
@@ -1800,7 +1812,7 @@ private:
       if (tran_) {
         const std::string& walpath = walpath_ + File::PATHCHR + name;
         if (!File::status(walpath) && !File::write_file(walpath, "", 0)) {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, "renaming a file failed");
+          set_error(_KCCODELINE_, Error::SYSTEM, "renaming a file failed");
           err = true;
         }
       }
@@ -1809,7 +1821,7 @@ private:
       count_ += 1;
       size_ += wsiz;
       if (autosync_ && !File::synchronize_whole()) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "synchronizing the file system failed");
         err = true;
       }
     }
@@ -1818,17 +1830,24 @@ private:
   /**
    * Iterate to accept a visitor for each record.
    * @param visitor a visitor object.
+   * @param checker a progress checker object.
    * @return true on success, or false on failure.
    */
-  bool iterate_impl(Visitor* visitor) {
+  bool iterate_impl(Visitor* visitor, ProgressChecker* checker) {
     _assert_(visitor);
     DirStream dir;
     if (!dir.open(path_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "opening a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "opening a directory failed");
+      return false;
+    }
+    int64_t allcnt = count_;
+    if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
       return false;
     }
     bool err = false;
     std::string name;
+    int64_t curcnt = 0;
     while (dir.read(&name)) {
       if (*name.c_str() == *DDBMAGICFILE) continue;
       const std::string& rpath = path_ + File::PATHCHR + name;
@@ -1838,12 +1857,22 @@ private:
                                visitor, rpath, name.c_str())) err = true;
         delete[] rec.rbuf;
       } else {
-        set_error(__FILE__, __LINE__, Error::BROKEN, "missing record");
+        set_error(_KCCODELINE_, Error::BROKEN, "missing record");
         err = true;
       }
+      curcnt++;
+      if (checker && !checker->check("iterate", "processing", curcnt, allcnt)) {
+        set_error(Error::LOGIC, "checker failed");
+        err = true;
+        break;
+      }
+    }
+    if (checker && !checker->check("iterate", "ending", -1, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
+      err = true;
     }
     if (!dir.close()) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "closing a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "closing a directory failed");
       err = true;
     }
     return !err;
@@ -1853,22 +1882,37 @@ private:
    * @param hard true for physical synchronization with the device, or false for logical
    * synchronization with the file system.
    * @param proc a postprocessor object.
+   * @param checker a progress checker object.
    * @return true on success, or false on failure.
    */
-  bool synchronize_impl(bool hard, FileProcessor* proc) {
+  bool synchronize_impl(bool hard, FileProcessor* proc, ProgressChecker* checker) {
     _assert_(true);
     bool err = false;
+    if (checker && !checker->check("synchronize", "dumping the magic data", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
+    }
     if (!dump_magic()) err = true;
+    if (checker && !checker->check("synchronize", "synchronizing the directory", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
+    }
     if (hard && !File::synchronize_whole()) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "synchronizing the file system failed");
       err = true;
     }
-    if (proc && !proc->process(path_, count_, size_impl())) {
-      set_error(__FILE__, __LINE__, Error::LOGIC, "postprocessing failed");
-      err = true;
+    if (proc) {
+      if (checker && !checker->check("synchronize", "running the post processor", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        return false;
+      }
+      if (!proc->process(path_, count_, size_impl())) {
+        set_error(_KCCODELINE_, Error::LOGIC, "postprocessing failed");
+        err = true;
+      }
     }
     if (!file_.truncate(0)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, file_.error());
+      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
     return !err;
@@ -1880,11 +1924,11 @@ private:
   bool begin_transaction_impl() {
     _assert_(true);
     if (!File::make_directory(walpath_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "making a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "making a directory failed");
       return false;
     }
     if (trhard_ && !File::synchronize_whole()) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "synchronizing the file system failed");
       return false;
     }
     trcount_ = count_;
@@ -1899,16 +1943,16 @@ private:
     _assert_(true);
     bool err = false;
     if (!File::rename(walpath_, tmppath_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "renaming a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "renaming a directory failed");
       err = true;
     }
     if (!remove_files(tmppath_)) err = true;
     if (!File::remove_directory(tmppath_)) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "removing a directory failed");
       return false;
     }
     if (trhard_ && !File::synchronize_whole()) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "synchronizing the file system failed");
       err = true;
     }
     return !err;
@@ -1931,41 +1975,41 @@ private:
         if (File::status(srcpath, &sbuf)) {
           if (sbuf.size > 1) {
             if (!File::rename(srcpath, destpath)) {
-              set_error(__FILE__, __LINE__, Error::SYSTEM, "renaming a file failed");
+              set_error(_KCCODELINE_, Error::SYSTEM, "renaming a file failed");
               err = true;
             }
           } else {
             if (File::remove(destpath) || !File::status(destpath)) {
               if (!File::remove(srcpath)) {
-                set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
+                set_error(_KCCODELINE_, Error::SYSTEM, "removing a file failed");
                 err = true;
               }
             } else {
-              set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a file failed");
+              set_error(_KCCODELINE_, Error::SYSTEM, "removing a file failed");
               err = true;
             }
           }
         } else {
-          set_error(__FILE__, __LINE__, Error::SYSTEM, "checking a file failed");
+          set_error(_KCCODELINE_, Error::SYSTEM, "checking a file failed");
           err = true;
         }
       }
       if (!dir.close()) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "closing a directory failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "closing a directory failed");
         err = true;
       }
       if (!File::remove_directory(walpath_)) {
-        set_error(__FILE__, __LINE__, Error::SYSTEM, "removing a directory failed");
+        set_error(_KCCODELINE_, Error::SYSTEM, "removing a directory failed");
         err = true;
       }
     } else {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "opening a directory failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "opening a directory failed");
       err = true;
     }
     count_ = trcount_;
     size_ = trsize_;
     if (trhard_ && !File::synchronize_whole()) {
-      set_error(__FILE__, __LINE__, Error::SYSTEM, "synchronizing the file system failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "synchronizing the file system failed");
       err = true;
     }
     return !err;
@@ -1987,10 +2031,10 @@ private:
   SlottedSpinRWLock<DDBRLOCKSLOT> rlock_;
   /** The last happened error. */
   TSD<Error> error_;
-  /** The internal error reporter. */
-  std::ostream* erstrm_;
-  /** The flag to report all errors. */
-  bool ervbs_;
+  /** The internal logger. */
+  Logger* logger_;
+  /** The kinds of logged messages. */
+  uint32_t logkinds_;
   /** The open mode. */
   uint32_t omode_;
   /** The flag for writer. */

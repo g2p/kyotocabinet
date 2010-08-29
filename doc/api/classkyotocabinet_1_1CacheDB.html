@@ -71,8 +71,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a635a471146ab6e6253128ab279df7735"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a0a7926656c87cc321b1695ea40cef121">accept</a> (const char *kbuf, size_t ksiz, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to a record.  <a href="#a0a7926656c87cc321b1695ea40cef121"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a9302903f1da9a953ab5c3448a0c078c5">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#a9302903f1da9a953ab5c3448a0c078c5"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a668ed0f22f9b9538ffcde8466fc2f5ec">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#a668ed0f22f9b9538ffcde8466fc2f5ec"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a5574b0058edb29a5b696c53ec8b9a7bf">error</a> () const </td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the last happened error.  <a href="#a5574b0058edb29a5b696c53ec8b9a7bf"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a459b5061b5ad14350c678fa4285c3c60">set_error</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
@@ -81,8 +81,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#aff8d30ef3cd6990348c47a88983548bf"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0">close</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#abd976dad39a19f3e9f688d8dd0a63bc0"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#af010bf2acb088252f32b972768b5edd9">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#af010bf2acb088252f32b972768b5edd9"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a142e5aede110bcdbe8bc5821259738a7">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#a142e5aede110bcdbe8bc5821259738a7"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a4a6206c4b92dddb8a9dde4e582b4af18">begin_transaction</a> (bool hard=false)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#a4a6206c4b92dddb8a9dde4e582b4af18"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#ae6501a3b39a8c46c0645686fadef5893">begin_transaction_try</a> (bool hard=false)</td></tr>
@@ -101,8 +101,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#aa1f1aa4eea1413a010154c1e66507706"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1CacheDB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a17e1259ddba5fc7d45185f715394c99b">cursor</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#a17e1259ddba5fc7d45185f715394c99b"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a33de38eeac5d1d61bd088373ccf80cbd">tune_error_reporter</a> (std::ostream *erstrm, bool ervbs)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal error reporter.  <a href="#a33de38eeac5d1d61bd088373ccf80cbd"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a3b568128b2e2995c26e8e727c1124fe2">tune_logger</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html">Logger</a> *logger, uint32_t kinds=Logger::WARN|Logger::ERROR)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal logger.  <a href="#a3b568128b2e2995c26e8e727c1124fe2"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abe067496c40fc0e5a6535749eda7ffe4">tune_options</a> (int8_t opts)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the optional features.  <a href="#abe067496c40fc0e5a6535749eda7ffe4"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#acee3916a46ddab369ab2a9c858784973">tune_buckets</a> (int64_t bnum)</td></tr>
@@ -118,10 +118,10 @@
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a451ff9f111dc181c5baf7cd197b241e0">synchronize_opaque</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize the opaque data.  <a href="#a451ff9f111dc181c5baf7cd197b241e0"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Protected Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a17999b28f615d71e10db9dfad1976107">set_error</a> (const char *file, int32_t line, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a17999b28f615d71e10db9dfad1976107"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abdc4e1be231ac61bf319fcf64d34f03d">report</a> (const char *file, int32_t line, const char *type, const char *format,...)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report a message for debugging.  <a href="#abdc4e1be231ac61bf319fcf64d34f03d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a6ef5142d951c82b5c07c2d59fde70781">set_error</a> (const char *file, int32_t line, const char *func, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a6ef5142d951c82b5c07c2d59fde70781"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a87f53c7968facd542206788ee6936e5c">report</a> (const char *file, int32_t line, const char *func, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a> kind, const char *format,...)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report a message for debugging.  <a href="#a87f53c7968facd542206788ee6936e5c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a28bef20cc61def918d9153b3c055fda6">tune_type</a> (int8_t type)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the database type.  <a href="#a28bef20cc61def918d9153b3c055fda6"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abdd2dae45cd11ee1fcbf9bbb9115e8f2">libver</a> ()</td></tr>
@@ -298,7 +298,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 
 </div>
 </div>
-<a class="anchor" id="a9302903f1da9a953ab5c3448a0c078c5"></a><!-- doxytag: member="kyotocabinet::CacheDB::iterate" ref="a9302903f1da9a953ab5c3448a0c078c5" args="(Visitor *visitor, bool writable=true)" -->
+<a class="anchor" id="a668ed0f22f9b9538ffcde8466fc2f5ec"></a><!-- doxytag: member="kyotocabinet::CacheDB::iterate" ref="a668ed0f22f9b9538ffcde8466fc2f5ec" args="(Visitor *visitor, bool writable=true, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -312,7 +312,13 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&nbsp;</td>
-          <td class="paramname"> <em>writable</em> = <code>true</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>writable</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -328,13 +334,14 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>visitor</em>&nbsp;</td><td>a visitor object. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>writable</em>&nbsp;</td><td>true for writable operation, or false for read-only operation. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>the whole iteration is performed atomically and other threads are blocked. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a0f7e9d6791ca15b1a6b08cbb57c5379e">kyotocabinet::DB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a809c175a7a69deaa56ed6b9cef9fa973">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -458,7 +465,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 
 </div>
 </div>
-<a class="anchor" id="af010bf2acb088252f32b972768b5edd9"></a><!-- doxytag: member="kyotocabinet::CacheDB::synchronize" ref="af010bf2acb088252f32b972768b5edd9" args="(bool hard=false, FileProcessor *proc=NULL)" -->
+<a class="anchor" id="a142e5aede110bcdbe8bc5821259738a7"></a><!-- doxytag: member="kyotocabinet::CacheDB::synchronize" ref="a142e5aede110bcdbe8bc5821259738a7" args="(bool hard=false, FileProcessor *proc=NULL, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -472,7 +479,13 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *&nbsp;</td>
-          <td class="paramname"> <em>proc</em> = <code>NULL</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>proc</em> = <code>NULL</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -488,12 +501,13 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>hard</em>&nbsp;</td><td>true for physical synchronization with the device, or false for logical synchronization with the file system. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>proc</em>&nbsp;</td><td>a postprocessor object. If it is NULL, no postprocessing is performed. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#abb532f56482420a71ebc5650e4296ce1">kyotocabinet::BasicDB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#acf7a2e70f3c1e72be5241f0d611f3d70">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -724,21 +738,21 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 
 </div>
 </div>
-<a class="anchor" id="a33de38eeac5d1d61bd088373ccf80cbd"></a><!-- doxytag: member="kyotocabinet::CacheDB::tune_error_reporter" ref="a33de38eeac5d1d61bd088373ccf80cbd" args="(std::ostream *erstrm, bool ervbs)" -->
+<a class="anchor" id="a3b568128b2e2995c26e8e727c1124fe2"></a><!-- doxytag: member="kyotocabinet::CacheDB::tune_logger" ref="a3b568128b2e2995c26e8e727c1124fe2" args="(Logger *logger, uint32_t kinds=Logger::WARN|Logger::ERROR)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool kyotocabinet::CacheDB::tune_error_reporter </td>
+          <td class="memname">bool kyotocabinet::CacheDB::tune_logger </td>
           <td>(</td>
-          <td class="paramtype">std::ostream *&nbsp;</td>
-          <td class="paramname"> <em>erstrm</em>, </td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html">Logger</a> *&nbsp;</td>
+          <td class="paramname"> <em>logger</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&nbsp;</td>
-          <td class="paramname"> <em>ervbs</em></td><td>&nbsp;</td>
+          <td class="paramtype">uint32_t&nbsp;</td>
+          <td class="paramname"> <em>kinds</em> = <code>Logger::WARN&nbsp;|&nbsp;Logger::ERROR</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -749,15 +763,14 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 </div>
 <div class="memdoc">
 
-<p>Set the internal error reporter. </p>
+<p>Set the internal logger. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>erstrm</em>&nbsp;</td><td>a stream object into which internal error messages are stored. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>ervbs</em>&nbsp;</td><td>true to report all errors, or false to report fatal errors only. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>logger</em>&nbsp;</td><td>the logger object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>kinds</em>&nbsp;</td><td>kinds of logged messages by bitwise-or: <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960ac39609b521fbe09d9c41b45561b114b6" title="debugging">Logger::DEBUG</a> for debugging, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6bf810306530147894e41520a3d918b9" title="normal information">Logger::INFO</a> for normal information, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6a985b6bc2e4f16c3cb394a3de9972dd" title="warning">Logger::WARN</a> for warning, and <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a2fc4717ffb4886b57aa5d343adf7d7ad" title="error">Logger::ERROR</a> for fatal error. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
 </div>
 </div>
@@ -936,7 +949,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 
 </div>
 </div>
-<a class="anchor" id="a17999b28f615d71e10db9dfad1976107"></a><!-- doxytag: member="kyotocabinet::CacheDB::set_error" ref="a17999b28f615d71e10db9dfad1976107" args="(const char *file, int32_t line, Error::Code code, const char *message)" -->
+<a class="anchor" id="a6ef5142d951c82b5c07c2d59fde70781"></a><!-- doxytag: member="kyotocabinet::CacheDB::set_error" ref="a6ef5142d951c82b5c07c2d59fde70781" args="(const char *file, int32_t line, const char *func, Error::Code code, const char *message)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -951,6 +964,12 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
           <td></td>
           <td class="paramtype">int32_t&nbsp;</td>
           <td class="paramname"> <em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>func</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -976,8 +995,9 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 <p>Set the error information. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the epicenter. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the epicenter. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>func</em>&nbsp;</td><td>the function name of the program source code. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>code</em>&nbsp;</td><td>an error code. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>message</em>&nbsp;</td><td>a supplement message. </td></tr>
   </table>
@@ -986,7 +1006,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 
 </div>
 </div>
-<a class="anchor" id="abdc4e1be231ac61bf319fcf64d34f03d"></a><!-- doxytag: member="kyotocabinet::CacheDB::report" ref="abdc4e1be231ac61bf319fcf64d34f03d" args="(const char *file, int32_t line, const char *type, const char *format,...)" -->
+<a class="anchor" id="a87f53c7968facd542206788ee6936e5c"></a><!-- doxytag: member="kyotocabinet::CacheDB::report" ref="a87f53c7968facd542206788ee6936e5c" args="(const char *file, int32_t line, const char *func, Logger::Kind kind, const char *format,...)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1006,7 +1026,13 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *&nbsp;</td>
-          <td class="paramname"> <em>type</em>, </td>
+          <td class="paramname"> <em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a>&nbsp;</td>
+          <td class="paramname"> <em>kind</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1032,9 +1058,10 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 <p>Report a message for debugging. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the epicenter. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the epicenter. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>type</em>&nbsp;</td><td>the type string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>func</em>&nbsp;</td><td>the function name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>kind</em>&nbsp;</td><td>the kind of the event. <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960ac39609b521fbe09d9c41b45561b114b6" title="debugging">Logger::DEBUG</a> for debugging, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6bf810306530147894e41520a3d918b9" title="normal information">Logger::INFO</a> for normal information, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6a985b6bc2e4f16c3cb394a3de9972dd" title="warning">Logger::WARN</a> for warning, and <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a2fc4717ffb4886b57aa5d343adf7d7ad" title="error">Logger::ERROR</a> for fatal error. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>...</em>&nbsp;</td><td>used according to the format string. </td></tr>
   </table>
@@ -1251,7 +1278,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Aug 20 02:46:45 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Aug 29 15:04:35 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

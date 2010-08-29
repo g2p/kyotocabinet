@@ -105,15 +105,15 @@ public:
       _assert_(visitor);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (writable && !(db_->omode_ & OWRITER)) {
-        db_->set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+        db_->set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
         return false;
       }
       if (sidx_ < 0 || !rec_) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
       uint32_t rksiz = rec_->ksiz & CDBKSIZMAX;
@@ -156,7 +156,7 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       for (int32_t i = 0; i < CDBSLOTNUM; i++) {
@@ -167,7 +167,7 @@ public:
           return true;
         }
       }
-      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+      db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
       sidx_ = -1;
       rec_ = NULL;
       return false;
@@ -182,7 +182,7 @@ public:
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (ksiz > CDBKSIZMAX) ksiz = CDBKSIZMAX;
@@ -219,7 +219,7 @@ public:
           }
         }
       }
-      db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+      db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
       sidx_ = -1;
       rec_ = NULL;
       return false;
@@ -282,11 +282,11 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       if (sidx_ < 0 || !rec_) {
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
       bool err = false;
@@ -336,7 +336,7 @@ public:
             return true;
           }
         }
-        db_->set_error(__FILE__, __LINE__, Error::NOREC, "no record");
+        db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         sidx_ = -1;
         rec_ = NULL;
         return false;
@@ -369,7 +369,7 @@ public:
    * Default constructor.
    */
   explicit CacheDB() :
-    mlock_(), flock_(), error_(), erstrm_(NULL), ervbs_(false),
+    mlock_(), flock_(), error_(), logger_(NULL), logkinds_(0),
     omode_(0), curs_(), path_(""), type_(TYPECACHE),
     opts_(0), bnum_(CDBDEFBNUM), capcnt_(-1), capsiz_(-1),
     opaque_(), embcomp_(&ZLIBRAWCOMP),
@@ -407,11 +407,11 @@ public:
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (writable && !(omode_ & OWRITER)) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     if (ksiz > CDBKSIZMAX) ksiz = CDBKSIZMAX;
@@ -428,20 +428,27 @@ public:
    * Iterate to accept a visitor for each record.
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    * @note the whole iteration is performed atomically and other threads are blocked.
    */
-  bool iterate(Visitor *visitor, bool writable = true) {
+  bool iterate(Visitor *visitor, bool writable = true, ProgressChecker* checker = NULL) {
     _assert_(visitor);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (writable && !(omode_ & OWRITER)) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
+    int64_t allcnt = count_impl();
+    if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
+    }
+    int64_t curcnt = 0;
     for (int32_t i = 0; i < CDBSLOTNUM; i++) {
       Slot* slot = slots_ + i;
       Record* rec = slot->first;
@@ -473,7 +480,16 @@ public:
           accept_impl(slot, hash, dbuf, rksiz, &repeater, comp_, true);
         }
         rec = next;
+        curcnt++;
+        if (checker && !checker->check("iterate", "processing", curcnt, allcnt)) {
+          set_error(Error::LOGIC, "checker failed");
+          return false;
+        }
       }
+    }
+    if (checker && !checker->check("iterate", "ending", -1, allcnt)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
     }
     return true;
   }
@@ -517,7 +533,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     omode_ = mode;
@@ -542,7 +558,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     tran_ = false;
@@ -558,23 +574,35 @@ public:
    * @param hard true for physical synchronization with the device, or false for logical
    * synchronization with the file system.
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
-  bool synchronize(bool hard = false, FileProcessor* proc = NULL) {
+  bool synchronize(bool hard = false, FileProcessor* proc = NULL,
+                   ProgressChecker* checker = NULL) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!(omode_ & OWRITER)) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     bool err = false;
-    if (proc && !proc->process(path_, count_impl(), size_impl())) {
-      set_error(__FILE__, __LINE__, Error::LOGIC, "postprocessing failed");
-      err = true;
+    if (checker && !checker->check("synchronize", "nothing to be synchronized", -1, -1)) {
+      set_error(Error::LOGIC, "checker failed");
+      return false;
+    }
+    if (proc) {
+      if (checker && !checker->check("synchronize", "running the post processor", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        return false;
+      }
+      if (!proc->process(path_, count_impl(), size_impl())) {
+        set_error(_KCCODELINE_, Error::LOGIC, "postprocessing failed");
+        err = true;
+      }
     }
     return !err;
   }
@@ -589,12 +617,12 @@ public:
     for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
       mlock_.lock_writer();
       if (omode_ == 0) {
-        set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+        set_error(_KCCODELINE_, Error::INVALID, "not opened");
         mlock_.unlock();
         return false;
       }
       if (!(omode_ & OWRITER)) {
-        set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+        set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
         mlock_.unlock();
         return false;
       }
@@ -617,17 +645,17 @@ public:
     _assert_(true);
     mlock_.lock_writer();
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       mlock_.unlock();
       return false;
     }
     if (!(omode_ & OWRITER)) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       mlock_.unlock();
       return false;
     }
     if (tran_) {
-      set_error(__FILE__, __LINE__, Error::LOGIC, "competition avoided");
+      set_error(_KCCODELINE_, Error::LOGIC, "competition avoided");
       mlock_.unlock();
       return false;
     }
@@ -644,11 +672,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!tran_) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not in transaction");
+      set_error(_KCCODELINE_, Error::INVALID, "not in transaction");
       return false;
     }
     if (!commit) disable_cursors();
@@ -668,7 +696,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     disable_cursors();
@@ -687,7 +715,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return count_impl();
@@ -700,7 +728,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return size_impl();
@@ -713,7 +741,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return "";
     }
     return path_;
@@ -727,7 +755,7 @@ public:
     _assert_(strmap);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     (*strmap)["type"] = strprintf("%d", (int)TYPECACHE);
@@ -772,20 +800,21 @@ public:
     return new Cursor(this);
   }
   /**
-   * Set the internal error reporter.
-   * @param erstrm a stream object into which internal error messages are stored.
-   * @param ervbs true to report all errors, or false to report fatal errors only.
-   * @return true on success, or false on failure.
+   * Set the internal logger.
+   * @param logger the logger object.
+   * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
+   * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
+   * error.
    */
-  bool tune_error_reporter(std::ostream* erstrm, bool ervbs) {
-    _assert_(erstrm);
+  bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) {
+    _assert_(logger);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    erstrm_ = erstrm;
-    ervbs_ = ervbs;
+    logger_ = logger;
+    logkinds_ = kinds;
     return true;
   }
   /**
@@ -797,7 +826,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     opts_ = opts;
@@ -812,7 +841,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     bnum_ = bnum >= 0 ? bnum : CDBDEFBNUM;
@@ -827,7 +856,7 @@ public:
     _assert_(comp);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     embcomp_ = comp;
@@ -842,7 +871,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     capcnt_ = count;
@@ -857,7 +886,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     capsiz_ = size;
@@ -871,7 +900,7 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return NULL;
     }
     return opaque_;
@@ -884,11 +913,11 @@ public:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     if (!(omode_ & OWRITER)) {
-      set_error(__FILE__, __LINE__, Error::NOPERM, "permission denied");
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
     return true;
@@ -896,38 +925,44 @@ public:
 protected:
   /**
    * Set the error information.
-   * @param file the file name of the epicenter.
-   * @param line the line number of the epicenter.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
    * @param code an error code.
    * @param message a supplement message.
    */
-  void set_error(const char* file, int32_t line,
+  void set_error(const char* file, int32_t line, const char* func,
                  Error::Code code, const char* message) {
-    _assert_(file && message);
+    _assert_(file && line > 0 && func && message);
     set_error(code, message);
-    if (ervbs_ || code == Error::BROKEN || code == Error::SYSTEM)
-      report(file, line, "error", "%d: %s: %s", code, Error::codename(code), message);
+    if (logger_) {
+      Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
+        Logger::ERROR : Logger::INFO;
+      if (kind & logkinds_)
+        report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
+    }
   }
   /**
    * Report a message for debugging.
-   * @param file the file name of the epicenter.
-   * @param line the line number of the epicenter.
-   * @param type the type string.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
    * @param format the printf-like format string.
    * @param ... used according to the format string.
    */
-  void report(const char* file, int32_t line, const char* type,
+  void report(const char* file, int32_t line, const char* func, Logger::Kind kind,
               const char* format, ...) {
-    _assert_(file && line > 0 && type && format);
-    if (!erstrm_) return;
-    const std::string& path = path_.empty() ? "-" : path_;
+    _assert_(file && line > 0 && func && format);
+    if (!logger_ && !(kind & logkinds_)) return;
     std::string message;
+    strprintf(&message, "%s: ", path_.empty() ? "-" : path_.c_str());
     va_list ap;
     va_start(ap, format);
-    strprintf(&message, format, ap);
+    vstrprintf(&message, format, ap);
     va_end(ap);
-    *erstrm_ << "[" << type << "]: " << path << ": " << file << ": " << line;
-    *erstrm_ << ": " << message << std::endl;
+    logger_->log(file, line, func, kind, message.c_str());
   }
   /**
    * Set the database type.
@@ -938,7 +973,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ != 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     type_ = type;
@@ -952,7 +987,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return LIBVER;
@@ -965,7 +1000,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return LIBREV;
@@ -978,7 +1013,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return FMTVER;
@@ -991,7 +1026,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return 0xff;
@@ -1004,7 +1039,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return type_;
@@ -1017,7 +1052,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return 0;
     }
     return opts_;
@@ -1030,7 +1065,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return NULL;
     }
     return comp_;
@@ -1043,7 +1078,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return false;
@@ -1056,7 +1091,7 @@ protected:
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
-      set_error(__FILE__, __LINE__, Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return false;
@@ -1647,10 +1682,10 @@ private:
   SpinLock flock_;
   /** The last happened error. */
   TSD<Error> error_;
-  /** The internal error reporter. */
-  std::ostream* erstrm_;
-  /** The flag to report all errors. */
-  bool ervbs_;
+  /** The internal logger. */
+  Logger* logger_;
+  /** The kinds of logged messages. */
+  uint32_t logkinds_;
   /** The open mode. */
   uint32_t omode_;
   /** The cursor objects. */
