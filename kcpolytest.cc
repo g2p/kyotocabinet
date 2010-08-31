@@ -1586,7 +1586,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
             vsiz = myrand(RECBUFSIZL) / (myrand(5) + 1);
           }
           do {
-            switch (myrand(9)) {
+            switch (myrand(10)) {
               case 0: {
                 if (!db_->set(kbuf, ksiz, vbuf, vsiz)) {
                   dberrprint(db_, __LINE__, "DB::set");
@@ -1603,13 +1603,21 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
                 break;
               }
               case 2: {
+                if (!db_->replace(kbuf, ksiz, vbuf, vsiz) &&
+                    db_->error() != kc::BasicDB::Error::NOREC) {
+                  dberrprint(db_, __LINE__, "DB::replace");
+                  err_ = true;
+                }
+                break;
+              }
+              case 3: {
                 if (!db_->append(kbuf, ksiz, vbuf, vsiz)) {
                   dberrprint(db_, __LINE__, "DB::append");
                   err_ = true;
                 }
                 break;
               }
-              case 3: {
+              case 4: {
                 if (myrand(2) == 0) {
                   int64_t num = myrand(rnum_);
                   if (db_->increment(kbuf, ksiz, num) == INT64_MIN &&
@@ -1627,7 +1635,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
                 }
                 break;
               }
-              case 4: {
+              case 5: {
                 if (!db_->cas(kbuf, ksiz, kbuf, ksiz, vbuf, vsiz) &&
                     db_->error() != kc::BasicDB::Error::LOGIC) {
                   dberrprint(db_, __LINE__, "DB::cas");
@@ -1635,7 +1643,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
                 }
                 break;
               }
-              case 5: {
+              case 6: {
                 if (!db_->remove(kbuf, ksiz) &&
                     db_->error() != kc::BasicDB::Error::NOREC) {
                   dberrprint(db_, __LINE__, "DB::remove");
@@ -1643,7 +1651,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
                 }
                 break;
               }
-              case 6: {
+              case 7: {
                 if (myrand(10) == 0) {
                   if (myrand(4) == 0) {
                     if (!cur->jump_back(kbuf, ksiz) &&

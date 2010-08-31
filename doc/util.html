@@ -31,7 +31,7 @@
 
 <ol>
 <li><a href="#kcutiltest">kcutiltest</a> : to test the utility functions.</li>
-<li><a href="#kcutilcodec">kcutilcodec</a> : encode/decode utility.</li>
+<li><a href="#kcutilmgr">kcutilmgr</a> : miscellaneous utilities.</li>
 <li><a href="#kcprototest">kcprototest</a> : to test the prototype database.</li>
 <li><a href="#kccachetest">kccachetest</a> : to test the cache hash database.</li>
 <li><a href="#kcgrasstest">kcgrasstest</a> : to test the cache tree database.</li>
@@ -81,20 +81,20 @@
 
 <hr />
 
-<h2 id="kcutilcodec">kcutilcodec</h2>
+<h2 id="kcutilmgr">kcutilmgr</h2>
 
-<p>The command `<code>kcutilcodec</code>' is a tool to use encoding and decoding features, or to show the configuration.  This command is used in the following format.  `<var>file</var>' specifies a input file.  If it is omitted, the standard input is read.  If it begins with "@", the trailing substring is treated as the input.</p>
+<p>The command `<code>kcutilmgr</code>' is a tool of miscellaneous utilities, and to show the configuration.  This command is used in the following format.  `<var>file</var>' specifies a input file.  If it is omitted, the standard input is read.  If it begins with "@", the trailing substring is treated as the input.</p>
 
 <dl class="api">
-<dt><code>kcutilcodec hex [-d] [<var>file</var>]</code></dt>
+<dt><code>kcutilmgr hex [-d] [<var>file</var>]</code></dt>
 <dd>Perform hexadecimal encoding and its decoding.</dd>
-<dt><code>kcutilcodec ciph [-key <var>str</var>] [<var>file</var>]</code></dt>
+<dt><code>kcutilmgr ciph [-key <var>str</var>] [<var>file</var>]</code></dt>
 <dd>Perform Arcfour cipher and its decipher.</dd>
-<dt><code>kcutilcodec comp [-def|-gz|-lzo|-lzma] [-d] [<var>file</var>]</code></dt>
+<dt><code>kcutilmgr comp [-def|-gz|-lzo|-lzma] [-d] [<var>file</var>]</code></dt>
 <dd>Perform ZLIB encoding and its decoding.  By default, use the raw format.</dd>
-<dt><code>kcutilcodec hash [-fnv|-path|-crc] [<var>file</var>]</code></dt>
+<dt><code>kcutilmgr hash [-fnv|-path|-crc] [<var>file</var>]</code></dt>
 <dd>Calculate the hash value.  By default, use MurMur hashing.</dd>
-<dt><code>kcutilcodec conf [-v|-i|-l|-p]</code></dt>
+<dt><code>kcutilmgr conf [-v|-i|-l|-p]</code></dt>
 <dd>Shows the configuration of Kyoto Cabinet.</dd>
 </dl>
 
@@ -269,14 +269,14 @@
 
 <h2 id="kchashmgr">kchashmgr</h2>
 
-<p>The command `<code>kchashmgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
+<p>The command `<code>kchashmgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input/output file.</p>
 
 <dl class="api">
 <dt><code>kchashmgr create [-otr] [-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] <var>path</var></code></dt>
 <dd>Creates a database file.</dd>
 <dt><code>kchashmgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
 <dd>Prints status information.</dd>
-<dt><code>kchashmgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
+<dt><code>kchashmgr set [-onl|-otl|-onr] [-add|-app|-rep|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
 <dd>Stores a record.</dd>
 <dt><code>kchashmgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
 <dd>Removes a record.</dd>
@@ -286,6 +286,8 @@
 <dd>Prints keys of all records, separated by line feeds.</dd>
 <dt><code>kchashmgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
+<dt><code>kchashmgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
+<dd>Copy the whole database.</dd>
 <dt><code>kchashmgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Dump records into a snapshot file.</dd>
 <dt><code>kchashmgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
@@ -312,6 +314,7 @@
 <li><code>-st</code> : prints miscellaneous information.</li>
 <li><code>-add</code> : performs adding operation.</li>
 <li><code>-app</code> : performs appending operation.</li>
+<li><code>-rep</code> : performs replacing operation.</li>
 <li><code>-inci</code> : performs integer increment operation.</li>
 <li><code>-incd</code> : performs real number increment operation.</li>
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
@@ -378,14 +381,14 @@
 
 <h2 id="kctreemgr">kctreemgr</h2>
 
-<p>The command `<code>kctreemgr</code>' is a utility for test and debugging of the file tree database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
+<p>The command `<code>kctreemgr</code>' is a utility for test and debugging of the file tree database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input/output file.</p>
 
 <dl class="api">
 <dt><code>kctreemgr create [-otr] [-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-rcd] <var>path</var></code></dt>
 <dd>Creates a database file.</dd>
 <dt><code>kctreemgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
 <dd>Prints status information.</dd>
-<dt><code>kctreemgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
+<dt><code>kctreemgr set [-onl|-otl|-onr] [-add|-app|-rep|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
 <dd>Stores a record.</dd>
 <dt><code>kctreemgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
 <dd>Removes a record.</dd>
@@ -395,6 +398,8 @@
 <dd>Prints keys of all records, separated by line feeds.</dd>
 <dt><code>kctreemgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
+<dt><code>kctreemgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
+<dd>Copy the whole database.</dd>
 <dt><code>kctreemgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Dump records into a snapshot file.</dd>
 <dt><code>kctreemgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
@@ -423,6 +428,7 @@
 <li><code>-st</code> : prints miscellaneous information.</li>
 <li><code>-add</code> : performs adding operation.</li>
 <li><code>-app</code> : performs appending operation.</li>
+<li><code>-rep</code> : performs replacing operation.</li>
 <li><code>-inci</code> : performs integer increment operation.</li>
 <li><code>-incd</code> : performs real number increment operation.</li>
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
@@ -479,14 +485,14 @@
 
 <h2 id="kcdirmgr">kcdirmgr</h2>
 
-<p>The command `<code>kcdirmgr</code>' is a utility for test and debugging of the directory hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
+<p>The command `<code>kcdirmgr</code>' is a utility for test and debugging of the directory hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input/output file.</p>
 
 <dl class="api">
 <dt><code>kcdirmgr create [-otr] [-onl|-otl|-onr] [-tc] <var>path</var></code></dt>
 <dd>Creates a database file.</dd>
 <dt><code>kcdirmgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
 <dd>Prints status information.</dd>
-<dt><code>kcdirmgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
+<dt><code>kcdirmgr set [-onl|-otl|-onr] [-add|-app|-rep|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
 <dd>Stores a record.</dd>
 <dt><code>kcdirmgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
 <dd>Removes a record.</dd>
@@ -496,6 +502,8 @@
 <dd>Prints keys of all records, separated by line feeds.</dd>
 <dt><code>kcdirmgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
+<dt><code>kcdirmgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
+<dd>Copy the whole database.</dd>
 <dt><code>kcdirmgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Dump records into a snapshot file.</dd>
 <dt><code>kcdirmgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
@@ -517,6 +525,7 @@
 <li><code>-st</code> : prints miscellaneous information.</li>
 <li><code>-add</code> : performs adding operation.</li>
 <li><code>-app</code> : performs appending operation.</li>
+<li><code>-rep</code> : performs replacing operation.</li>
 <li><code>-inci</code> : performs integer increment operation.</li>
 <li><code>-incd</code> : performs real number increment operation.</li>
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
@@ -577,14 +586,14 @@
 
 <h2 id="kcforestmgr">kcforestmgr</h2>
 
-<p>The command `<code>kcforestmgr</code>' is a utility for test and debugging of the file tree database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.</p>
+<p>The command `<code>kcforestmgr</code>' is a utility for test and debugging of the file tree database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input/output file.</p>
 
 <dl class="api">
 <dt><code>kcforestmgr create [-otr] [-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-rcd] <var>path</var></code></dt>
 <dd>Creates a database file.</dd>
 <dt><code>kcforestmgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
 <dd>Prints status information.</dd>
-<dt><code>kcforestmgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
+<dt><code>kcforestmgr set [-onl|-otl|-onr] [-add|-app|-rep|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
 <dd>Stores a record.</dd>
 <dt><code>kcforestmgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
 <dd>Removes a record.</dd>
@@ -594,6 +603,8 @@
 <dd>Prints keys of all records, separated by line feeds.</dd>
 <dt><code>kcforestmgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
+<dt><code>kcforestmgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
+<dd>Copy the whole database.</dd>
 <dt><code>kcforestmgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Dump records into a snapshot file.</dd>
 <dt><code>kcforestmgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
@@ -616,6 +627,7 @@
 <li><code>-st</code> : prints miscellaneous information.</li>
 <li><code>-add</code> : performs adding operation.</li>
 <li><code>-app</code> : performs appending operation.</li>
+<li><code>-rep</code> : performs replacing operation.</li>
 <li><code>-inci</code> : performs integer increment operation.</li>
 <li><code>-incd</code> : performs real number increment operation.</li>
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
@@ -672,14 +684,14 @@
 
 <h2 id="kcpolymgr">kcpolymgr</h2>
 
-<p>The command `<code>kcpolymgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input file.  `<var>src</var>' specifies other database files.</p>
+<p>The command `<code>kcpolymgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input/output file.  `<var>src</var>' specifies other database files.</p>
 
 <dl class="api">
 <dt><code>kcpolymgr create [-otr] [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Creates a database file.</dd>
 <dt><code>kcpolymgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
 <dd>Prints status information.</dd>
-<dt><code>kcpolymgr set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
+<dt><code>kcpolymgr set [-onl|-otl|-onr] [-add|-app|-rep|-inci|-incd] [-sx] <var>path</var> <var>key</var> <var>value</var></code></dt>
 <dd>Stores a record.</dd>
 <dt><code>kcpolymgr remove [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var></code></dt>
 <dd>Removes a record.</dd>
@@ -689,11 +701,13 @@
 <dd>Prints keys of all records, separated by line feeds.</dd>
 <dt><code>kcpolymgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
+<dt><code>kcpolymgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
+<dd>Copy the whole database.</dd>
 <dt><code>kcpolymgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Dump records into a snapshot file.</dd>
 <dt><code>kcpolymgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Load records from a snapshot file.</dd>
-<dt><code>kcpolymgr merge [-onl|-otl|-onr] [-add|-app] <var>path</var> <var>src</var>...</code></dt>
+<dt><code>kcpolymgr merge [-onl|-otl|-onr] [-add|-app|-rep] <var>path</var> <var>src</var>...</code></dt>
 <dd>Merge records from other databases.</dd>
 <dt><code>kcpolymgr check [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Checks consistency.</dd>
@@ -709,6 +723,7 @@
 <li><code>-st</code> : prints miscellaneous information.</li>
 <li><code>-add</code> : performs adding operation.</li>
 <li><code>-app</code> : performs appending operation.</li>
+<li><code>-rep</code> : performs replacing operation.</li>
 <li><code>-inci</code> : performs integer increment operation.</li>
 <li><code>-incd</code> : performs real number increment operation.</li>
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
@@ -717,6 +732,8 @@
 <li><code>-max</code> : specifies the maximum number of shown records.</li>
 <li><code>-pv</code> : prints values of records also.</li>
 </ul>
+
+<p>This command returns 0 on success, another on failure.</p>
 
 <hr />
 

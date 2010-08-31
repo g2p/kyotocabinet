@@ -1,3 +1,17 @@
+2010-08-30  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcdb.h (BasicDB::replace): new function.
+
+	* kcpolydb.h (PolyDB::merge): "MREPLACE" mode was added.
+
+	* kchashdb.h (HashDB::synchronize_impl): readers became able to call it.
+
+	* kcplantdb.h (PlantDB::synchronize): readers became able to call it.
+
+	* kcpolymgr.cc (runcopy, proccopy): new functions.
+
+	- Release: 1.2.9
+
 2010-08-20  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcfile.cc (File::remove_recursively): new function.

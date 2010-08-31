@@ -213,6 +213,7 @@ public:
   enum MergeMode {
     MSET,                                ///< overwrite the existing value
     MADD,                                ///< keep the existing value
+    MREPLACE,                            ///< modify the existing record only
     MAPPEND                              ///< append the new value
   };
   /**
@@ -842,7 +843,8 @@ public:
    * @param srcary an array of the source detabase objects.
    * @param srcnum the number of the elements of the source array.
    * @param mode the merge mode.  PolyDB::MSET to overwrite the existing value, PolyDB::MADD to
-   * keep the existing value, PolyDB::MAPPEND to append the new value.
+   * keep the existing value, PolyDB::MREPLACE to modify the existing record only,
+   * PolyDB::MAPPEND to append the new value.
    * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    */
@@ -906,6 +908,11 @@ public:
         case MADD: {
           if (!db_->add(line.kbuf, line.ksiz, line.vbuf, line.vsiz) &&
               db_->error() != Error::DUPREC) err = true;
+          break;
+        }
+        case MREPLACE: {
+          if (!db_->replace(line.kbuf, line.ksiz, line.vbuf, line.vsiz) &&
+              db_->error() != Error::NOREC) err = true;
           break;
         }
         case MAPPEND: {

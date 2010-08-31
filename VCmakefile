@@ -17,7 +17,7 @@ LIBRARYFILES = kyotocabinet.lib
 LIBOBJFILES = kcutil.obj kcdb.obj kcthread.obj kcfile.obj \
   kccompress.obj kccompare.obj kcmap.obj kcplantdb.obj \
   kcprotodb.obj kccachedb.obj kchashdb.obj kcdirdb.obj kcpolydb.obj kclangc.obj
-COMMANDFILES = kcutiltest.exe kcutilcodec.exe kcprototest.exe kccachetest.exe kcgrasstest.exe \
+COMMANDFILES = kcutiltest.exe kcutilmgr.exe kcprototest.exe kccachetest.exe kcgrasstest.exe \
   kchashtest.exe kchashmgr.exe kctreetest.exe kctreemgr.exe \
   kcdirtest.exe kcdirmgr.exe kcforesttest.exe kcforestmgr.exe \
   kcpolytest.exe kcpolymgr.exe kclangctest.exe
@@ -88,15 +88,15 @@ check : check-util check-proto check-cache check-grass \
 check-util :
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
-	kcutilcodec --version
-	kcutilcodec hex VCmakefile > check.in
-	kcutilcodec hex -d check.in > check.out
-	kcutilcodec comp -gz VCmakefile > check.in
-	kcutilcodec comp -gz -d check.in > check.out
-	kcutilcodec hash VCmakefile > check.in
-	kcutilcodec hash -fnv VCmakefile > check.out
-	kcutilcodec hash -path VCmakefile > check.out
-	kcutilcodec conf
+	kcutilmgr --version
+	kcutilmgr hex VCmakefile > check.in
+	kcutilmgr hex -d check.in > check.out
+	kcutilmgr comp -gz VCmakefile > check.in
+	kcutilmgr comp -gz -d check.in > check.out
+	kcutilmgr hash VCmakefile > check.in
+	kcutilmgr hash -fnv VCmakefile > check.out
+	kcutilmgr hash -path VCmakefile > check.out
+	kcutilmgr conf
 	-del casket* /F /Q > NUL: 2>&1
 	kcutiltest mutex -th 4 -iv -1 10000
 	kcutiltest para -th 4 -iv -1 10000
@@ -170,6 +170,7 @@ check-hash :
 	kchashmgr set casket mikio 0211
 	kchashmgr set casket natsuki 0810
 	kchashmgr set casket micky ""
+	kchashmgr set -rep casket duffy 777
 	kchashmgr set -app casket duffy kukuku
 	kchashmgr remove casket micky
 	kchashmgr list -pv casket > check.out
@@ -186,6 +187,7 @@ check-hash :
 	kchashmgr get casket ryu
 	kchashmgr import casket lab/numbers.tsv
 	kchashmgr list -pv -px casket > check.out
+	kchashmgr copy casket casket-para
 	kchashmgr dump casket check.out
 	kchashmgr load -otr casket check.out
 	kchashmgr defrag -onl casket
@@ -263,6 +265,7 @@ check-tree :
 	kctreemgr set casket mikio 0211
 	kctreemgr set casket natsuki 0810
 	kctreemgr set casket micky ""
+	kctreemgr set -rep casket duffy 777
 	kctreemgr set -app casket duffy kukuku
 	kctreemgr remove casket micky
 	kctreemgr list -pv casket > check.out
@@ -279,6 +282,7 @@ check-tree :
 	kctreemgr get casket ryu
 	kctreemgr import casket lab/numbers.tsv
 	kctreemgr list -des -pv -px casket > check.out
+	kctreemgr copy casket casket-para
 	kctreemgr dump casket check.out
 	kctreemgr load -otr casket check.out
 	kctreemgr defrag -onl casket
@@ -362,6 +366,7 @@ check-dir :
 	kcdirmgr set casket mikio 0211
 	kcdirmgr set casket natsuki 0810
 	kcdirmgr set casket micky ""
+	kcdirmgr set -rep casket duffy 777
 	kcdirmgr set -app casket duffy kukuku
 	kcdirmgr remove casket micky
 	kcdirmgr list -pv casket > check.out
@@ -378,6 +383,7 @@ check-dir :
 	kcdirmgr get casket ryu
 	kcdirmgr import casket lab/numbers.tsv
 	kcdirmgr list -pv -px casket > check.out
+	kcdirmgr copy casket casket-para
 	kcdirmgr dump casket check.out
 	kcdirmgr load -otr casket check.out
 	kcdirmgr check -onr casket
@@ -439,6 +445,7 @@ check-forest :
 	kcforestmgr set casket mikio 0211
 	kcforestmgr set casket natsuki 0810
 	kcforestmgr set casket micky ""
+	kcforestmgr set -rep casket duffy 777
 	kcforestmgr set -app casket duffy kukuku
 	kcforestmgr remove casket micky
 	kcforestmgr list -pv casket > check.out
@@ -455,6 +462,7 @@ check-forest :
 	kcforestmgr get casket ryu
 	kcforestmgr import casket lab/numbers.tsv
 	kcforestmgr list -des -pv -px casket > check.out
+	kcforestmgr copy casket casket-para
 	kcforestmgr dump casket check.out
 	kcforestmgr load -otr casket check.out
 	kcforestmgr check -onr casket
@@ -540,6 +548,7 @@ check-poly :
 	kcpolymgr set -app casket.kch duffy kukuku
 	kcpolymgr remove casket.kch micky
 	kcpolymgr list -pv casket.kch > check.out
+	kcpolymgr copy casket.kch casket-para
 	kcpolymgr dump casket.kch check.out
 	kcpolymgr load -otr casket.kch check.out
 	kcpolymgr set casket.kch ryu 1
@@ -674,8 +683,8 @@ kcutiltest.exe : kcutiltest.obj kyotocabinet.lib
 	$(LINK) $(LINKFLAGS) /OUT:$@ kcutiltest.obj kyotocabinet.lib
 
 
-kcutilcodec.exe : kcutilcodec.obj kyotocabinet.lib
-	$(LINK) $(LINKFLAGS) /OUT:$@ kcutilcodec.obj kyotocabinet.lib
+kcutilmgr.exe : kcutilmgr.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kcutilmgr.obj kyotocabinet.lib
 
 
 kcprototest.exe : kcprototest.obj kyotocabinet.lib
@@ -769,7 +778,7 @@ kcpolydb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccom
 kclangc.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
 
-kcutiltest.obj kcutilcodec.obj : \
+kcutiltest.obj kcutilmgr.obj : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
   cmdcommon.h
 

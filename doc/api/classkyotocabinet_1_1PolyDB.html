@@ -47,6 +47,7 @@
 <tr><td colspan="2"><h2>Public Types</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523">MergeMode</a> { <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a82e55433716f2fb610486f520442ce71">MSET</a>, 
 <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a51788f6d47b73adc35eca71a6b97e7bc">MADD</a>, 
+<a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a6bb2caacabd9699dfd7f9a76c588d837">MREPLACE</a>, 
 <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523ab42898c9b2f404c6e1228babd731355d">MAPPEND</a>
  }</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><p>Merge modes. </p>
@@ -116,6 +117,9 @@
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="af7b027daeddd1017bdc4caba82c34523a51788f6d47b73adc35eca71a6b97e7bc"></a><!-- doxytag: member="MADD" ref="af7b027daeddd1017bdc4caba82c34523a51788f6d47b73adc35eca71a6b97e7bc" args="" -->MADD</em>&nbsp;</td><td>
 <p>keep the existing value </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="af7b027daeddd1017bdc4caba82c34523a6bb2caacabd9699dfd7f9a76c588d837"></a><!-- doxytag: member="MREPLACE" ref="af7b027daeddd1017bdc4caba82c34523a6bb2caacabd9699dfd7f9a76c588d837" args="" -->MREPLACE</em>&nbsp;</td><td>
+<p>modify the existing record only </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="af7b027daeddd1017bdc4caba82c34523ab42898c9b2f404c6e1228babd731355d"></a><!-- doxytag: member="MAPPEND" ref="af7b027daeddd1017bdc4caba82c34523ab42898c9b2f404c6e1228babd731355d" args="" -->MAPPEND</em>&nbsp;</td><td>
 <p>append the new value </p>
@@ -726,7 +730,7 @@
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>srcary</em>&nbsp;</td><td>an array of the source detabase objects. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>srcnum</em>&nbsp;</td><td>the number of the elements of the source array. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the merge mode. <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a82e55433716f2fb610486f520442ce71" title="overwrite the existing value">PolyDB::MSET</a> to overwrite the existing value, <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a51788f6d47b73adc35eca71a6b97e7bc" title="keep the existing value">PolyDB::MADD</a> to keep the existing value, <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523ab42898c9b2f404c6e1228babd731355d" title="append the new value">PolyDB::MAPPEND</a> to append the new value. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the merge mode. <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a82e55433716f2fb610486f520442ce71" title="overwrite the existing value">PolyDB::MSET</a> to overwrite the existing value, <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a51788f6d47b73adc35eca71a6b97e7bc" title="keep the existing value">PolyDB::MADD</a> to keep the existing value, <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a6bb2caacabd9699dfd7f9a76c588d837" title="modify the existing record only">PolyDB::MREPLACE</a> to modify the existing record only, <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523ab42898c9b2f404c6e1228babd731355d" title="append the new value">PolyDB::MAPPEND</a> to append the new value. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
   </table>
   </dd>
@@ -759,7 +763,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Aug 29 15:04:36 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Aug 30 12:13:53 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

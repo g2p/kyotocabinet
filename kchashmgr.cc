@@ -32,6 +32,7 @@ static int32_t runremove(int argc, char** argv);
 static int32_t runget(int argc, char** argv);
 static int32_t runlist(int argc, char** argv);
 static int32_t runimport(int argc, char** argv);
+static int32_t runcopy(int argc, char** argv);
 static int32_t rundump(int argc, char** argv);
 static int32_t runload(int argc, char** argv);
 static int32_t rundefrag(int argc, char** argv);
@@ -47,6 +48,7 @@ static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
 static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t oflags,
                         int64_t max, bool pv, bool px);
 static int32_t procimport(const char* path, const char* file, int32_t oflags, bool sx);
+static int32_t proccopy(const char* path, const char* file, int32_t oflags);
 static int32_t procdump(const char* path, const char* file, int32_t oflags);
 static int32_t procload(const char* path, const char* file, int32_t oflags);
 static int32_t procdefrag(const char* path, int32_t oflags);
@@ -73,6 +75,8 @@ int main(int argc, char** argv) {
     rv = runlist(argc, argv);
   } else if (!std::strcmp(argv[1], "import")) {
     rv = runimport(argc, argv);
+  } else if (!std::strcmp(argv[1], "copy")) {
+    rv = runcopy(argc, argv);
   } else if (!std::strcmp(argv[1], "dump")) {
     rv = rundump(argc, argv);
   } else if (!std::strcmp(argv[1], "load")) {
@@ -99,12 +103,13 @@ static void usage() {
   eprintf("  %s create [-otr] [-onl|-otl|-onr] [-apow num] [-fpow num] [-ts] [-tl] [-tc]"
           " [-bnum num] path\n", g_progname);
   eprintf("  %s inform [-onl|-otl|-onr] [-st] path\n", g_progname);
-  eprintf("  %s set [-onl|-otl|-onr] [-add|-app|-inci|-incd] [-sx] path key value\n",
+  eprintf("  %s set [-onl|-otl|-onr] [-add|-rep|-app|-inci|-incd] [-sx] path key value\n",
           g_progname);
   eprintf("  %s remove [-onl|-otl|-onr] [-sx] path key\n", g_progname);
   eprintf("  %s get [-onl|-otl|-onr] [-sx] [-px] [-pz] path key\n", g_progname);
   eprintf("  %s list [-onl|-otl|-onr] [-max num] [-sx] [-pv] [-px] path [key]\n", g_progname);
   eprintf("  %s import [-onl|-otl|-onr] [-sx] path [file]\n", g_progname);
+  eprintf("  %s copy [-onl|-otl|-onr] path file\n", g_progname);
   eprintf("  %s dump [-onl|-otl|-onr] path [file]\n", g_progname);
   eprintf("  %s load [-otr] [-onl|-otl|-onr] path [file]\n", g_progname);
   eprintf("  %s defrag [-onl|-otl|-onr] path\n", g_progname);
@@ -218,6 +223,8 @@ static int32_t runset(int argc, char** argv) {
         oflags |= kc::HashDB::ONOREPAIR;
       } else if (!std::strcmp(argv[i], "-add")) {
         mode = 'a';
+      } else if (!std::strcmp(argv[i], "-rep")) {
+        mode = 'r';
       } else if (!std::strcmp(argv[i], "-app")) {
         mode = 'c';
       } else if (!std::strcmp(argv[i], "-inci")) {
@@ -440,6 +447,36 @@ static int32_t runimport(int argc, char** argv) {
   }
   if (!path) usage();
   int32_t rv = procimport(path, file, oflags, sx);
+  return rv;
+}
+
+
+// parse arguments of copy command
+static int32_t runcopy(int argc, char** argv) {
+  const char* path = NULL;
+  const char* file = NULL;
+  int32_t oflags = 0;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!path && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "-onl")) {
+        oflags |= kc::HashDB::ONOLOCK;
+      } else if (!std::strcmp(argv[i], "-otl")) {
+        oflags |= kc::HashDB::OTRYLOCK;
+      } else if (!std::strcmp(argv[i], "-onr")) {
+        oflags |= kc::HashDB::ONOREPAIR;
+      } else {
+        usage();
+      }
+    } else if (!path) {
+      path = argv[i];
+    } else if (!file) {
+      file = argv[i];
+    } else {
+      usage();
+    }
+  }
+  if (!path || !file) usage();
+  int32_t rv = proccopy(path, file, oflags);
   return rv;
 }
 
@@ -707,6 +744,13 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
       }
       break;
     }
+    case 'r': {
+      if (!db.replace(kbuf, ksiz, vbuf, vsiz)) {
+        dberrprint(&db, "DB::replace failed");
+        err = true;
+      }
+      break;
+    }
     case 'c': {
       if (!db.append(kbuf, ksiz, vbuf, vsiz)) {
         dberrprint(&db, "DB::append failed");
@@ -922,6 +966,29 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
 }
 
 
+// perform copy command
+static int32_t proccopy(const char* path, const char* file, int32_t oflags) {
+  kc::HashDB db;
+  if (!db.open(path, kc::HashDB::OREADER | oflags)) {
+    dberrprint(&db, "DB::open failed");
+    return 1;
+  }
+  bool err = false;
+  DotChecker checker(&std::cout, -100);
+  if (!db.copy(file, &checker)) {
+    dberrprint(&db, "DB::copy failed");
+    err = true;
+  }
+  iprintf(" (end)\n");
+  if (!db.close()) {
+    dberrprint(&db, "DB::close failed");
+    err = true;
+  }
+  if (!err) iprintf("%lld blocks were merged successfully\n", (long long)checker.count());
+  return err ? 1 : 0;
+}
+
+
 // perform dump command
 static int32_t procdump(const char* path, const char* file, int32_t oflags) {
   kc::HashDB db;
@@ -932,10 +999,13 @@ static int32_t procdump(const char* path, const char* file, int32_t oflags) {
   }
   bool err = false;
   if (file) {
+    DotChecker checker(&std::cout, 1000);
     if (!db.dump_snapshot(file)) {
       dberrprint(&db, "DB::dump_snapshot");
       err = true;
     }
+    iprintf(" (end)\n");
+    if (!err) iprintf("%lld records were dumped successfully\n", (long long)checker.count());
   } else {
     if (!db.dump_snapshot(&std::cout)) {
       dberrprint(&db, "DB::dump_snapshot");
@@ -960,15 +1030,21 @@ static int32_t procload(const char* path, const char* file, int32_t oflags) {
   }
   bool err = false;
   if (file) {
+    DotChecker checker(&std::cout, -1000);
     if (!db.load_snapshot(file)) {
       dberrprint(&db, "DB::load_snapshot");
       err = true;
     }
+    iprintf(" (end)\n");
+    if (!err) iprintf("%lld records were loaded successfully\n", (long long)checker.count());
   } else {
+    DotChecker checker(&std::cout, -1000);
     if (!db.load_snapshot(&std::cin)) {
       dberrprint(&db, "DB::load_snapshot");
       err = true;
     }
+    iprintf(" (end)\n");
+    if (!err) iprintf("%lld records were loaded successfully\n", (long long)checker.count());
   }
   if (!db.close()) {
     dberrprint(&db, "DB::close failed");

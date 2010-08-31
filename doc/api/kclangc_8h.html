@@ -94,6 +94,7 @@
  <a href="kclangc_8h.html#adf764cbdea00d65edcd07bb9953ad2b7">More...</a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="kclangc_8h.html#a99fb83031ce9923c84392b4e92f956b5a667ff146032bee5aad8d51689ea97586">KCMSET</a>, 
 <a class="el" href="kclangc_8h.html#a99fb83031ce9923c84392b4e92f956b5a57460294be785b3fd21eeef5083c21fd">KCMADD</a>, 
+<a class="el" href="kclangc_8h.html#a99fb83031ce9923c84392b4e92f956b5a9d1a001b2b5a859ab285edda8537c0ef">KCMREPLACE</a>, 
 <a class="el" href="kclangc_8h.html#a99fb83031ce9923c84392b4e92f956b5a6af08f4fb0a0543d25c0469462195a8a">KCMAPPEND</a>
  }</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><p>Merge modes. </p>
@@ -145,6 +146,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the value of a record.  <a href="#acc94df95a0d8863c450a649bdc546eaf"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a73fe31f31713e4951c3b4392d1c0d818">kcdbadd</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, const char *kbuf, size_t ksiz, const char *vbuf, size_t vsiz)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Add a record.  <a href="#a73fe31f31713e4951c3b4392d1c0d818"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a14738a439d37fa7ea3d60a1a677834c8">kcdbreplace</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, const char *kbuf, size_t ksiz, const char *vbuf, size_t vsiz)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Replace the value of a record.  <a href="#a14738a439d37fa7ea3d60a1a677834c8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a2c2b464eedd23c73690ef6824206aded">kcdbappend</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, const char *kbuf, size_t ksiz, const char *vbuf, size_t vsiz)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Append the value of a record.  <a href="#a2c2b464eedd23c73690ef6824206aded"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#aa56aefce671acb4f4144a17776182d3f">kcdbincrint</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, const char *kbuf, size_t ksiz, int64_t num)</td></tr>
@@ -424,6 +427,9 @@
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a99fb83031ce9923c84392b4e92f956b5a57460294be785b3fd21eeef5083c21fd"></a><!-- doxytag: member="KCMADD" ref="a99fb83031ce9923c84392b4e92f956b5a57460294be785b3fd21eeef5083c21fd" args="" -->KCMADD</em>&nbsp;</td><td>
 <p>keep the existing value </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a99fb83031ce9923c84392b4e92f956b5a9d1a001b2b5a859ab285edda8537c0ef"></a><!-- doxytag: member="KCMREPLACE" ref="a99fb83031ce9923c84392b4e92f956b5a9d1a001b2b5a859ab285edda8537c0ef" args="" -->KCMREPLACE</em>&nbsp;</td><td>
+<p>modify the existing record only </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="a99fb83031ce9923c84392b4e92f956b5a6af08f4fb0a0543d25c0469462195a8a"></a><!-- doxytag: member="KCMAPPEND" ref="a99fb83031ce9923c84392b4e92f956b5a6af08f4fb0a0543d25c0469462195a8a" args="" -->KCMAPPEND</em>&nbsp;</td><td>
 <p>append the new value </p>
@@ -1187,6 +1193,65 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, a new record is created. If the corresponding record exists, the record is not modified and false is returned. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a14738a439d37fa7ea3d60a1a677834c8"></a><!-- doxytag: member="kclangc.h::kcdbreplace" ref="a14738a439d37fa7ea3d60a1a677834c8" args="(KCDB *db, const char *kbuf, size_t ksiz, const char *vbuf, size_t vsiz)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kcdbreplace </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="unionKCDB.html">KCDB</a> *&nbsp;</td>
+          <td class="paramname"> <em>db</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>kbuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>ksiz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>vbuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>vsiz</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Replace the value of a record. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>db</em>&nbsp;</td><td>a database object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>kbuf</em>&nbsp;</td><td>the pointer to the key region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>ksiz</em>&nbsp;</td><td>the size of the key region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>vbuf</em>&nbsp;</td><td>the pointer to the value region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>vsiz</em>&nbsp;</td><td>the size of the value region. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, no new record is created and false is returned. If the corresponding record exists, the value is modified. </dd></dl>
 
 </div>
 </div>
@@ -2031,7 +2096,7 @@
     <tr><td valign="top"></td><td valign="top"><em>db</em>&nbsp;</td><td>a database object. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>srcary</em>&nbsp;</td><td>an array of the source detabase objects. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>srcnum</em>&nbsp;</td><td>the number of the elements of the source array. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the merge mode. KCMSET to overwrite the existing value, KCMADD to keep the existing value, KCMAPPEND to append the new value. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the merge mode. KCMSET to overwrite the existing value, KCMADD to keep the existing value, KCMREPLACE to modify the existing record only, KCMAPPEND to append the new value. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2706,7 +2771,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Aug 29 15:04:35 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Aug 30 12:13:53 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

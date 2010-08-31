@@ -207,7 +207,7 @@
 /usr/local/lib/libkyotocabinet.so
 /usr/local/lib/pkgconfig/kyotocabinet.pc
 /usr/local/bin/kcutiltest
-/usr/local/bin/kcutilcodec
+/usr/local/bin/kcutilmgr
 /usr/local/bin/kcprototest
 /usr/local/bin/kccachetest
 /usr/local/bin/kcgrasstest
@@ -375,9 +375,9 @@ int main(int argc, char** argv) {
 }
 </pre>
 
-<p>Save the above code as a file "example.cc".  Then, perform the following command line.  The command `<code>kcutilcodec conf</code>' prints the building configuration.</p>
+<p>Save the above code as a file "example.cc".  Then, perform the following command line.  The command `<code>kcutilmgr conf</code>' prints the building configuration.</p>
 
-<pre>$ g++ `kcutilcodec conf -i` -o example example.cc `kcutilcodec conf -l`
+<pre>$ g++ `kcutilmgr conf -i` -o example example.cc `kcutilmgr conf -l`
 </pre>
 
 <p>Execute the application program built by the above.</p>

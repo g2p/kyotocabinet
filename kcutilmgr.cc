@@ -1,5 +1,5 @@
 /*************************************************************************************************
- * Popular encoders and decoders
+ * The command line interface of miscellaneous utilities
  *                                                               Copyright (C) 2009-2010 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
@@ -63,7 +63,8 @@ int main(int argc, char** argv) {
 
 // print the usage and exit
 static void usage() {
-  eprintf("%s: popular encoders and decoders of Kyoto Cabinet\n", g_progname);
+  eprintf("%s: command line interface of miscellaneous utilities of Kyoto Cabinet\n",
+          g_progname);
   eprintf("\n");
   eprintf("usage:\n");
   eprintf("  %s hex [-d] [file]\n", g_progname);

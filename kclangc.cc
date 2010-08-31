@@ -284,6 +284,16 @@ int32_t kcdbadd(KCDB* db, const char* kbuf, size_t ksiz, const char* vbuf, size_
 
 
 /**
+ * Replace the value of a record.
+ */
+int32_t kcdbreplace(KCDB* db, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+  _assert_(db && kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+  PolyDB* pdb = (PolyDB*)db;
+  return pdb->replace(kbuf, ksiz, vbuf, vsiz);
+}
+
+
+/**
  * Append the value of a record.
  */
 int32_t kcdbappend(KCDB* db, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {

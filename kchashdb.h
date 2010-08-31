@@ -765,10 +765,6 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
-    if (!writer_) {
-      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
-      return false;
-    }
     rlock_.lock_reader_all();
     bool err = false;
     if (!synchronize_impl(hard, proc, checker)) err = true;
@@ -1239,7 +1235,7 @@ protected:
   void report(const char* file, int32_t line, const char* func, Logger::Kind kind,
               const char* format, ...) {
     _assert_(file && line > 0 && func && format);
-    if (!logger_ && !(kind & logkinds_)) return;
+    if (!logger_ || !(kind & logkinds_)) return;
     std::string message;
     strprintf(&message, "%s: ", path_.empty() ? "-" : path_.c_str());
     va_list ap;
@@ -1914,23 +1910,25 @@ private:
   bool synchronize_impl(bool hard, FileProcessor* proc, ProgressChecker* checker) {
     _assert_(true);
     bool err = false;
-    if (checker && !checker->check("synchronize", "dumping the free blocks", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
-      return false;
-    }
-    if (hard && !dump_free_blocks()) err = true;
-    if (checker && !checker->check("synchronize", "dumping the meta data", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
-      return false;
-    }
-    if (!dump_meta()) err = true;
-    if (checker && !checker->check("synchronize", "synchronizing the file", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
-      return false;
-    }
-    if (!file_.synchronize(hard)) {
-      set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
-      err = true;
+    if (writer_) {
+      if (checker && !checker->check("synchronize", "dumping the free blocks", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        return false;
+      }
+      if (hard && !dump_free_blocks()) err = true;
+      if (checker && !checker->check("synchronize", "dumping the meta data", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        return false;
+      }
+      if (!dump_meta()) err = true;
+      if (checker && !checker->check("synchronize", "synchronizing the file", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        return false;
+      }
+      if (!file_.synchronize(hard)) {
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
+        err = true;
+      }
     }
     if (proc) {
       if (checker && !checker->check("synchronize", "running the post processor", -1, -1)) {

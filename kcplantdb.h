@@ -1352,46 +1352,43 @@ public:
       mlock_.unlock();
       return false;
     }
-    if (!writer_) {
-      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
-      mlock_.unlock();
-      return false;
-    }
     bool err = false;
-    if (checker && !checker->check("synchronize", "cleaning the leaf node cache", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
-      mlock_.unlock();
-      return false;
+    if (writer_) {
+      if (checker && !checker->check("synchronize", "cleaning the leaf node cache", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        mlock_.unlock();
+        return false;
+      }
+      if (!clean_leaf_cache()) err = true;
+      if (checker && !checker->check("synchronize", "cleaning the inner node cache", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        mlock_.unlock();
+        return false;
+      }
+      if (!clean_inner_cache()) err = true;
+      if (!mlock_.promote()) {
+        mlock_.unlock();
+        mlock_.lock_writer();
+      }
+      if (checker && !checker->check("synchronize", "flushing the leaf node cache", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        mlock_.unlock();
+        return false;
+      }
+      if (!flush_leaf_cache(true)) err = true;
+      if (checker && !checker->check("synchronize", "flushing the inner node cache", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        mlock_.unlock();
+        return false;
+      }
+      if (!flush_inner_cache(true)) err = true;
+      if (checker && !checker->check("synchronize", "dumping the meta data", -1, -1)) {
+        set_error(Error::LOGIC, "checker failed");
+        mlock_.unlock();
+        return false;
+      }
+      if (!dump_meta()) err = true;
     }
-    if (!clean_leaf_cache()) err = true;
-    if (checker && !checker->check("synchronize", "cleaning the inner node cache", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
-      mlock_.unlock();
-      return false;
-    }
-    if (!clean_inner_cache()) err = true;
-    if (!mlock_.promote()) {
-      mlock_.unlock();
-      mlock_.lock_writer();
-    }
-    if (checker && !checker->check("synchronize", "flushing the leaf node cache", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
-      mlock_.unlock();
-      return false;
-    }
-    if (!flush_leaf_cache(true)) err = true;
-    if (checker && !checker->check("synchronize", "flushing the inner node cache", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
-      mlock_.unlock();
-      return false;
-    }
-    if (!flush_inner_cache(true)) err = true;
-    if (checker && !checker->check("synchronize", "dumping the meta data", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
-      mlock_.unlock();
-      return false;
-    }
-    if (!dump_meta()) err = true;
     class Wrapper : public FileProcessor {
     public:
       Wrapper(FileProcessor* proc, int64_t count) : proc_(proc), count_(count) {}

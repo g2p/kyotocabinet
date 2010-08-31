@@ -178,21 +178,21 @@ check :
 
 check-util :
 	rm -rf casket*
-	$(RUNENV) $(RUNCMD) ./kcutilcodec --version
-	$(RUNENV) $(RUNCMD) ./kcutilcodec hex Makefile > check.in
-	$(RUNENV) $(RUNCMD) ./kcutilcodec hex -d check.in > check.out
-	$(RUNENV) $(RUNCMD) ./kcutilcodec ciph -key "hoge" Makefile > check.in
-	$(RUNENV) $(RUNCMD) ./kcutilcodec ciph -key "hoge" check.in > check.out
-	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -gz Makefile > check.in
-	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -gz -d check.in > check.out
-	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -lzo Makefile > check.in
-	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -lzo -d check.in > check.out
-	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -lzma Makefile > check.in
-	$(RUNENV) $(RUNCMD) ./kcutilcodec comp -lzma -d check.in > check.out
-	$(RUNENV) $(RUNCMD) ./kcutilcodec hash Makefile > check.in
-	$(RUNENV) $(RUNCMD) ./kcutilcodec hash -fnv Makefile > check.out
-	$(RUNENV) $(RUNCMD) ./kcutilcodec hash -path Makefile > check.out
-	$(RUNENV) $(RUNCMD) ./kcutilcodec conf
+	$(RUNENV) $(RUNCMD) ./kcutilmgr --version
+	$(RUNENV) $(RUNCMD) ./kcutilmgr hex Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr hex -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr ciph -key "hoge" Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr ciph -key "hoge" check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr comp -gz Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr comp -gz -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr comp -lzo Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr comp -lzo -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr comp -lzma Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr comp -lzma -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr hash Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr hash -fnv Makefile > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr hash -path Makefile > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr conf
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcutiltest mutex -th 4 -iv -1 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest para -th 4 -iv -1 10000
@@ -278,6 +278,7 @@ check-hash :
 	$(RUNENV) $(RUNCMD) ./kchashmgr get casket ryu
 	$(RUNENV) $(RUNCMD) ./kchashmgr import casket lab/numbers.tsv
 	$(RUNENV) $(RUNCMD) ./kchashmgr list -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kchashmgr copy casket casket-para
 	$(RUNENV) $(RUNCMD) ./kchashmgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kchashmgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kchashmgr defrag -onl casket
@@ -370,6 +371,7 @@ check-tree :
 	$(RUNENV) $(RUNCMD) ./kctreemgr get casket ryu
 	$(RUNENV) $(RUNCMD) ./kctreemgr import casket lab/numbers.tsv
 	$(RUNENV) $(RUNCMD) ./kctreemgr list -des -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kctreemgr copy casket casket-para
 	$(RUNENV) $(RUNCMD) ./kctreemgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr defrag -onl casket
@@ -468,6 +470,7 @@ check-dir :
 	$(RUNENV) $(RUNCMD) ./kcdirmgr get casket ryu
 	$(RUNENV) $(RUNCMD) ./kcdirmgr import casket lab/numbers.tsv
 	$(RUNENV) $(RUNCMD) ./kcdirmgr list -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kcdirmgr copy casket casket-para
 	$(RUNENV) $(RUNCMD) ./kcdirmgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kcdirmgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kcdirmgr check -onr casket
@@ -544,6 +547,7 @@ check-forest :
 	$(RUNENV) $(RUNCMD) ./kcforestmgr get casket ryu
 	$(RUNENV) $(RUNCMD) ./kcforestmgr import casket lab/numbers.tsv
 	$(RUNENV) $(RUNCMD) ./kcforestmgr list -des -pv -px casket > check.out
+	$(RUNENV) $(RUNCMD) ./kcforestmgr copy casket casket-para
 	$(RUNENV) $(RUNCMD) ./kcforestmgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kcforestmgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
@@ -628,6 +632,7 @@ check-poly :
 	$(RUNENV) $(RUNCMD) ./kcpolymgr set -app casket.kch duffy kukuku
 	$(RUNENV) $(RUNCMD) ./kcpolymgr remove casket.kch micky
 	$(RUNENV) $(RUNCMD) ./kcpolymgr list -pv casket.kch > check.out
+	$(RUNENV) $(RUNCMD) ./kcpolymgr copy casket.kch casket-para
 	$(RUNENV) $(RUNCMD) ./kcpolymgr dump casket.kch check.out
 	$(RUNENV) $(RUNCMD) ./kcpolymgr load -otr casket.kch check.out
 	$(RUNENV) $(RUNCMD) ./kcpolymgr set casket.kch ryu 1
@@ -940,7 +945,7 @@ kcutiltest : kcutiltest.o $(LIBRARYFILES)
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
 
 
-kcutilcodec : kcutilcodec.o $(LIBRARYFILES)
+kcutilmgr : kcutilmgr.o $(LIBRARYFILES)
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
 
 
@@ -1035,7 +1040,7 @@ kcpolydb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompa
 kclangc.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
 
-kcutiltest.o kcutilcodec.o : \
+kcutiltest.o kcutilmgr.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
   cmdcommon.h
 

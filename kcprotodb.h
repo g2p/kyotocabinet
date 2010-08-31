@@ -626,12 +626,9 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
-    if (!(omode_ & OWRITER)) {
-      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
-      return false;
-    }
     bool err = false;
-    if (checker && !checker->check("synchronize", "nothing to be synchronized", -1, -1)) {
+    if ((omode_ & OWRITER) && checker &&
+        !checker->check("synchronize", "nothing to be synchronized", -1, -1)) {
       set_error(Error::LOGIC, "checker failed");
       return false;
     }
@@ -924,7 +921,7 @@ protected:
   void report(const char* file, int32_t line, const char* func, Logger::Kind kind,
               const char* format, ...) {
     _assert_(file && line > 0 && func && format);
-    if (!logger_ && !(kind & logkinds_)) return;
+    if (!logger_ || !(kind & logkinds_)) return;
     std::string message;
     strprintf(&message, "%s: ", path_.empty() ? "-" : path_.c_str());
     va_list ap;

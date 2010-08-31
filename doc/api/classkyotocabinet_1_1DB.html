@@ -55,6 +55,10 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Add a record.  <a href="#adc4dd6b46fe5da9f18b3b138dacea71f"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#ade9b857eaef82ff116cc4e02438a956a">add</a> (const std::string &amp;key, const std::string &amp;value)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the value of a record.  <a href="#ade9b857eaef82ff116cc4e02438a956a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#abdffd77bbb95acf3ce805fd8dc9f7bb1">replace</a> (const char *kbuf, size_t ksiz, const char *vbuf, size_t vsiz)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Replace the value of a record.  <a href="#abdffd77bbb95acf3ce805fd8dc9f7bb1"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#a8697b0fddb0eda0e5e46a3927384ed3a">replace</a> (const std::string &amp;key, const std::string &amp;value)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Replace the value of a record.  <a href="#a8697b0fddb0eda0e5e46a3927384ed3a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#abd7a961826d20e91fa43a5867534a6a8">append</a> (const char *kbuf, size_t ksiz, const char *vbuf, size_t vsiz)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Append the value of a record.  <a href="#abd7a961826d20e91fa43a5867534a6a8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#ac073545b8c7f98a6d26621c097edf626">append</a> (const std::string &amp;key, const std::string &amp;value)=0</td></tr>
@@ -335,6 +339,92 @@
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#adc4dd6b46fe5da9f18b3b138dacea71f" title="Add a record.">DB::add</a> method except that the parameters are std::string. </dd></dl>
 
 <p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#ae917d6aa4cba62bd808121fddb4035b0">kyotocabinet::BasicDB</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="abdffd77bbb95acf3ce805fd8dc9f7bb1"></a><!-- doxytag: member="kyotocabinet::DB::replace" ref="abdffd77bbb95acf3ce805fd8dc9f7bb1" args="(const char *kbuf, size_t ksiz, const char *vbuf, size_t vsiz)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool kyotocabinet::DB::replace </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>kbuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>ksiz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>vbuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>vsiz</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Replace the value of a record. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>kbuf</em>&nbsp;</td><td>the pointer to the key region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>ksiz</em>&nbsp;</td><td>the size of the key region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>vbuf</em>&nbsp;</td><td>the pointer to the value region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>vsiz</em>&nbsp;</td><td>the size of the value region. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, no new record is created and false is returned. If the corresponding record exists, the value is modified. </dd></dl>
+
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#ac1b65f395e4be9e9ef14973f564e3a48">kyotocabinet::BasicDB</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a8697b0fddb0eda0e5e46a3927384ed3a"></a><!-- doxytag: member="kyotocabinet::DB::replace" ref="a8697b0fddb0eda0e5e46a3927384ed3a" args="(const std::string &amp;key, const std::string &amp;value)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool kyotocabinet::DB::replace </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>value</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Replace the value of a record. </p>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#abdffd77bbb95acf3ce805fd8dc9f7bb1" title="Replace the value of a record.">DB::replace</a> method except that the parameters are std::string. </dd></dl>
+
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#a42fce9d48b8a3744b05fc61636fab2b1">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -931,7 +1021,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Aug 29 15:04:35 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Aug 30 12:13:53 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

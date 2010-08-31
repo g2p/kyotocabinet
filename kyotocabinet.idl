@@ -120,6 +120,7 @@ module kyotocabinet {
     boolean iterate(inout Visitor visitor, in boolean writable);
     boolean set(in string key, in string value);
     boolean add(in string key, in string value);
+    boolean replace(in string key, in string value);
     boolean append(in string key, in string value);
     long increment(in string key, in long num);
     double increment_(in string key, in double num);

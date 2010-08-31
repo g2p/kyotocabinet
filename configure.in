@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.8)
+AC_INIT(kyotocabinet, 1.2.9)
 
 # Package information
 MYLIBVER=5
-MYLIBREV=0
+MYLIBREV=1
 MYFORMATVER=5
 
 # Targets
@@ -22,11 +22,11 @@ MYLIBRARYFILES="libkyotocabinet.a"
 MYLIBOBJFILES="kcutil.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o"
 MYLIBOBJFILES="$MYLIBOBJFILES kcdb.o kcplantdb.o kcprotodb.o kccachedb.o kchashdb.o"
 MYLIBOBJFILES="$MYLIBOBJFILES kcdirdb.o kcpolydb.o kclangc.o"
-MYCOMMANDFILES="kcutiltest kcutilcodec kcprototest kccachetest kcgrasstest"
+MYCOMMANDFILES="kcutiltest kcutilmgr kcprototest kccachetest kcgrasstest"
 MYCOMMANDFILES="$MYCOMMANDFILES kchashtest kchashmgr kctreetest kctreemgr"
 MYCOMMANDFILES="$MYCOMMANDFILES kcdirtest kcdirmgr kcforesttest kcforestmgr"
 MYCOMMANDFILES="$MYCOMMANDFILES kcpolytest kcpolymgr kclangctest"
-MYMAN1FILES="kcutiltest.1 kcutilcodec.1 kcprototest.1 kccachetest.1 kcgrasstest.1"
+MYMAN1FILES="kcutiltest.1 kcutilmgr.1 kcprototest.1 kccachetest.1 kcgrasstest.1"
 MYMAN1FILES="$MYMAN1FILES kchashtest.1 kchashmgr.1 kctreetest.1 kctreemgr.1"
 MYMAN1FILES="$MYMAN1FILES kcdirtest.1 kcdirmgr.1 kcforesttest.1 kcforestmgr.1"
 MYMAN1FILES="$MYMAN1FILES kcpolytest.1 kcpolymgr.1 kclangctest.1"

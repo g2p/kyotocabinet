@@ -300,6 +300,22 @@ public:
    */
   virtual bool add(const std::string& key, const std::string& value) = 0;
   /**
+   * Replace the value of a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param vbuf the pointer to the value region.
+   * @param vsiz the size of the value region.
+   * @return true on success, or false on failure.
+   * @note If no record corresponds to the key, no new record is created and false is returned.
+   * If the corresponding record exists, the value is modified.
+   */
+  virtual bool replace(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) = 0;
+  /**
+   * Replace the value of a record.
+   * @note Equal to the original DB::replace method except that the parameters are std::string.
+   */
+  virtual bool replace(const std::string& key, const std::string& value) = 0;
+  /**
    * Append the value of a record.
    * @param kbuf the pointer to the key region.
    * @param ksiz the size of the key region.
@@ -891,6 +907,12 @@ public:
   class ProgressChecker {
   public:
     /**
+     * Destructor.
+     */
+    virtual ~ProgressChecker() {
+      _assert_(true);
+    }
+    /**
      * Check the progress status.
      * @param name the name of the process.
      * @param message a supplement message.
@@ -1255,6 +1277,52 @@ public:
   bool add(const std::string& key, const std::string& value) {
     _assert_(true);
     return add(key.c_str(), key.size(), value.c_str(), value.size());
+  }
+  /**
+   * Replace the value of a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param vbuf the pointer to the value region.
+   * @param vsiz the size of the value region.
+   * @return true on success, or false on failure.
+   * @note If no record corresponds to the key, no new record is created and false is returned.
+   * If the corresponding record exists, the value is modified.
+   */
+  bool replace(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+    class VisitorImpl : public Visitor {
+    public:
+      explicit VisitorImpl(const char* vbuf, size_t vsiz) :
+        vbuf_(vbuf), vsiz_(vsiz), ok_(false) {}
+      bool ok() const {
+        return ok_;
+      }
+    private:
+      const char* visit_full(const char* kbuf, size_t ksiz,
+                             const char* vbuf, size_t vsiz, size_t* sp) {
+        ok_ = true;
+        *sp = vsiz_;
+        return vbuf_;
+      }
+      const char* vbuf_;
+      size_t vsiz_;
+      bool ok_;
+    };
+    VisitorImpl visitor(vbuf, vsiz);
+    if (!accept(kbuf, ksiz, &visitor, true)) return false;
+    if (!visitor.ok()) {
+      set_error(Error::NOREC, "no record");
+      return false;
+    }
+    return true;
+  }
+  /**
+   * Replace the value of a record.
+   * @note Equal to the original DB::replace method except that the parameters are std::string.
+   */
+  bool replace(const std::string& key, const std::string& value) {
+    _assert_(true);
+    return replace(key.c_str(), key.size(), value.c_str(), value.size());
   }
   /**
    * Append the value of a record.

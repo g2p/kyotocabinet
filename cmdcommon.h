@@ -82,6 +82,39 @@ kc::BasicDB::Logger* stdlogger(const char* progname, std::ostream* strm);
 void printdb(kc::BasicDB* db, bool px = false);
 
 
+// checker to show progress by printing dots
+class DotChecker : public kc::BasicDB::ProgressChecker {
+public:
+  explicit DotChecker(std::ostream* strm, int64_t freq) : strm_(strm), freq_(freq), cnt_(0) {}
+  int64_t count() {
+    return cnt_;
+  }
+private:
+  bool check(const char* name, const char* message, int64_t curcnt, int64_t allcnt) {
+    if (std::strcmp(message, "processing") || freq_ == 0) return true;
+    if (freq_ < 0) {
+      cnt_++;
+      if (cnt_ % -freq_ == 0) {
+        iputchar('.');
+        if (cnt_ % (-freq_ * 50) == 0) iprintf(" (%lld)\n", (long long)cnt_);
+      }
+    } else {
+      if (curcnt > cnt_) {
+        cnt_ = curcnt;
+        if (cnt_ % freq_ == 0) {
+          iputchar('.');
+          if (cnt_ % (freq_ * 50) == 0) iprintf(" (%lld)\n", (long long)cnt_);
+        }
+      }
+    }
+    return true;
+  }
+  std::ostream* strm_;
+  int64_t freq_;
+  int64_t cnt_;
+};
+
+
 // get the random seed
 inline void mysrand(int64_t seed) {
   g_rnd_x = seed;

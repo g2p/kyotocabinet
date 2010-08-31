@@ -87,6 +87,7 @@ enum {
 enum {
   KCMSET,                                /**< overwrite the existing value */
   KCMADD,                                /**< keep the existing value */
+  KCMREPLACE,                            /**< modify the existing record only */
   KCMAPPEND                              /**< append the new value */
 };
 
@@ -408,6 +409,20 @@ int32_t kcdbadd(KCDB* db, const char* kbuf, size_t ksiz, const char* vbuf, size_
 
 
 /**
+ * Replace the value of a record.
+ * @param db a database object.
+ * @param kbuf the pointer to the key region.
+ * @param ksiz the size of the key region.
+ * @param vbuf the pointer to the value region.
+ * @param vsiz the size of the value region.
+ * @return true on success, or false on failure.
+ * @note If no record corresponds to the key, no new record is created and false is returned.
+ * If the corresponding record exists, the value is modified.
+ */
+int32_t kcdbreplace(KCDB* db, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz);
+
+
+/**
  * Append the value of a record.
  * @param db a database object.
  * @param kbuf the pointer to the key region.
@@ -618,7 +633,8 @@ char* kcdbstatus(KCDB* db);
  * @param srcary an array of the source detabase objects.
  * @param srcnum the number of the elements of the source array.
  * @param mode the merge mode.  KCMSET to overwrite the existing value, KCMADD to keep the
- * existing value, KCMAPPEND to append the new value.
+ * existing value, KCMREPLACE to modify the existing record only, KCMAPPEND to append the new
+ * value.
  * @return true on success, or false on failure.
  */
 int32_t kcdbmerge(KCDB* db, KCDB** srcary, size_t srcnum, uint32_t mode);
