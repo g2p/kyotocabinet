@@ -1663,7 +1663,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
     errprint(__LINE__, "File::make_directory");
     err = true;
   }
-  const std::string chldpath = tmppath + kc::File::PATHCHR + "hoge";
+  const std::string chldpath = tmppath + kc::File::PATHCHR + "tmp";
   if (!kc::File::write_file(chldpath, tmppath.c_str(), tmppath.size())) {
     errprint(__LINE__, "File::write_file");
     err = true;

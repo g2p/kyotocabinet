@@ -90,7 +90,7 @@ all : $(LIBRARYFILES) $(COMMANDFILES)
 
 clean :
 	rm -rf $(LIBRARYFILES) $(LIBOBJFILES) $(COMMANDFILES) $(CGIFILES) \
-	  *.o *.gch a.out check.in check.out gmon.out *.vlog words.tsv \
+	  *.o *.gch a.out check.in check.out gmon.out *.log *.vlog words.tsv \
 	  casket* *.kch *.kct *.kcd *.kcf *.wal *.tmpkc* *.kcss *~ hoge moge tako ika
 
 
@@ -723,10 +723,10 @@ check-poly :
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc "casket#type=%#zcomp=gz"
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc \
-	  "casket#type=kch#log=-#logkinds=info#zcomp=lzocrc"
+	  "casket#type=kch#log=-#logkinds=debug#zcomp=lzocrc"
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc \
-	  "casket#type=kct#log=-#logkinds=info1#zcomp=lzmacrc"
+	  "casket#type=kct#log=-#logkinds=debug#zcomp=lzmacrc"
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcpolytest misc \
 	  "casket#type=kcd#zcomp=arc#zkey=mikio"

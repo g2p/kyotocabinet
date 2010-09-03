@@ -778,10 +778,6 @@ public:
      */
     bool back_position_spec(bool* hitp) {
       _assert_(hitp);
-
-      // hoge
-      if (rand() % 5 == 0) return true;
-
       bool err = false;
       bool hit = false;
       char rstack[PDBRECBUFSIZ];
@@ -1206,6 +1202,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
+    report(_KCCODELINE_, Logger::DEBUG, "opening the database (path=%s)", path.c_str());
     if (DBTYPE == TYPEGRASS) {
       mode &= ~OREADER;
       mode |= OWRITER | OCREATE;
@@ -1305,6 +1302,8 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
+    const std::string& path = db_.path();
+    report(_KCCODELINE_, Logger::DEBUG, "closing the database (path=%s)", path.c_str());
     bool err = false;
     disable_cursors();
     int64_t lsiz = calc_leaf_cache_size();
@@ -1884,12 +1883,41 @@ protected:
   void report(const char* file, int32_t line, const char* func, Logger::Kind kind,
               const char* format, ...) {
     _assert_(file && line > 0 && func && format);
-    std::string message;
     va_list ap;
     va_start(ap, format);
-    vstrprintf(&message, format, ap);
-    db_.report(file, line, func, kind, message.c_str());
+    db_.report_valist(file, line, func, kind, format, ap);
     va_end(ap);
+  }
+  /**
+   * Report a message for debugging with variable number of arguments.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
+   * @param format the printf-like format string.
+   * @param ap used according to the format string.
+   */
+  void report_valist(const char* file, int32_t line, const char* func, Logger::Kind kind,
+                     const char* format, va_list ap) {
+    _assert_(file && line > 0 && func && format);
+    db_.report_valist(file, line, func, kind, format, ap);
+  }
+  /**
+   * Report the content of a binary buffer for debugging.
+   * @param file the file name of the epicenter.
+   * @param line the line number of the epicenter.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
+   * @param name the name of the information.
+   * @param buf the binary buffer.
+   * @param size the size of the binary buffer
+   */
+  void report_binary(const char* file, int32_t line, const char* func, Logger::Kind kind,
+                     const char* name, const char* buf, size_t size) {
+    _assert_(file && line > 0 && func && name && buf && size <= MEMMAXSIZ);
+    db_.report_binary(file, line, func, kind, name, buf, size);
   }
 private:
   /**

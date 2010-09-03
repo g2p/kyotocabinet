@@ -578,6 +578,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
+    report(_KCCODELINE_, Logger::DEBUG, "opening the database (path=%s)", path.c_str());
     omode_ = mode;
     path_.append(path);
     std::memset(opaque_, 0, sizeof(opaque_));
@@ -594,6 +595,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
+    report(_KCCODELINE_, Logger::DEBUG, "closing the database (path=%s)", path_.c_str());
     tran_ = false;
     trlogs_.clear();
     recs_.clear();
@@ -929,6 +931,44 @@ protected:
     vstrprintf(&message, format, ap);
     va_end(ap);
     logger_->log(file, line, func, kind, message.c_str());
+  }
+  /**
+   * Report a message for debugging with variable number of arguments.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
+   * @param format the printf-like format string.
+   * @param ap used according to the format string.
+   */
+  void report_valist(const char* file, int32_t line, const char* func, Logger::Kind kind,
+                     const char* format, va_list ap) {
+    _assert_(file && line > 0 && func && format);
+    if (!logger_ || !(kind & logkinds_)) return;
+    std::string message;
+    strprintf(&message, "%s: ", path_.empty() ? "-" : path_.c_str());
+    vstrprintf(&message, format, ap);
+    logger_->log(file, line, func, kind, message.c_str());
+  }
+  /**
+   * Report the content of a binary buffer for debugging.
+   * @param file the file name of the epicenter.
+   * @param line the line number of the epicenter.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
+   * @param name the name of the information.
+   * @param buf the binary buffer.
+   * @param size the size of the binary buffer
+   */
+  void report_binary(const char* file, int32_t line, const char* func, Logger::Kind kind,
+                     const char* name, const char* buf, size_t size) {
+    _assert_(file && line > 0 && func && name && buf && size <= MEMMAXSIZ);
+    if (!logger_) return;
+    char* hex = hexencode(buf, size);
+    report(file, line, func, kind, "%s=%s", name, hex);
+    delete[] hex;
   }
 private:
   /**

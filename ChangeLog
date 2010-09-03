@@ -1,3 +1,13 @@
+2010-09-01  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcprotodb.h (ProtoDB::report_valist): new function.
+
+	* kcplantdb.h (PlantDB::report_valist): new function.
+
+	* kchashdb.h (HashDB::read_record_body): magic data checking was added.
+
+	- Release: 1.2.10
+
 2010-08-30  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcdb.h (BasicDB::replace): new function.

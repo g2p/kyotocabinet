@@ -363,7 +363,7 @@ public:
     Type type = TYPEVOID;
     std::string logname = "";
     std::string logpx = "";
-    uint32_t logkinds = Logger::WARN | Logger::WARN;
+    uint32_t logkinds = Logger::WARN | Logger::ERROR;
     int64_t bnum = -1;
     int64_t capcount = -1;
     int64_t capsize = -1;

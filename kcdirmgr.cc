@@ -1025,6 +1025,10 @@ static int32_t proccheck(const char* path, int32_t oflags) {
     dberrprint(&db, "DB::count failed");
     err = true;
   }
+  if (db.flags() & kc::DirDB::FFATAL) {
+    dberrprint(&db, "DB::flags indicated fatal error");
+    err = true;
+  }
   if (!db.close()) {
     dberrprint(&db, "DB::close failed");
     err = true;

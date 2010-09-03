@@ -1,0 +1,69 @@
+#! /bin/sh
+
+#================================================================
+# sigsegv
+# Simulate process crash by Segmentatin Fault
+#================================================================
+
+
+# set variables
+TESTCMD="kchashtest"
+MGRCMD="kchashmgr"
+PATH="$PATH:."
+LD_LIBRARY_PATH="/usr/local/lib:."
+export PATH LD_LIBRARY_PATH
+
+
+# parse arguments
+case "$1" in
+kct|tree)
+  TESTCMD="kctreetest"
+  MGRCMD="kctreemgr"
+  ;;
+kcd|dir)
+  TESTCMD="kcdirtest"
+  MGRCMD="kcdirmgr"
+  ;;
+kcf|forest)
+  TESTCMD="kcforesttest"
+  MGRCMD="kcforestmgr"
+  ;;
+esac
+
+
+# enable libSegFault
+#LD_PRELOAD="/lib/libSegFault.so"
+#SEGFAULT_SIGNALS="all"
+#SEGFAULT_OUTPUT_NAME="$TESTCMD.log"
+#export LD_PRELOAD SEGFAULT_SIGNALS SEGFAULT_OUTPUT_NAME
+
+
+# set the cleanup handler
+rm -f stop.log
+trap "touch stop.log" TERM INT
+trap "killall $TESTCMD ; rm -f stop.log" EXIT
+
+
+# infinite loop
+while [ ! -f stop.log ]
+do
+  rm -rf casket* "$TESTCMD.log"
+  $TESTCMD order -oat -th 1 casket 1000000 & ( sleep 1 ; killall -SEGV $TESTCMD )
+  cp -f casket casket-back
+  cp -f casket.wal casket-back.wal
+  if $MGRCMD check casket
+  then
+    true
+  else
+    break
+  fi
+done
+echo "cp -f casket-back casket ; cp -f casket-back.wal casket.wal ; ./$MGRCMD check casket"
+
+
+# exit normally
+exit 0
+
+
+
+# END OF FILE

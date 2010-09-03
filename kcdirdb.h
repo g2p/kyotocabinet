@@ -375,7 +375,7 @@ public:
     omode_(0), writer_(false), autotran_(false), autosync_(false), recov_(false), reorg_(false),
     file_(), curs_(), path_(""),
     libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEDIR),
-    opts_(0), count_(0), size_(0), opaque_(), embcomp_(&ZLIBRAWCOMP), comp_(NULL),
+    flags_(0), opts_(0), count_(0), size_(0), opaque_(), embcomp_(&ZLIBRAWCOMP), comp_(NULL),
     tran_(false), trhard_(false), trcount_(0), trsize_(0), walpath_(""), tmppath_("") {
     _assert_(true);
   }
@@ -470,6 +470,7 @@ public:
   void set_error(Error::Code code, const char* message) {
     _assert_(message);
     error_->set(code, message);
+    if (code == Error::BROKEN || code == Error::SYSTEM) flags_ |= FFATAL;
   }
   /**
    * Open a database file.
@@ -497,6 +498,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
+    report(_KCCODELINE_, Logger::DEBUG, "opening the database (path=%s)", path.c_str());
     writer_ = false;
     autotran_ = false;
     autosync_ = false;
@@ -698,6 +700,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
+    report(_KCCODELINE_, Logger::DEBUG, "closing the database (path=%s)", path_.c_str());
     bool err = false;
     if (tran_ && !abort_transaction()) err = true;
     if (!disable_cursors()) err = true;
@@ -874,6 +877,7 @@ public:
     }
     recov_ = false;
     reorg_ = false;
+    flags_ = 0;
     std::memset(opaque_, 0, sizeof(opaque_));
     count_ = 0;
     size_ = 0;
@@ -937,6 +941,7 @@ public:
     (*strmap)["librev"] = strprintf("%u", librev_);
     (*strmap)["fmtver"] = strprintf("%u", fmtver_);
     (*strmap)["chksum"] = strprintf("%u", chksum_);
+    (*strmap)["flags"] = strprintf("%u", flags_);
     (*strmap)["opts"] = strprintf("%u", opts_);
     (*strmap)["recovered"] = strprintf("%d", recov_);
     (*strmap)["reorganized"] = strprintf("%d", reorg_);
@@ -1036,6 +1041,19 @@ public:
     if (!dump_opaque()) err = true;
     return !err;
   }
+  /**
+   * Get the status flags.
+   * @note This is a dummy implementation for compatibility.
+   */
+  uint8_t flags() {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
+      return 0;
+    }
+    return 0;
+  }
 protected:
   /**
    * Set the error information.
@@ -1076,6 +1094,25 @@ protected:
     va_start(ap, format);
     vstrprintf(&message, format, ap);
     va_end(ap);
+    logger_->log(file, line, func, kind, message.c_str());
+  }
+  /**
+   * Report a message for debugging with variable number of arguments.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
+   * @param format the printf-like format string.
+   * @param ap used according to the format string.
+   */
+  void report_valist(const char* file, int32_t line, const char* func, Logger::Kind kind,
+                     const char* format, va_list ap) {
+    _assert_(file && line > 0 && func && format);
+    if (!logger_ || !(kind & logkinds_)) return;
+    std::string message;
+    strprintf(&message, "%s: ", path_.empty() ? "-" : path_.c_str());
+    vstrprintf(&message, format, ap);
     logger_->log(file, line, func, kind, message.c_str());
   }
   /**
@@ -1273,13 +1310,6 @@ private:
     return true;
   }
   /**
-   * Get the status flags.
-   * @note This is a dummy implementation for compatibility.
-   */
-  uint8_t flags() {
-    return 0;
-  }
-  /**
    * Get the alignment power.
    * @note This is a dummy implementation for compatibility.
    */
@@ -1368,6 +1398,7 @@ private:
     rp = pv + 1;
     if (std::strlen(rp) < sizeof(DDBMAGICEOF) - 1 ||
         std::memcmp(rp, DDBMAGICEOF, sizeof(DDBMAGICEOF) - 1)) return false;
+    flags_ = 0;
     count_ = count;
     size_ = size;
     return true;
@@ -2061,6 +2092,8 @@ private:
   uint8_t chksum_;
   /** The database type. */
   uint8_t type_;
+  /** The status flags. */
+  uint8_t flags_;
   /** The options. */
   uint8_t opts_;
   /** The record number. */

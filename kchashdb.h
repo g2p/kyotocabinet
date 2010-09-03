@@ -616,6 +616,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
+    report(_KCCODELINE_, Logger::DEBUG, "opening the database (path=%s)", path.c_str());
     writer_ = false;
     autotran_ = false;
     autosync_ = false;
@@ -733,6 +734,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
+    report(_KCCODELINE_, Logger::DEBUG, "closing the database (path=%s)", path_.c_str());
     bool err = false;
     if (tran_ && !abort_transaction()) err = true;
     disable_cursors();
@@ -1242,6 +1244,25 @@ protected:
     va_start(ap, format);
     vstrprintf(&message, format, ap);
     va_end(ap);
+    logger_->log(file, line, func, kind, message.c_str());
+  }
+  /**
+   * Report a message for debugging with variable number of arguments.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param kind the kind of the event.  Logger::DEBUG for debugging, Logger::INFO for normal
+   * information, Logger::WARN for warning, and Logger::ERROR for fatal error.
+   * @param format the printf-like format string.
+   * @param ap used according to the format string.
+   */
+  void report_valist(const char* file, int32_t line, const char* func, Logger::Kind kind,
+                     const char* format, va_list ap) {
+    _assert_(file && line > 0 && func && format);
+    if (!logger_ || !(kind & logkinds_)) return;
+    std::string message;
+    strprintf(&message, "%s: ", path_.empty() ? "-" : path_.c_str());
+    vstrprintf(&message, format, ap);
     logger_->log(file, line, func, kind, message.c_str());
   }
   /**
@@ -2604,11 +2625,18 @@ private:
   bool read_record_body(Record* rec) {
     _assert_(rec);
     size_t bsiz = rec->ksiz + rec->vsiz;
+    if (rec->psiz > 0) bsiz++;
     char* bbuf = new char[bsiz];
     if (!file_.read_fast(rec->boff, bbuf, bsiz)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
              (long long)psiz_, (long long)rec->boff, (long long)file_.size());
+      delete[] bbuf;
+      return false;
+    }
+    if (rec->psiz > 0 && ((uint8_t*)bbuf)[bsiz-1] != HDBPADMAGIC) {
+      set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a record");
+      report_binary(_KCCODELINE_, Logger::WARN, "bbuf", bbuf, bsiz);
       delete[] bbuf;
       return false;
     }
