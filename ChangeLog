@@ -1,3 +1,13 @@
+2010-09-04  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcfile.cc (File::open, walwrite, walapply): mmap was discarded.
+
+	* kcplantdb.h (PlantDB::recalc_count): performance was improved.
+
+	* kcplantdb.h (PlantDB::fix_auto_transaction_leaf): performance was improved.
+
+	- Release: 1.2.11
+
 2010-09-01  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcprotodb.h (ProtoDB::report_valist): new function.

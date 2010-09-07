@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.10)
+AC_INIT(kyotocabinet, 1.2.11)
 
 # Package information
 MYLIBVER=5
-MYLIBREV=2
+MYLIBREV=3
 MYFORMATVER=5
 
 # Targets
@@ -250,6 +250,7 @@ AC_CHECK_LIB(kyotocabinet, main, AC_MSG_WARN([old version of Kyoto Cabinet was d
 AC_CHECK_HEADER(stdlib.h, true, AC_MSG_ERROR([stdlib.h is required]))
 AC_CHECK_HEADER(stdint.h, true, AC_MSG_ERROR([stdint.h is required]))
 AC_CHECK_HEADER(unistd.h, true, AC_MSG_ERROR([unistd.h is required]))
+AC_CHECK_HEADER(fcntl.h, true, AC_MSG_ERROR([fcntl.h is required]))
 AC_CHECK_HEADER(dirent.h, true, AC_MSG_ERROR([dirent.h is required]))
 AC_CHECK_HEADER(pthread.h, true, AC_MSG_ERROR([pthread.h is required]))
 if test "$enable_zlib" != "no"

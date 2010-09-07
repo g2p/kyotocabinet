@@ -26,11 +26,10 @@ namespace {
 const int32_t FILEPERM = 00644;          ///< default permission of a new file
 const int32_t DIRPERM = 00755;           ///< default permission of a new directory
 const int32_t PATHBUFSIZ = 8192;         ///< size of the path buffer
-const int32_t IOBUFSIZ = 1024;           ///< size of the IO buffer
+const int32_t IOBUFSIZ = 16384;          ///< size of the IO buffer
 const int64_t FILEMAXSIZ = INT64_MAX - INT32_MAX;  // maximum size of a file
 const char* WALPATHEXT = "wal";          ///< extension of the WAL file
 const char WALMAGICDATA[] = "KW\n";      ///< magic data of the WAL file
-const int32_t WALMAPSIZ = 256 << 10;     ///< size of the IO buffer
 const uint8_t WALMSGMAGIC = 0xee;        ///< magic data for WAL record
 }
 
@@ -52,8 +51,6 @@ struct FileCore {
   bool recov;                            ///< flag of recovery
   uint32_t omode;                        ///< open mode
   ::HANDLE walfh;                        ///< file handle for WAL
-  ::HANDLE walmh;                        ///< map view handle for WAL
-  char* walmap;                          ///< mapped memory for the WAL
   int64_t walsiz;                        ///< size of WAL
   bool tran;                             ///< whether in transaction
   bool trhard;                           ///< whether hard transaction
@@ -71,7 +68,6 @@ struct FileCore {
   bool recov;                            ///< flag of recovery
   uint32_t omode;                        ///< open mode
   int walfd;                             ///< file descriptor for WAL
-  char* walmap;                          ///< mapped memory for the WAL
   int64_t walsiz;                        ///< size of WAL
   bool tran;                             ///< whether in transaction
   bool trhard;                           ///< whether hard transaction
@@ -221,8 +217,6 @@ File::File() : opq_(NULL) {
   core->recov = false;
   core->omode = 0;
   core->walfh = NULL;
-  core->walmh = NULL;
-  core->walmap = NULL;
   core->walsiz = 0;
   core->tran = false;
   core->trhard = false;
@@ -239,7 +233,6 @@ File::File() : opq_(NULL) {
   core->recov = false;
   core->omode = 0;
   core->walfd = -1;
-  core->walmap = NULL;
   core->walsiz = 0;
   core->tran = false;
   core->trhard = false;
@@ -531,14 +524,6 @@ bool File::close() {
   bool err = false;
   if (core->tran && !end_transaction(false)) err = true;
   if (core->walfh) {
-    if (!::UnmapViewOfFile(core->walmap)) {
-      seterrmsg(core, "UnmapViewOfFile failed");
-      err = true;
-    }
-    if (!::CloseHandle(core->walmh)) {
-      seterrmsg(core, "CloseHandle failed");
-      err = true;
-    }
     if (!::CloseHandle(core->walfh)) {
       seterrmsg(core, "CloseHandle failed");
       err = true;
@@ -589,8 +574,6 @@ bool File::close() {
   core->psiz = 0;
   core->path.clear();
   core->walfh = NULL;
-  core->walmh = NULL;
-  core->walmap = NULL;
   core->walsiz = 0;
   core->tran = false;
   core->trhard = false;
@@ -602,10 +585,6 @@ bool File::close() {
   bool err = false;
   if (core->tran && !end_transaction(false)) err = true;
   if (core->walfd >= 0) {
-    if (::munmap(core->walmap, WALMAPSIZ) != 0) {
-      seterrmsg(core, "munmap failed");
-      err = true;
-    }
     if (::close(core->walfd) != 0) {
       seterrmsg(core, "close failed");
       err = true;
@@ -653,7 +632,6 @@ bool File::close() {
   core->psiz = 0;
   core->path.clear();
   core->walfd = -1;
-  core->walmap = NULL;
   core->walsiz = 0;
   core->tran = false;
   core->trhard = false;
@@ -1319,32 +1297,22 @@ bool File::begin_transaction(bool hard, int64_t off) {
       core->alock.unlock();
       return false;
     }
-    ::HANDLE mh = ::CreateFileMapping(fh, NULL, PAGE_READWRITE, 0, WALMAPSIZ, NULL);
-    if (!mh || mh == INVALID_HANDLE_VALUE) {
-      seterrmsg(core, "CreateFileMapping failed");
-      ::CloseHandle(fh);
-      core->alock.unlock();
-      return false;
-    }
-    void* map = ::MapViewOfFile(mh, FILE_MAP_WRITE, 0, 0, 0);
-    if (!map) {
-      seterrmsg(core, "MapViewOfFile failed");
-      ::CloseHandle(mh);
-      ::CloseHandle(fh);
-      core->alock.unlock();
-      return false;
-    }
     core->walfh = fh;
-    core->walmh = mh;
-    core->walmap = (char*)map;
   }
-  char* wp = core->walmap;
+  char wbuf[NUMBUFSIZ];
+  char* wp = wbuf;
   std::memcpy(wp, WALMAGICDATA, sizeof(WALMAGICDATA));
   wp += sizeof(WALMAGICDATA);
   int64_t num = hton64(core->lsiz);
   std::memcpy(wp, &num, sizeof(num));
   wp += sizeof(num);
-  core->walsiz = wp - core->walmap;
+  int64_t wsiz = wp - wbuf;
+  if (!mywrite(core->walfh, 0, wbuf, wsiz)) {
+    seterrmsg(core, "mywrite failed");
+    core->alock.unlock();
+    return false;
+  }
+  core->walsiz = wsiz;
   core->tran = true;
   core->trhard = hard;
   core->trbase = off;
@@ -1368,35 +1336,22 @@ bool File::begin_transaction(bool hard, int64_t off) {
       core->alock.unlock();
       return false;
     }
-    if (::ftruncate(fd, WALMAPSIZ) != 0) {
-      seterrmsg(core, "ftrunate failed");
-      ::close(fd);
-      core->alock.unlock();
-      return false;
-    }
-    if (hard && ::fsync(fd) != 0) {
-      seterrmsg(core, "fsync failed");
-      ::close(fd);
-      core->alock.unlock();
-      return false;
-    }
-    void* map = ::mmap(0, WALMAPSIZ, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (map == MAP_FAILED) {
-      seterrmsg(core, "mmap failed");
-      ::close(fd);
-      core->alock.unlock();
-      return false;
-    }
     core->walfd = fd;
-    core->walmap = (char*)map;
   }
-  char* wp = core->walmap;
+  char wbuf[NUMBUFSIZ];
+  char* wp = wbuf;
   std::memcpy(wp, WALMAGICDATA, sizeof(WALMAGICDATA));
   wp += sizeof(WALMAGICDATA);
   int64_t num = hton64(core->lsiz);
   std::memcpy(wp, &num, sizeof(num));
   wp += sizeof(num);
-  core->walsiz = wp - core->walmap;
+  int64_t wsiz = wp - wbuf;
+  if (!mywrite(core->walfd, 0, wbuf, wsiz)) {
+    seterrmsg(core, "mywrite failed");
+    core->alock.unlock();
+    return false;
+  }
+  core->walsiz = wsiz;
   core->tran = true;
   core->trhard = hard;
   core->trbase = off;
@@ -1418,40 +1373,16 @@ bool File::end_transaction(bool commit) {
   core->alock.lock();
   if (!commit && !walapply(core)) err = true;
   if (!err) {
-    std::memset(core->walmap, 0, core->walsiz < WALMAPSIZ ? core->walsiz : WALMAPSIZ);
-    if (core->walsiz > WALMAPSIZ) {
-      if (!::UnmapViewOfFile(core->walmap)) {
-        seterrmsg(core, "UnmapViewOfFile failed");
+    if (core->walsiz <= IOBUFSIZ) {
+      char mbuf[IOBUFSIZ];
+      std::memset(mbuf, 0, core->walsiz);
+      if (!mywrite(core->walfh, 0, mbuf, core->walsiz)) {
+        seterrmsg(core, "mywrite failed");
         err = true;
       }
-      if (!::CloseHandle(core->walmh)) {
-        seterrmsg(core, "CloseHandle failed");
-        err = true;
-      }
-      if (win_ftruncate(core->walfh, WALMAPSIZ) != 0) {
+    } else {
+      if (win_ftruncate(core->walfh, 0) != 0) {
         seterrmsg(core, "win_ftruncate failed");
-        err = true;
-      }
-      ::LARGE_INTEGER li;
-      li.QuadPart = WALMAPSIZ;
-      ::HANDLE mh = ::CreateFileMapping(core->walfh, NULL, PAGE_READWRITE,
-                                        li.HighPart, li.LowPart, NULL);
-      if (mh && mh != INVALID_HANDLE_VALUE) {
-        void* map = ::MapViewOfFile(mh, FILE_MAP_WRITE, 0, 0, 0);
-        if (map) {
-          core->walmh = mh;
-          core->walmap = (char*)map;
-        } else {
-          seterrmsg(core, "MapViewOfFile failed");
-          ::CloseHandle(mh);
-          core->walmh = NULL;
-          core->walmap = NULL;
-          err = true;
-        }
-      } else {
-        seterrmsg(core, "CreateFileMapping failed");
-        core->walmh = NULL;
-        core->walmap = NULL;
         err = true;
       }
     }
@@ -1467,11 +1398,7 @@ bool File::end_transaction(bool commit) {
       seterrmsg(core, "FlushFileBuffers failed");
       err = true;
     }
-    if (!::FlushViewOfFile(core->walmap, 1)) {
-      seterrmsg(core, "FlushViewOfFile failed");
-      err = true;
-    }
-    if (core->walsiz > WALMAPSIZ && !::FlushFileBuffers(core->walfh)) {
+    if (!::FlushFileBuffers(core->walfh)) {
       seterrmsg(core, "FlushFileBuffers failed");
       err = true;
     }
@@ -1486,10 +1413,18 @@ bool File::end_transaction(bool commit) {
   core->alock.lock();
   if (!commit && !walapply(core)) err = true;
   if (!err) {
-    std::memset(core->walmap, 0, core->walsiz < WALMAPSIZ ? core->walsiz : WALMAPSIZ);
-    if (core->walsiz > WALMAPSIZ && ::ftruncate(core->walfd, WALMAPSIZ) != 0) {
-      seterrmsg(core, "ftruncate failed");
-      err = true;
+    if (core->walsiz <= IOBUFSIZ) {
+      char mbuf[IOBUFSIZ];
+      std::memset(mbuf, 0, core->walsiz);
+      if (!mywrite(core->walfd, 0, mbuf, core->walsiz)) {
+        seterrmsg(core, "mywrite failed");
+        err = true;
+      }
+    } else {
+      if (::ftruncate(core->walfd, 0) != 0) {
+        seterrmsg(core, "ftruncate failed");
+        err = true;
+      }
     }
   }
   if (core->trhard) {
@@ -1503,11 +1438,7 @@ bool File::end_transaction(bool commit) {
       seterrmsg(core, "fsync failed");
       err = true;
     }
-    if (::msync(core->walmap, 1, MS_SYNC) != 0) {
-      seterrmsg(core, "msync failed");
-      err = true;
-    }
-    if (core->walsiz > WALMAPSIZ && ::fsync(core->walfd) != 0) {
+    if (::fsync(core->walfd) != 0) {
       seterrmsg(core, "fsync failed");
       err = true;
     }
@@ -2170,36 +2101,15 @@ static bool walwrite(FileCore *core, int64_t off, size_t size, int64_t base) {
       std::memset(wp, 0, size);
     }
   }
-  end = core->walsiz + rsiz;
-  if (end <= WALMAPSIZ) {
-    std::memcpy(core->walmap + core->walsiz, rbuf, rsiz);
-    if (core->trhard && !::FlushViewOfFile(core->walmap, end)) {
-      seterrmsg(core, "FlushViewOfFile failed");
-      err = true;
-    }
-  } else {
-    const char* rp = rbuf;
-    if (core->walsiz < WALMAPSIZ) {
-      size_t hsiz = WALMAPSIZ - core->walsiz;
-      std::memcpy(core->walmap + core->walsiz, rp, hsiz);
-      if (core->trhard && !::FlushViewOfFile(core->walmap, WALMAPSIZ) != 0) {
-        seterrmsg(core, "FlushViewOfFile failed");
-        err = true;
-      }
-      core->walsiz += hsiz;
-      rp += hsiz;
-      rsiz -= hsiz;
-    }
-    if (!mywrite(core->walfh, core->walsiz, rp, rsiz)) {
-      seterrmsg(core, "mywrite failed");
-      err = true;
-    }
-    if (core->trhard && !::FlushFileBuffers(core->walfh)) {
-      seterrmsg(core, "FlushFileBuffers failed");
-      err = true;
-    }
+  if (!mywrite(core->walfh, core->walsiz, rbuf, rsiz)) {
+    seterrmsg(core, "mywrite failed");
+    err = true;
   }
-  core->walsiz = end;
+  if (core->trhard && !::FlushFileBuffers(core->walfh)) {
+    seterrmsg(core, "FlushFileBuffers failed");
+    err = true;
+  }
+  core->walsiz += rsiz;
   if (rbuf != stack) delete[] rbuf;
   core->alock.unlock();
   return !err;
@@ -2261,36 +2171,15 @@ static bool walwrite(FileCore *core, int64_t off, size_t size, int64_t base) {
       std::memset(wp, 0, size);
     }
   }
-  end = core->walsiz + rsiz;
-  if (end <= WALMAPSIZ) {
-    std::memcpy(core->walmap + core->walsiz, rbuf, rsiz);
-    if (core->trhard && ::msync(core->walmap, end, MS_SYNC) != 0) {
-      seterrmsg(core, "msync failed");
-      err = true;
-    }
-  } else {
-    const char* rp = rbuf;
-    if (core->walsiz < WALMAPSIZ) {
-      size_t hsiz = WALMAPSIZ - core->walsiz;
-      std::memcpy(core->walmap + core->walsiz, rp, hsiz);
-      if (core->trhard && ::msync(core->walmap, WALMAPSIZ, MS_SYNC) != 0) {
-        seterrmsg(core, "msync failed");
-        err = true;
-      }
-      core->walsiz += hsiz;
-      rp += hsiz;
-      rsiz -= hsiz;
-    }
-    if (!mywrite(core->walfd, core->walsiz, rp, rsiz)) {
-      seterrmsg(core, "mywrite failed");
-      err = true;
-    }
-    if (core->trhard && ::fsync(core->walfd) != 0) {
-      seterrmsg(core, "fsync failed");
-      err = true;
-    }
+  if (!mywrite(core->walfd, core->walsiz, rbuf, rsiz)) {
+    seterrmsg(core, "mywrite failed");
+    err = true;
   }
-  core->walsiz = end;
+  if (core->trhard && ::fsync(core->walfd) != 0) {
+    seterrmsg(core, "fsync failed");
+    err = true;
+  }
+  core->walsiz += rsiz;
   if (rbuf != stack) delete[] rbuf;
   core->alock.unlock();
   return !err;

@@ -90,9 +90,9 @@
 
 #endif
 
-#define _KC_VERSION    "1.2.10"
+#define _KC_VERSION    "1.2.11"
 #define _KC_LIBVER     5
-#define _KC_LIBREV     2
+#define _KC_LIBREV     3
 #define _KC_FMTVER     5
 
 #if defined(_MYBIGEND)
@@ -205,8 +205,6 @@ extern "C" {
 #include <sys/resource.h>
 #include <fcntl.h>
 #include <dirent.h>
-#include <regex.h>
-#include <glob.h>
 }
 
 extern "C" {

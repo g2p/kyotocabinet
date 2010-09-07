@@ -18,12 +18,12 @@
 
 #include <kccommon.h>
 #include <kcutil.h>
-#include <kcdb.h>
 #include <kcthread.h>
 #include <kcfile.h>
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcdb.h>
 
 namespace kyotocabinet {                 // common namespace
 
@@ -3125,23 +3125,54 @@ private:
     _assert_(true);
     if (!load_meta()) return false;
     bool err = false;
-    create_leaf_cache();
-    create_inner_cache();
-    int64_t count = 0;
-    int64_t id = first_;
-    while (id > 0) {
-      LeafNode* node = load_leaf_node(id, false);
-      if (!node) break;
-      count += node->recs.size();
-      id = node->next;
-      flush_leaf_node(node, false);
-    }
+    class VisitorImpl : public DB::Visitor {
+    public:
+      explicit VisitorImpl() : count_(0) {}
+      int64_t count() {
+        return count_;
+      }
+    private:
+      const char* visit_full(const char* kbuf, size_t ksiz,
+                             const char* vbuf, size_t vsiz, size_t* sp) {
+        if (ksiz < 2 || kbuf[0] != PDBLNPREFIX) return NOP;
+        uint64_t prev;
+        size_t step = readvarnum(vbuf, vsiz, &prev);
+        if (step < 1) return NOP;
+        vbuf += step;
+        vsiz -= step;
+        uint64_t next;
+        step = readvarnum(vbuf, vsiz, &next);
+        if (step < 1) return NOP;
+        vbuf += step;
+        vsiz -= step;
+        while (vsiz > 1) {
+          uint64_t rksiz;
+          step = readvarnum(vbuf, vsiz, &rksiz);
+          if (step < 1) break;
+          vbuf += step;
+          vsiz -= step;
+          uint64_t rvsiz;
+          step = readvarnum(vbuf, vsiz, &rvsiz);
+          if (step < 1) break;
+          vbuf += step;
+          vsiz -= step;
+          if (vsiz < rksiz + rvsiz) break;
+          vbuf += rksiz;
+          vsiz -= rksiz;
+          vbuf += rvsiz;
+          vsiz -= rvsiz;
+          count_++;
+        }
+        return NOP;
+      }
+      int64_t count_;
+    } visitor;
+    if (!db_.iterate(&visitor, false)) err = true;
+    int64_t count = visitor.count();
     db_.report(_KCCODELINE_, Logger::WARN, "recalculated the record count from %lld to %lld",
                (long long)count_, (long long)count);
     count_ = count;
     if (!dump_meta()) err = true;
-    delete_inner_cache();
-    delete_leaf_cache();
     return !err;
   }
   /**
@@ -3296,11 +3327,8 @@ private:
    */
   bool fix_auto_transaction_leaf(LeafNode* node) {
     _assert_(node);
-    if (!db_.begin_transaction(autosync_)) return false;
     bool err = false;
     if (!save_leaf_node(node)) err = true;
-    if (!dump_meta()) err = true;
-    if (!db_.end_transaction(true)) err = true;
     return !err;
   }
   /**

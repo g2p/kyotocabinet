@@ -122,6 +122,10 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a6ef5142d951c82b5c07c2d59fde70781"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a87f53c7968facd542206788ee6936e5c">report</a> (const char *file, int32_t line, const char *func, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a> kind, const char *format,...)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report a message for debugging.  <a href="#a87f53c7968facd542206788ee6936e5c"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#aa6aaa95644b0c7e7850cd382fe784d75">report_valist</a> (const char *file, int32_t line, const char *func, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a> kind, const char *format, va_list ap)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report a message for debugging with variable number of arguments.  <a href="#aa6aaa95644b0c7e7850cd382fe784d75"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a24d2f8775d9dceeca8f61ac7352e62a7">report_binary</a> (const char *file, int32_t line, const char *func, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a> kind, const char *name, const char *buf, size_t size)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report the content of a binary buffer for debugging.  <a href="#a24d2f8775d9dceeca8f61ac7352e62a7"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#a28bef20cc61def918d9153b3c055fda6">tune_type</a> (int8_t type)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the database type.  <a href="#a28bef20cc61def918d9153b3c055fda6"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1CacheDB.html#abdd2dae45cd11ee1fcbf9bbb9115e8f2">libver</a> ()</td></tr>
@@ -1070,6 +1074,141 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 
 </div>
 </div>
+<a class="anchor" id="aa6aaa95644b0c7e7850cd382fe784d75"></a><!-- doxytag: member="kyotocabinet::CacheDB::report_valist" ref="aa6aaa95644b0c7e7850cd382fe784d75" args="(const char *file, int32_t line, const char *func, Logger::Kind kind, const char *format, va_list ap)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::CacheDB::report_valist </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramname"> <em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a>&nbsp;</td>
+          <td class="paramname"> <em>kind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">va_list&nbsp;</td>
+          <td class="paramname"> <em>ap</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Report a message for debugging with variable number of arguments. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>func</em>&nbsp;</td><td>the function name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>kind</em>&nbsp;</td><td>the kind of the event. <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960ac39609b521fbe09d9c41b45561b114b6" title="debugging">Logger::DEBUG</a> for debugging, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6bf810306530147894e41520a3d918b9" title="normal information">Logger::INFO</a> for normal information, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6a985b6bc2e4f16c3cb394a3de9972dd" title="warning">Logger::WARN</a> for warning, and <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a2fc4717ffb4886b57aa5d343adf7d7ad" title="error">Logger::ERROR</a> for fatal error. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>ap</em>&nbsp;</td><td>used according to the format string. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a24d2f8775d9dceeca8f61ac7352e62a7"></a><!-- doxytag: member="kyotocabinet::CacheDB::report_binary" ref="a24d2f8775d9dceeca8f61ac7352e62a7" args="(const char *file, int32_t line, const char *func, Logger::Kind kind, const char *name, const char *buf, size_t size)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::CacheDB::report_binary </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramname"> <em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a>&nbsp;</td>
+          <td class="paramname"> <em>kind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>size</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Report the content of a binary buffer for debugging. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the epicenter. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the epicenter. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>func</em>&nbsp;</td><td>the function name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>kind</em>&nbsp;</td><td>the kind of the event. <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960ac39609b521fbe09d9c41b45561b114b6" title="debugging">Logger::DEBUG</a> for debugging, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6bf810306530147894e41520a3d918b9" title="normal information">Logger::INFO</a> for normal information, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6a985b6bc2e4f16c3cb394a3de9972dd" title="warning">Logger::WARN</a> for warning, and <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a2fc4717ffb4886b57aa5d343adf7d7ad" title="error">Logger::ERROR</a> for fatal error. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>name</em>&nbsp;</td><td>the name of the information. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>the binary buffer. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the binary buffer </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="a28bef20cc61def918d9153b3c055fda6"></a><!-- doxytag: member="kyotocabinet::CacheDB::tune_type" ref="a28bef20cc61def918d9153b3c055fda6" args="(int8_t type)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1278,7 +1417,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Aug 30 12:13:53 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sat Sep 4 23:47:13 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

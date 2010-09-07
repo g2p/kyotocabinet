@@ -863,7 +863,7 @@ db.open(...);
 
 <h3 id="tips_transaction">Transaction</h3>
 
-<p>If an application process which opened a database terminated without closing the database, it involves risks that some records may be missing and the database may be broken.  By default, durability is settled when the database is closed properly and it is not settled for each updating operation.  Kyoto Cabinet deal with the problem by transaction mechanism based on WAL (write ahead logging).  Transaction is begun and committed by application explicitly.  Durability during transaction is settled for each updating operation.  Transaction can be aborted by application.  In that case, all update operations during transaction are voided and the content of the database is rollbacked.  Although transaction is very useful like this, throughput of updating operation decreases to about 50% of the default manner due to overhead of writing WAL.</p>
+<p>If an application process which opened a database terminated without closing the database, it involves risks that some records may be missing and the database may be broken.  By default, durability is settled when the database is closed properly and it is not settled for each updating operation.  Kyoto Cabinet deal with the problem by transaction mechanism based on WAL (write ahead logging).  Transaction is begun and committed by application explicitly.  Durability during transaction is settled for each updating operation.  Transaction can be aborted by application.  In that case, all update operations during transaction are voided and the content of the database is rollbacked.  Although transaction is very useful like this, throughput of updating operation decreases to about 50% of the default manner due to overhead of writing WAL data.</p>
 
 <pre>db.begin_transaction();
 db.set("japan", "tokyo");
@@ -894,7 +894,7 @@ db.set("china", "beijing");
 <dd>explicit usage: begin_transaction(false); ...; end_transaction(true);</dd>
 <dd>risk on process crash: none</dd>
 <dd>risk on system crash: Some records may be missing.</dd>
-<dd>performance penalty: Throughput will be down to about 50% or less.</dd>
+<dd>performance penalty: Throughput will be down to about 30% or less.</dd>
 </dl>
 
 <dl>

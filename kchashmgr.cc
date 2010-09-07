@@ -1133,7 +1133,7 @@ static int32_t proccheck(const char* path, int32_t oflags) {
   }
   kc::File::Status sbuf;
   if (kc::File::status(path, &sbuf)) {
-    if (db.size() != sbuf.size) {
+    if (db.size() != sbuf.size && sbuf.size != kc::HDBDEFMSIZ) {
       dberrprint(&db, "DB::size failed");
       err = true;
     }

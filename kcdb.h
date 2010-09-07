@@ -18,7 +18,6 @@
 
 #include <kccommon.h>
 #include <kcutil.h>
-#include <kcdb.h>
 #include <kcthread.h>
 #include <kcfile.h>
 #include <kccompress.h>

@@ -31,7 +31,7 @@ The following classes are most important.  If you are new to Kyoto Cabinet, lear
 
 @li kclangc.h -- C language binding of the polymorphic database
 
-See the project homepage ( http://1978th.net/kyotocabinet/ ) for detail.
+See the project homepage ( http://fallabs.com/kyotocabinet/ ) for detail.
 
 @section Example
 
