@@ -88,6 +88,8 @@
 <dl class="api">
 <dt><code>kcutilmgr hex [-d] [<var>file</var>]</code></dt>
 <dd>Perform hexadecimal encoding and its decoding.</dd>
+<dt><code>kcutilmgr enc [-hex|-url|-quote] [-d] [<var>file</var>]</code></dt>
+<dd>Perform Base64 encoding and its decoding.</dd>
 <dt><code>kcutilmgr ciph [-key <var>str</var>] [<var>file</var>]</code></dt>
 <dd>Perform Arcfour cipher and its decipher.</dd>
 <dt><code>kcutilmgr comp [-def|-gz|-lzo|-lzma] [-d] [<var>file</var>]</code></dt>
@@ -96,12 +98,17 @@
 <dd>Calculate the hash value.  By default, use MurMur hashing.</dd>
 <dt><code>kcutilmgr conf [-v|-i|-l|-p]</code></dt>
 <dd>Shows the configuration of Kyoto Cabinet.</dd>
+<dt><code>kcutilmgr version</code></dt>
+<dd>Shows the version information of Kyoto Cabinet.</dd>
 </dl>
 
 <p>Options feature the following.</p>
 
 <ul class="options">
 <li><code>-d</code> : perform decoding (unescaping), not encoding (escaping).</li>
+<li><code>-hex</code> : use hexadecimal encoding.</li>
+<li><code>-url</code> : use URL encoding.</li>
+<li><code>-quote</code> : use Quoted-printable encoding.</li>
 <li><code>-key <var>str</var></code> : set the cipher key.</li>
 <li><code>-def</code> : use the deflate format.</li>
 <li><code>-gz</code> : use the gzip format.</li>

@@ -158,14 +158,14 @@ typedef union {
  * @return the pointer to the allocated region.  The region of the return value should be
  * released with the kcfree function when it is no longer in use.
  */
-char* kcmalloc(size_t size);
+void* kcmalloc(size_t size);
 
 
 /**
  * Release a region allocated in the library.
  * @param ptr the pointer to the region.
  */
-void kcfree(char* ptr);
+void kcfree(void* ptr);
 
 
 /**

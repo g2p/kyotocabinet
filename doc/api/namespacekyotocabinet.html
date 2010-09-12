@@ -132,11 +132,13 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">An alias of tree map of strings.  <a href="#a8c47c7e78c5bebb036bd6d887023a891"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#aa5717474fab1f19605adb576a985d158">atoi</a> (const char *str)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a string to an integer.  <a href="#aa5717474fab1f19605adb576a985d158"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a decimal string to an integer.  <a href="#aa5717474fab1f19605adb576a985d158"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a012be7793124f2f8c272e592c5514412">atoix</a> (const char *str)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a string with a metric prefix to an integer.  <a href="#a012be7793124f2f8c272e592c5514412"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a decimal string with a metric prefix to an integer.  <a href="#a012be7793124f2f8c272e592c5514412"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a9d9165134c70c771e930046d01dd43a1">atoih</a> (const char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a hexadecimal string to an integer.  <a href="#a9d9165134c70c771e930046d01dd43a1"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ab7eee3ce1842a348a434caebc2487c5a">atof</a> (const char *str)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a string to a real number.  <a href="#ab7eee3ce1842a348a434caebc2487c5a"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a decimal string to a real number.  <a href="#ab7eee3ce1842a348a434caebc2487c5a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint16_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a04b7fe7ba51ef5ea76b95edab3c3862e">hton16</a> (uint16_t num)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Normalize a 16-bit number in the native order into the network byte order.  <a href="#a04b7fe7ba51ef5ea76b95edab3c3862e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a921daaea526494202f3322922412c537">hton32</a> (uint32_t num)</td></tr>
@@ -182,11 +184,47 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <tr><td class="memItemLeft" align="right" valign="top">size_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a295fcdb0ba9274e2d986a66e1eb189b8">strsplit</a> (const std::string &amp;str, char delim, std::vector&lt; std::string &gt; *elems)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Split a string with a delimiter.  <a href="#a295fcdb0ba9274e2d986a66e1eb189b8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ab8be5cf3c65a54efdee6823b8877298b">hexencode</a> (const void *buf, size_t size)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Encode a serial object with hexadecimal encoding.  <a href="#ab8be5cf3c65a54efdee6823b8877298b"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Encode a serial object by hexadecimal encoding.  <a href="#ab8be5cf3c65a54efdee6823b8877298b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ac456e8436103c1ae54ff34e683228af3">hexdecode</a> (const char *str, size_t *sp)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Decode a string encoded with hexadecimal encoding.  <a href="#ac456e8436103c1ae54ff34e683228af3"></a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Decode a string encoded by hexadecimal encoding.  <a href="#ac456e8436103c1ae54ff34e683228af3"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#adab2ffa1e9de00c542b87732e9502351">urlencode</a> (const void *buf, size_t size)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Encode a serial object by URL encoding.  <a href="#adab2ffa1e9de00c542b87732e9502351"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#adc574a3e7323cf4a3f5a27ed2e8d08a9">urldecode</a> (const char *str, size_t *sp)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Decode a string encoded by URL encoding.  <a href="#adc574a3e7323cf4a3f5a27ed2e8d08a9"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ae840cb8f87aedaf6cf0eb8d54f822bba">quoteencode</a> (const void *buf, size_t size)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Encode a serial object by Quoted-printable encoding.  <a href="#ae840cb8f87aedaf6cf0eb8d54f822bba"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a26d8324a921bdd0d044e27163b9a65f9">quotedecode</a> (const char *str, size_t *sp)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Decode a string encoded by Quoted-printable encoding.  <a href="#a26d8324a921bdd0d044e27163b9a65f9"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a42d22d135cee058108f0c48bbd023391">baseencode</a> (const void *buf, size_t size)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Encode a serial object by Base64 encoding.  <a href="#a42d22d135cee058108f0c48bbd023391"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a8cbe7c5bbb37e28c482cf4cef0ce151a">basedecode</a> (const char *str, size_t *sp)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Decode a string encoded by Base64 encoding.  <a href="#a8cbe7c5bbb37e28c482cf4cef0ce151a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a88eeb6a4d66d8327c65ca26ae6aac9d7">arccipher</a> (const void *ptr, size_t size, const void *kbuf, size_t ksiz, void *obuf)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Cipher or decipher a serial object with the Arcfour stream cipher.  <a href="#a88eeb6a4d66d8327c65ca26ae6aac9d7"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a2b17149eb5e49f646877e0bf6b573c7a">memdup</a> (const char *ptr, size_t size)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Duplicate a region on memory.  <a href="#a2b17149eb5e49f646877e0bf6b573c7a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a447ff12b751702fb98a347fad4e5c682">strdup</a> (const char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Duplicate a string on memory.  <a href="#a447ff12b751702fb98a347fad4e5c682"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ac3a56f2f62176765b41414e3fef23b83">strtoupper</a> (char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert the letters of a string into upper case.  <a href="#ac3a56f2f62176765b41414e3fef23b83"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a8c9f497da0a7ac76efcf4e41385413a2">strtolower</a> (char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert the letters of a string into lower case.  <a href="#a8c9f497da0a7ac76efcf4e41385413a2"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#aa75ce8ab1f4e37dd7cd57be23bf0e194">strtrim</a> (char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Cut space characters at head or tail of a string.  <a href="#aa75ce8ab1f4e37dd7cd57be23bf0e194"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#aad57c9f970d26f638f8d6953aa966f11">strsqzspc</a> (char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Squeeze space characters in a string and trim it.  <a href="#aad57c9f970d26f638f8d6953aa966f11"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a74e08dd57d6b6450074bbaa8e9d9271c">strnrmspc</a> (char *str)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Normalize space characters in a string and trim it.  <a href="#a74e08dd57d6b6450074bbaa8e9d9271c"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a1212cff81fe1a20944a240665c319668">stricmp</a> (const char *astr, const char *bstr)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Compare two strings with case insensitive evaluation.  <a href="#a1212cff81fe1a20944a240665c319668"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ad79bd82ec5cc9ddbf34f9ab414cf95c7">strfwm</a> (const char *str, const char *key)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check whether a string begins with a key.  <a href="#ad79bd82ec5cc9ddbf34f9ab414cf95c7"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ab148bce1cca2922a5f7075caa4ad2123">strifwm</a> (const char *str, const char *key)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check whether a string begins with a key by case insensitive evaluation.  <a href="#ab148bce1cca2922a5f7075caa4ad2123"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#afc5c3258491f0a660ea080ec6a9426d2">strbwm</a> (const char *str, const char *key)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check whether a string ends with a key.  <a href="#afc5c3258491f0a660ea080ec6a9426d2"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a543b8989aae0cc8740ab708491a66ab4">stribwm</a> (const char *str, const char *key)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check whether a string ends with a key by case insensitive evaluation.  <a href="#a543b8989aae0cc8740ab708491a66ab4"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a2ae6776e020b467da36bebfc8481ec64">xmalloc</a> (size_t size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Allocate a region on memory.  <a href="#a2ae6776e020b467da36bebfc8481ec64"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a2d98e474ce5ca22a0bfb86dec3ce2f70">xcalloc</a> (size_t nmemb, size_t size)</td></tr>
@@ -366,10 +404,10 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 </div>
 <div class="memdoc">
 
-<p>Convert a string to an integer. </p>
+<p>Convert a decimal string to an integer. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>specifies the string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the decimal string. </td></tr>
   </table>
   </dd>
 </dl>
@@ -393,14 +431,41 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 </div>
 <div class="memdoc">
 
-<p>Convert a string with a metric prefix to an integer. </p>
+<p>Convert a decimal string with a metric prefix to an integer. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string, which can be trailed by a binary metric prefix. "K", "M", "G", "T", "P", and "E" are supported. They are case-insensitive. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the decimal string, which can be trailed by a binary metric prefix. "K", "M", "G", "T", "P", and "E" are supported. They are case-insensitive. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the integer. If the string does not contain numeric expression, 0 is returned. If the integer overflows the domain, INT64_MAX or INT64_MIN is returned according to the sign. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a9d9165134c70c771e930046d01dd43a1"></a><!-- doxytag: member="kyotocabinet::atoih" ref="a9d9165134c70c771e930046d01dd43a1" args="(const char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kyotocabinet::atoih </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Convert a hexadecimal string to an integer. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the hexadecimal string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the integer. If the string does not contain numeric expression, 0 is returned. </dd></dl>
 
 </div>
 </div>
@@ -420,10 +485,10 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 </div>
 <div class="memdoc">
 
-<p>Convert a string to a real number. </p>
+<p>Convert a decimal string to a real number. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>specifies the string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the decimal string. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1174,7 +1239,7 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 </div>
 <div class="memdoc">
 
-<p>Encode a serial object with hexadecimal encoding. </p>
+<p>Encode a serial object by hexadecimal encoding. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>the pointer to the region. </td></tr>
@@ -1212,7 +1277,235 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 </div>
 <div class="memdoc">
 
-<p>Decode a string encoded with hexadecimal encoding. </p>
+<p>Decode a string encoded by hexadecimal encoding. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>specifies the encoded string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>sp</em>&nbsp;</td><td>the pointer to the variable into which the size of the region of the return value is assigned. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the pointer to the region of the result. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Because an additional zero code is appended at the end of the region of the return value, the return value can be treated as a character string. Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="adab2ffa1e9de00c542b87732e9502351"></a><!-- doxytag: member="kyotocabinet::urlencode" ref="adab2ffa1e9de00c542b87732e9502351" args="(const void *buf, size_t size)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::urlencode </td>
+          <td>(</td>
+          <td class="paramtype">const void *&nbsp;</td>
+          <td class="paramname"> <em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>size</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Encode a serial object by URL encoding. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>the pointer to the region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the region. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the result string. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="adc574a3e7323cf4a3f5a27ed2e8d08a9"></a><!-- doxytag: member="kyotocabinet::urldecode" ref="adc574a3e7323cf4a3f5a27ed2e8d08a9" args="(const char *str, size_t *sp)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::urldecode </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *&nbsp;</td>
+          <td class="paramname"> <em>sp</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Decode a string encoded by URL encoding. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>specifies the encoded string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>sp</em>&nbsp;</td><td>the pointer to the variable into which the size of the region of the return value is assigned. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the pointer to the region of the result. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Because an additional zero code is appended at the end of the region of the return value, the return value can be treated as a character string. Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ae840cb8f87aedaf6cf0eb8d54f822bba"></a><!-- doxytag: member="kyotocabinet::quoteencode" ref="ae840cb8f87aedaf6cf0eb8d54f822bba" args="(const void *buf, size_t size)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::quoteencode </td>
+          <td>(</td>
+          <td class="paramtype">const void *&nbsp;</td>
+          <td class="paramname"> <em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>size</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Encode a serial object by Quoted-printable encoding. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>the pointer to the region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the region. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the result string. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a26d8324a921bdd0d044e27163b9a65f9"></a><!-- doxytag: member="kyotocabinet::quotedecode" ref="a26d8324a921bdd0d044e27163b9a65f9" args="(const char *str, size_t *sp)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::quotedecode </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *&nbsp;</td>
+          <td class="paramname"> <em>sp</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Decode a string encoded by Quoted-printable encoding. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>specifies the encoded string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>sp</em>&nbsp;</td><td>the pointer to the variable into which the size of the region of the return value is assigned. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the pointer to the region of the result. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Because an additional zero code is appended at the end of the region of the return value, the return value can be treated as a character string. Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a42d22d135cee058108f0c48bbd023391"></a><!-- doxytag: member="kyotocabinet::baseencode" ref="a42d22d135cee058108f0c48bbd023391" args="(const void *buf, size_t size)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::baseencode </td>
+          <td>(</td>
+          <td class="paramtype">const void *&nbsp;</td>
+          <td class="paramname"> <em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>size</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Encode a serial object by Base64 encoding. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>buf</em>&nbsp;</td><td>the pointer to the region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the region. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the result string. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a8cbe7c5bbb37e28c482cf4cef0ce151a"></a><!-- doxytag: member="kyotocabinet::basedecode" ref="a8cbe7c5bbb37e28c482cf4cef0ce151a" args="(const char *str, size_t *sp)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::basedecode </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *&nbsp;</td>
+          <td class="paramname"> <em>sp</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Decode a string encoded by Base64 encoding. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>specifies the encoded string. </td></tr>
@@ -1279,6 +1572,390 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="a2b17149eb5e49f646877e0bf6b573c7a"></a><!-- doxytag: member="kyotocabinet::memdup" ref="a2b17149eb5e49f646877e0bf6b573c7a" args="(const char *ptr, size_t size)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::memdup </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>size</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Duplicate a region on memory. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>ptr</em>&nbsp;</td><td>the source buffer. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the source buffer. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a447ff12b751702fb98a347fad4e5c682"></a><!-- doxytag: member="kyotocabinet::strdup" ref="a447ff12b751702fb98a347fad4e5c682" args="(const char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::strdup </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Duplicate a string on memory. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the source string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Because the region of the return value is allocated with the the new[] operator, it should be released with the delete[] operator when it is no longer in use. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ac3a56f2f62176765b41414e3fef23b83"></a><!-- doxytag: member="kyotocabinet::strtoupper" ref="ac3a56f2f62176765b41414e3fef23b83" args="(char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::strtoupper </td>
+          <td>(</td>
+          <td class="paramtype">char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Convert the letters of a string into upper case. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string to convert. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the string itself. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a8c9f497da0a7ac76efcf4e41385413a2"></a><!-- doxytag: member="kyotocabinet::strtolower" ref="a8c9f497da0a7ac76efcf4e41385413a2" args="(char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::strtolower </td>
+          <td>(</td>
+          <td class="paramtype">char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Convert the letters of a string into lower case. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string to convert. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the string itself. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aa75ce8ab1f4e37dd7cd57be23bf0e194"></a><!-- doxytag: member="kyotocabinet::strtrim" ref="aa75ce8ab1f4e37dd7cd57be23bf0e194" args="(char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::strtrim </td>
+          <td>(</td>
+          <td class="paramtype">char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Cut space characters at head or tail of a string. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string to convert. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the string itself. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aad57c9f970d26f638f8d6953aa966f11"></a><!-- doxytag: member="kyotocabinet::strsqzspc" ref="aad57c9f970d26f638f8d6953aa966f11" args="(char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::strsqzspc </td>
+          <td>(</td>
+          <td class="paramtype">char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Squeeze space characters in a string and trim it. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string to convert. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the string itself. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a74e08dd57d6b6450074bbaa8e9d9271c"></a><!-- doxytag: member="kyotocabinet::strnrmspc" ref="a74e08dd57d6b6450074bbaa8e9d9271c" args="(char *str)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char * kyotocabinet::strnrmspc </td>
+          <td>(</td>
+          <td class="paramtype">char *&nbsp;</td>
+          <td class="paramname"> <em>str</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Normalize space characters in a string and trim it. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string to convert. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the string itself. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a1212cff81fe1a20944a240665c319668"></a><!-- doxytag: member="kyotocabinet::stricmp" ref="a1212cff81fe1a20944a240665c319668" args="(const char *astr, const char *bstr)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t kyotocabinet::stricmp </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>astr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>bstr</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Compare two strings with case insensitive evaluation. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>astr</em>&nbsp;</td><td>a string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>bstr</em>&nbsp;</td><td>the other string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>positive if the former is big, negative if the latter is big, 0 if both are equivalent. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ad79bd82ec5cc9ddbf34f9ab414cf95c7"></a><!-- doxytag: member="kyotocabinet::strfwm" ref="ad79bd82ec5cc9ddbf34f9ab414cf95c7" args="(const char *str, const char *key)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::strfwm </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>key</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Check whether a string begins with a key. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>key</em>&nbsp;</td><td>the forward matching key string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true if the target string begins with the key, else, it is false. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ab148bce1cca2922a5f7075caa4ad2123"></a><!-- doxytag: member="kyotocabinet::strifwm" ref="ab148bce1cca2922a5f7075caa4ad2123" args="(const char *str, const char *key)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::strifwm </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>key</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Check whether a string begins with a key by case insensitive evaluation. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>key</em>&nbsp;</td><td>the forward matching key string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true if the target string begins with the key, else, it is false. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="afc5c3258491f0a660ea080ec6a9426d2"></a><!-- doxytag: member="kyotocabinet::strbwm" ref="afc5c3258491f0a660ea080ec6a9426d2" args="(const char *str, const char *key)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::strbwm </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>key</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Check whether a string ends with a key. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>key</em>&nbsp;</td><td>the backward matching key string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true if the target string ends with the key, else, it is false. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a543b8989aae0cc8740ab708491a66ab4"></a><!-- doxytag: member="kyotocabinet::stribwm" ref="a543b8989aae0cc8740ab708491a66ab4" args="(const char *str, const char *key)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::stribwm </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>key</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Check whether a string ends with a key by case insensitive evaluation. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>key</em>&nbsp;</td><td>the backward matching key string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true if the target string ends with the key, else, it is false. </dd></dl>
 
 </div>
 </div>
@@ -1780,7 +2457,7 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sat Sep 4 23:47:13 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Sep 12 13:58:53 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

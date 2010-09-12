@@ -208,8 +208,7 @@ bool Thread::sleep(double sec) {
   fract = std::modf(sec, &integ);
   struct ::timespec req, rem;
   req.tv_sec = (time_t)integ;
-  req.tv_nsec = (long)(fract * 1000000000);
-  if (req.tv_nsec > 999999999) req.tv_nsec = 999999999;
+  req.tv_nsec = (long)(fract * 999999000);
   while (::nanosleep(&req, &rem) != 0) {
     if (errno != EINTR) return false;
     req = rem;
@@ -395,7 +394,7 @@ bool Mutex::lock_try(double sec) {
     double integ;
     double fract = std::modf(sec, &integ);
     ts.tv_sec = tv.tv_sec + (time_t)integ;
-    ts.tv_nsec = (long)(tv.tv_usec * 1000.0 + fract * 1000000000.0);
+    ts.tv_nsec = (long)(tv.tv_usec * 1000.0 + fract * 999999000);
     if (ts.tv_nsec >= 1000000000) {
       ts.tv_nsec -= 1000000000;
       ts.tv_sec++;
@@ -992,7 +991,7 @@ bool CondVar::wait(Mutex* mutex, double sec) {
     double integ;
     double fract = std::modf(sec, &integ);
     ts.tv_sec = tv.tv_sec + (time_t)integ;
-    ts.tv_nsec = (long)(tv.tv_usec * 1000.0 + fract * 1000000000.0);
+    ts.tv_nsec = (long)(tv.tv_usec * 1000.0 + fract * 999999000);
     if (ts.tv_nsec >= 1000000000) {
       ts.tv_nsec -= 1000000000;
       ts.tv_sec++;

@@ -59,7 +59,7 @@ struct FileCore {
 #else
   Mutex alock;                           ///< attribute lock
   TSDKey errmsg;                         ///< error message
-  int fd;                                ///< file descriptor
+  int32_t fd;                            ///< file descriptor
   char* map;                             ///< mapped memory
   int64_t msiz;                          ///< map size
   int64_t lsiz;                          ///< logical size
@@ -67,7 +67,7 @@ struct FileCore {
   std::string path;                      ///< file path
   bool recov;                            ///< flag of recovery
   uint32_t omode;                        ///< open mode
-  int walfd;                             ///< file descriptor for WAL
+  int32_t walfd;                         ///< file descriptor for WAL
   int64_t walsiz;                        ///< size of WAL
   bool tran;                             ///< whether in transaction
   bool trhard;                           ///< whether hard transaction
@@ -147,7 +147,7 @@ static bool walapply(FileCore* core);
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
 static bool mywrite(::HANDLE fh, int64_t off, const void* buf, size_t size);
 #else
-static bool mywrite(int fd, int64_t off, const void* buf, size_t size);
+static bool mywrite(int32_t fd, int64_t off, const void* buf, size_t size);
 #endif
 
 
@@ -161,7 +161,7 @@ static bool mywrite(int fd, int64_t off, const void* buf, size_t size);
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
 static size_t myread(::HANDLE fh, void* buf, size_t size);
 #else
-static size_t myread(int fd, void* buf, size_t count);
+static size_t myread(int32_t fd, void* buf, size_t count);
 #endif
 
 
@@ -405,13 +405,13 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
 #else
   _assert_(msiz >= 0 && msiz <= FILEMAXSIZ);
   FileCore* core = (FileCore*)opq_;
-  int oflags = O_RDONLY;
+  int32_t oflags = O_RDONLY;
   if (mode & OWRITER) {
     oflags = O_RDWR;
     if (mode & OCREATE) oflags |= O_CREAT;
     if (mode & OTRUNCATE) oflags |= O_TRUNC;
   }
-  int fd = ::open(path.c_str(), oflags, FILEPERM);
+  int32_t fd = ::open(path.c_str(), oflags, FILEPERM);
   if (fd < 0) {
     switch (errno) {
       case EACCES: seterrmsg(core, "open failed (permission denied)"); break;
@@ -431,7 +431,7 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
     flbuf.l_start = 0;
     flbuf.l_len = 0;
     flbuf.l_pid = 0;
-    int cmd = mode & OTRYLOCK ? F_SETLK : F_SETLKW;
+    int32_t cmd = mode & OTRYLOCK ? F_SETLK : F_SETLKW;
     while (::fcntl(fd, cmd, &flbuf) != 0) {
       if (errno != EINTR) {
         seterrmsg(core, "fcntl failed");
@@ -452,13 +452,13 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
     struct ::stat wsbuf;
     if (::stat(wpath.c_str(), &wsbuf) == 0 &&
         wsbuf.st_size >= (int64_t)sizeof(WALMAGICDATA) && wsbuf.st_uid == sbuf.st_uid) {
-      int walfd = ::open(wpath.c_str(), O_RDWR, FILEPERM);
+      int32_t walfd = ::open(wpath.c_str(), O_RDWR, FILEPERM);
       if (walfd >= 0) {
         recov = true;
         char mbuf[sizeof(WALMAGICDATA)];
         if (myread(walfd, mbuf, sizeof(mbuf)) &&
             !std::memcmp(mbuf, WALMAGICDATA, sizeof(WALMAGICDATA))) {
-          int ofd = mode & OWRITER ? fd : ::open(path.c_str(), O_WRONLY, FILEPERM);
+          int32_t ofd = mode & OWRITER ? fd : ::open(path.c_str(), O_WRONLY, FILEPERM);
           if (ofd >= 0) {
             core->fd = ofd;
             core->walfd = walfd;
@@ -486,7 +486,7 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
   int64_t psiz = lsiz;
   int64_t diff = msiz % PAGESIZE;
   if (diff > 0) msiz += PAGESIZE - diff;
-  int mprot = PROT_READ;
+  int32_t mprot = PROT_READ;
   if (mode & OWRITER) {
     mprot |= PROT_WRITE;
   } else if (msiz > lsiz) {
@@ -960,7 +960,7 @@ bool File::read(int64_t off, void* buf, size_t size) {
     return true;
   }
   if (off < core->msiz) {
-    int hsiz = core->msiz - off;
+    int64_t hsiz = core->msiz - off;
     std::memcpy(buf, core->map + off, hsiz);
     off += hsiz;
     buf = (char*)buf + hsiz;
@@ -999,7 +999,7 @@ bool File::read(int64_t off, void* buf, size_t size) {
     return true;
   }
   if (off < core->msiz) {
-    int hsiz = core->msiz - off;
+    int64_t hsiz = core->msiz - off;
     std::memcpy(buf, core->map + off, hsiz);
     off += hsiz;
     buf = (char*)buf + hsiz;
@@ -1040,7 +1040,7 @@ bool File::read_fast(int64_t off, void* buf, size_t size) {
     return true;
   }
   if (off < core->msiz) {
-    int hsiz = core->msiz - off;
+    int64_t hsiz = core->msiz - off;
     std::memcpy(buf, core->map + off, hsiz);
     off += hsiz;
     buf = (char*)buf + hsiz;
@@ -1072,7 +1072,7 @@ bool File::read_fast(int64_t off, void* buf, size_t size) {
     return true;
   }
   if (off < core->msiz) {
-    int hsiz = core->msiz - off;
+    int64_t hsiz = core->msiz - off;
     std::memcpy(buf, core->map + off, hsiz);
     off += hsiz;
     buf = (char*)buf + hsiz;
@@ -1325,7 +1325,7 @@ bool File::begin_transaction(bool hard, int64_t off) {
   core->alock.lock();
   if (core->walfd < 0) {
     const std::string& wpath = walpath(core->path);
-    int fd = ::open(wpath.c_str(), O_RDWR | O_CREAT | O_TRUNC, FILEPERM);
+    int32_t fd = ::open(wpath.c_str(), O_RDWR | O_CREAT | O_TRUNC, FILEPERM);
     if (fd < 0) {
       switch (errno) {
         case EACCES: seterrmsg(core, "open failed (permission denied)"); break;
@@ -1522,7 +1522,7 @@ char* File::read_file(const std::string& path, int64_t* sp, int64_t limit) {
 #else
   _assert_(sp);
   if (limit < 0) limit = INT64_MAX;
-  int fd = ::open(path.c_str(), O_RDONLY, FILEPERM);
+  int32_t fd = ::open(path.c_str(), O_RDONLY, FILEPERM);
   if (fd < 0) return NULL;
   struct stat sbuf;
   if (::fstat(fd, &sbuf) == -1 || !S_ISREG(sbuf.st_mode)) {
@@ -1581,7 +1581,7 @@ bool File::write_file(const std::string& path, const char* buf, int64_t size) {
   return !err;
 #else
   _assert_(buf && size >= 0 && size <= FILEMAXSIZ);
-  int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, FILEPERM);
+  int32_t fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, FILEPERM);
   if (fd < 0) return false;
   bool err = false;
   const char* rp = buf;
@@ -2077,7 +2077,7 @@ static bool walwrite(FileCore *core, int64_t off, size_t size, int64_t base) {
     std::memcpy(wp, core->map + off, size);
   } else {
     if (off < core->msiz) {
-      int hsiz = core->msiz - off;
+      int64_t hsiz = core->msiz - off;
       std::memcpy(wp, core->map + off, hsiz);
       off += hsiz;
       wp += hsiz;
@@ -2142,7 +2142,7 @@ static bool walwrite(FileCore *core, int64_t off, size_t size, int64_t base) {
     std::memcpy(wp, core->map + off, size);
   } else {
     if (off < core->msiz) {
-      int hsiz = core->msiz - off;
+      int64_t hsiz = core->msiz - off;
       std::memcpy(wp, core->map + off, hsiz);
       off += hsiz;
       wp += hsiz;
@@ -2226,7 +2226,7 @@ static bool walapply(FileCore* core) {
   rem -= hsiz;
   hsiz = sizeof(uint8_t) + sizeof(int64_t) * 2;
   std::vector<WALMessage> msgs;
-  int end = 0;
+  int64_t end = 0;
   while (rem >= hsiz) {
     if (!myread(core->walfh, buf, hsiz)) {
       seterrmsg(core, "myread failed");
@@ -2364,7 +2364,7 @@ static bool walapply(FileCore* core) {
   rem -= hsiz;
   hsiz = sizeof(uint8_t) + sizeof(int64_t) * 2;
   std::vector<WALMessage> msgs;
-  int end = 0;
+  int64_t end = 0;
   while (rem >= hsiz) {
     if (!myread(core->walfd, buf, hsiz)) {
       seterrmsg(core, "myread failed");
@@ -2502,7 +2502,7 @@ static bool mywrite(::HANDLE fh, int64_t off, const void* buf, size_t size) {
   return true;
 }
 #else
-static bool mywrite(int fd, int64_t off, const void* buf, size_t size) {
+static bool mywrite(int32_t fd, int64_t off, const void* buf, size_t size) {
   _assert_(fd >= 0 && off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
   while (true) {
     ssize_t wb = ::pwrite(fd, buf, size, off);
@@ -2545,7 +2545,7 @@ static size_t myread(::HANDLE fh, void* buf, size_t size) {
   return true;
 }
 #else
-static size_t myread(int fd, void* buf, size_t size) {
+static size_t myread(int32_t fd, void* buf, size_t size) {
   _assert_(fd >= 0 && buf && (int64_t)size <= FILEMAXSIZ);
   while (true) {
     ssize_t rb = ::read(fd, buf, size);

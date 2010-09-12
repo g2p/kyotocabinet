@@ -37,7 +37,7 @@ const char* const KCVISREMOVE = DB::Visitor::REMOVE;
 /**
  * Allocate a region on memory.
  */
-char* kcmalloc(size_t size) {
+void* kcmalloc(size_t size) {
   _assert_(size > 0 && size <= MEMMAXSIZ);
   return new char[size];
 }
@@ -46,9 +46,9 @@ char* kcmalloc(size_t size) {
 /**
  * Release a region allocated in the library.
  */
-void kcfree(char* ptr) {
+void kcfree(void* ptr) {
   _assert_(true);
-  delete[] ptr;
+  delete[] (char*)ptr;
 }
 
 

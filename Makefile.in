@@ -156,6 +156,7 @@ dist :
 distclean : clean
 	cd example && $(MAKE) clean
 	rm -rf Makefile kyotocabinet.pc config.cache config.log config.status autom4te.cache
+	which ccache 2>&1 >/dev/null && ccache -C
 
 
 check :
@@ -178,9 +179,17 @@ check :
 
 check-util :
 	rm -rf casket*
-	$(RUNENV) $(RUNCMD) ./kcutilmgr --version
+	$(RUNENV) $(RUNCMD) ./kcutilmgr version
 	$(RUNENV) $(RUNCMD) ./kcutilmgr hex Makefile > check.in
 	$(RUNENV) $(RUNCMD) ./kcutilmgr hex -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr enc Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr enc -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr enc -hex Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr enc -hex -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr enc -url Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr enc -url -d check.in > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr enc -quote Makefile > check.in
+	$(RUNENV) $(RUNCMD) ./kcutilmgr enc -quote -d check.in > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilmgr ciph -key "hoge" Makefile > check.in
 	$(RUNENV) $(RUNCMD) ./kcutilmgr ciph -key "hoge" check.in > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilmgr comp -gz Makefile > check.in

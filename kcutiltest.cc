@@ -1483,8 +1483,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   }
   int64_t osiz = file.size();
   kc::StringTreeMap chkmap;
-  int chknum = rnum / 100 + 1;
-  for (int32_t i = 0; i < chknum; i++) {
+  int64_t chknum = rnum / 100 + 1;
+  for (int64_t i = 0; i < chknum; i++) {
     char rbuf[RECBUFSIZ];
     int64_t roff = myrand(osiz);
     int32_t rsiz = myrand(RECBUFSIZ);
@@ -1987,6 +1987,30 @@ static int32_t procmisc(int64_t rnum) {
     }
     delete[] obuf;
     delete[] ebuf;
+    ebuf = kc::urlencode(ubuf, usiz);
+    obuf = kc::urldecode(ebuf, &osiz);
+    if (osiz != usiz || std::memcmp(obuf, ubuf, osiz)) {
+      errprint(__LINE__, "urlencode: %d:%d", (int)osiz, (int)usiz);
+      err = true;
+    }
+    delete[] obuf;
+    delete[] ebuf;
+    ebuf = kc::quoteencode(ubuf, usiz);
+    obuf = kc::quotedecode(ebuf, &osiz);
+    if (osiz != usiz || std::memcmp(obuf, ubuf, osiz)) {
+      errprint(__LINE__, "quoteencode: %d:%d", (int)osiz, (int)usiz);
+      err = true;
+    }
+    delete[] obuf;
+    delete[] ebuf;
+    ebuf = kc::baseencode(ubuf, usiz);
+    obuf = kc::basedecode(ebuf, &osiz);
+    if (osiz != usiz || std::memcmp(obuf, ubuf, osiz)) {
+      errprint(__LINE__, "baseencode: %d:%d", (int)osiz, (int)usiz);
+      err = true;
+    }
+    delete[] obuf;
+    delete[] ebuf;
     size_t nsiz = std::strlen(name);
     nsiz -= i % nsiz;
     ebuf = new char[usiz];
@@ -1996,6 +2020,27 @@ static int32_t procmisc(int64_t rnum) {
     if (std::memcmp(obuf, ubuf, usiz)) {
       errprint(__LINE__, "arccipher: %s", name);
       err = true;
+    }
+    delete[] obuf;
+    delete[] ebuf;
+    ebuf = kc::memdup((char*)ubuf, usiz);
+    ebuf[usiz] = '\0';
+    obuf = kc::strdup(ebuf);
+    switch (myrand(14)) {
+      case 0: kc::atoi(obuf); break;
+      case 1: kc::atoix(obuf); break;
+      case 2: kc::atoih(obuf); break;
+      case 3: kc::atof(obuf); break;
+      case 4: kc::strtoupper(obuf); break;
+      case 5: kc::strtolower(obuf); break;
+      case 6: kc::strtrim(obuf); break;
+      case 7: kc::strsqzspc(obuf); break;
+      case 8: kc::strnrmspc(obuf); break;
+      case 9: kc::stricmp(obuf, ebuf); break;
+      case 10: kc::strfwm(obuf, ebuf); break;
+      case 11: kc::strifwm(obuf, ebuf); break;
+      case 12: kc::strbwm(obuf, ebuf); break;
+      case 13: kc::stribwm(obuf, ebuf); break;
     }
     delete[] obuf;
     delete[] ebuf;

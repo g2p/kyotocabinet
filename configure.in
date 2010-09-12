@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.11)
+AC_INIT(kyotocabinet, 1.2.12)
 
 # Package information
 MYLIBVER=5
-MYLIBREV=3
+MYLIBREV=4
 MYFORMATVER=5
 
 # Targets
@@ -176,6 +176,16 @@ printf '#================================================================\n'
 AC_PROG_CC
 AC_PROG_CXX
 AC_LANG(C++)
+if test "$enable_devel" = "yes"
+then
+  AC_CHECK_PROG(is_ccache, ccache, yes, no)
+  if test "$is_ccache" = "yes"
+  then
+    CC="ccache $CC"
+    CXX="ccache $CXX"
+    ccache >/dev/null
+  fi
+fi
 
 # Reset variables
 if test "$GCC" != "yes"

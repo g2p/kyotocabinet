@@ -1,3 +1,17 @@
+2010-09-08  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcutil.h (kcurlencode, kcurldecode): new functions.
+
+	* kcutil.h (kcquoteencode, kcquotedecode): new functions.
+
+	* kcutil.h (kcbaseencode, kcbasedecode): new functions.
+
+	* kcutil.h (memdup, strdup, strtoupper, strtolower, strtrim): new functions.
+
+	* kclangc.h (kcmalloc, kcfree): the parameter type was modified.
+
+	- Release: 1.2.12
+
 2010-09-04  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcfile.cc (File::open, walwrite, walapply): mmap was discarded.

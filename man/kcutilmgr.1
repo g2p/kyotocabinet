@@ -14,6 +14,11 @@ The command `\fBkcutilmgr\fR' is a tool of miscellaneous utilities, and to show 
 Perform hexadecimal encoding and its decoding.
 .RE
 .br
+\fBkcutilmgr enc \fR[\fB\-hex\fR|\fB\-url\fR|\fB\-quote\fR]\fB \fR[\fB\-d\fR]\fB \fR[\fB\fIfile\fB\fR]\fB\fR
+.RS
+Perform Base64 encoding and its decoding.
+.RE
+.br
 \fBkcutilmgr ciph \fR[\fB\-key \fIstr\fB\fR]\fB \fR[\fB\fIfile\fB\fR]\fB\fR
 .RS
 Perform Arcfour cipher and its decipher.
@@ -39,6 +44,12 @@ Options feature the following.
 .PP
 .RS
 \fB\-d\fR : perform decoding (unescaping), not encoding (escaping).
+.br
+\fB\-hex\fR : use hexadecimal encoding.
+.br
+\fB\-url\fR : use URL encoding.
+.br
+\fB\-quote\fR : use Quoted\-printable encoding.
 .br
 \fB\-key \fIstr\fR\fR : set the cipher key.
 .br

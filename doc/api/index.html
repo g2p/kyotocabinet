@@ -193,7 +193,7 @@ Example</a></h2>
   vbuf = <a class="code" href="kclangc_8h.html#ab552d20a2af1375b24aba34f412302d0" title="Retrieve the value of a record.">kcdbget</a>(db, <span class="stringliteral">&quot;foo&quot;</span>, 3, &amp;vsiz);
   <span class="keywordflow">if</span> (vbuf) {
     printf(<span class="stringliteral">&quot;%s\n&quot;</span>, vbuf);
-    <a class="code" href="kclangc_8h.html#aefcd68bc9b902c7968223e471c9ec38e" title="Release a region allocated in the library.">kcfree</a>(vbuf);
+    <a class="code" href="kclangc_8h.html#aba875623bd102d078eb328a1eb7bc0f6" title="Release a region allocated in the library.">kcfree</a>(vbuf);
   } <span class="keywordflow">else</span> {
     fprintf(stderr, <span class="stringliteral">&quot;get error: %s\n&quot;</span>, <a class="code" href="kclangc_8h.html#a7c345d19eb7072e55e54091467d269d7" title="Get the readable string of an error code.">kcecodename</a>(<a class="code" href="kclangc_8h.html#a686a89045f646d5a7bbb87f264cd7e3a" title="Get the code of the last happened error.">kcdbecode</a>(db)));
   }
@@ -203,7 +203,7 @@ Example</a></h2>
   <a class="code" href="kclangc_8h.html#a086c2e825133e414430ebd9fa010c9e0" title="Jump the cursor to the first record for forward scan.">kccurjump</a>(cur);
   <span class="keywordflow">while</span> ((kbuf = <a class="code" href="kclangc_8h.html#a543b0095fb011f3ae42424460190d25a" title="Get a pair of the key and the value of the current record.">kccurget</a>(cur, &amp;ksiz, &amp;cvbuf, &amp;vsiz, 1)) != NULL) {
     printf(<span class="stringliteral">&quot;%s:%s\n&quot;</span>, kbuf, cvbuf);
-    <a class="code" href="kclangc_8h.html#aefcd68bc9b902c7968223e471c9ec38e" title="Release a region allocated in the library.">kcfree</a>(kbuf);
+    <a class="code" href="kclangc_8h.html#aba875623bd102d078eb328a1eb7bc0f6" title="Release a region allocated in the library.">kcfree</a>(kbuf);
   }
   <a class="code" href="kclangc_8h.html#a88d85075827598fa94c6fd4c3430389f" title="Destroy a cursor object.">kccurdel</a>(cur);
 
@@ -229,7 +229,7 @@ Example</a></h2>
   <span class="keywordflow">return</span> 0;
 }
 </pre></div> </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sat Sep 4 23:47:13 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Sep 12 13:58:53 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

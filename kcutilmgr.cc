@@ -24,11 +24,13 @@ const char* g_progname;                  // program name
 int main(int argc, char** argv);
 static void usage();
 static int runhex(int argc, char** argv);
+static int runenc(int argc, char** argv);
 static int runciph(int argc, char** argv);
 static int runcomp(int argc, char** argv);
 static int runhash(int argc, char** argv);
 static int runconf(int argc, char** argv);
 static int32_t prochex(const char* file, bool dec);
+static int32_t procenc(const char* file, int32_t mode, bool dec);
 static int32_t procciph(const char* file, const char* key);
 static int32_t proccomp(const char* file, int32_t mode, bool dec);
 static int32_t prochash(const char* file, int32_t mode);
@@ -43,6 +45,8 @@ int main(int argc, char** argv) {
   int32_t rv = 0;
   if (!std::strcmp(argv[1], "hex")) {
     rv = runhex(argc, argv);
+  } else if (!std::strcmp(argv[1], "enc")) {
+    rv = runenc(argc, argv);
   } else if (!std::strcmp(argv[1], "ciph")) {
     rv = runciph(argc, argv);
   } else if (!std::strcmp(argv[1], "comp")) {
@@ -68,10 +72,12 @@ static void usage() {
   eprintf("\n");
   eprintf("usage:\n");
   eprintf("  %s hex [-d] [file]\n", g_progname);
+  eprintf("  %s enc [-hex|-url|-quote] [-d] [file]\n", g_progname);
   eprintf("  %s ciph [-key str] [file]\n", g_progname);
   eprintf("  %s comp [-def|-gz|-lzo|-lzma] [-d] [file]\n", g_progname);
   eprintf("  %s hash [-fnv|-path|-crc] [file]\n", g_progname);
   eprintf("  %s conf [-v|-i|-l|-p]\n", g_progname);
+  eprintf("  %s version\n", g_progname);
   eprintf("\n");
   std::exit(1);
 }
@@ -94,7 +100,36 @@ static int runhex(int argc, char** argv) {
       usage();
     }
   }
-  int rv = prochex(file, dec);
+  int32_t rv = prochex(file, dec);
+  return rv;
+}
+
+
+// parse arguments of enc command
+static int runenc(int argc, char** argv) {
+  const char* file = NULL;
+  int32_t mode = 0;
+  bool dec = false;
+  for (int32_t i = 2; i < argc; i++) {
+    if (argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "-hex")) {
+        mode = 1;
+      } else if (!std::strcmp(argv[i], "-url")) {
+        mode = 2;
+      } else if (!std::strcmp(argv[i], "-quote")) {
+        mode = 3;
+      } else if (!std::strcmp(argv[i], "-d")) {
+        dec = true;
+      } else {
+        usage();
+      }
+    } else if (!file) {
+      file = argv[i];
+    } else {
+      usage();
+    }
+  }
+  int32_t rv = procenc(file, mode, dec);
   return rv;
 }
 
@@ -117,7 +152,7 @@ static int runciph(int argc, char** argv) {
       usage();
     }
   }
-  int rv = procciph(file, key);
+  int32_t rv = procciph(file, key);
   return rv;
 }
 
@@ -148,7 +183,7 @@ static int runcomp(int argc, char** argv) {
       usage();
     }
   }
-  int rv = proccomp(file, mode, dec);
+  int32_t rv = proccomp(file, mode, dec);
   return rv;
 }
 
@@ -174,7 +209,7 @@ static int runhash(int argc, char** argv) {
       usage();
     }
   }
-  int rv = prochash(file, mode);
+  int32_t rv = prochash(file, mode);
   return rv;
 }
 
@@ -199,7 +234,7 @@ static int runconf(int argc, char** argv) {
       usage();
     }
   }
-  int rv = procconf(mode);
+  int32_t rv = procconf(mode);
   return rv;
 }
 
@@ -277,6 +312,99 @@ static int32_t prochex(const char* file, bool dec) {
     std::cout << std::endl;
   }
   return 0;
+}
+
+
+// perform enc command
+static int32_t procenc(const char* file, int32_t mode, bool dec) {
+  const char* istr = file && *file == '@' ? file + 1 : NULL;
+  std::istream *is;
+  std::ifstream ifs;
+  std::istringstream iss(istr ? istr : "");
+  if (file) {
+    if (istr) {
+      is = &iss;
+    } else {
+      ifs.open(file, std::ios_base::in | std::ios_base::binary);
+      if (!ifs) {
+        eprintf("%s: %s: open error\n", g_progname, file);
+        return 1;
+      }
+      is = &ifs;
+    }
+  } else {
+    is = &std::cin;
+  }
+  std::ostringstream oss;
+  char c;
+  while (is->get(c)) {
+    oss.put(c);
+  }
+  const std::string& ostr = oss.str();
+  bool err = false;
+  switch (mode) {
+    default: {
+      if (dec) {
+        size_t zsiz;
+        char* zbuf = kc::basedecode(ostr.c_str(), &zsiz);
+        std::cout.write(zbuf, zsiz);
+        delete[] zbuf;
+        if (istr) std::cout << std::endl;
+      } else {
+        char* zbuf = kc::baseencode(ostr.data(), ostr.size());
+        std::cout << zbuf;
+        delete[] zbuf;
+        std::cout << std::endl;
+      }
+      break;
+    }
+    case 1: {
+      if (dec) {
+        size_t zsiz;
+        char* zbuf = kc::hexdecode(ostr.c_str(), &zsiz);
+        std::cout.write(zbuf, zsiz);
+        delete[] zbuf;
+        if (istr) std::cout << std::endl;
+      } else {
+        char* zbuf = kc::hexencode(ostr.data(), ostr.size());
+        std::cout << zbuf;
+        delete[] zbuf;
+        std::cout << std::endl;
+      }
+      break;
+    }
+    case 2: {
+      if (dec) {
+        size_t zsiz;
+        char* zbuf = kc::urldecode(ostr.c_str(), &zsiz);
+        std::cout.write(zbuf, zsiz);
+        delete[] zbuf;
+        if (istr) std::cout << std::endl;
+      } else {
+        char* zbuf = kc::urlencode(ostr.data(), ostr.size());
+        std::cout << zbuf;
+        delete[] zbuf;
+        std::cout << std::endl;
+      }
+      break;
+    }
+    case 3: {
+      if (dec) {
+        size_t zsiz;
+        char* zbuf = kc::quotedecode(ostr.c_str(), &zsiz);
+        std::cout.write(zbuf, zsiz);
+        delete[] zbuf;
+        if (istr) std::cout << std::endl;
+      } else {
+        char* zbuf = kc::quoteencode(ostr.data(), ostr.size());
+        std::cout << zbuf;
+        delete[] zbuf;
+        std::cout << std::endl;
+      }
+      break;
+    }
+  }
+  return err ? 1 : 0;
 }
 
 

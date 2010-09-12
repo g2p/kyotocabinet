@@ -74,17 +74,17 @@ const size_t MEMMAXSIZ = INT32_MAX / 2;
 
 
 /**
- * Convert a string to an integer.
- * @param str specifies the string.
+ * Convert a decimal string to an integer.
+ * @param str the decimal string.
  * @return the integer.  If the string does not contain numeric expression, 0 is returned.
  */
 int64_t atoi(const char* str);
 
 
 /**
- * Convert a string with a metric prefix to an integer.
- * @param str the string, which can be trailed by a binary metric prefix.  "K", "M", "G", "T",
- * "P", and "E" are supported.  They are case-insensitive.
+ * Convert a decimal string with a metric prefix to an integer.
+ * @param str the decimal string, which can be trailed by a binary metric prefix.  "K", "M", "G",
+ * "T", "P", and "E" are supported.  They are case-insensitive.
  * @return the integer.  If the string does not contain numeric expression, 0 is returned.  If
  * the integer overflows the domain, INT64_MAX or INT64_MIN is returned according to the
  * sign.
@@ -93,10 +93,17 @@ int64_t atoix(const char* str);
 
 
 /**
- * Convert a string to a real number.
- * @param str specifies the string.
- * @return the real number.  If the string does not contain numeric expression, 0.0 is
- * returned.
+ * Convert a hexadecimal string to an integer.
+ * @param str the hexadecimal string.
+ * @return the integer.  If the string does not contain numeric expression, 0 is returned.
+ */
+int64_t atoih(const char* str);
+
+
+/**
+ * Convert a decimal string to a real number.
+ * @param str the decimal string.
+ * @return the real number.  If the string does not contain numeric expression, 0.0 is returned.
  */
 double atof(const char* str);
 
@@ -295,7 +302,7 @@ size_t strsplit(const std::string& str, char delim, std::vector<std::string>* el
 
 
 /**
- * Encode a serial object with hexadecimal encoding.
+ * Encode a serial object by hexadecimal encoding.
  * @param buf the pointer to the region.
  * @param size the size of the region.
  * @return the result string.
@@ -306,7 +313,7 @@ char* hexencode(const void* buf, size_t size);
 
 
 /**
- * Decode a string encoded with hexadecimal encoding.
+ * Decode a string encoded by hexadecimal encoding.
  * @param str specifies the encoded string.
  * @param sp the pointer to the variable into which the size of the region of the return value
  * is assigned.
@@ -320,6 +327,81 @@ char* hexdecode(const char* str, size_t* sp);
 
 
 /**
+ * Encode a serial object by URL encoding.
+ * @param buf the pointer to the region.
+ * @param size the size of the region.
+ * @return the result string.
+ * @note Because the region of the return value is allocated with the the new[] operator, it
+ * should be released with the delete[] operator when it is no longer in use.
+ */
+char* urlencode(const void* buf, size_t size);
+
+
+/**
+ * Decode a string encoded by URL encoding.
+ * @param str specifies the encoded string.
+ * @param sp the pointer to the variable into which the size of the region of the return value
+ * is assigned.
+ * @return the pointer to the region of the result.
+ * @note Because an additional zero code is appended at the end of the region of the return
+ * value, the return value can be treated as a character string.  Because the region of the
+ * return value is allocated with the the new[] operator, it should be released with the delete[]
+ * operator when it is no longer in use.
+ */
+char* urldecode(const char* str, size_t* sp);
+
+
+/**
+ * Encode a serial object by Quoted-printable encoding.
+ * @param buf the pointer to the region.
+ * @param size the size of the region.
+ * @return the result string.
+ * @note Because the region of the return value is allocated with the the new[] operator, it
+ * should be released with the delete[] operator when it is no longer in use.
+ */
+char* quoteencode(const void* buf, size_t size);
+
+
+/**
+ * Decode a string encoded by Quoted-printable encoding.
+ * @param str specifies the encoded string.
+ * @param sp the pointer to the variable into which the size of the region of the return value
+ * is assigned.
+ * @return the pointer to the region of the result.
+ * @note Because an additional zero code is appended at the end of the region of the return
+ * value, the return value can be treated as a character string.  Because the region of the
+ * return value is allocated with the the new[] operator, it should be released with the delete[]
+ * operator when it is no longer in use.
+ */
+char* quotedecode(const char* str, size_t* sp);
+
+
+/**
+ * Encode a serial object by Base64 encoding.
+ * @param buf the pointer to the region.
+ * @param size the size of the region.
+ * @return the result string.
+ * @note Because the region of the return value is allocated with the the new[] operator, it
+ * should be released with the delete[] operator when it is no longer in use.
+ */
+char* baseencode(const void* buf, size_t size);
+
+
+/**
+ * Decode a string encoded by Base64 encoding.
+ * @param str specifies the encoded string.
+ * @param sp the pointer to the variable into which the size of the region of the return value
+ * is assigned.
+ * @return the pointer to the region of the result.
+ * @note Because an additional zero code is appended at the end of the region of the return
+ * value, the return value can be treated as a character string.  Because the region of the
+ * return value is allocated with the the new[] operator, it should be released with the delete[]
+ * operator when it is no longer in use.
+ */
+char* basedecode(const char* str, size_t* sp);
+
+
+/**
  * Cipher or decipher a serial object with the Arcfour stream cipher.
  * @param ptr the pointer to the region.
  * @param size the size of the region.
@@ -330,6 +412,111 @@ char* hexdecode(const char* str, size_t* sp);
  * source region.
  */
 void arccipher(const void* ptr, size_t size, const void* kbuf, size_t ksiz, void* obuf);
+
+
+/**
+ * Duplicate a region on memory.
+ * @param ptr the source buffer.
+ * @param size the size of the source buffer.
+ * @note Because the region of the return value is allocated with the the new[] operator, it
+ * should be released with the delete[] operator when it is no longer in use.
+ */
+char* memdup(const char* ptr, size_t size);
+
+
+/**
+ * Duplicate a string on memory.
+ * @param str the source string.
+ * @note Because the region of the return value is allocated with the the new[] operator, it
+ * should be released with the delete[] operator when it is no longer in use.
+ */
+char* strdup(const char* str);
+
+
+/**
+ * Convert the letters of a string into upper case.
+ * @param str the string to convert.
+ * @return the string itself.
+ */
+char* strtoupper(char* str);
+
+
+/**
+ * Convert the letters of a string into lower case.
+ * @param str the string to convert.
+ * @return the string itself.
+ */
+char* strtolower(char* str);
+
+
+/**
+ * Cut space characters at head or tail of a string.
+ * @param str the string to convert.
+ * @return the string itself.
+ */
+char* strtrim(char* str);
+
+
+/**
+ * Squeeze space characters in a string and trim it.
+ * @param str the string to convert.
+ * @return the string itself.
+ */
+char* strsqzspc(char* str);
+
+
+/**
+ * Normalize space characters in a string and trim it.
+ * @param str the string to convert.
+ * @return the string itself.
+ */
+char* strnrmspc(char* str);
+
+
+/**
+ * Compare two strings with case insensitive evaluation.
+ * @param astr a string.
+ * @param bstr the other string.
+ * @return positive if the former is big, negative if the latter is big, 0 if both are
+ * equivalent.
+ */
+int32_t stricmp(const char* astr, const char* bstr);
+
+
+/**
+ * Check whether a string begins with a key.
+ * @param str the string.
+ * @param key the forward matching key string.
+ * @return true if the target string begins with the key, else, it is false.
+ */
+bool strfwm(const char* str, const char* key);
+
+
+/**
+ * Check whether a string begins with a key by case insensitive evaluation.
+ * @param str the string.
+ * @param key the forward matching key string.
+ * @return true if the target string begins with the key, else, it is false.
+ */
+bool strifwm(const char* str, const char* key);
+
+
+/**
+ * Check whether a string ends with a key.
+ * @param str the string.
+ * @param key the backward matching key string.
+ * @return true if the target string ends with the key, else, it is false.
+ */
+bool strbwm(const char* str, const char* key);
+
+
+/**
+ * Check whether a string ends with a key by case insensitive evaluation.
+ * @param str the string.
+ * @param key the backward matching key string.
+ * @return true if the target string ends with the key, else, it is false.
+ */
+bool stribwm(const char* str, const char* key);
 
 
 /**
@@ -415,7 +602,7 @@ void setstdiobin();
 
 
 /**
- * Convert a string to an integer.
+ * Convert a decimal string to an integer.
  */
 inline int64_t atoi(const char* str) {
   _assert_(str);
@@ -440,7 +627,7 @@ inline int64_t atoi(const char* str) {
 
 
 /**
- * Convert a string with a metric prefix to an integer.
+ * Convert a decimal string with a metric prefix to an integer.
  */
 inline int64_t atoix(const char* str) {
   _assert_(str);
@@ -494,7 +681,35 @@ inline int64_t atoix(const char* str) {
 
 
 /**
- * Convert a string to a real number.
+ * Convert a hexadecimal string to an integer.
+ */
+inline int64_t atoih(const char* str) {
+  _assert_(str);
+  while (*str > '\0' && *str <= ' ') {
+    str++;
+  }
+  if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X')) {
+    str += 2;
+  }
+  int64_t num = 0;
+  while (true) {
+    if (*str >= '0' && *str <= '9') {
+      num = num * 0x10 + *str - '0';
+    } else if (*str >= 'a' && *str <= 'f') {
+      num = num * 0x10 + *str - 'a' + 10;
+    } else if (*str >= 'A' && *str <= 'F') {
+      num = num * 0x10 + *str - 'A' + 10;
+    } else {
+      break;
+    }
+    str++;
+  }
+  return num;
+}
+
+
+/**
+ * Convert a decimal string to a real number.
  */
 inline double atof(const char* str) {
   _assert_(str);
@@ -810,7 +1025,7 @@ inline uint32_t hashpath(const void* buf, size_t size, char* obuf) {
       (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
   } else {
     *(wp++) = 'f' + 1 + (size & 0x0f);
-    for (int i = 0; i <= 6; i += 3) {
+    for (int32_t i = 0; i <= 6; i += 3) {
       uint32_t num = (rp[i] ^ rp[i+1] ^ rp[i+2] ^
                       rp[size-i-1] ^ rp[size-i-2] ^ rp[size-i-3]) % 36;
       if (num < 10) {
@@ -1081,7 +1296,7 @@ inline size_t strsplit(const std::string& str, char delim, std::vector<std::stri
 
 
 /**
- * Encode a serial object with hexadecimal encoding.
+ * Encode a serial object by hexadecimal encoding.
  */
 inline char* hexencode(const void* buf, size_t size) {
   _assert_(buf && size <= MEMMAXSIZ);
@@ -1089,13 +1304,13 @@ inline char* hexencode(const void* buf, size_t size) {
   char* zbuf = new char[size*2+1];
   char* wp = zbuf;
   for (const unsigned char* ep = rp + size; rp < ep; rp++) {
-    int32_t num = (*rp >> 4);
+    int32_t num = *rp >> 4;
     if (num < 10) {
       *(wp++) = '0' + num;
     } else {
       *(wp++) = 'a' + num - 10;
     }
-    num = (*rp & 0x0f);
+    num = *rp & 0x0f;
     if (num < 10) {
       *(wp++) = '0' + num;
     } else {
@@ -1108,7 +1323,7 @@ inline char* hexencode(const void* buf, size_t size) {
 
 
 /**
- * Decode a string encoded with hexadecimal encoding.
+ * Decode a string encoded by hexadecimal encoding.
  */
 inline char* hexdecode(const char* str, size_t* sp) {
   _assert_(str && sp);
@@ -1150,6 +1365,279 @@ inline char* hexdecode(const char* str, size_t* sp) {
 
 
 /**
+ * Encode a serial object by URL encoding.
+ */
+inline char* urlencode(const void* buf, size_t size) {
+  _assert_(buf && size <= MEMMAXSIZ);
+  const unsigned char* rp = (const unsigned char*)buf;
+  char* zbuf = new char[size*3+1];
+  char* wp = zbuf;
+  for (const unsigned char* ep = rp + size; rp < ep; rp++) {
+    int32_t c = *rp;
+    if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+        (c >= '0' && c <= '9') || (c != '\0' && std::strchr("_-.!~*'()", c))) {
+      *(wp++) = c;
+    } else {
+      *(wp++) = '%';
+      int32_t num = c >> 4;
+      if (num < 10) {
+        *(wp++) = '0' + num;
+      } else {
+        *(wp++) = 'a' + num - 10;
+      }
+      num = c & 0x0f;
+      if (num < 10) {
+        *(wp++) = '0' + num;
+      } else {
+        *(wp++) = 'a' + num - 10;
+      }
+    }
+  }
+  *wp = '\0';
+  return zbuf;
+}
+
+
+/**
+ * Decode a string encoded by URL encoding.
+ */
+inline char* urldecode(const char* str, size_t* sp) {
+  _assert_(str && sp);
+  size_t zsiz = std::strlen(str);
+  char* zbuf = new char[zsiz+1];
+  char* wp = zbuf;
+  const char* ep = str + zsiz;
+  while (str < ep) {
+    int32_t c = *str;
+    if (c == '%') {
+      int32_t num = 0;
+      if (++str >= ep) break;
+      c = *str;
+      if (c >= '0' && c <= '9') {
+        num = c - '0';
+      } else if (c >= 'a' && c <= 'f') {
+        num = c - 'a' + 10;
+      } else if (c >= 'A' && c <= 'F') {
+        num = c - 'A' + 10;
+      }
+      if (++str >= ep) break;
+      c = *str;
+      if (c >= '0' && c <= '9') {
+        num = num * 0x10 + c - '0';
+      } else if (c >= 'a' && c <= 'f') {
+        num = num * 0x10 + c - 'a' + 10;
+      } else if (c >= 'A' && c <= 'F') {
+        num = num * 0x10 + c - 'A' + 10;
+      }
+      *(wp++) = num;
+      str++;
+    } else if (c == '+') {
+      *(wp++) = ' ';
+      str++;
+    } else if (c <= ' ' || c == 0x7f) {
+      str++;
+    } else {
+      *(wp++) = c;
+      str++;
+    }
+  }
+  *wp = '\0';
+  *sp = wp - zbuf;
+  return zbuf;
+}
+
+
+/**
+ * Encode a serial object by Quoted-printable encoding.
+ */
+inline char* quoteencode(const void* buf, size_t size) {
+  _assert_(buf && size <= MEMMAXSIZ);
+  const unsigned char* rp = (const unsigned char*)buf;
+  char* zbuf = new char[size*3+1];
+  char* wp = zbuf;
+  for (const unsigned char* ep = rp + size; rp < ep; rp++) {
+    int32_t c = *rp;
+    if (c == '=' || c < ' ' || c > 0x7e) {
+      *(wp++) = '=';
+      int32_t num = c >> 4;
+      if (num < 10) {
+        *(wp++) = '0' + num;
+      } else {
+        *(wp++) = 'A' + num - 10;
+      }
+      num = c & 0x0f;
+      if (num < 10) {
+        *(wp++) = '0' + num;
+      } else {
+        *(wp++) = 'A' + num - 10;
+      }
+    } else {
+      *(wp++) = c;
+    }
+  }
+  *wp = '\0';
+  return zbuf;
+}
+
+
+/**
+ * Decode a string encoded by Quoted-printable encoding.
+ */
+inline char* quotedecode(const char* str, size_t* sp) {
+  _assert_(str && sp);
+  size_t zsiz = std::strlen(str);
+  char* zbuf = new char[zsiz+1];
+  char* wp = zbuf;
+  const char* ep = str + zsiz;
+  while (str < ep) {
+    int32_t c = *str;
+    if (c == '=') {
+      int32_t num = 0;
+      if (++str >= ep) break;
+      c = *str;
+      if (c == '\r') {
+        if (++str >= ep) break;
+        if (*str == '\n') str++;
+      } else if (c == '\n') {
+        str++;
+      } else {
+        if (c >= '0' && c <= '9') {
+          num = c - '0';
+        } else if (c >= 'a' && c <= 'f') {
+          num = c - 'a' + 10;
+        } else if (c >= 'A' && c <= 'F') {
+          num = c - 'A' + 10;
+        }
+        if (++str >= ep) break;
+        c = *str;
+        if (c >= '0' && c <= '9') {
+          num = num * 0x10 + c - '0';
+        } else if (c >= 'a' && c <= 'f') {
+          num = num * 0x10 + c - 'a' + 10;
+        } else if (c >= 'A' && c <= 'F') {
+          num = num * 0x10 + c - 'A' + 10;
+        }
+        *(wp++) = num;
+        str++;
+      }
+    } else if (c < ' ' || c == 0x7f) {
+      str++;
+    } else {
+      *(wp++) = c;
+      str++;
+    }
+  }
+  *wp = '\0';
+  *sp = wp - zbuf;
+  return zbuf;
+}
+
+
+/**
+ * Encode a serial object by Base64 encoding.
+ */
+inline char* baseencode(const void* buf, size_t size) {
+  _assert_(buf && size <= MEMMAXSIZ);
+  const char* tbl = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  const unsigned char* rp = (const unsigned char*)buf;
+  char* zbuf = new char[size*4/3+5];
+  char* wp = zbuf;
+  for (size_t i = 0; i < size; i += 3) {
+    switch (size - i) {
+      case 1: {
+        *(wp++) = tbl[rp[0] >> 2];
+        *(wp++) = tbl[(rp[0] & 3) << 4];
+        *(wp++) = '=';
+        *(wp++) = '=';
+        break;
+      }
+      case 2: {
+        *(wp++) = tbl[rp[0] >> 2];
+        *(wp++) = tbl[((rp[0] & 3) << 4) + (rp[1] >> 4)];
+        *(wp++) = tbl[(rp[1] & 0xf) << 2];
+        *(wp++) = '=';
+        break;
+      }
+      default: {
+        *(wp++) = tbl[rp[0] >> 2];
+        *(wp++) = tbl[((rp[0] & 3) << 4) + (rp[1] >> 4)];
+        *(wp++) = tbl[((rp[1] & 0xf) << 2) + (rp[2] >> 6)];
+        *(wp++) = tbl[rp[2] & 0x3f];
+        break;
+      }
+    }
+    rp += 3;
+  }
+  *wp = '\0';
+  return zbuf;
+}
+
+
+/**
+ * Decode a string encoded by Base64 encoding.
+ */
+inline char* basedecode(const char* str, size_t* sp) {
+  _assert_(str && sp);
+  size_t bpos = 0;
+  size_t eqcnt = 0;
+  size_t len = std::strlen(str);
+  unsigned char* zbuf = new unsigned char[len+4];
+  unsigned char* wp = zbuf;
+  size_t zsiz = 0;
+  while (bpos < len && eqcnt == 0) {
+    size_t bits = 0;
+    size_t i;
+    for (i = 0; bpos < len && i < 4; bpos++) {
+      if (str[bpos] >= 'A' && str[bpos] <= 'Z') {
+        bits = (bits << 6) | (str[bpos] - 'A');
+        i++;
+      } else if (str[bpos] >= 'a' && str[bpos] <= 'z') {
+        bits = (bits << 6) | (str[bpos] - 'a' + 26);
+        i++;
+      } else if (str[bpos] >= '0' && str[bpos] <= '9') {
+        bits = (bits << 6) | (str[bpos] - '0' + 52);
+        i++;
+      } else if (str[bpos] == '+') {
+        bits = (bits << 6) | 62;
+        i++;
+      } else if (str[bpos] == '/') {
+        bits = (bits << 6) | 63;
+        i++;
+      } else if (str[bpos] == '=') {
+        bits <<= 6;
+        i++;
+        eqcnt++;
+      }
+    }
+    if (i == 0 && bpos >= len) continue;
+    switch (eqcnt) {
+      case 0: {
+        *wp++ = (bits >> 16) & 0xff;
+        *wp++ = (bits >> 8) & 0xff;
+        *wp++ = bits & 0xff;
+        zsiz += 3;
+        break;
+      }
+      case 1: {
+        *wp++ = (bits >> 16) & 0xff;
+        *wp++ = (bits >> 8) & 0xff;
+        zsiz += 2;
+        break;
+      }
+      case 2: {
+        *wp++ = (bits >> 16) & 0xff;
+        zsiz += 1;
+        break;
+      }
+    }
+  }
+  zbuf[zsiz] = '\0';
+  *sp = zsiz;
+  return (char*)zbuf;
+}
+
+
+/**
  * Cipher or decipher a serial object with the Arcfour stream cipher.
  */
 inline void arccipher(const void* ptr, size_t size, const void* kbuf, size_t ksiz, void* obuf) {
@@ -1164,7 +1652,7 @@ inline void arccipher(const void* ptr, size_t size, const void* kbuf, size_t ksi
     kbox[i] = ((uint8_t*)kbuf)[i%ksiz];
   }
   uint32_t sidx = 0;
-  for (int i = 0; i < 0x100; i++) {
+  for (int32_t i = 0; i < 0x100; i++) {
     sidx = (sidx + sbox[i] + kbox[i]) & 0xff;
     uint32_t swap = sbox[i];
     sbox[i] = sbox[sidx];
@@ -1180,6 +1668,226 @@ inline void arccipher(const void* ptr, size_t size, const void* kbuf, size_t ksi
     sbox[y] = swap;
     ((uint8_t*)obuf)[i] = ((uint8_t*)ptr)[i] ^ sbox[(sbox[x]+sbox[y])&0xff];
   }
+}
+
+
+/**
+ * Duplicate a region on memory.
+ */
+inline char* memdup(const char* ptr, size_t size) {
+  _assert_(ptr && size <= MEMMAXSIZ);
+  char* obuf = new char[size+1];
+  std::memcpy(obuf, ptr, size);
+  return obuf;
+}
+
+
+/**
+ * Duplicate a string on memory.
+ */
+inline char* strdup(const char* str) {
+  _assert_(str);
+  size_t size = std::strlen(str);
+  char* obuf = memdup(str, size);
+  obuf[size] = '\0';
+  return obuf;
+}
+
+
+/**
+ * Convert the letters of a string into upper case.
+ */
+inline char* strtoupper(char* str) {
+  _assert_(str);
+  char* wp = str;
+  while (*wp != '\0') {
+    if (*wp >= 'a' && *wp <= 'z') *wp -= 'a' - 'A';
+    wp++;
+  }
+  return str;
+}
+
+
+/**
+ * Convert the letters of a string into lower case.
+ */
+inline char* strtolower(char* str) {
+  _assert_(str);
+  char* wp = str;
+  while (*wp != '\0') {
+    if (*wp >= 'A' && *wp <= 'Z') *wp += 'a' - 'A';
+    wp++;
+  }
+  return str;
+}
+
+
+/**
+ * Cut space characters at head or tail of a string.
+ */
+inline char* strtrim(char* str) {
+  _assert_(str);
+  const char* rp = str;
+  char* wp = str;
+  bool head = true;
+  while (*rp != '\0') {
+    if (*rp > '\0' && *rp <= ' ') {
+      if (!head) *(wp++) = *rp;
+    } else {
+      *(wp++) = *rp;
+      head = false;
+    }
+    rp++;
+  }
+  *wp = '\0';
+  while (wp > str && wp[-1] > '\0' && wp[-1] <= ' ') {
+    *(--wp) = '\0';
+  }
+  return str;
+}
+
+
+/**
+ * Squeeze space characters in a string and trim it.
+ */
+inline char* strsqzspc(char* str) {
+  _assert_(str);
+  const char* rp = str;
+  char* wp = str;
+  bool spc = true;
+  while (*rp != '\0') {
+    if (*rp > '\0' && *rp <= ' ') {
+      if (!spc) *(wp++) = *rp;
+      spc = true;
+    } else {
+      *(wp++) = *rp;
+      spc = false;
+    }
+    rp++;
+  }
+  *wp = '\0';
+  for (wp--; wp >= str; wp--) {
+    if (*wp > '\0' && *wp <= ' ') {
+      *wp = '\0';
+    } else {
+      break;
+    }
+  }
+  return str;
+}
+
+
+/**
+ * Normalize space characters in a string and trim it.
+ */
+inline char* strnrmspc(char* str) {
+  _assert_(str);
+  const char* rp = str;
+  char* wp = str;
+  bool spc = true;
+  while (*rp != '\0') {
+    if ((*rp > '\0' && *rp <= ' ') || *rp == 0x7f) {
+      if (!spc) *(wp++) = ' ';
+      spc = true;
+    } else {
+      *(wp++) = *rp;
+      spc = false;
+    }
+    rp++;
+  }
+  *wp = '\0';
+  for (wp--; wp >= str; wp--) {
+    if (*wp == ' ') {
+      *wp = '\0';
+    } else {
+      break;
+    }
+  }
+  return str;
+}
+
+
+
+/**
+ * Compare two strings with case insensitive evaluation.
+ */
+inline int32_t stricmp(const char* astr, const char* bstr) {
+  _assert_(astr && bstr);
+  while (*astr != '\0') {
+    if (*bstr == '\0') return 1;
+    int32_t ac = (*astr >= 'A' && *astr <= 'Z') ? *astr + ('a' - 'A') : *(unsigned char*)astr;
+    int32_t bc = (*bstr >= 'A' && *bstr <= 'Z') ? *bstr + ('a' - 'A') : *(unsigned char*)bstr;
+    if (ac != bc) return ac - bc;
+    astr++;
+    bstr++;
+  }
+  return (*bstr == '\0') ? 0 : -1;
+}
+
+
+/**
+ * Check whether a string begins with a key.
+ */
+inline bool strfwm(const char* str, const char* key) {
+  _assert_(str && key);
+  while (*key != '\0') {
+    if (*str != *key || *str == '\0') return false;
+    key++;
+    str++;
+  }
+  return true;
+}
+
+
+/**
+ * Check whether a string begins with a key by case insensitive evaluation.
+ */
+inline bool strifwm(const char* str, const char* key) {
+  _assert_(str && key);
+  while (*key != '\0') {
+    if (*str == '\0') return false;
+    int32_t sc = *str;
+    if (sc >= 'A' && sc <= 'Z') sc += 'a' - 'A';
+    int32_t kc = *key;
+    if (kc >= 'A' && kc <= 'Z') kc += 'a' - 'A';
+    if (sc != kc) return false;
+    key++;
+    str++;
+  }
+  return true;
+}
+
+
+/**
+ * Check whether a string ends with a key.
+ */
+inline bool strbwm(const char* str, const char* key) {
+  _assert_(str && key);
+  size_t slen = std::strlen(str);
+  size_t klen = std::strlen(key);
+  for (size_t i = 1; i <= klen; i++) {
+    if (i > slen || str[slen-i] != key[klen-i]) return false;
+  }
+  return true;
+}
+
+
+/**
+ * Check whether a string ends with a key by case insensitive evaluation.
+ */
+inline bool stribwm(const char* str, const char* key) {
+  _assert_(str && key);
+  size_t slen = std::strlen(str);
+  size_t klen = std::strlen(key);
+  for (size_t i = 1; i <= klen; i++) {
+    if (i > slen) return false;
+    int32_t sc = str[slen-i];
+    if (sc >= 'A' && sc <= 'Z') sc += 'a' - 'A';
+    int32_t kc = key[klen-i];
+    if (kc >= 'A' && kc <= 'Z') kc += 'a' - 'A';
+    if (sc != kc) return false;
+  }
+  return true;
 }
 
 

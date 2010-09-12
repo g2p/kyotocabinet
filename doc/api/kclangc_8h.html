@@ -100,10 +100,10 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><p>Merge modes. </p>
  <a href="kclangc_8h.html#a99fb83031ce9923c84392b4e92f956b5">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2>Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a2a6017a10f1734bcd21364f2f0620719">kcmalloc</a> (size_t size)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Allocate a region on memory.  <a href="#a2a6017a10f1734bcd21364f2f0620719"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#aefcd68bc9b902c7968223e471c9ec38e">kcfree</a> (char *ptr)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release a region allocated in the library.  <a href="#aefcd68bc9b902c7968223e471c9ec38e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a30be9af70a790af59d7c8fb2e9aa7c20">kcmalloc</a> (size_t size)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Allocate a region on memory.  <a href="#a30be9af70a790af59d7c8fb2e9aa7c20"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#aba875623bd102d078eb328a1eb7bc0f6">kcfree</a> (void *ptr)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release a region allocated in the library.  <a href="#aba875623bd102d078eb328a1eb7bc0f6"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#acf8a78ec339dbdacb7451d7eaa2abb45">kctime</a> (void)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the time of day in seconds.  <a href="#acf8a78ec339dbdacb7451d7eaa2abb45"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a937d5246c18410ed598d9c061b04504a">kcatoi</a> (const char *str)</td></tr>
@@ -441,12 +441,12 @@
 </div>
 </div>
 <hr/><h2>Function Documentation</h2>
-<a class="anchor" id="a2a6017a10f1734bcd21364f2f0620719"></a><!-- doxytag: member="kclangc.h::kcmalloc" ref="a2a6017a10f1734bcd21364f2f0620719" args="(size_t size)" -->
+<a class="anchor" id="a30be9af70a790af59d7c8fb2e9aa7c20"></a><!-- doxytag: member="kclangc.h::kcmalloc" ref="a30be9af70a790af59d7c8fb2e9aa7c20" args="(size_t size)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* kcmalloc </td>
+          <td class="memname">void* kcmalloc </td>
           <td>(</td>
           <td class="paramtype">size_t&nbsp;</td>
           <td class="paramname"> <em>size</em></td>
@@ -468,14 +468,14 @@
 
 </div>
 </div>
-<a class="anchor" id="aefcd68bc9b902c7968223e471c9ec38e"></a><!-- doxytag: member="kclangc.h::kcfree" ref="aefcd68bc9b902c7968223e471c9ec38e" args="(char *ptr)" -->
+<a class="anchor" id="aba875623bd102d078eb328a1eb7bc0f6"></a><!-- doxytag: member="kclangc.h::kcfree" ref="aba875623bd102d078eb328a1eb7bc0f6" args="(void *ptr)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void kcfree </td>
           <td>(</td>
-          <td class="paramtype">char *&nbsp;</td>
+          <td class="paramtype">void *&nbsp;</td>
           <td class="paramname"> <em>ptr</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -2771,7 +2771,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sat Sep 4 23:47:13 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Sep 12 13:58:53 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>
