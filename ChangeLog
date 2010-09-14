@@ -1,3 +1,9 @@
+2010-09-13  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcthread.h (TaskQueue): new class.
+
+	- Release: 1.2.13
+
 2010-09-08  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcutil.h (kcurlencode, kcurldecode): new functions.

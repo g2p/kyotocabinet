@@ -113,6 +113,7 @@ check-util :
 	kcutilmgr conf
 	-del casket* /F /Q > NUL: 2>&1
 	kcutiltest mutex -th 4 -iv -1 10000
+	kcutiltest para -th 4 10000
 	kcutiltest para -th 4 -iv -1 10000
 	kcutiltest file -th 4 casket 10000
 	kcutiltest file -th 4 -rnd -msiz 1m casket 10000

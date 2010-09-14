@@ -156,7 +156,7 @@ dist :
 distclean : clean
 	cd example && $(MAKE) clean
 	rm -rf Makefile kyotocabinet.pc config.cache config.log config.status autom4te.cache
-	which ccache 2>&1 >/dev/null && ccache -C
+	which ccache >/dev/null 2>&1 && ccache -C >/dev/null 2>&1
 
 
 check :
@@ -204,6 +204,7 @@ check-util :
 	$(RUNENV) $(RUNCMD) ./kcutilmgr conf
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcutiltest mutex -th 4 -iv -1 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest para -th 4 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest para -th 4 -iv -1 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest file -th 4 casket 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest file -th 4 -rnd -msiz 1m casket 10000

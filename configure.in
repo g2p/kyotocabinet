@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.12)
+AC_INIT(kyotocabinet, 1.2.13)
 
 # Package information
 MYLIBVER=5
-MYLIBREV=4
+MYLIBREV=5
 MYFORMATVER=5
 
 # Targets
@@ -183,7 +183,7 @@ then
   then
     CC="ccache $CC"
     CXX="ccache $CXX"
-    ccache >/dev/null
+    ccache -C >/dev/null 2>&1
   fi
 fi
 

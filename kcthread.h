@@ -953,6 +953,223 @@ private:
 };
 
 
+/**
+ * Task queue device.
+ */
+class TaskQueue {
+public:
+  class Task;
+private:
+  class WorkerThread;
+  /** An alias of list of tasks. */
+  typedef std::list<Task*> TaskList;
+public:
+  /**
+   * Interface of a task.
+   */
+  class Task {
+    friend class TaskQueue;
+  public:
+    /**
+     * Default constructor.
+     */
+    explicit Task() : id_(0), thid_(0), aborted_(false) {
+      _assert_(true);
+    }
+    /**
+     * Destructor.
+     */
+    virtual ~Task() {
+      _assert_(true);
+    }
+    /**
+     * Get the ID number of the task.
+     * @return the ID number of the task, which is incremented from 1.
+     */
+    uint64_t id() {
+      _assert_(true);
+      return id_;
+    }
+    /**
+     * Get the ID number of the worker thread.
+     * @return the ID number of the worker thread.  It is from 0 to less than the number of
+     * worker threads.
+     */
+    uint32_t thread_id() {
+      _assert_(true);
+      return thid_;
+    }
+    /**
+     * Check whether the thread is to be aborted.
+     */
+    bool aborted() {
+      _assert_(true);
+      return aborted_;
+    }
+  private:
+    /** The task ID number. */
+    uint64_t id_;
+    /** The thread ID number. */
+    uint64_t thid_;
+    /** The flag to be aborted. */
+    bool aborted_;
+  };
+  /**
+   * Default Constructor.
+   */
+  TaskQueue() : thary_(NULL), thnum_(0), tasks_(), count_(0), mutex_(), cond_(), seed_(0) {
+    _assert_(true);
+  }
+  /**
+   * Destructor.
+   */
+  virtual ~TaskQueue() {
+    _assert_(true);
+  }
+  /**
+   * Process a task.
+   * @param task a task object.
+   */
+  virtual void do_task(Task* task) = 0;
+  /**
+   * Start the task queue.
+   * @param thnum the number of worker threads.
+   */
+  void start(size_t thnum) {
+    _assert_(thnum > 0 && thnum <= MEMMAXSIZ);
+    thary_ = new WorkerThread[thnum];
+    for (size_t i = 0; i < thnum; i++) {
+      thary_[i].id_ = i;
+      thary_[i].queue_ = this;
+      thary_[i].start();
+    }
+    thnum_ = thnum;
+  }
+  /**
+   * Finish the task queue.
+   * @note This function blocks until all tasks in the queue are popped.
+   */
+  void finish() {
+    _assert_(true);
+    mutex_.lock();
+    TaskList::iterator it = tasks_.begin();
+    TaskList::iterator itend = tasks_.end();
+    while (it != itend) {
+      Task* task = *it;
+      task->aborted_ = true;
+      it++;
+    }
+    cond_.broadcast();
+    mutex_.unlock();
+    Thread::yield();
+    for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
+      mutex_.lock();
+      if (tasks_.empty()) {
+        mutex_.unlock();
+        break;
+      }
+      mutex_.unlock();
+      if (wsec > 1.0) wsec = 1.0;
+      Thread::sleep(wsec);
+    }
+    mutex_.lock();
+    for (size_t i = 0; i < thnum_; i++) {
+      thary_[i].aborted_ = true;
+    }
+    cond_.broadcast();
+    mutex_.unlock();
+    for (size_t i = 0; i < thnum_; i++) {
+      thary_[i].join();
+    }
+    delete[] thary_;
+  }
+  /**
+   * Add a task.
+   * @param task a task object.
+   * @return the number of tasks in the queue.
+   */
+  int64_t add_task(Task* task) {
+    _assert_(task);
+    mutex_.lock();
+    task->id_ = ++seed_;
+    tasks_.push_back(task);
+    int64_t count = ++count_;
+    cond_.signal();
+    mutex_.unlock();
+    return count;
+  }
+  /**
+   * Get the number of tasks in the queue.
+   * @return the number of tasks in the queue.
+   */
+  int64_t count() {
+    _assert_(true);
+    mutex_.lock();
+    int64_t count = count_;
+    mutex_.unlock();
+    return count;
+  }
+private:
+  /**
+   * Implementation of the worker thread.
+   */
+  class WorkerThread : public Thread {
+    friend class TaskQueue;
+  public:
+    explicit WorkerThread() : id_(0), queue_(NULL), aborted_(false) {
+      _assert_(true);
+    }
+  private:
+    void run() {
+      _assert_(true);
+      bool empty = false;
+      while (true) {
+        queue_->mutex_.lock();
+        if (aborted_) {
+          queue_->mutex_.unlock();
+          break;
+        }
+        if (empty) queue_->cond_.wait(&queue_->mutex_, 1.0);
+        Task * task = NULL;
+        if (queue_->tasks_.empty()) {
+          empty = true;
+        } else {
+          task = queue_->tasks_.front();
+          task->thid_ = id_;
+          queue_->tasks_.pop_front();
+          queue_->count_--;
+          empty = false;
+        }
+        queue_->mutex_.unlock();
+        if (task) queue_->do_task(task);
+      }
+    }
+    uint32_t id_;
+    TaskQueue* queue_;
+    Task* task_;
+    bool aborted_;
+  };
+  /** Dummy constructor to forbid the use. */
+  TaskQueue(const TaskQueue&);
+  /** Dummy Operator to forbid the use. */
+  TaskQueue& operator =(const TaskQueue&);
+  /** The array of worker threads. */
+  WorkerThread* thary_;
+  /** The number of worker threads. */
+  size_t thnum_;
+  /** The list of tasks. */
+  TaskList tasks_;
+  /** The number of the tasks. */
+  int64_t count_;
+  /** The mutex for the task list. */
+  Mutex mutex_;
+  /** The condition variable for the task list. */
+  CondVar cond_;
+  /** The seed of ID numbers. */
+  uint64_t seed_;
+};
+
+
 }                                        // common namespace
 
 #endif                                   // duplication check

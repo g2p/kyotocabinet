@@ -188,7 +188,7 @@ static void dbmetaprint(kc::BasicDB* db, bool verbose) {
     iprintf("size: %lld\n", (long long)db->size());
   }
   int64_t musage = memusage();
-  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
 }
 
 

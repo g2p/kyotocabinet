@@ -1012,68 +1012,36 @@ static int32_t procpara(int64_t rnum, int32_t thnum, double iv) {
           g_randseed, (long long)rnum, thnum, iv);
   bool err = false;
   double stime = kc::time();
-  class Worker : public kc::Thread {
+  class TaskQueueImpl : public kc::TaskQueue {
   public:
-    void setparams(int32_t id, kc::CondVar* cond, kc::Mutex* mutex, std::list<int64_t>* queue,
-                   int64_t rnum, int32_t thnum, double iv) {
-      id_ = id;
-      cond_ = cond;
-      mutex_ = mutex;
-      queue_ = queue;
-      rnum_ = rnum;
+    void setparams(int32_t thnum, double iv) {
       thnum_ = thnum;
       iv_ = iv;
-      alive_ = true;
-      err_ = false;
+      cnt_ = 0;
     }
-    bool error() {
-      return err_;
-    }
-    void run() {
-      while (alive_) {
-        mutex_->lock();
-        int64_t num = 0;
-        if (queue_->empty()) {
-          cond_->wait(mutex_, 0.1);
-        } else {
-          num = queue_->front();
-          queue_->pop_front();
-        }
-        mutex_->unlock();
-        if (iv_ > 0) {
-          kc::Thread::sleep(iv_ * thnum_);
-        } else if (iv_ < 0) {
-          kc::Thread::yield();
-        }
+    void do_task(kc::TaskQueue::Task* task) {
+      cnt_ += 1;
+      if (iv_ > 0) {
+        kc::Thread::sleep(iv_ * thnum_);
+      } else if (iv_ < 0) {
+        kc::Thread::yield();
       }
+      delete task;
     }
-    void die() {
-      alive_ = false;
+    int64_t done_count() {
+      return cnt_;
     }
   private:
-    int32_t id_;
-    kc::CondVar* cond_;
-    kc::Mutex* mutex_;
-    std::list<int64_t>* queue_;
-    int64_t rnum_;
     int32_t thnum_;
     double iv_;
-    bool alive_;
-    bool err_;
+    kc::AtomicInt64 cnt_;
   };
-  Worker workers[THREADMAX];
-  kc::CondVar cond;
-  kc::Mutex mutex;
-  std::list<int64_t> queue;
-  for (int32_t i = 0; i < thnum; i++) {
-    workers[i].setparams(i, &cond, &mutex, &queue, rnum, thnum, iv);
-    workers[i].start();
-  }
+  TaskQueueImpl queue;
+  queue.setparams(thnum, iv);
+  queue.start(thnum);
   for (int64_t i = 1; i <= rnum; i++) {
-    mutex.lock();
-    queue.push_back(i);
-    cond.signal();
-    mutex.unlock();
+    kc::TaskQueue::Task* task = new kc::TaskQueue::Task();
+    queue.add_task(task);
     if (iv > 0) {
       kc::Thread::sleep(iv);
     } else if (iv < 0) {
@@ -1084,28 +1052,21 @@ static int32_t procpara(int64_t rnum, int32_t thnum, double iv) {
       if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
     }
   }
-  while (true) {
-    mutex.lock();
-    if (queue.empty()) {
-      mutex.unlock();
-      break;
-    }
-    mutex.unlock();
-    kc::Thread::sleep(0.01);
+  iprintf("count: %lld\n", queue.count());
+  iprintf("done: %lld\n", queue.done_count());
+  queue.finish();
+  if (queue.count() != 0) {
+    errprint(__LINE__, "TaskQueue::count");
+    err = true;
   }
-  for (int32_t i = 0; i < thnum; i++) {
-    workers[i].die();
-  }
-  mutex.lock();
-  cond.broadcast();
-  mutex.unlock();
-  for (int32_t i = 0; i < thnum; i++) {
-    workers[i].die();
-    workers[i].join();
-    if (workers[i].error()) err = true;
+  if (queue.done_count() != rnum) {
+    errprint(__LINE__, "TaskQueueImpl::done_count");
+    err = true;
   }
   double etime = kc::time();
   iprintf("time: %.3f\n", etime - stime);
+  int64_t musage = memusage();
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   iprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
 }
@@ -1727,7 +1688,7 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld\n", (long long)map.count());
   int64_t musage = memusage();
-  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   iprintf("getting records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
@@ -1753,7 +1714,7 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld\n", (long long)map.count());
   musage = memusage();
-  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   iprintf("traversing records:\n");
   stime = kc::time();
   int64_t cnt = 0;
@@ -1777,7 +1738,7 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld\n", (long long)map.count());
   musage = memusage();
-  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   Map paramap(bnum + 31);
   iprintf("migrating records:\n");
   stime = kc::time();
@@ -1804,7 +1765,7 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld,%lld\n", (long long)map.count(), (long long)paramap.count());
   musage = memusage();
-  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   iprintf("removing records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
@@ -1823,7 +1784,7 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
   iprintf("time: %.3f\n", etime - stime);
   iprintf("count: %lld,%lld\n", (long long)map.count(), (long long)paramap.count());
   musage = memusage();
-  if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   if (rnd) {
     iprintf("wicked testing:\n");
     stime = kc::time();
@@ -1907,7 +1868,7 @@ static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
     iprintf("time: %.3f\n", etime - stime);
     iprintf("count: %lld\n", (long long)map.count());
     musage = memusage();
-    if (musage > 0 ) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+    if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
   }
   iprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
