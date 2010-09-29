@@ -87,8 +87,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a36c9b5eaaef06891a83b98911adfd712"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a0bbc7d536f192222362a98af678abd16">error</a> () const =0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the last happened error.  <a href="#a0bbc7d536f192222362a98af678abd16"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a3720322e81bf861fe2e8f78325be23ea">set_error</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)=0</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a3720322e81bf861fe2e8f78325be23ea"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#abc68ab08f3f42a52cbae54ae093fad7b">set_error</a> (const char *file, int32_t line, const char *func, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#abc68ab08f3f42a52cbae54ae093fad7b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a6f8ee2f3bde5f5389119fe43696f9bdc">open</a> (const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#a6f8ee2f3bde5f5389119fe43696f9bdc"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a8863ffedb9604742305ece7ccdb23c2a">close</a> ()=0</td></tr>
@@ -131,10 +131,10 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Add a number to the numeric value of a record.  <a href="#addcd1fc6d593df0afbb8e311800e668d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a9de76cd3e63652dcf158b3215751ccd7">increment</a> (const std::string &amp;key, int64_t num)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Add a number to the numeric value of a record.  <a href="#a9de76cd3e63652dcf158b3215751ccd7"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#aa54d97c02860a7e7a1733eb720bfdc76">increment</a> (const char *kbuf, size_t ksiz, double num)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Add a number to the numeric value of a record.  <a href="#aa54d97c02860a7e7a1733eb720bfdc76"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a2cf1b332f2a918f4b154bd21b3f1749d">increment</a> (const std::string &amp;key, double num)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Add a number to the numeric value of a record.  <a href="#a2cf1b332f2a918f4b154bd21b3f1749d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a27824206cba908e6215582389fb3539f">increment_double</a> (const char *kbuf, size_t ksiz, double num)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Add a number to the numeric double value of a record.  <a href="#a27824206cba908e6215582389fb3539f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a5ae85dcea9a853f835bddc56dc86024a">increment_double</a> (const std::string &amp;key, double num)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Add a number to the numeric double value of a record.  <a href="#a5ae85dcea9a853f835bddc56dc86024a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a4cc551a65eed27a7905c50aac95f43db">cas</a> (const char *kbuf, size_t ksiz, const char *ovbuf, size_t ovsiz, const char *nvbuf, size_t nvsiz)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Perform compare-and-swap.  <a href="#a4cc551a65eed27a7905c50aac95f43db"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a98f785851e346ce32049d70cdac36f51">cas</a> (const std::string &amp;key, const std::string &amp;ovalue, const std::string &amp;nvalue)</td></tr>
@@ -159,6 +159,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Load records from a file.  <a href="#aef62097d8ad0f443db61fd46ef8afb0f"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#af270fcad9cfa1dce1b661c33c07165d6">cursor</a> ()=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#af270fcad9cfa1dce1b661c33c07165d6"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a26a13dacff680288b1169a8f27d8a34b">tune_logger</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html">Logger</a> *logger, uint32_t kinds=Logger::WARN|Logger::ERROR)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal logger.  <a href="#a26a13dacff680288b1169a8f27d8a34b"></a><br/></td></tr>
 <tr><td colspan="2"><h2>Static Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#afd766e0016301f256108e8dd8d316a9c">typecname</a> (uint32_t type)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the class name of a database type.  <a href="#afd766e0016301f256108e8dd8d316a9c"></a><br/></td></tr>
@@ -308,13 +310,31 @@
 
 </div>
 </div>
-<a class="anchor" id="a3720322e81bf861fe2e8f78325be23ea"></a><!-- doxytag: member="kyotocabinet::BasicDB::set_error" ref="a3720322e81bf861fe2e8f78325be23ea" args="(Error::Code code, const char *message)=0" -->
+<a class="anchor" id="abc68ab08f3f42a52cbae54ae093fad7b"></a><!-- doxytag: member="kyotocabinet::BasicDB::set_error" ref="abc68ab08f3f42a52cbae54ae093fad7b" args="(const char *file, int32_t line, const char *func, Error::Code code, const char *message)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">virtual void kyotocabinet::BasicDB::set_error </td>
           <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramname"> <em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a>&nbsp;</td>
           <td class="paramname"> <em>code</em>, </td>
         </tr>
@@ -336,6 +356,9 @@
 <p>Set the error information. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>the file name of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>line</em>&nbsp;</td><td>the line number of the program source code. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>func</em>&nbsp;</td><td>the function name of the program source code. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>code</em>&nbsp;</td><td>an error code. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>message</em>&nbsp;</td><td>a supplement message. </td></tr>
   </table>
@@ -1112,18 +1135,18 @@
 <div class="memdoc">
 
 <p>Add a number to the numeric value of a record. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a20021c698bbcbd1fb4d4c80ca19174e0" title="Add a number to the numeric value of a record.">DB::increment</a> method except that the parameter is std::string. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a20021c698bbcbd1fb4d4c80ca19174e0" title="Add a number to the numeric integer value of a record.">DB::increment</a> method except that the parameter is std::string. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a5491ff17b57a68b6e076f12270cf2cc3">kyotocabinet::DB</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aa54d97c02860a7e7a1733eb720bfdc76"></a><!-- doxytag: member="kyotocabinet::BasicDB::increment" ref="aa54d97c02860a7e7a1733eb720bfdc76" args="(const char *kbuf, size_t ksiz, double num)" -->
+<a class="anchor" id="a27824206cba908e6215582389fb3539f"></a><!-- doxytag: member="kyotocabinet::BasicDB::increment_double" ref="a27824206cba908e6215582389fb3539f" args="(const char *kbuf, size_t ksiz, double num)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double kyotocabinet::BasicDB::increment </td>
+          <td class="memname">double kyotocabinet::BasicDB::increment_double </td>
           <td>(</td>
           <td class="paramtype">const char *&nbsp;</td>
           <td class="paramname"> <em>kbuf</em>, </td>
@@ -1149,19 +1172,27 @@
 </div>
 <div class="memdoc">
 
-<p>Add a number to the numeric value of a record. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a20021c698bbcbd1fb4d4c80ca19174e0" title="Add a number to the numeric value of a record.">DB::increment</a> method except that the parameter and the return value are double. </dd></dl>
+<p>Add a number to the numeric double value of a record. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>kbuf</em>&nbsp;</td><td>the pointer to the key region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>ksiz</em>&nbsp;</td><td>the size of the key region. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>num</em>&nbsp;</td><td>the additional number. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the result value, or Not-a-number on failure. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#ae61170ab1447b652cfee281f341464d5">kyotocabinet::DB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a846ea56c3f2e81382f6341e48318b423">kyotocabinet::DB</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a2cf1b332f2a918f4b154bd21b3f1749d"></a><!-- doxytag: member="kyotocabinet::BasicDB::increment" ref="a2cf1b332f2a918f4b154bd21b3f1749d" args="(const std::string &amp;key, double num)" -->
+<a class="anchor" id="a5ae85dcea9a853f835bddc56dc86024a"></a><!-- doxytag: member="kyotocabinet::BasicDB::increment_double" ref="a5ae85dcea9a853f835bddc56dc86024a" args="(const std::string &amp;key, double num)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double kyotocabinet::BasicDB::increment </td>
+          <td class="memname">double kyotocabinet::BasicDB::increment_double </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
           <td class="paramname"> <em>key</em>, </td>
@@ -1181,10 +1212,10 @@
 </div>
 <div class="memdoc">
 
-<p>Add a number to the numeric value of a record. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a20021c698bbcbd1fb4d4c80ca19174e0" title="Add a number to the numeric value of a record.">DB::increment</a> method except that the parameter is std::string and the return value is double. </dd></dl>
+<p>Add a number to the numeric double value of a record. </p>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a846ea56c3f2e81382f6341e48318b423" title="Add a number to the numeric double value of a record.">DB::increment_double</a> method except that the parameter is std::string. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a3bba7637666e38f28f65c2d4bd20753d">kyotocabinet::DB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a8a30a90beeaa132d30b671f3d30cbf21">kyotocabinet::DB</a>.</p>
 
 </div>
 </div>
@@ -1652,6 +1683,45 @@
 
 </div>
 </div>
+<a class="anchor" id="a26a13dacff680288b1169a8f27d8a34b"></a><!-- doxytag: member="kyotocabinet::BasicDB::tune_logger" ref="a26a13dacff680288b1169a8f27d8a34b" args="(Logger *logger, uint32_t kinds=Logger::WARN|Logger::ERROR)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool kyotocabinet::BasicDB::tune_logger </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html">Logger</a> *&nbsp;</td>
+          <td class="paramname"> <em>logger</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&nbsp;</td>
+          <td class="paramname"> <em>kinds</em> = <code>Logger::WARN|Logger::ERROR</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set the internal logger. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>logger</em>&nbsp;</td><td>the logger object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>kinds</em>&nbsp;</td><td>kinds of logged messages by bitwise-or: <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960ac39609b521fbe09d9c41b45561b114b6" title="debugging">Logger::DEBUG</a> for debugging, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6bf810306530147894e41520a3d918b9" title="normal information">Logger::INFO</a> for normal information, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a6a985b6bc2e4f16c3cb394a3de9972dd" title="warning">Logger::WARN</a> for warning, and <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960a2fc4717ffb4886b57aa5d343adf7d7ad" title="error">Logger::ERROR</a> for fatal error. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a3b568128b2e2995c26e8e727c1124fe2">kyotocabinet::CacheDB</a>, and <a class="el" href="classkyotocabinet_1_1PlantDB.html#ab3d62373c720573e45ee5efa35db63f6">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="afd766e0016301f256108e8dd8d316a9c"></a><!-- doxytag: member="kyotocabinet::BasicDB::typecname" ref="afd766e0016301f256108e8dd8d316a9c" args="(uint32_t type)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1707,7 +1777,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Tue Sep 14 17:39:05 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Sep 29 09:36:00 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

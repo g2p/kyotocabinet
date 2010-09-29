@@ -1,7 +1,7 @@
 #! /usr/bin/ruby -w
 
 #================================================================
-# formatcheck
+# codecheck
 # Check files about compliance of the coding policy
 #================================================================
 

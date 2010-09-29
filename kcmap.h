@@ -41,6 +41,8 @@ const size_t LHMZMAPBNUM = 32768;        ///< mininum number of buckets to use m
 template <class KEY, class VALUE,
           class HASH = std::hash<KEY>, class EQUALTO = std::equal_to<KEY> >
 class LinkedHashMap {
+public:
+  class Iterator;
 private:
   struct Record;
 public:
@@ -48,7 +50,6 @@ public:
    * Iterator of records.
    */
   class Iterator {
-  private:
     friend class LinkedHashMap;
   public:
     /**

@@ -8,6 +8,7 @@
 
 # set variables
 testcmd="kchashtest"
+testopts="-th 4 -rnd"
 mgrcmd="kchashmgr"
 PATH="$PATH:."
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib:."
@@ -17,8 +18,13 @@ export PATH LD_LIBRARY_PATH DYLD_LIBRARY_PATH
 
 # parse arguments
 case "$1" in
+kch|hash)
+  testcmd="kchashtest"
+  mgrcmd="kchashmgr"
+  ;;
 kct|tree)
   testcmd="kctreetest"
+  testopts="$testopts -pccap 10k"
   mgrcmd="kctreemgr"
   ;;
 kcd|dir)
@@ -27,17 +33,28 @@ kcd|dir)
   ;;
 kcf|forest)
   testcmd="kcforesttest"
+  testopts="$testopts -pccap 10k"
   mgrcmd="kcforestmgr"
   ;;
 esac
+if [ "$2" = "-oat" ]
+then
+  testopts="$testopts -oat"
+  shift
+fi
+if [ "$2" = "-tran" ]
+then
+  testopts="$testopts -tran"
+  shift
+fi
 argsleepsec="$2"
 loopnum="$3"
 
 # enable libSegFault
-#LD_PRELOAD="/lib/libSegFault.so"
-#SEGFAULT_SIGNALS="all"
-#SEGFAULT_OUTPUT_NAME="$testcmd.log"
-#export LD_PRELOAD SEGFAULT_SIGNALS SEGFAULT_OUTPUT_NAME
+LD_PRELOAD="/lib/libSegFault.so"
+SEGFAULT_SIGNALS="all"
+SEGFAULT_OUTPUT_NAME="$testcmd.log"
+export LD_PRELOAD SEGFAULT_SIGNALS SEGFAULT_OUTPUT_NAME
 
 
 # set the cleanup handler
@@ -62,7 +79,7 @@ do
   fi
   printf '\n==== iteration: %d (%.1f sec.)\n\n' "$cnt" "$sleepsec"
   rm -rf casket* "$testcmd.log"
-  "$testcmd" order -th 4 -oat -rnd casket 10000000 & \
+  "$testcmd" order $testopts casket 10000000 & \
     ( sleep "$sleepsec" ; killall -SEGV "$testcmd" )
   cp -rf casket casket-back 2>/dev/null
   cp -rf casket.wal casket-back.wal 2>/dev/null

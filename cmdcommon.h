@@ -72,9 +72,8 @@ void iprintf(const char* format, ...);
 void iputchar(char c);
 void eprintf(const char* format, ...);
 void printversion();
-void printdata(const char* buf, int size, bool px);
+void printdata(const char* buf, int32_t size, bool px);
 bool getline(std::istream* is, std::string* str);
-void splitstr(const std::string& str, char delim, std::vector<std::string>* elems);
 std::string unitnumstr(int64_t num);
 std::string unitnumstrbyte(int64_t num);
 kc::BasicDB::ProgressChecker* stdchecker(const char* prefix, std::ostream* strm);
@@ -182,7 +181,7 @@ inline void printversion() {
 
 
 // print record data
-inline void printdata(const char* buf, int size, bool px) {
+inline void printdata(const char* buf, int32_t size, bool px) {
   size_t cnt = 0;
   char numbuf[kc::NUMBUFSIZ];
   while (size-- > 0) {

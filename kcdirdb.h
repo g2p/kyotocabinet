@@ -60,11 +60,11 @@ const char* DDBTMPPATHEXT = "tmp";       ///< extension of the temporary directo
  * time.
  */
 class DirDB : public BasicDB {
+  friend class PlantDB<DirDB, BasicDB::TYPEFOREST>;
 public:
   class Cursor;
 private:
   struct Record;
-  friend class PlantDB<DirDB, BasicDB::TYPEFOREST>;
   /** An alias of list of cursors. */
   typedef std::list<Cursor*> CursorList;
   /** An alias of vector of strings. */
@@ -245,10 +245,10 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      db_->set_error(Error::NOIMPL, "not implemented");
+      db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
       return false;
     }
     /**
@@ -259,10 +259,10 @@ public:
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      db_->set_error(Error::NOIMPL, "not implemented");
+      db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
       return false;
     }
     /**
@@ -273,10 +273,10 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      db_->set_error(Error::NOIMPL, "not implemented");
+      db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
       return false;
     }
     /**
@@ -311,10 +311,10 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      db_->set_error(Error::NOIMPL, "not implemented");
+      db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
       return false;
     }
     /**
@@ -464,13 +464,23 @@ public:
   }
   /**
    * Set the error information.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
    * @param code an error code.
    * @param message a supplement message.
    */
-  void set_error(Error::Code code, const char* message) {
-    _assert_(message);
+  void set_error(const char* file, int32_t line, const char* func,
+                 Error::Code code, const char* message) {
+    _assert_(file && line > 0 && func && message);
     error_->set(code, message);
     if (code == Error::BROKEN || code == Error::SYSTEM) flags_ |= FFATAL;
+    if (logger_) {
+      Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
+        Logger::ERROR : Logger::INFO;
+      if (kind & logkinds_)
+        report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
+    }
   }
   /**
    * Open a database file.
@@ -967,6 +977,7 @@ public:
    * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
    * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
    * error.
+   * @return true on success, or false on failure.
    */
   bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) {
     _assert_(logger);
@@ -1055,25 +1066,6 @@ public:
     return 0;
   }
 protected:
-  /**
-   * Set the error information.
-   * @param file the file name of the program source code.
-   * @param line the line number of the program source code.
-   * @param func the function name of the program source code.
-   * @param code an error code.
-   * @param message a supplement message.
-   */
-  void set_error(const char* file, int32_t line, const char* func,
-                 Error::Code code, const char* message) {
-    _assert_(file && line > 0 && func && message);
-    set_error(code, message);
-    if (logger_) {
-      Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
-        Logger::ERROR : Logger::INFO;
-      if (kind & logkinds_)
-        report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
-    }
-  }
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.
@@ -1424,8 +1416,12 @@ private:
       const std::string& rpath = cpath + File::PATHCHR + name;
       File::Status sbuf;
       if (File::status(rpath, &sbuf)) {
-        count_ += 1;
-        size_ += sbuf.size - 4;
+        if (sbuf.size >= 4) {
+          count_ += 1;
+          size_ += sbuf.size - 4;
+        } else {
+          File::remove(rpath);
+        }
       } else {
         set_error(_KCCODELINE_, Error::SYSTEM, "checking the status of a file failed");
         err = true;
@@ -1869,7 +1865,7 @@ private:
     }
     int64_t allcnt = count_;
     if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       return false;
     }
     bool err = false;
@@ -1889,13 +1885,13 @@ private:
       }
       curcnt++;
       if (checker && !checker->check("iterate", "processing", curcnt, allcnt)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         err = true;
         break;
       }
     }
     if (checker && !checker->check("iterate", "ending", -1, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       err = true;
     }
     if (!dir.close()) {
@@ -1917,12 +1913,12 @@ private:
     bool err = false;
     if (writer_) {
       if (checker && !checker->check("synchronize", "dumping the magic data", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         return false;
       }
       if (!dump_magic()) err = true;
       if (checker && !checker->check("synchronize", "synchronizing the directory", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         return false;
       }
       if (hard && !File::synchronize_whole()) {
@@ -1932,7 +1928,7 @@ private:
     }
     if (proc) {
       if (checker && !checker->check("synchronize", "running the post processor", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         return false;
       }
       if (!proc->process(path_, count_, size_impl())) {

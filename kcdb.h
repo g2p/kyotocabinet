@@ -119,7 +119,7 @@ public:
      * @note Equal to the original Cursor::set_value method except that the parameter is
      * std::string.
      */
-    virtual bool set_value(const std::string& value, bool step = false) = 0;
+    virtual bool set_value_str(const std::string& value, bool step = false) = 0;
     /**
      * Remove the current record.
      * @return true on success, or false on failure.
@@ -185,9 +185,8 @@ public:
     virtual char* get(size_t* ksp, const char** vbp, size_t* vsp, bool step = false) = 0;
     /**
      * Get a pair of the key and the value of the current record.
+     * @param step true to move the cursor to the next record, or false for no move.
      * @return the pointer to the pair of the key and the value, or NULL on failure.
-     * @note Equal to the original Cursor::get method except that the return value is std::pair.
-     * The return value should be deleted explicitly by the caller.
      * @note If the cursor is invalidated, NULL is returned.  The return value should be deleted
      * explicitly by the caller.
      */
@@ -331,7 +330,7 @@ public:
    */
   virtual bool append(const std::string& key, const std::string& value) = 0;
   /**
-   * Add a number to the numeric value of a record.
+   * Add a number to the numeric integer value of a record.
    * @param kbuf the pointer to the key region.
    * @param ksiz the size of the key region.
    * @param num the additional number.
@@ -339,22 +338,24 @@ public:
    */
   virtual int64_t increment(const char* kbuf, size_t ksiz, int64_t num) = 0;
   /**
-   * Add a number to the numeric value of a record.
+   * Add a number to the numeric integer value of a record.
    * @note Equal to the original DB::increment method except that the parameter is std::string.
    */
   virtual int64_t increment(const std::string& key, int64_t num) = 0;
   /**
-   * Add a number to the numeric value of a record.
-   * @note Equal to the original DB::increment method except that the parameter and the return
-   * value are double.  Not-a-number is returned on failure.
+   * Add a number to the numeric double value of a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param num the additional number.
+   * @return the result value, or Not-a-number on failure.
    */
-  virtual double increment(const char* kbuf, size_t ksiz, double num) = 0;
+  virtual double increment_double(const char* kbuf, size_t ksiz, double num) = 0;
   /**
-   * Add a number to the numeric value of a record.
-   * @note Equal to the original DB::increment method except that the parameter is std::string
-   * and the return value is double.  Not-a-number is returned on failure.
+   * Add a number to the numeric double value of a record.
+   * @note Equal to the original DB::increment_double method except that the parameter is
+   * std::string.
    */
-  virtual double increment(const std::string& key, double num) = 0;
+  virtual double increment_double(const std::string& key, double num) = 0;
   /**
    * Perform compare-and-swap.
    * @param kbuf the pointer to the key region.
@@ -448,8 +449,11 @@ public:
  */
 class BasicDB : public DB {
 public:
-  class Error;
   class Cursor;
+  class Error;
+  class ProgressChecker;
+  class FileProcessor;
+  class Logger;
 public:
   /**
    * Database types.
@@ -514,7 +518,7 @@ public:
      * @note Equal to the original Cursor::set_value method except that the parameter is
      * std::string.
      */
-    bool set_value(const std::string& value, bool step = false) {
+    bool set_value_str(const std::string& value, bool step = false) {
       _assert_(true);
       return set_value(value.c_str(), value.size(), step);
     }
@@ -830,6 +834,7 @@ public:
      * @param message a supplement message.
      */
     void set(Code code, const char* message) {
+      _assert_(message);
       code_ = code;
       message_ = message;
     }
@@ -838,6 +843,7 @@ public:
      * @return the error code.
      */
     Code code() const {
+      _assert_(true);
       return code_;
     }
     /**
@@ -845,6 +851,7 @@ public:
      * @return the readable string of the code.
      */
     const char* name() const {
+      _assert_(true);
       return codename(code_);
     }
     /**
@@ -852,6 +859,7 @@ public:
      * @return the supplement message.
      */
     const char* message() const {
+      _assert_(true);
       return message_;
     }
     /**
@@ -860,6 +868,7 @@ public:
      * @return the readable string of the error code.
      */
     static const char* codename(Code code) {
+      _assert_(true);
       switch (code) {
         case SUCCESS: return "success";
         case NOIMPL: return "not implemented";
@@ -1002,10 +1011,14 @@ public:
   virtual Error error() const = 0;
   /**
    * Set the error information.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
    * @param code an error code.
    * @param message a supplement message.
    */
-  virtual void set_error(Error::Code code, const char* message) = 0;
+  virtual void set_error(const char* file, int32_t line, const char* func,
+                         Error::Code code, const char* message) = 0;
   /**
    * Open a database file.
    * @param path the path of a database file.
@@ -1073,7 +1086,7 @@ public:
           DirStream dir;
           if (dir.open(path)) {
             if (checker_ && !checker_->check("copy", "beginning", 0, -1)) {
-              db_->set_error(Error::LOGIC, "checker failed");
+              db_->set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
               err = true;
             }
             std::string name;
@@ -1091,13 +1104,13 @@ public:
               }
               curcnt++;
               if (checker_ && !checker_->check("copy", "processing", curcnt, -1)) {
-                db_->set_error(Error::LOGIC, "checker failed");
+                db_->set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
                 err = true;
                 break;
               }
             }
             if (checker_ && !checker_->check("copy", "ending", -1, -1)) {
-              db_->set_error(Error::LOGIC, "checker failed");
+              db_->set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
               err = true;
             }
             if (!dir.close()) err = true;
@@ -1114,7 +1127,7 @@ public:
         std::ifstream ifs;
         ifs.open(path.c_str(), std::ios_base::in | std::ios_base::binary);
         if (checker_ && !checker_->check("copy", "beginning", 0, size)) {
-          db_->set_error(Error::LOGIC, "checker failed");
+          db_->set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
           err = true;
         }
         if (ifs) {
@@ -1131,7 +1144,7 @@ public:
             }
             curcnt += n;
             if (checker_ && !checker_->check("copy", "processing", curcnt, size)) {
-              db_->set_error(Error::LOGIC, "checker failed");
+              db_->set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
               err = true;
               break;
             }
@@ -1142,7 +1155,7 @@ public:
           err = true;
         }
         if (checker_ && !checker_->check("copy", "ending", -1, size)) {
-          db_->set_error(Error::LOGIC, "checker failed");
+          db_->set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
           err = true;
         }
         ofs.close();
@@ -1264,7 +1277,7 @@ public:
     VisitorImpl visitor(vbuf, vsiz);
     if (!accept(kbuf, ksiz, &visitor, true)) return false;
     if (!visitor.ok()) {
-      set_error(Error::DUPREC, "record duplication");
+      set_error(_KCCODELINE_, Error::DUPREC, "record duplication");
       return false;
     }
     return true;
@@ -1310,7 +1323,7 @@ public:
     VisitorImpl visitor(vbuf, vsiz);
     if (!accept(kbuf, ksiz, &visitor, true)) return false;
     if (!visitor.ok()) {
-      set_error(Error::NOREC, "no record");
+      set_error(_KCCODELINE_, Error::NOREC, "no record");
       return false;
     }
     return true;
@@ -1418,7 +1431,7 @@ public:
     if (!accept(kbuf, ksiz, &visitor, true)) return INT64_MIN;
     num = visitor.num();
     if (num == INT64_MIN) {
-      set_error(Error::LOGIC, "logical inconsistency");
+      set_error(_KCCODELINE_, Error::LOGIC, "logical inconsistency");
       return num;
     }
     return num;
@@ -1432,11 +1445,13 @@ public:
     return increment(key.c_str(), key.size(), num);
   }
   /**
-   * Add a number to the numeric value of a record.
-   * @note Equal to the original DB::increment method except that the parameter and the return
-   * value are double.
+   * Add a number to the numeric double value of a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param num the additional number.
+   * @return the result value, or Not-a-number on failure.
    */
-  double increment(const char* kbuf, size_t ksiz, double num) {
+  double increment_double(const char* kbuf, size_t ksiz, double num) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
     public:
@@ -1525,19 +1540,19 @@ public:
     if (!accept(kbuf, ksiz, &visitor, true)) return nan();
     num = visitor.num();
     if (chknan(num)) {
-      set_error(Error::LOGIC, "logical inconsistency");
+      set_error(_KCCODELINE_, Error::LOGIC, "logical inconsistency");
       return nan();
     }
     return num;
   }
   /**
-   * Add a number to the numeric value of a record.
-   * @note Equal to the original DB::increment method except that the parameter is std::string
-   * and the return value is double.
+   * Add a number to the numeric double value of a record.
+   * @note Equal to the original DB::increment_double method except that the parameter is
+   * std::string.
    */
-  double increment(const std::string& key, double num) {
+  double increment_double(const std::string& key, double num) {
     _assert_(true);
-    return increment(key.c_str(), key.size(), num);
+    return increment_double(key.c_str(), key.size(), num);
   }
   /**
    * Perform compare-and-swap.
@@ -1584,7 +1599,7 @@ public:
     VisitorImpl visitor(ovbuf, ovsiz, nvbuf, nvsiz);
     if (!accept(kbuf, ksiz, &visitor, true)) return false;
     if (!visitor.ok()) {
-      set_error(Error::LOGIC, "status conflict");
+      set_error(_KCCODELINE_, Error::LOGIC, "status conflict");
       return false;
     }
     return true;
@@ -1625,7 +1640,7 @@ public:
     VisitorImpl visitor;
     if (!accept(kbuf, ksiz, &visitor, true)) return false;
     if (!visitor.ok()) {
-      set_error(Error::NOREC, "no record");
+      set_error(_KCCODELINE_, Error::NOREC, "no record");
       return false;
     }
     return true;
@@ -1680,7 +1695,7 @@ public:
     size_t vsiz;
     char* vbuf = visitor.pop(&vsiz);
     if (!vbuf) {
-      set_error(Error::NOREC, "no record");
+      set_error(_KCCODELINE_, Error::NOREC, "no record");
       *sp = 0;
       return NULL;
     }
@@ -1734,7 +1749,7 @@ public:
     if (!accept(kbuf, ksiz, &visitor, false)) return -1;
     int32_t vsiz = visitor.vsiz();
     if (vsiz < 0) {
-      set_error(Error::NOREC, "no record");
+      set_error(_KCCODELINE_, Error::NOREC, "no record");
       return -1;
     }
     return vsiz;
@@ -1748,7 +1763,7 @@ public:
   bool dump_snapshot(std::ostream* dest, ProgressChecker* checker = NULL) {
     _assert_(dest);
     if (dest->fail()) {
-      set_error(Error::INVALID, "invalid stream");
+      set_error(_KCCODELINE_, Error::INVALID, "invalid stream");
       return false;
     }
     class VisitorImpl : public Visitor {
@@ -1776,7 +1791,7 @@ public:
       unsigned char c = 0xff;
       dest->write((char*)&c, 1);
       if (dest->fail()) {
-        set_error(Error::SYSTEM, "stream output error");
+        set_error(_KCCODELINE_, Error::SYSTEM, "stream output error");
         err = true;
       }
     } else {
@@ -1795,14 +1810,14 @@ public:
     std::ofstream ofs;
     ofs.open(dest.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
     if (!ofs) {
-      set_error(Error::NOFILE, "open failed");
+      set_error(_KCCODELINE_, Error::NOFILE, "open failed");
       return false;
     }
     bool err = false;
     if (!dump_snapshot(&ofs, checker)) err = true;
     ofs.close();
     if (!ofs) {
-      set_error(Error::SYSTEM, "close failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "close failed");
       err = true;
     }
     return !err;
@@ -1816,29 +1831,29 @@ public:
   bool load_snapshot(std::istream* src, ProgressChecker* checker = NULL) {
     _assert_(src);
     if (src->fail()) {
-      set_error(Error::INVALID, "invalid stream");
+      set_error(_KCCODELINE_, Error::INVALID, "invalid stream");
       return false;
     }
     char buf[DBIOBUFSIZ];
     src->read(buf, sizeof(DBSSMAGICDATA));
     if (src->fail()) {
-      set_error(Error::SYSTEM, "stream input error");
+      set_error(_KCCODELINE_, Error::SYSTEM, "stream input error");
       return false;
     }
     if (std::memcmp(buf, DBSSMAGICDATA, sizeof(DBSSMAGICDATA))) {
-      set_error(Error::INVALID, "invalid magic data of input stream");
+      set_error(_KCCODELINE_, Error::INVALID, "invalid magic data of input stream");
       return false;
     }
     bool err = false;
     if (checker && !checker->check("load_snapshot", "beginning", 0, -1)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       err = true;
     }
     int64_t curcnt = 0;
     while (!err) {
       int32_t c = src->get();
       if (src->fail()) {
-        set_error(Error::SYSTEM, "stream input error");
+        set_error(_KCCODELINE_, Error::SYSTEM, "stream input error");
         err = true;
         break;
       }
@@ -1858,7 +1873,7 @@ public:
         char* rbuf = rsiz > sizeof(buf) ? new char[rsiz] : buf;
         src->read(rbuf, ksiz + vsiz);
         if (src->fail()) {
-          set_error(Error::SYSTEM, "stream input error");
+          set_error(_KCCODELINE_, Error::SYSTEM, "stream input error");
           err = true;
           if (rbuf != buf) delete[] rbuf;
           break;
@@ -1870,19 +1885,19 @@ public:
         }
         if (rbuf != buf) delete[] rbuf;
       } else {
-        set_error(Error::INVALID, "invalid magic data of input stream");
+        set_error(_KCCODELINE_, Error::INVALID, "invalid magic data of input stream");
         err = true;
         break;
       }
       curcnt++;
       if (checker && !checker->check("load_snapshot", "processing", curcnt, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         err = true;
         break;
       }
     }
     if (checker && !checker->check("load_snapshot", "ending", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       err = true;
     }
     return !err;
@@ -1898,14 +1913,14 @@ public:
     std::ifstream ifs;
     ifs.open(src.c_str(), std::ios_base::in | std::ios_base::binary);
     if (!ifs) {
-      set_error(Error::NOFILE, "open failed");
+      set_error(_KCCODELINE_, Error::NOFILE, "open failed");
       return false;
     }
     bool err = false;
     if (!load_snapshot(&ifs, checker)) err = true;
     ifs.close();
     if (ifs.bad()) {
-      set_error(Error::SYSTEM, "close failed");
+      set_error(_KCCODELINE_, Error::SYSTEM, "close failed");
       return false;
     }
     return !err;
@@ -1917,6 +1932,15 @@ public:
    * released with the delete operator when it is no longer in use.
    */
   virtual Cursor* cursor() = 0;
+  /**
+   * Set the internal logger.
+   * @param logger the logger object.
+   * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
+   * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
+   * error.
+   * @return true on success, or false on failure.
+   */
+  virtual bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) = 0;
   /**
    * Get the class name of a database type.
    * @param type the database type.

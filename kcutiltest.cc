@@ -122,12 +122,15 @@ static void filemetaprint(kc::File* file) {
 
 // parse arguments of mutex command
 static int32_t runmutex(int argc, char** argv) {
+  bool argbrk = false;
   const char* rstr = NULL;
   int32_t thnum = 1;
   double iv = 0.0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!rstr && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-iv")) {
@@ -137,6 +140,7 @@ static int32_t runmutex(int argc, char** argv) {
         usage();
       }
     } else if (!rstr) {
+      argbrk = true;
       rstr = argv[i];
     } else {
       usage();
@@ -153,12 +157,15 @@ static int32_t runmutex(int argc, char** argv) {
 
 // parse arguments of para command
 static int32_t runpara(int argc, char** argv) {
+  bool argbrk = false;
   const char* rstr = NULL;
   int32_t thnum = 1;
   double iv = 0.0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!rstr && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-iv")) {
@@ -168,6 +175,7 @@ static int32_t runpara(int argc, char** argv) {
         usage();
       }
     } else if (!rstr) {
+      argbrk = true;
       rstr = argv[i];
     } else {
       usage();
@@ -184,14 +192,17 @@ static int32_t runpara(int argc, char** argv) {
 
 // parse arguments of file command
 static int32_t runfile(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
   bool rnd = false;
   int64_t msiz = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!rstr && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rnd")) {
@@ -203,6 +214,7 @@ static int32_t runfile(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];
@@ -221,13 +233,16 @@ static int32_t runfile(int argc, char** argv) {
 
 // parse arguments of map command
 static int32_t runmap(int argc, char** argv) {
+  bool argbrk = false;
   const char* rstr = NULL;
   int32_t thnum = 1;
   bool rnd = false;
   int64_t bnum = -1;
   for (int32_t i = 2; i < argc; i++) {
-    if (!rstr && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-rnd")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-rnd")) {
         rnd = true;
       } else if (!std::strcmp(argv[i], "-bnum")) {
         if (++i >= argc) usage();
@@ -236,6 +251,7 @@ static int32_t runmap(int argc, char** argv) {
         usage();
       }
     } else if (!rstr) {
+      argbrk = true;
       rstr = argv[i];
     } else {
       usage();
@@ -252,11 +268,15 @@ static int32_t runmap(int argc, char** argv) {
 
 // parse arguments of misc command
 static int32_t runmisc(int argc, char** argv) {
+  bool argbrk = false;
   const char* rstr = NULL;
   for (int32_t i = 2; i < argc; i++) {
-    if (!rstr && argv[i][0] == '-') {
-      usage();
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else      usage();
     } else if (!rstr) {
+      argbrk = true;
       rstr = argv[i];
     } else {
       usage();

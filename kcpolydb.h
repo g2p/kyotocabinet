@@ -35,6 +35,13 @@ namespace kyotocabinet {                 // common namespace
 
 /**
  * Polymorphic database.
+ * @note This class is a concrete class to operate an arbitrary database whose type is determined
+ * in runtime.  This class can be inherited but overwriting methods is forbidden.  Before every
+ * database operation, it is necessary to call the PolyDB::open method in order to open a
+ * database file and connect the database object to it.  To avoid data missing or corruption, it
+ * is important to close every database file by the PolyDB::close method when the database is no
+ * longer in use.  It is forbidden for multible database objects in a process to open the same
+ * database at the same time.
  */
 class PolyDB : public BasicDB {
 public:
@@ -81,7 +88,7 @@ public:
     bool accept(Visitor* visitor, bool writable = true, bool step = false) {
       _assert_(visitor);
       if (db_->type_ == TYPEVOID) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       return cur_->accept(visitor, writable, step);
@@ -93,7 +100,7 @@ public:
     bool jump() {
       _assert_(true);
       if (db_->type_ == TYPEVOID) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       return cur_->jump();
@@ -107,7 +114,7 @@ public:
     bool jump(const char* kbuf, size_t ksiz) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       if (db_->type_ == TYPEVOID) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       return cur_->jump(kbuf, ksiz);
@@ -119,7 +126,7 @@ public:
     bool jump(const std::string& key) {
       _assert_(true);
       if (db_->type_ == TYPEVOID) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       return jump(key.c_str(), key.size());
@@ -133,7 +140,7 @@ public:
     bool jump_back() {
       _assert_(true);
       if (db_->type_ == TYPEVOID) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       return cur_->jump_back();
@@ -149,7 +156,7 @@ public:
     bool jump_back(const char* kbuf, size_t ksiz) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       if (db_->type_ == TYPEVOID) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       return cur_->jump_back(kbuf, ksiz);
@@ -170,7 +177,7 @@ public:
     bool step() {
       _assert_(true);
       if (db_->type_ == TYPEVOID) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       return cur_->step();
@@ -184,7 +191,7 @@ public:
     bool step_back() {
       _assert_(true);
       if (db_->type_ == TYPEVOID) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
       return cur_->step_back();
@@ -220,7 +227,8 @@ public:
    * Default constructor.
    */
   explicit PolyDB() :
-    type_(TYPEVOID), db_(NULL), error_(), logstrm_(NULL), logger_(NULL), zcomp_(NULL) {
+    type_(TYPEVOID), db_(NULL), error_(),
+    stdlogstrm_(NULL), stdlogger_(NULL), logger_(NULL), logkinds_(0), zcomp_(NULL) {
     _assert_(true);
   }
   /**
@@ -229,7 +237,8 @@ public:
    * object is deleted automatically.
    */
   explicit PolyDB(BasicDB* db) :
-    type_(TYPEMISC), db_(db), error_(), logstrm_(NULL), logger_(NULL), zcomp_(NULL) {
+    type_(TYPEMISC), db_(db), error_(),
+    stdlogstrm_(NULL), stdlogger_(NULL), logger_(NULL), logkinds_(0), zcomp_(NULL) {
     _assert_(db);
   }
   /**
@@ -240,8 +249,8 @@ public:
     _assert_(true);
     if (type_ != TYPEVOID) close();
     delete zcomp_;
-    delete logger_;
-    delete logstrm_;
+    delete stdlogger_;
+    delete stdlogstrm_;
   }
   /**
    * Accept a visitor to a record.
@@ -256,7 +265,7 @@ public:
   bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_->accept(kbuf, ksiz, visitor, writable);
@@ -272,7 +281,7 @@ public:
   bool iterate(Visitor *visitor, bool writable = true, ProgressChecker* checker = NULL) {
     _assert_(visitor);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_->iterate(visitor, writable, checker);
@@ -288,6 +297,23 @@ public:
   }
   /**
    * Set the error information.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
+   * @param code an error code.
+   * @param message a supplement message.
+   */
+  void set_error(const char* file, int32_t line, const char* func,
+                 Error::Code code, const char* message) {
+    _assert_(file && line > 0 && func && message);
+    if (type_ == TYPEVOID) {
+      error_.set(code, message);
+      return;
+    }
+    db_->set_error(file, line, func, code, message);
+  }
+  /**
+   * Set the error information without source code information.
    * @param code an error code.
    * @param message a supplement message.
    */
@@ -297,7 +323,7 @@ public:
       error_.set(code, message);
       return;
     }
-    db_->set_error(code, message);
+    db_->set_error(_KCCODELINE_, code, message);
   }
   /**
    * Open a database file.
@@ -354,7 +380,7 @@ public:
     _assert_(true);
     if (type_ == TYPEMISC) return db_->open(path, mode);
     if (type_ != TYPEVOID) {
-      set_error(Error::INVALID, "already opened");
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
     std::vector<std::string> elems;
@@ -503,29 +529,29 @@ public:
       }
       it++;
     }
-    delete logger_;
-    delete logstrm_;
-    logstrm_ = NULL;
-    logger_ = NULL;
+    delete stdlogger_;
+    delete stdlogstrm_;
+    stdlogstrm_ = NULL;
+    stdlogger_ = NULL;
     if (!logname.empty()) {
-      std::ostream* logstrm = NULL;
+      std::ostream* stdlogstrm = NULL;
       if (logname == "-" || logname == "[stdout]" || logname == "[cout]") {
-        logstrm = &std::cout;
+        stdlogstrm = &std::cout;
       } else if (logname == "+" || logname == "[stderr]" || logname == "[cerr]") {
-        logstrm = &std::cerr;
+        stdlogstrm = &std::cerr;
       } else {
         std::ofstream *ofs = new std::ofstream;
         ofs->open(logname.c_str(),
                   std::ios_base::out | std::ios_base::binary | std::ios_base::app);
         if (!*ofs) ofs->open(logname.c_str(), std::ios_base::out | std::ios_base::binary);
         if (ofs) {
-          logstrm = ofs;
-          logstrm_ = ofs;
+          stdlogstrm = ofs;
+          stdlogstrm_ = ofs;
         } else {
           delete ofs;
         }
       }
-      if (logstrm) logger_ = new StreamLogger(logstrm, logpx.c_str());
+      if (stdlogstrm) stdlogger_ = new StreamLogger(stdlogstrm, logpx.c_str());
     }
     delete zcomp_;
     zcomp_ = NULL;
@@ -559,18 +585,26 @@ public:
     BasicDB *db;
     switch (type) {
       default: {
-        set_error(Error::INVALID, "unknown database type");
+        set_error(_KCCODELINE_, Error::INVALID, "unknown database type");
         return false;
       }
       case TYPEPHASH: {
         ProtoHashDB* phdb = new ProtoHashDB();
-        if (logger_) phdb->tune_logger(logger_, logkinds);
+        if (stdlogger_) {
+          phdb->tune_logger(stdlogger_, logkinds);
+        } else if (logger_) {
+          phdb->tune_logger(logger_, logkinds_);
+        }
         db = phdb;
         break;
       }
       case TYPEPTREE: {
         ProtoTreeDB *ptdb = new ProtoTreeDB();
-        if (logger_) ptdb->tune_logger(logger_, logkinds);
+        if (stdlogger_) {
+          ptdb->tune_logger(stdlogger_, logkinds);
+        } else if (logger_) {
+          ptdb->tune_logger(logger_, logkinds_);
+        }
         db = ptdb;
         break;
       }
@@ -578,7 +612,11 @@ public:
         int8_t opts = 0;
         if (tcompress) opts |= CacheDB::TCOMPRESS;
         CacheDB* cdb = new CacheDB();
-        if (logger_) cdb->tune_logger(logger_, logkinds);
+        if (stdlogger_) {
+          cdb->tune_logger(stdlogger_, logkinds);
+        } else if (logger_) {
+          cdb->tune_logger(logger_, logkinds_);
+        }
         if (opts > 0) cdb->tune_options(opts);
         if (bnum > 0) cdb->tune_buckets(bnum);
         if (zcomp_) cdb->tune_compressor(zcomp_);
@@ -591,7 +629,11 @@ public:
         int8_t opts = 0;
         if (tcompress) opts |= GrassDB::TCOMPRESS;
         GrassDB* gdb = new GrassDB();
-        if (logger_) gdb->tune_logger(logger_, logkinds);
+        if (stdlogger_) {
+          gdb->tune_logger(stdlogger_, logkinds);
+        } else if (logger_) {
+          gdb->tune_logger(logger_, logkinds_);
+        }
         if (opts > 0) gdb->tune_options(opts);
         if (bnum > 0) gdb->tune_buckets(bnum);
         if (psiz > 0) gdb->tune_page(psiz);
@@ -607,7 +649,11 @@ public:
         if (tlinear) opts |= HashDB::TLINEAR;
         if (tcompress) opts |= HashDB::TCOMPRESS;
         HashDB* hdb = new HashDB();
-        if (logger_) hdb->tune_logger(logger_, logkinds);
+        if (stdlogger_) {
+          hdb->tune_logger(stdlogger_, logkinds);
+        } else if (logger_) {
+          hdb->tune_logger(logger_, logkinds_);
+        }
         if (apow >= 0) hdb->tune_alignment(apow);
         if (fpow >= 0) hdb->tune_fbp(fpow);
         if (opts > 0) hdb->tune_options(opts);
@@ -624,7 +670,11 @@ public:
         if (tlinear) opts |= TreeDB::TLINEAR;
         if (tcompress) opts |= TreeDB::TCOMPRESS;
         TreeDB* tdb = new TreeDB();
-        if (logger_) tdb->tune_logger(logger_, logkinds);
+        if (stdlogger_) {
+          tdb->tune_logger(stdlogger_, logkinds);
+        } else if (logger_) {
+          tdb->tune_logger(logger_, logkinds_);
+        }
         if (apow >= 0) tdb->tune_alignment(apow);
         if (fpow >= 0) tdb->tune_fbp(fpow);
         if (opts > 0) tdb->tune_options(opts);
@@ -642,7 +692,11 @@ public:
         int8_t opts = 0;
         if (tcompress) opts |= DirDB::TCOMPRESS;
         DirDB* ddb = new DirDB();
-        if (logger_) ddb->tune_logger(logger_, logkinds);
+        if (stdlogger_) {
+          ddb->tune_logger(stdlogger_, logkinds);
+        } else if (logger_) {
+          ddb->tune_logger(logger_, logkinds_);
+        }
         if (opts > 0) ddb->tune_options(opts);
         if (zcomp_) ddb->tune_compressor(zcomp_);
         db = ddb;
@@ -652,7 +706,11 @@ public:
         int8_t opts = 0;
         if (tcompress) opts |= TreeDB::TCOMPRESS;
         ForestDB* fdb = new ForestDB();
-        if (logger_) fdb->tune_logger(logger_, logkinds);
+        if (stdlogger_) {
+          fdb->tune_logger(stdlogger_, logkinds);
+        } else if (logger_) {
+          fdb->tune_logger(logger_, logkinds_);
+        }
         if (opts > 0) fdb->tune_options(opts);
         if (bnum > 0) fdb->tune_buckets(bnum);
         if (psiz > 0) fdb->tune_page(psiz);
@@ -666,7 +724,7 @@ public:
     if (arccomp) arccomp->set_key(zkey.c_str(), zkey.size());
     if (!db->open(fpath, mode)) {
       const Error& error = db->error();
-      set_error(error.code(), error.message());
+      set_error(_KCCODELINE_, error.code(), error.message());
       delete db;
       return false;
     }
@@ -687,23 +745,23 @@ public:
   bool close() {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     bool err = false;
     if (!db_->close()) {
       const Error& error = db_->error();
-      set_error(error.code(), error.message());
+      set_error(_KCCODELINE_, error.code(), error.message());
       err = true;
     }
     delete zcomp_;
-    delete logger_;
-    delete logstrm_;
+    delete stdlogger_;
+    delete stdlogstrm_;
     delete db_;
     type_ = TYPEVOID;
     db_ = NULL;
-    logstrm_ = NULL;
-    logger_ = NULL;
+    stdlogstrm_ = NULL;
+    stdlogger_ = NULL;
     zcomp_ = NULL;
     return !err;
   }
@@ -719,7 +777,7 @@ public:
                    ProgressChecker* checker = NULL) {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_->synchronize(hard, proc, checker);
@@ -733,7 +791,7 @@ public:
   bool begin_transaction(bool hard = false) {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_->begin_transaction(hard);
@@ -747,7 +805,7 @@ public:
   bool begin_transaction_try(bool hard = false) {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_->begin_transaction_try(hard);
@@ -760,7 +818,7 @@ public:
   bool end_transaction(bool commit = true) {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_->end_transaction(commit);
@@ -772,7 +830,7 @@ public:
   bool clear() {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_->clear();
@@ -784,7 +842,7 @@ public:
   int64_t count() {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return db_->count();
@@ -796,7 +854,7 @@ public:
   int64_t size() {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return -1;
     }
     return db_->size();
@@ -808,7 +866,7 @@ public:
   std::string path() {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return "";
     }
     return db_->path();
@@ -821,7 +879,7 @@ public:
   bool status(std::map<std::string, std::string>* strmap) {
     _assert_(strmap);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     return db_->status(strmap);
@@ -833,7 +891,7 @@ public:
   BasicDB* reveal_inner_db() {
     _assert_(true);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return NULL;
     }
     return db_;
@@ -852,7 +910,7 @@ public:
              ProgressChecker* checker = NULL) {
     _assert_(srcary && srcnum <= MEMMAXSIZ);
     if (type_ == TYPEVOID) {
-      set_error(Error::INVALID, "not opened");
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
     bool err = false;
@@ -893,7 +951,7 @@ public:
       }
     }
     if (checker && !checker->check("merge", "beginning", 0, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       err = true;
     }
     int64_t curcnt = 0;
@@ -929,13 +987,13 @@ public:
       }
       curcnt++;
       if (checker && !checker->check("merge", "processing", curcnt, allcnt)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         err = true;
         break;
       }
     }
     if (checker && !checker->check("merge", "ending", -1, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       err = true;
     }
     while (!lines.empty()) {
@@ -955,6 +1013,24 @@ public:
   Cursor* cursor() {
     _assert_(true);
     return new Cursor(this);
+  }
+  /**
+   * Set the internal logger.
+   * @param logger the logger object.
+   * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
+   * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
+   * error.
+   * @return true on success, or false on failure.
+   */
+  bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) {
+    _assert_(logger);
+    if (type_ != TYPEVOID) {
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
+      return false;
+    }
+    logger_ = logger;
+    logkinds_ = kinds;
+    return true;
   }
 private:
   /**
@@ -1008,10 +1084,14 @@ private:
   BasicDB* db_;
   /** The last happened error. */
   Error error_;
-  /** The internal log file. */
-  std::ostream* logstrm_;
+  /** The standard log stream. */
+  std::ostream* stdlogstrm_;
+  /** The standard logger. */
+  Logger* stdlogger_;
   /** The internal logger. */
   Logger* logger_;
+  /** The kinds of logged messages. */
+  uint32_t logkinds_;
   /** The custom compressor. */
   Compressor* zcomp_;
 };

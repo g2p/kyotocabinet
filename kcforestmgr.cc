@@ -125,6 +125,7 @@ static void dberrprint(kc::BasicDB* db, const char* info) {
 
 // parse arguments of create command
 static int32_t runcreate(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   int32_t oflags = 0;
   int32_t opts = 0;
@@ -132,8 +133,10 @@ static int32_t runcreate(int argc, char** argv) {
   int32_t psiz = -1;
   kc::Comparator* rcomp = NULL;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-otr")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-otr")) {
         oflags |= kc::ForestDB::OTRUNCATE;
       } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
@@ -155,6 +158,7 @@ static int32_t runcreate(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else {
       usage();
@@ -168,12 +172,15 @@ static int32_t runcreate(int argc, char** argv) {
 
 // parse arguments of inform command
 static int32_t runinform(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   int32_t oflags = 0;
   bool st = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::ForestDB::OTRYLOCK;
@@ -185,6 +192,7 @@ static int32_t runinform(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else {
       usage();
@@ -198,6 +206,7 @@ static int32_t runinform(int argc, char** argv) {
 
 // parse arguments of set command
 static int32_t runset(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* kstr = NULL;
   const char* vstr = NULL;
@@ -205,8 +214,10 @@ static int32_t runset(int argc, char** argv) {
   int32_t mode = 0;
   bool sx = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::ForestDB::OTRYLOCK;
@@ -228,6 +239,7 @@ static int32_t runset(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!kstr) {
       kstr = argv[i];
@@ -262,13 +274,16 @@ static int32_t runset(int argc, char** argv) {
 
 // parse arguments of remove command
 static int32_t runremove(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* kstr = NULL;
   int32_t oflags = 0;
   bool sx = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::ForestDB::OTRYLOCK;
@@ -280,6 +295,7 @@ static int32_t runremove(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!kstr) {
       kstr = argv[i];
@@ -305,6 +321,7 @@ static int32_t runremove(int argc, char** argv) {
 
 // parse arguments of get command
 static int32_t runget(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* kstr = NULL;
   int32_t oflags = 0;
@@ -312,8 +329,10 @@ static int32_t runget(int argc, char** argv) {
   bool px = false;
   bool pz = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::ForestDB::OTRYLOCK;
@@ -329,6 +348,7 @@ static int32_t runget(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!kstr) {
       kstr = argv[i];
@@ -354,6 +374,7 @@ static int32_t runget(int argc, char** argv) {
 
 // parse arguments of list command
 static int32_t runlist(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* kstr = NULL;
   int32_t oflags = 0;
@@ -363,8 +384,10 @@ static int32_t runlist(int argc, char** argv) {
   bool pv = false;
   bool px = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::ForestDB::OTRYLOCK;
@@ -385,6 +408,7 @@ static int32_t runlist(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!kstr) {
       kstr = argv[i];
@@ -414,13 +438,16 @@ static int32_t runlist(int argc, char** argv) {
 
 // parse arguments of import command
 static int32_t runimport(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* file = NULL;
   int32_t oflags = 0;
   bool sx = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::ForestDB::OTRYLOCK;
@@ -432,6 +459,7 @@ static int32_t runimport(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!file) {
       file = argv[i];
@@ -447,12 +475,15 @@ static int32_t runimport(int argc, char** argv) {
 
 // parse arguments of copy command
 static int32_t runcopy(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* file = NULL;
   int32_t oflags = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::ForestDB::OTRYLOCK;
@@ -462,6 +493,7 @@ static int32_t runcopy(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!file) {
       file = argv[i];
@@ -477,12 +509,15 @@ static int32_t runcopy(int argc, char** argv) {
 
 // parse arguments of dump command
 static int32_t rundump(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* file = NULL;
   int32_t oflags = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::ForestDB::OTRYLOCK;
@@ -492,6 +527,7 @@ static int32_t rundump(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!file) {
       file = argv[i];
@@ -507,12 +543,15 @@ static int32_t rundump(int argc, char** argv) {
 
 // parse arguments of load command
 static int32_t runload(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* file = NULL;
   int32_t oflags = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-otr")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-otr")) {
         oflags |= kc::ForestDB::OTRUNCATE;
       } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
@@ -524,6 +563,7 @@ static int32_t runload(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!file) {
       file = argv[i];
@@ -539,11 +579,14 @@ static int32_t runload(int argc, char** argv) {
 
 // parse arguments of check command
 static int32_t runcheck(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   int32_t oflags = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::ForestDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::ForestDB::OTRYLOCK;
@@ -553,6 +596,7 @@ static int32_t runcheck(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else {
       usage();
@@ -668,6 +712,9 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
       int64_t size = kc::atoi(status["size"].c_str());
       std::string sizestr = unitnumstrbyte(size);
       iprintf("size: %lld (%S)\n", size, &sizestr);
+    } else {
+      dberrprint(&db, "DB::status failed");
+      err = true;
     }
   } else {
     uint8_t flags = db.flags();
@@ -738,9 +785,9 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
       break;
     }
     case 'd': {
-      double onum = db.increment(kbuf, ksiz, kc::atof(vbuf));
+      double onum = db.increment_double(kbuf, ksiz, kc::atof(vbuf));
       if (kc::chknan(onum)) {
-        dberrprint(&db, "DB::increment failed");
+        dberrprint(&db, "DB::increment_double failed");
         err = true;
       } else {
         iprintf("%f\n", onum);
@@ -963,6 +1010,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
 // perform copy command
 static int32_t proccopy(const char* path, const char* file, int32_t oflags) {
   kc::ForestDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::ForestDB::OREADER | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;

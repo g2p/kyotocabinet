@@ -123,7 +123,7 @@ module kyotocabinet {
     boolean replace(in string key, in string value);
     boolean append(in string key, in string value);
     long increment(in string key, in long num);
-    double increment_(in string key, in double num);
+    double increment_double(in string key, in double num);
     boolean cas(in string key, in string oval, in string nval);
     boolean remove(in string key);
     string get(in string key);

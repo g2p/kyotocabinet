@@ -44,8 +44,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to the current record.  <a href="#af19b3472aeec03686a074dae416c8ed3"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a4d1ff14d0a9035df80ea2f9960fe96b2">set_value</a> (const char *vbuf, size_t vsiz, bool step=false)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the value of the current record.  <a href="#a4d1ff14d0a9035df80ea2f9960fe96b2"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#aef0211f86ab196b4ef8d1d0730be1e4e">set_value</a> (const std::string &amp;value, bool step=false)=0</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the value of the current record.  <a href="#aef0211f86ab196b4ef8d1d0730be1e4e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a1c740a07c7f15893bf5933cd6bd5e036">set_value_str</a> (const std::string &amp;value, bool step=false)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the value of the current record.  <a href="#a1c740a07c7f15893bf5933cd6bd5e036"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a96259c03f1caeb5b475d49a87bde8efb">remove</a> ()=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove the current record.  <a href="#a96259c03f1caeb5b475d49a87bde8efb"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#aec52b1f02b71222f90c5e1dcaf6f38d7">get_key</a> (size_t *sp, bool step=false)=0</td></tr>
@@ -197,12 +197,12 @@ std::string &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="
 
 </div>
 </div>
-<a class="anchor" id="aef0211f86ab196b4ef8d1d0730be1e4e"></a><!-- doxytag: member="kyotocabinet::DB::Cursor::set_value" ref="aef0211f86ab196b4ef8d1d0730be1e4e" args="(const std::string &amp;value, bool step=false)=0" -->
+<a class="anchor" id="a1c740a07c7f15893bf5933cd6bd5e036"></a><!-- doxytag: member="kyotocabinet::DB::Cursor::set_value_str" ref="a1c740a07c7f15893bf5933cd6bd5e036" args="(const std::string &amp;value, bool step=false)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual bool kyotocabinet::DB::Cursor::set_value </td>
+          <td class="memname">virtual bool kyotocabinet::DB::Cursor::set_value_str </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
           <td class="paramname"> <em>value</em>, </td>
@@ -225,7 +225,7 @@ std::string &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="
 <p>Set the value of the current record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a4d1ff14d0a9035df80ea2f9960fe96b2" title="Set the value of the current record.">Cursor::set_value</a> method except that the parameter is std::string. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#a5a5d49bc225efc66f5b9be8128f7f967">kyotocabinet::BasicDB::Cursor</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#ad75b1a84559d4b11077415e3c414166d">kyotocabinet::BasicDB::Cursor</a>.</p>
 
 </div>
 </div>
@@ -449,10 +449,14 @@ std::string &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="
 <div class="memdoc">
 
 <p>Get a pair of the key and the value of the current record. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>step</em>&nbsp;</td><td>true to move the cursor to the next record, or false for no move. </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the pointer to the pair of the key and the value, or NULL on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a556bb019a558a6279e4778361e889289" title="Get a pair of the key and the value of the current record.">Cursor::get</a> method except that the return value is std::pair. The return value should be deleted explicitly by the caller. </dd>
-<dd>
-If the cursor is invalidated, NULL is returned. The return value should be deleted explicitly by the caller. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>If the cursor is invalidated, NULL is returned. The return value should be deleted explicitly by the caller. </dd></dl>
 
 <p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#aa097a5a1bd57f21c43314b3cc7cf7ae4">kyotocabinet::BasicDB::Cursor</a>.</p>
 
@@ -696,7 +700,7 @@ If the cursor is invalidated, NULL is returned. The return value should be delet
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Tue Sep 14 17:39:05 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Sep 29 09:36:00 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

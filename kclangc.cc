@@ -319,7 +319,7 @@ int64_t kcdbincrint(KCDB* db, const char* kbuf, size_t ksiz, int64_t num) {
 double kcdbincrdouble(KCDB* db, const char* kbuf, size_t ksiz, double num) {
   _assert_(db && kbuf && ksiz <= MEMMAXSIZ);
   PolyDB* pdb = (PolyDB*)db;
-  return pdb->increment(kbuf, ksiz, num);
+  return pdb->increment_double(kbuf, ksiz, num);
 }
 
 

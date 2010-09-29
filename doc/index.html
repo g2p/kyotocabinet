@@ -17,7 +17,7 @@
 <link rel="icon" href="icon16.png" />
 <link rev="made" href="mailto:info@fallabs.com" />
 <title>Kyoto Cabinet: a straightforward implementation of DBM</title>
-<script type="text/javascript">function startup(){
+<script type="text/javascript">function startup() {
   if (!navigator) return;
   var lang = navigator.language;
   if (!lang) lang = navigator.browserLanguage;
@@ -26,16 +26,25 @@
   var elem = document.getElementById("headline");
   if (!elem) return;
   var now = new Date();
-  if((now.getFullYear() + now.getMonth() + now.getDate() + now.getHours()) % 4 == 0){
-    var label = "京都収納棚";
+  if ((now.getFullYear() + now.getMonth() + now.getDate() + now.getHours()) % 4 == 0) {
+    var label = "";
+    switch ((now.getDate() + now.getMinutes()) % 12) {
+      case 0: label = "宇宙最強絶対無敵電光石火疾風迅雷資料基盤管理器"; break;
+      case 3: label = "森羅万象古今東西老若男女空前絶後資料基盤管理器"; break;
+      case 6: label = "とある科学の超資料基盤管理器"; break;
+      case 9: label = "こちら葛飾区資料基盤管理器"; break;
+    }
     var text = "DBMの率直な壱実装";
-    var num = Math.floor(now.getTime() / 10000);
-    if (num % 2 == 0) {
-      num = Math.floor(num / 2);
-      var texts = [ "丸竹夷二押御池", "姉三六角蛸錦", "四綾仏高松万五条",
-                    "雪駄せったちゃらちゃら魚の棚", "六条三哲とおりすぎ",
-                    "七条こえれば八九条", "十条東寺でとどめさす" ];
-      text = texts[num%texts.length];
+    if (label.length == 0) {
+      label = "京都収納棚";
+      var num = Math.floor(now.getTime() / 10000);
+      if (num % 2 == 0) {
+        num = Math.floor(num / 2);
+        var texts = [ "丸竹夷二押御池", "姉三六角蛸錦", "四綾仏高松万五条",
+                      "雪駄せったちゃらちゃら魚の棚", "六条三哲とおりすぎ",
+                      "七条こえれば八九条", "十条東寺でとどめさす" ];
+        text = texts[num%texts.length];
+      }
     }
     elem.firstChild.nodeValue = label + ": " + text;
   }

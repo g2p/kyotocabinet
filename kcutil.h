@@ -1280,17 +1280,17 @@ inline size_t strsplit(const std::string& str, char delim, std::vector<std::stri
   _assert_(elems);
   elems->clear();
   std::string::const_iterator it = str.begin();
-  std::string field;
+  std::string::const_iterator pv = it;
   while (it != str.end()) {
     if (*it == delim) {
-      elems->push_back(field);
-      field.clear();
-    } else {
-      field.append(1, *it);
+      std::string col(pv, it);
+      elems->push_back(col);
+      pv = it + 1;
     }
     it++;
   }
-  elems->push_back(field);
+  std::string col(pv, it);
+  elems->push_back(col);
   return elems->size();
 }
 

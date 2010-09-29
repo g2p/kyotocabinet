@@ -28,6 +28,8 @@ namespace kyotocabinet {                 // common namespace
  */
 class File {
 public:
+  struct Status;
+public:
   /** Path delimiter character. */
   static const char PATHCHR;
   /** Path delimiter string. */

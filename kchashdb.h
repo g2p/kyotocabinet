@@ -66,6 +66,7 @@ const uint8_t HDBPADMAGIC = 0xee;        ///< magic data for padding
 const uint8_t HDBFBMAGIC = 0xdd;         ///< magic data for free block
 const int32_t HDBDFRGMAX = 512;          ///< maximum unit of auto defragmentation
 const int32_t HDBDFRGCEF = 2;            ///< coefficient of auto defragmentation
+const int64_t HDBSLVGWIDTH = 1LL << 20;  ///< checking width for record salvage
 const char* HDBTMPPATHEXT = "tmpkch";    ///< extension of the temporary file
 }
 
@@ -81,6 +82,7 @@ const char* HDBTMPPATHEXT = "tmpkch";    ///< extension of the temporary file
  * time.
  */
 class HashDB : public BasicDB {
+  friend class PlantDB<HashDB, BasicDB::TYPETREE>;
 public:
   class Cursor;
 private:
@@ -88,8 +90,6 @@ private:
   struct FreeBlock;
   struct FreeBlockComparator;
   class Repeater;
-  class Transactor;
-  friend class PlantDB<HashDB, BasicDB::TYPETREE>;
   /** An alias of set of free blocks. */
   typedef std::set<FreeBlock> FBP;
   /** An alias of list of cursors. */
@@ -331,10 +331,10 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      db_->set_error(Error::NOIMPL, "not implemented");
+      db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
       return false;
     }
     /**
@@ -345,10 +345,10 @@ public:
       _assert_(kbuf && ksiz <= MEMMAXSIZ);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      db_->set_error(Error::NOIMPL, "not implemented");
+      db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
       return false;
     }
     /**
@@ -359,10 +359,10 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      db_->set_error(Error::NOIMPL, "not implemented");
+      db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
       return false;
     }
     /**
@@ -398,10 +398,10 @@ public:
       _assert_(true);
       ScopedSpinRWLock lock(&db_->mlock_, true);
       if (db_->omode_ == 0) {
-        db_->set_error(Error::INVALID, "not opened");
+        db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      db_->set_error(Error::NOIMPL, "not implemented");
+      db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
       return false;
     }
     /**
@@ -483,7 +483,7 @@ public:
     msiz_(HDBDEFMSIZ), dfunit_(0), embcomp_(&ZLIBRAWCOMP),
     align_(0), fbpnum_(0), width_(0), linear_(false),
     comp_(NULL), rhsiz_(0), boff_(0), roff_(0), dfcur_(0), frgcnt_(0),
-    tran_(false), trhard_(false), trfbp_() {
+    tran_(false), trhard_(false), trfbp_(), trcount_(0), trsize_(0) {
     _assert_(true);
   }
   /**
@@ -582,13 +582,23 @@ public:
   }
   /**
    * Set the error information.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
    * @param code an error code.
    * @param message a supplement message.
    */
-  void set_error(Error::Code code, const char* message) {
-    _assert_(message);
+  void set_error(const char* file, int32_t line, const char* func,
+                 Error::Code code, const char* message) {
+    _assert_(file && line > 0 && func && message);
     error_->set(code, message);
     if (code == Error::BROKEN || code == Error::SYSTEM) flags_ |= FFATAL;
+    if (logger_) {
+      Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
+        Logger::ERROR : Logger::INFO;
+      if (kind & logkinds_)
+        report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
+    }
   }
   /**
    * Open a database file.
@@ -680,10 +690,25 @@ public:
       file_.close();
       return false;
     }
-    if (((flags_ & FOPEN) || (flags_ & FFATAL)) && !(mode & ONOREPAIR) && !(mode & ONOLOCK) &&
-        !reorganize_file(path)) {
-      file_.close();
-      return false;
+    if (((flags_ & FOPEN) || (flags_ & FFATAL)) && !(mode & ONOREPAIR) && !(mode & ONOLOCK)) {
+      if (!reorganize_file(path)) {
+        file_.close();
+        return false;
+      }
+      if (!file_.close()) {
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
+        return false;
+      }
+      if (!file_.open(path, fmode, msiz_)) {
+        set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
+        return false;
+      }
+      if (!load_meta()) {
+        file_.close();
+        return false;
+      }
+      calc_meta();
+      reorg_ = true;
     }
     if (type_ == 0 || apow_ > HDBMAXAPOW || fpow_ > HDBMAXFPOW ||
         bnum_ < 1 || count_ < 0 || lsiz_ < roff_) {
@@ -1012,6 +1037,7 @@ public:
    * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
    * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
    * error.
+   * @return true on success, or false on failure.
    */
   bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) {
     _assert_(logger);
@@ -1205,25 +1231,6 @@ public:
     return flags_;
   }
 protected:
-  /**
-   * Set the error information.
-   * @param file the file name of the program source code.
-   * @param line the line number of the program source code.
-   * @param func the function name of the program source code.
-   * @param code an error code.
-   * @param message a supplement message.
-   */
-  void set_error(const char* file, int32_t line, const char* func,
-                 Error::Code code, const char* message) {
-    _assert_(file && line > 0 && func && message);
-    set_error(code, message);
-    if (logger_) {
-      Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
-        Logger::ERROR : Logger::INFO;
-      if (kind & logkinds_)
-        report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
-    }
-  }
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.
@@ -1821,7 +1828,7 @@ private:
     _assert_(visitor);
     int64_t allcnt = count_;
     if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       return false;
     }
     int64_t off = roff_;
@@ -1909,13 +1916,13 @@ private:
         off += rec.rsiz;
         curcnt++;
         if (checker && !checker->check("iterate", "processing", curcnt, allcnt)) {
-          set_error(Error::LOGIC, "checker failed");
+          set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
           return false;
         }
       }
     }
     if (checker && !checker->check("iterate", "ending", -1, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       return false;
     }
     return true;
@@ -1933,17 +1940,17 @@ private:
     bool err = false;
     if (writer_) {
       if (checker && !checker->check("synchronize", "dumping the free blocks", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         return false;
       }
       if (hard && !dump_free_blocks()) err = true;
       if (checker && !checker->check("synchronize", "dumping the meta data", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         return false;
       }
       if (!dump_meta()) err = true;
       if (checker && !checker->check("synchronize", "synchronizing the file", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         return false;
       }
       if (!file_.synchronize(hard)) {
@@ -1953,7 +1960,7 @@ private:
     }
     if (proc) {
       if (checker && !checker->check("synchronize", "running the post processor", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         return false;
       }
       if (!proc->process(path_, count_, lsiz_)) {
@@ -2114,6 +2121,8 @@ private:
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
+    trcount_ = count_;
+    trsize_ = lsiz_;
     return true;
   }
   /**
@@ -2133,6 +2142,8 @@ private:
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
+    trcount_ = count_;
+    trsize_ = lsiz_;
     return true;
   }
   /**
@@ -2187,6 +2198,8 @@ private:
     lsiz_ = ntoh64(num);
     psiz_ = lsiz_;
     std::memcpy(opaque_, head + HDBMOFFOPAQUE, sizeof(opaque_));
+    trcount_ = count_;
+    trsize_ = lsiz_;
     return true;
   }
   /**
@@ -2239,54 +2252,8 @@ private:
       psiz_ = lsiz_;
       if (copy_records(&db)) {
         if (db.close()) {
-          File src;
-          if (src.open(npath, File::OREADER | File::ONOLOCK, 0)) {
-            File* dest = writer_ ? &file_ : new File();
-            if (dest == &file_ || dest->open(path, File::OWRITER | File::ONOLOCK, 0)) {
-              int64_t off = 0;
-              int64_t size = src.size();
-              char buf[HDBIOBUFSIZ*8];
-              while (off < size) {
-                int64_t psiz = size - off;
-                if (psiz > (int64_t)sizeof(buf)) psiz = sizeof(buf);
-                if (src.read(off, buf, psiz)) {
-                  if (!dest->write(off, buf, psiz)) {
-                    set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
-                    err = true;
-                    break;
-                  }
-                } else {
-                  set_error(_KCCODELINE_, Error::SYSTEM, src.error());
-                  err = true;
-                  break;
-                }
-                off += psiz;
-              }
-              if (!dest->truncate(size)) {
-                set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
-                err = true;
-              }
-              if (dest != &file_) {
-                if (!dest->close()) {
-                  set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
-                  err = true;
-                }
-                if (!file_.refresh()) {
-                  set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
-                  err = true;
-                }
-              }
-              if (!load_meta()) err = true;
-              calc_meta();
-              reorg_ = true;
-              if (dest != &file_) delete dest;
-            } else {
-              set_error(_KCCODELINE_, Error::SYSTEM, dest->error());
-              err = true;
-            }
-            src.close();
-          } else {
-            set_error(_KCCODELINE_, Error::SYSTEM, src.error());
+          if (!File::rename(npath, path)) {
+            set_error(_KCCODELINE_, Error::SYSTEM, "renaming the destination failed");
             err = true;
           }
         } else {
@@ -2315,41 +2282,91 @@ private:
     logger_ = NULL;
     int64_t off = roff_;
     int64_t end = psiz_;
-    Record rec;
-    char rbuf[HDBRECBUFSIZ];
+    Record rec, nrec;
+    char rbuf[HDBRECBUFSIZ], nbuf[HDBRECBUFSIZ];
     while (off > 0 && off < end) {
       rec.off = off;
-      if (!read_record(&rec, rbuf)) break;
+      if (!read_record(&rec, rbuf)) {
+        int64_t checkend = off + HDBSLVGWIDTH;
+        if (checkend > end - (int64_t)rhsiz_) checkend = end - rhsiz_;
+        bool hit = false;
+        for (off += rhsiz_; off < checkend; off++) {
+          rec.off = off;
+          if (!read_record(&rec, rbuf)) continue;
+          if ((int64_t)rec.rsiz > HDBSLVGWIDTH || rec.off + (int64_t)rec.rsiz >= checkend) {
+            delete[] rec.bbuf;
+            continue;
+          }
+          if (rec.psiz != UINT16_MAX && !rec.vbuf && !read_record_body(&rec)) {
+            delete[] rec.bbuf;
+            continue;
+          }
+          delete[] rec.bbuf;
+          nrec.off = off + rec.rsiz;
+          if (!read_record(&nrec, nbuf)) continue;
+          if ((int64_t)nrec.rsiz > HDBSLVGWIDTH || nrec.off + (int64_t)nrec.rsiz >= checkend) {
+            delete[] nrec.bbuf;
+            continue;
+          }
+          if (nrec.psiz != UINT16_MAX && !nrec.vbuf && !read_record_body(&nrec)) {
+            delete[] nrec.bbuf;
+            continue;
+          }
+          delete[] nrec.bbuf;
+          hit = true;
+          break;
+        }
+        if (!hit || !read_record(&rec, rbuf)) break;
+      }
       if (rec.psiz == UINT16_MAX) {
         off += rec.rsiz;
-      } else {
-        if (!rec.vbuf && !read_record_body(&rec)) {
-          delete[] rec.bbuf;
-          break;
-        }
-        const char* vbuf = rec.vbuf;
-        size_t vsiz = rec.vsiz;
-        char* zbuf = NULL;
-        size_t zsiz = 0;
-        if (comp_) {
-          zbuf = comp_->decompress(vbuf, vsiz, &zsiz);
-          if (!zbuf) {
-            set_error(_KCCODELINE_, Error::SYSTEM, "data decompression failed");
-            delete[] rec.bbuf;
-            break;
+        continue;
+      }
+      if (!rec.vbuf && !read_record_body(&rec)) {
+        delete[] rec.bbuf;
+        bool hit = false;
+        if (rec.rsiz <= MEMMAXSIZ && off + (int64_t)rec.rsiz < end) {
+          nrec.off = off + rec.rsiz;
+          if (read_record(&nrec, nbuf)) {
+            if (nrec.rsiz > MEMMAXSIZ || nrec.off + (int64_t)nrec.rsiz >= end) {
+              delete[] nrec.bbuf;
+            } else if (nrec.psiz != UINT16_MAX && !nrec.vbuf && !read_record_body(&nrec)) {
+              delete[] nrec.bbuf;
+            } else {
+              delete[] nrec.bbuf;
+              hit = true;
+            }
           }
-          vbuf = zbuf;
-          vsiz = zsiz;
         }
-        if (!dest->set(rec.kbuf, rec.ksiz, vbuf, vsiz)) {
-          delete[] zbuf;
-          delete[] rec.bbuf;
+        if (hit) {
+          off += rec.rsiz;
+          continue;
+        } else {
           break;
         }
+      }
+      const char* vbuf = rec.vbuf;
+      size_t vsiz = rec.vsiz;
+      char* zbuf = NULL;
+      size_t zsiz = 0;
+      if (comp_) {
+        zbuf = comp_->decompress(vbuf, vsiz, &zsiz);
+        if (!zbuf) {
+          delete[] rec.bbuf;
+          off += rec.rsiz;
+          continue;
+        }
+        vbuf = zbuf;
+        vsiz = zsiz;
+      }
+      if (!dest->set(rec.kbuf, rec.ksiz, vbuf, vsiz)) {
         delete[] zbuf;
         delete[] rec.bbuf;
-        off += rec.rsiz;
+        break;
       }
+      delete[] zbuf;
+      delete[] rec.bbuf;
+      off += rec.rsiz;
     }
     logger_ = logger;
     return true;
@@ -2612,8 +2629,15 @@ private:
           }
         }
       }
-    } else if (!read_record_body(rec)) {
-      return false;
+    } else {
+      if (rec->off + (int64_t)rec->rsiz > psiz_) {
+        set_error(_KCCODELINE_, Error::BROKEN, "invalid length of a record");
+        report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld"
+               " snum=%04X", (long long)psiz_, (long long)rec->off, (long long)rec->rsiz,
+               (long long)file_.size(), snum);
+        return false;
+      }
+      if (!read_record_body(rec)) return false;
     }
     return true;
   }
@@ -3145,7 +3169,7 @@ private:
    */
   bool begin_transaction_impl() {
     _assert_(true);
-    if (!dump_meta()) return false;
+    if ((count_ != trcount_ || lsiz_ != trsize_) && !dump_meta()) return false;
     if (!file_.begin_transaction(trhard_, boff_)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
@@ -3193,7 +3217,7 @@ private:
   bool commit_transaction() {
     _assert_(true);
     bool err = false;
-    if (!dump_meta()) err = true;
+    if ((count_ != trcount_ || lsiz_ != trsize_) && !dump_auto_meta()) err = true;
     if (!file_.end_transaction(true)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
@@ -3208,7 +3232,7 @@ private:
   bool commit_auto_transaction() {
     _assert_(true);
     bool err = false;
-    if (!dump_auto_meta()) err = true;
+    if ((count_ != trcount_ || lsiz_ != trsize_) && !dump_auto_meta()) err = true;
     if (!file_.end_transaction(true)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
@@ -3348,6 +3372,10 @@ private:
   bool trhard_;
   /** The escaped free block pool for transaction. */
   FBP trfbp_;
+  /** The count history for transaction. */
+  int64_t trcount_;
+  /** The size history for transaction. */
+  int64_t trsize_;
 };
 
 

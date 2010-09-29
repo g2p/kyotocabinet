@@ -23,12 +23,12 @@ const char* g_progname;                  // program name
 // function prototypes
 int main(int argc, char** argv);
 static void usage();
-static int runhex(int argc, char** argv);
-static int runenc(int argc, char** argv);
-static int runciph(int argc, char** argv);
-static int runcomp(int argc, char** argv);
-static int runhash(int argc, char** argv);
-static int runconf(int argc, char** argv);
+static int32_t runhex(int argc, char** argv);
+static int32_t runenc(int argc, char** argv);
+static int32_t runciph(int argc, char** argv);
+static int32_t runcomp(int argc, char** argv);
+static int32_t runhash(int argc, char** argv);
+static int32_t runconf(int argc, char** argv);
 static int32_t prochex(const char* file, bool dec);
 static int32_t procenc(const char* file, int32_t mode, bool dec);
 static int32_t procciph(const char* file, const char* key);
@@ -84,17 +84,21 @@ static void usage() {
 
 
 // parse arguments of hex command
-static int runhex(int argc, char** argv) {
+static int32_t runhex(int argc, char** argv) {
+  bool argbrk = false;
   const char* file = NULL;
   bool dec = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-d")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-d")) {
         dec = true;
       } else {
         usage();
       }
     } else if (!file) {
+      argbrk = true;
       file = argv[i];
     } else {
       usage();
@@ -106,13 +110,16 @@ static int runhex(int argc, char** argv) {
 
 
 // parse arguments of enc command
-static int runenc(int argc, char** argv) {
+static int32_t runenc(int argc, char** argv) {
+  bool argbrk = false;
   const char* file = NULL;
   int32_t mode = 0;
   bool dec = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-hex")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-hex")) {
         mode = 1;
       } else if (!std::strcmp(argv[i], "-url")) {
         mode = 2;
@@ -124,6 +131,7 @@ static int runenc(int argc, char** argv) {
         usage();
       }
     } else if (!file) {
+      argbrk = true;
       file = argv[i];
     } else {
       usage();
@@ -135,18 +143,22 @@ static int runenc(int argc, char** argv) {
 
 
 // parse arguments of ciph command
-static int runciph(int argc, char** argv) {
+static int32_t runciph(int argc, char** argv) {
+  bool argbrk = false;
   const char* file = NULL;
   const char* key = "";
   for (int32_t i = 2; i < argc; i++) {
-    if (argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-key")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-key")) {
         if (++i >= argc) usage();
         key = argv[i];
       } else {
         usage();
       }
     } else if (!file) {
+      argbrk = true;
       file = argv[i];
     } else {
       usage();
@@ -158,13 +170,16 @@ static int runciph(int argc, char** argv) {
 
 
 // parse arguments of comp command
-static int runcomp(int argc, char** argv) {
+static int32_t runcomp(int argc, char** argv) {
+  bool argbrk = false;
   const char* file = NULL;
   int32_t mode = 0;
   bool dec = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-def")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-def")) {
         mode = 1;
       } else if (!std::strcmp(argv[i], "-gz")) {
         mode = 2;
@@ -178,6 +193,7 @@ static int runcomp(int argc, char** argv) {
         usage();
       }
     } else if (!file) {
+      argbrk = true;
       file = argv[i];
     } else {
       usage();
@@ -189,12 +205,15 @@ static int runcomp(int argc, char** argv) {
 
 
 // parse arguments of hash command
-static int runhash(int argc, char** argv) {
+static int32_t runhash(int argc, char** argv) {
+  bool argbrk = false;
   const char* file = NULL;
   int32_t mode = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-fnv")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-fnv")) {
         mode = 1;
       } else if (!std::strcmp(argv[i], "-path")) {
         mode = 2;
@@ -204,6 +223,7 @@ static int runhash(int argc, char** argv) {
         usage();
       }
     } else if (!file) {
+      argbrk = true;
       file = argv[i];
     } else {
       usage();
@@ -215,11 +235,14 @@ static int runhash(int argc, char** argv) {
 
 
 // parse arguments of conf command
-static int runconf(int argc, char** argv) {
+static int32_t runconf(int argc, char** argv) {
+  bool argbrk = false;
   int32_t mode = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-v")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-v")) {
         mode = 'v';
       } else if (!std::strcmp(argv[i], "-i")) {
         mode = 'i';
@@ -231,6 +254,7 @@ static int runconf(int argc, char** argv) {
         usage();
       }
     } else {
+      argbrk = true;
       usage();
     }
   }

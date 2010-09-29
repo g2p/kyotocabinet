@@ -129,11 +129,14 @@ static void dberrprint(kc::BasicDB* db, const char* info) {
 
 // parse arguments of create command
 static int32_t runcreate(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   int32_t oflags = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-otr")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-otr")) {
         oflags |= kc::PolyDB::OTRUNCATE;
       } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
@@ -145,6 +148,7 @@ static int32_t runcreate(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else {
       usage();
@@ -158,12 +162,15 @@ static int32_t runcreate(int argc, char** argv) {
 
 // parse arguments of inform command
 static int32_t runinform(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   int32_t oflags = 0;
   bool st = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -175,6 +182,7 @@ static int32_t runinform(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else {
       usage();
@@ -188,6 +196,7 @@ static int32_t runinform(int argc, char** argv) {
 
 // parse arguments of set command
 static int32_t runset(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* kstr = NULL;
   const char* vstr = NULL;
@@ -195,8 +204,10 @@ static int32_t runset(int argc, char** argv) {
   int32_t mode = 0;
   bool sx = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -218,6 +229,7 @@ static int32_t runset(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!kstr) {
       kstr = argv[i];
@@ -252,13 +264,16 @@ static int32_t runset(int argc, char** argv) {
 
 // parse arguments of remove command
 static int32_t runremove(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* kstr = NULL;
   int32_t oflags = 0;
   bool sx = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -270,6 +285,7 @@ static int32_t runremove(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!kstr) {
       kstr = argv[i];
@@ -295,6 +311,7 @@ static int32_t runremove(int argc, char** argv) {
 
 // parse arguments of get command
 static int32_t runget(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* kstr = NULL;
   int32_t oflags = 0;
@@ -302,8 +319,10 @@ static int32_t runget(int argc, char** argv) {
   bool px = false;
   bool pz = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -319,6 +338,7 @@ static int32_t runget(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!kstr) {
       kstr = argv[i];
@@ -344,6 +364,7 @@ static int32_t runget(int argc, char** argv) {
 
 // parse arguments of list command
 static int32_t runlist(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* kstr = NULL;
   int32_t oflags = 0;
@@ -353,8 +374,10 @@ static int32_t runlist(int argc, char** argv) {
   bool pv = false;
   bool px = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -375,6 +398,7 @@ static int32_t runlist(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!kstr) {
       kstr = argv[i];
@@ -404,13 +428,16 @@ static int32_t runlist(int argc, char** argv) {
 
 // parse arguments of import command
 static int32_t runimport(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* file = NULL;
   int32_t oflags = 0;
   bool sx = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -422,6 +449,7 @@ static int32_t runimport(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!file) {
       file = argv[i];
@@ -437,12 +465,15 @@ static int32_t runimport(int argc, char** argv) {
 
 // parse arguments of copy command
 static int32_t runcopy(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* file = NULL;
   int32_t oflags = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -452,6 +483,7 @@ static int32_t runcopy(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!file) {
       file = argv[i];
@@ -467,12 +499,15 @@ static int32_t runcopy(int argc, char** argv) {
 
 // parse arguments of dump command
 static int32_t rundump(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* file = NULL;
   int32_t oflags = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -482,6 +517,7 @@ static int32_t rundump(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!file) {
       file = argv[i];
@@ -497,12 +533,15 @@ static int32_t rundump(int argc, char** argv) {
 
 // parse arguments of load command
 static int32_t runload(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* file = NULL;
   int32_t oflags = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-otr")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-otr")) {
         oflags |= kc::PolyDB::OTRUNCATE;
       } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
@@ -514,6 +553,7 @@ static int32_t runload(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!file) {
       file = argv[i];
@@ -529,13 +569,16 @@ static int32_t runload(int argc, char** argv) {
 
 // parse arguments of merge command
 static int32_t runmerge(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   int32_t oflags = 0;
   kc::PolyDB::MergeMode mode = kc::PolyDB::MSET;
   std::vector<std::string> srcpaths;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -551,6 +594,7 @@ static int32_t runmerge(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else {
       srcpaths.push_back(argv[i]);
@@ -564,11 +608,14 @@ static int32_t runmerge(int argc, char** argv) {
 
 // parse arguments of check command
 static int32_t runcheck(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   int32_t oflags = 0;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-onl")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
         oflags |= kc::PolyDB::ONOLOCK;
       } else if (!std::strcmp(argv[i], "-otl")) {
         oflags |= kc::PolyDB::OTRYLOCK;
@@ -578,6 +625,7 @@ static int32_t runcheck(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else {
       usage();
@@ -592,6 +640,7 @@ static int32_t runcheck(int argc, char** argv) {
 // perform create command
 static int32_t proccreate(const char* path, int32_t oflags) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OWRITER | kc::PolyDB::OCREATE | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -608,6 +657,7 @@ static int32_t proccreate(const char* path, int32_t oflags) {
 // perform inform command
 static int32_t procinform(const char* path, int32_t oflags, bool st) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OREADER | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -622,6 +672,9 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
         iprintf("%s: %s\n", it->first.c_str(), it->second.c_str());
         it++;
       }
+    } else {
+      dberrprint(&db, "DB::status failed");
+      err = true;
     }
   } else {
     iprintf("count: %lld\n", (long long)db.count());
@@ -639,6 +692,7 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
 static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
                        const char* vbuf, size_t vsiz, int32_t oflags, int32_t mode) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OWRITER | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -684,9 +738,9 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
       break;
     }
     case 'd': {
-      double onum = db.increment(kbuf, ksiz, kc::atof(vbuf));
+      double onum = db.increment_double(kbuf, ksiz, kc::atof(vbuf));
       if (kc::chknan(onum)) {
-        dberrprint(&db, "DB::increment failed");
+        dberrprint(&db, "DB::increment_double failed");
         err = true;
       } else {
         iprintf("%f\n", onum);
@@ -705,6 +759,7 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
 // perform remove command
 static int32_t procremove(const char* path, const char* kbuf, size_t ksiz, int32_t oflags) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OWRITER | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -726,6 +781,7 @@ static int32_t procremove(const char* path, const char* kbuf, size_t ksiz, int32
 static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
                        int32_t oflags, bool px, bool pz) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OREADER | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -753,6 +809,7 @@ static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
 static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t oflags,
                         bool des, int64_t max, bool pv, bool px) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OREADER | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -851,6 +908,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
     is = &ifs;
   }
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OWRITER | kc::PolyDB::OCREATE | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -905,6 +963,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
 // perform copy command
 static int32_t proccopy(const char* path, const char* file, int32_t oflags) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OREADER | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -928,6 +987,7 @@ static int32_t proccopy(const char* path, const char* file, int32_t oflags) {
 // perform dump command
 static int32_t procdump(const char* path, const char* file, int32_t oflags) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OREADER | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -958,6 +1018,7 @@ static int32_t procdump(const char* path, const char* file, int32_t oflags) {
 // perform load command
 static int32_t procload(const char* path, const char* file, int32_t oflags) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OWRITER | kc::PolyDB::OCREATE | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -992,6 +1053,7 @@ static int32_t procload(const char* path, const char* file, int32_t oflags) {
 static int32_t procmerge(const char* path, int32_t oflags, kc::PolyDB::MergeMode mode,
                          const std::vector<std::string>& srcpaths) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OWRITER | kc::PolyDB::OCREATE | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;
@@ -1040,6 +1102,7 @@ static int32_t procmerge(const char* path, int32_t oflags, kc::PolyDB::MergeMode
 // perform check command
 static int32_t proccheck(const char* path, int32_t oflags) {
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
   if (!db.open(path, kc::PolyDB::OREADER | oflags)) {
     dberrprint(&db, "DB::open failed");
     return 1;

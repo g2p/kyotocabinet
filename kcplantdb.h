@@ -79,7 +79,10 @@ private:
   struct RecordComparator;
   struct LeafNode;
   struct Link;
+  struct LinkComparator;
   struct InnerNode;
+  struct LeafSlot;
+  struct InnerSlot;
   /** An alias of array of records. */
   typedef std::vector<Record*> RecordArray;
   /** An alias of array of records. */
@@ -915,7 +918,8 @@ public:
     db_(), curs_(), apow_(PDBDEFAPOW), fpow_(PDBDEFFPOW), opts_(0), bnum_(PDBDEFBNUM),
     psiz_(PDBDEFPSIZ), pccap_(PDBDEFPCCAP),
     root_(0), first_(0), last_(0), lcnt_(0), icnt_(0), count_(0), cusage_(0),
-    lslots_(), islots_(), reccomp_(), linkcomp_(), tran_(false), trcnt_(0) {
+    lslots_(), islots_(), reccomp_(), linkcomp_(),
+    tran_(false), trclock_(0), trlcnt_(0), trcount_(0) {
     _assert_(true);
   }
   /**
@@ -1062,7 +1066,7 @@ public:
     }
     int64_t allcnt = count_;
     if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       return false;
     }
     bool err = false;
@@ -1110,7 +1114,7 @@ public:
         if (accept_impl(node, rec, visitor)) reorg = true;
         curcnt++;
         if (checker && !checker->check("iterate", "processing", curcnt, allcnt)) {
-          set_error(Error::LOGIC, "checker failed");
+          set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
           err = true;
           break;
         }
@@ -1152,7 +1156,7 @@ public:
       }
     }
     if (checker && !checker->check("iterate", "ending", -1, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       err = true;
     }
     if (atran && !commit_transaction()) err = true;
@@ -1169,12 +1173,16 @@ public:
   }
   /**
    * Set the error information.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
    * @param code an error code.
    * @param message a supplement message.
    */
-  void set_error(Error::Code code, const char* message) {
-    _assert_(message);
-    db_.set_error(code, message);
+  void set_error(const char* file, int32_t line, const char* func,
+                 Error::Code code, const char* message) {
+    _assert_(file && line > 0 && func && message);
+    db_.set_error(file, line, func, code, message);
   }
   /**
    * Open a database file.
@@ -1241,7 +1249,7 @@ public:
         mode |= OWRITER;
         if (!db_.open(path, mode)) return false;
       }
-      if (!reorganize_file()) return false;
+      if (!reorganize_file(mode)) return false;
     }
     if (writer_ && db_.count() < 1) {
       root_ = 0;
@@ -1288,7 +1296,7 @@ public:
     omode_ = mode;
     cusage_ = 0;
     tran_ = false;
-    trcnt_ = 0;
+    trclock_ = 0;
     return true;
   }
   /**
@@ -1354,13 +1362,13 @@ public:
     bool err = false;
     if (writer_) {
       if (checker && !checker->check("synchronize", "cleaning the leaf node cache", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         mlock_.unlock();
         return false;
       }
       if (!clean_leaf_cache()) err = true;
       if (checker && !checker->check("synchronize", "cleaning the inner node cache", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         mlock_.unlock();
         return false;
       }
@@ -1370,19 +1378,19 @@ public:
         mlock_.lock_writer();
       }
       if (checker && !checker->check("synchronize", "flushing the leaf node cache", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         mlock_.unlock();
         return false;
       }
       if (!flush_leaf_cache(true)) err = true;
       if (checker && !checker->check("synchronize", "flushing the inner node cache", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         mlock_.unlock();
         return false;
       }
       if (!flush_inner_cache(true)) err = true;
       if (checker && !checker->check("synchronize", "dumping the meta data", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         mlock_.unlock();
         return false;
       }
@@ -1631,6 +1639,7 @@ public:
    * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
    * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
    * error.
+   * @return true on success, or false on failure.
    */
   bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) {
     _assert_(logger);
@@ -1857,19 +1866,6 @@ public:
     return reccomp_.comp;
   }
 protected:
-  /**
-   * Set the error information.
-   * @param file the file name of the program source code.
-   * @param line the line number of the program source code.
-   * @param func the function name of the program source code.
-   * @param code an error code.
-   * @param message a supplement message.
-   */
-  void set_error(const char* file, int32_t line, const char* func,
-                 Error::Code code, const char* message) {
-    _assert_(file && line > 0 && func && message);
-    db_.set_error(file, line, func, code, message);
-  }
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.
@@ -2929,9 +2925,11 @@ private:
     num = hton64(bnum_);
     std::memcpy(wp, &num, sizeof(num));
     wp += sizeof(num);
-    std::memcpy(wp, "\nBoofy!\n", sizeof(num));
+    std::memcpy(wp, "\x0a\x42\x6f\x6f\x66\x79\x21\x0a", sizeof(num));
     wp += sizeof(num);
     if (!db_.set(PDBMETAKEY, sizeof(PDBMETAKEY) - 1, head, sizeof(head))) return false;
+    trlcnt_ = lcnt_;
+    trcount_ = count_;
     return true;
   }
   /**
@@ -2985,6 +2983,8 @@ private:
     std::memcpy(&num, rp, sizeof(num));
     bnum_ = ntoh64(num);
     rp += sizeof(num);
+    trlcnt_ = lcnt_;
+    trcount_ = count_;
     return true;
   }
   /**
@@ -3177,12 +3177,14 @@ private:
   }
   /**
    * Reorganize the database file.
+   * @param mode the connection mode of the internal database.
    * @return true on success, or false on failure.
    */
-  bool reorganize_file() {
+  bool reorganize_file(uint32_t mode) {
     _assert_(true);
     if (!load_meta()) return false;
-    const std::string& npath = db_.path() + File::EXTCHR + PDBTMPPATHEXT;
+    const std::string& path = db_.path();
+    const std::string& npath = path + File::EXTCHR + PDBTMPPATHEXT;
     PlantDB tdb;
     tdb.tune_comparator(reccomp_.comp);
     if (!tdb.open(npath, OWRITER | OCREATE | OTRUNCATE)) {
@@ -3230,29 +3232,58 @@ private:
       set_error(_KCCODELINE_, tdb.error().code(), "opening the destination failed");
       err = true;
     }
-    BASEDB hdb;
-    if (!err && hdb.open(npath, OREADER)) {
-      if (!db_.clear()) err = true;
-      cur = hdb.cursor();
-      cur->jump();
-      const char* vbuf;
-      size_t vsiz;
-      while (!err && (kbuf = cur->get(&ksiz, &vbuf, &vsiz)) != NULL) {
-        if (!db_.set(kbuf, ksiz, vbuf, vsiz)) err = true;
-        delete[] kbuf;
-        cur->step();
-      }
-      delete cur;
-      if (!db_.synchronize(false, NULL)) err = true;
-      if (!hdb.close()) {
-        set_error(_KCCODELINE_, hdb.error().code(), "opening the destination failed");
+    if (DBTYPE == TYPETREE) {
+      if (File::rename(npath, path)) {
+        if (!db_.close()) err = true;
+        if (!db_.open(path, mode)) err = true;
+      } else {
+        set_error(_KCCODELINE_, Error::SYSTEM, "renaming the destination failed");
         err = true;
       }
+      File::remove(npath);
+    } else if (DBTYPE == TYPEFOREST) {
+      const std::string& tpath = npath + File::EXTCHR + PDBTMPPATHEXT;
+      File::remove_recursively(tpath);
+      if (File::rename(path, tpath)) {
+        if (File::rename(npath, path)) {
+          if (!db_.close()) err = true;
+          if (!db_.open(path, mode)) err = true;
+        } else {
+          set_error(_KCCODELINE_, Error::SYSTEM, "renaming the destination failed");
+          File::rename(tpath, path);
+          err = true;
+        }
+      } else {
+        set_error(_KCCODELINE_, Error::SYSTEM, "renaming the source failed");
+        err = true;
+      }
+      File::remove_recursively(tpath);
+      File::remove_recursively(npath);
     } else {
-      set_error(_KCCODELINE_, hdb.error().code(), "opening the destination failed");
-      err = true;
+      BASEDB udb;
+      if (!err && udb.open(npath, OREADER)) {
+        if (!db_.clear()) err = true;
+        cur = udb.cursor();
+        cur->jump();
+        const char* vbuf;
+        size_t vsiz;
+        while (!err && (kbuf = cur->get(&ksiz, &vbuf, &vsiz)) != NULL) {
+          if (!db_.set(kbuf, ksiz, vbuf, vsiz)) err = true;
+          delete[] kbuf;
+          cur->step();
+        }
+        delete cur;
+        if (!db_.synchronize(false, NULL)) err = true;
+        if (!udb.close()) {
+          set_error(_KCCODELINE_, udb.error().code(), "closing the destination failed");
+          err = true;
+        }
+      } else {
+        set_error(_KCCODELINE_, udb.error().code(), "opening the destination failed");
+        err = true;
+      }
+      File::remove_recursively(npath);
     }
-    File::remove(npath);
     return !err;
   }
   /**
@@ -3265,12 +3296,12 @@ private:
     _assert_(true);
     if (!clean_leaf_cache()) return false;
     if (!clean_inner_cache()) return false;
-    int32_t idx = trcnt_++ % PDBSLOTNUM;
+    int32_t idx = trclock_++ % PDBSLOTNUM;
     LeafSlot* lslot = lslots_ + idx;
     if (lslot->warm->count() + lslot->hot->count() > 1) flush_leaf_cache_part(lslot);
     InnerSlot* islot = islots_ + idx;
     if (islot->warm->count() > 1) flush_inner_cache_part(islot);
-    if (!dump_meta()) return false;
+    if ((trlcnt_ != lcnt_ || count_ != trcount_) && !dump_meta()) return false;
     if (!db_.begin_transaction(hard)) return false;
     return true;
   }
@@ -3283,7 +3314,7 @@ private:
     bool err = false;
     if (!clean_leaf_cache()) return false;
     if (!clean_inner_cache()) return false;
-    if (!dump_meta()) err = true;
+    if ((trlcnt_ != lcnt_ || count_ != trcount_) && !dump_meta()) err = true;
     if (!db_.end_transaction(true)) return false;
     return !err;
   }
@@ -3312,7 +3343,7 @@ private:
     if (!clean_leaf_cache()) err = true;
     if (!clean_inner_cache()) err = true;
     size_t cnum = PDBATRANCNUM / PDBSLOTNUM;
-    int32_t idx = trcnt_++ % PDBSLOTNUM;
+    int32_t idx = trclock_++ % PDBSLOTNUM;
     LeafSlot* lslot = lslots_ + idx;
     if (lslot->warm->count() + lslot->hot->count() > cnum) flush_leaf_cache_part(lslot);
     InnerSlot* islot = islots_ + idx;
@@ -3398,8 +3429,12 @@ private:
   LinkComparator linkcomp_;
   /** The flag whether in transaction. */
   bool tran_;
-  /** The count of transaction. */
-  int64_t trcnt_;
+  /** The logical clock for transaction. */
+  int64_t trclock_;
+  /** The leaf count history for transaction. */
+  int64_t trlcnt_;
+  /** The record count history for transaction. */
+  int64_t trcount_;
 };
 
 

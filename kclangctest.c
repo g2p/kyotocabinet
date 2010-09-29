@@ -192,6 +192,7 @@ const char* visitfull(const char* kbuf, size_t ksiz,
 
 /* parse arguments of order command */
 static int32_t runorder(int argc, char** argv) {
+  int32_t argbrk = FALSE;
   const char* path, *rstr;
   int32_t rnd, etc, tran;
   int32_t i, mode, oflags, rnum;
@@ -203,8 +204,10 @@ static int32_t runorder(int argc, char** argv) {
   tran = FALSE;
   oflags = 0;
   for (i = 2; i < argc; i++) {
-    if (!rstr && argv[i][0] == '-') {
-      if (!strcmp(argv[i], "-rnd")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!strcmp(argv[i], "--")) {
+        argbrk = TRUE;
+      } else if (!strcmp(argv[i], "-rnd")) {
         rnd = TRUE;
       } else if (!strcmp(argv[i], "-etc")) {
         etc = TRUE;
@@ -224,6 +227,7 @@ static int32_t runorder(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = TRUE;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];

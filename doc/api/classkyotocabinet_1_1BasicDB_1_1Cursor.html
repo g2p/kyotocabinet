@@ -42,8 +42,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a0e93160f1599c0063b6db4226216cfb3"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#afcefc06f76d1790461d25dcebb09e5a2">set_value</a> (const char *vbuf, size_t vsiz, bool step=false)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the value of the current record.  <a href="#afcefc06f76d1790461d25dcebb09e5a2"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#a5a5d49bc225efc66f5b9be8128f7f967">set_value</a> (const std::string &amp;value, bool step=false)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the value of the current record.  <a href="#a5a5d49bc225efc66f5b9be8128f7f967"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#ad75b1a84559d4b11077415e3c414166d">set_value_str</a> (const std::string &amp;value, bool step=false)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the value of the current record.  <a href="#ad75b1a84559d4b11077415e3c414166d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#a4ff900ef9fcb20caeafc00f667cd9b43">remove</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove the current record.  <a href="#a4ff900ef9fcb20caeafc00f667cd9b43"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#a7777ed7c57ee0a3ad26ed14a4edbade0">get_key</a> (size_t *sp, bool step=false)</td></tr>
@@ -137,12 +137,12 @@ std::string &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="
 
 </div>
 </div>
-<a class="anchor" id="a5a5d49bc225efc66f5b9be8128f7f967"></a><!-- doxytag: member="kyotocabinet::BasicDB::Cursor::set_value" ref="a5a5d49bc225efc66f5b9be8128f7f967" args="(const std::string &amp;value, bool step=false)" -->
+<a class="anchor" id="ad75b1a84559d4b11077415e3c414166d"></a><!-- doxytag: member="kyotocabinet::BasicDB::Cursor::set_value_str" ref="ad75b1a84559d4b11077415e3c414166d" args="(const std::string &amp;value, bool step=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool kyotocabinet::BasicDB::Cursor::set_value </td>
+          <td class="memname">bool kyotocabinet::BasicDB::Cursor::set_value_str </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
           <td class="paramname"> <em>value</em>, </td>
@@ -165,7 +165,7 @@ std::string &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="
 <p>Set the value of the current record. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Cursor.html#afcefc06f76d1790461d25dcebb09e5a2" title="Set the value of the current record.">Cursor::set_value</a> method except that the parameter is std::string. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#aef0211f86ab196b4ef8d1d0730be1e4e">kyotocabinet::DB::Cursor</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html#a1c740a07c7f15893bf5933cd6bd5e036">kyotocabinet::DB::Cursor</a>.</p>
 
 </div>
 </div>
@@ -441,7 +441,7 @@ std::string &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Tue Sep 14 17:39:05 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Sep 29 09:36:00 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

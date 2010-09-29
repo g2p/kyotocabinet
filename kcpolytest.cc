@@ -34,13 +34,13 @@ static int32_t runwicked(int argc, char** argv);
 static int32_t runtran(int argc, char** argv);
 static int32_t runmisc(int argc, char** argv);
 static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd, int32_t mode,
-                         bool tran, int32_t oflags);
+                         bool tran, int32_t oflags, bool lv);
 static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
-                         int32_t oflags);
+                         int32_t oflags, bool lv);
 static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t itnum,
-                          int32_t oflags);
+                          int32_t oflags, bool lv);
 static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool hard,
-                        int32_t oflags);
+                        int32_t oflags, bool lv);
 static int32_t procmisc(const char* path);
 
 
@@ -84,12 +84,12 @@ static void usage() {
   eprintf("\n");
   eprintf("usage:\n");
   eprintf("  %s order [-th num] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran]"
-          " [-oat|-oas|-onl|-otl|-onr] path rnum\n", g_progname);
-  eprintf("  %s queue [-th num] [-it num] [-rnd] [-oat|-oas|-onl|-otl|-onr]"
+          " [-oat|-oas|-onl|-otl|-onr] [-lv] path rnum\n", g_progname);
+  eprintf("  %s queue [-th num] [-it num] [-rnd] [-oat|-oas|-onl|-otl|-onr] [-lv]"
           " path rnum\n", g_progname);
-  eprintf("  %s wicked [-th num] [-it num] [-oat|-oas|-onl|-otl|-onr]"
+  eprintf("  %s wicked [-th num] [-it num] [-oat|-oas|-onl|-otl|-onr] [-lv]"
           " path rnum\n", g_progname);
-  eprintf("  %s tran [-th num] [-it num] [-hard] [-oat|-oas|-onl|-otl|-onr]"
+  eprintf("  %s tran [-th num] [-it num] [-hard] [-oat|-oas|-onl|-otl|-onr] [-lv]"
           " path rnum\n", g_progname);
   eprintf("  %s misc path\n", g_progname);
   eprintf("\n");
@@ -128,6 +128,7 @@ static void dbmetaprint(kc::BasicDB* db, bool verbose) {
 
 // parse arguments of order command
 static int32_t runorder(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
@@ -135,9 +136,12 @@ static int32_t runorder(int argc, char** argv) {
   int32_t mode = 0;
   bool tran = false;
   int32_t oflags = 0;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rnd")) {
@@ -164,10 +168,13 @@ static int32_t runorder(int argc, char** argv) {
         oflags |= kc::PolyDB::OTRYLOCK;
       } else if (!std::strcmp(argv[i], "-onr")) {
         oflags |= kc::PolyDB::ONOREPAIR;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];
@@ -179,22 +186,26 @@ static int32_t runorder(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procorder(path, rnum, thnum, rnd, mode, tran, oflags);
+  int32_t rv = procorder(path, rnum, thnum, rnd, mode, tran, oflags, lv);
   return rv;
 }
 
 
 // parse arguments of queue command
 static int32_t runqueue(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
   int32_t itnum = 1;
   bool rnd = false;
   int32_t oflags = 0;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-it")) {
@@ -212,10 +223,13 @@ static int32_t runqueue(int argc, char** argv) {
         oflags |= kc::PolyDB::OTRYLOCK;
       } else if (!std::strcmp(argv[i], "-onr")) {
         oflags |= kc::PolyDB::ONOREPAIR;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];
@@ -227,21 +241,25 @@ static int32_t runqueue(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procqueue(path, rnum, thnum, itnum, rnd, oflags);
+  int32_t rv = procqueue(path, rnum, thnum, itnum, rnd, oflags, lv);
   return rv;
 }
 
 
 // parse arguments of wicked command
 static int32_t runwicked(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
   int32_t itnum = 1;
   int32_t oflags = 0;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-it")) {
@@ -257,10 +275,13 @@ static int32_t runwicked(int argc, char** argv) {
         oflags |= kc::PolyDB::OTRYLOCK;
       } else if (!std::strcmp(argv[i], "-onr")) {
         oflags |= kc::PolyDB::ONOREPAIR;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];
@@ -272,22 +293,26 @@ static int32_t runwicked(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procwicked(path, rnum, thnum, itnum, oflags);
+  int32_t rv = procwicked(path, rnum, thnum, itnum, oflags, lv);
   return rv;
 }
 
 
 // parse arguments of tran command
 static int32_t runtran(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
   int32_t itnum = 1;
   bool hard = false;
   int32_t oflags = 0;
+  bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-it")) {
@@ -305,10 +330,13 @@ static int32_t runtran(int argc, char** argv) {
         oflags |= kc::PolyDB::OTRYLOCK;
       } else if (!std::strcmp(argv[i], "-onr")) {
         oflags |= kc::PolyDB::ONOREPAIR;
+      } else if (!std::strcmp(argv[i], "-lv")) {
+        lv = true;
       } else {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];
@@ -320,18 +348,22 @@ static int32_t runtran(int argc, char** argv) {
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1 || thnum < 1 || itnum < 1) usage();
   if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = proctran(path, rnum, thnum, itnum, hard, oflags);
+  int32_t rv = proctran(path, rnum, thnum, itnum, hard, oflags, lv);
   return rv;
 }
 
 
 // parse arguments of misc command
 static int32_t runmisc(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      usage();
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else      usage();
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else {
       usage();
@@ -345,14 +377,16 @@ static int32_t runmisc(int argc, char** argv) {
 
 // perform order command
 static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd, int32_t mode,
-                         bool tran, int32_t oflags) {
+                         bool tran, int32_t oflags, bool lv) {
   iprintf("<In-order Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  rnd=%d  mode=%d  tran=%d"
-          "  oflags=%d\n\n",
-          g_randseed, path, (long long)rnum, thnum, rnd, mode, tran, oflags);
+          "  oflags=%d  lv=%d\n\n",
+          g_randseed, path, (long long)rnum, thnum, rnd, mode, tran, oflags, lv);
   bool err = false;
   kc::PolyDB db;
   iprintf("opening the database:\n");
   double stime = kc::time();
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   uint32_t omode = kc::PolyDB::OWRITER | kc::PolyDB::OCREATE | kc::PolyDB::OTRUNCATE;
   if (mode == 'r') {
     omode = kc::PolyDB::OWRITER | kc::PolyDB::OCREATE;
@@ -1350,11 +1384,14 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
 
 // perform queue command
 static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
-                         int32_t oflags) {
+                         int32_t oflags, bool lv) {
   iprintf("<Queue Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d  rnd=%d"
-          "  oflags=%d\n\n", g_randseed, path, (long long)rnum, thnum, itnum, rnd, oflags);
+          "  oflags=%d  lv=%d\n\n",
+          g_randseed, path, (long long)rnum, thnum, itnum, rnd, oflags, lv);
   bool err = false;
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     if (itnum > 1) iprintf("iteration %d:\n", itcnt);
     double stime = kc::time();
@@ -1515,11 +1552,14 @@ static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t 
 
 // perform wicked command
 static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t itnum,
-                          int32_t oflags) {
-  iprintf("<Wicked Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d  oflags=%d\n\n",
-          g_randseed, path, (long long)rnum, thnum, itnum, oflags);
+                          int32_t oflags, bool lv) {
+  iprintf("<Wicked Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d"
+          "  oflags=%d  lv=%d\n\n",
+          g_randseed, path, (long long)rnum, thnum, itnum, oflags, lv);
   bool err = false;
   kc::PolyDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     if (itnum > 1) iprintf("iteration %d:\n", itcnt);
     double stime = kc::time();
@@ -1545,7 +1585,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
       }
       void run() {
         kc::DB::Cursor* cur = db_->cursor();
-        int64_t range = rnum_ * thnum_;
+        int64_t range = rnum_ * thnum_ / 2;
         for (int64_t i = 1; !err_ && i <= rnum_; i++) {
           bool tran = myrand(100) == 0;
           if (tran) {
@@ -1627,9 +1667,9 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
                   }
                 } else {
                   double num = myrand(rnum_ * 10) / (myrand(rnum_) + 1.0);
-                  if (kc::chknan(db_->increment(kbuf, ksiz, num)) &&
+                  if (kc::chknan(db_->increment_double(kbuf, ksiz, num)) &&
                       db_->error() != kc::BasicDB::Error::LOGIC) {
-                    dberrprint(db_, __LINE__, "DB::increment");
+                    dberrprint(db_, __LINE__, "DB::increment_double");
                     err_ = true;
                   }
                 }
@@ -1787,13 +1827,17 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
 
 // perform tran command
 static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool hard,
-                        int32_t oflags) {
+                        int32_t oflags, bool lv) {
   iprintf("<Transaction Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  itnum=%d  hard=%d"
-          "  oflags=%d\n\n",
-          g_randseed, path, (long long)rnum, thnum, itnum, hard, oflags);
+          "  oflags=%d  lv=%d\n\n",
+          g_randseed, path, (long long)rnum, thnum, itnum, hard, oflags, lv);
   bool err = false;
   kc::PolyDB db;
   kc::PolyDB paradb;
+  db.tune_logger(stdlogger(g_progname, &std::cout),
+                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+  paradb.tune_logger(stdlogger(g_progname, &std::cout),
+                     lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     iprintf("iteration %d updating:\n", itcnt);
     double stime = kc::time();

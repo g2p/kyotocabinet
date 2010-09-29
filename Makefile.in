@@ -768,114 +768,126 @@ check-heavy :
 
 
 check-hash-heavy :
-	./kchashtest order -th 4 \
+	$(RUNENV) ./kchashtest order -th 4 \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
-	./kchashmgr check -onr casket
-	./kchashtest order -th 4 -rnd \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest order -th 4 -rnd \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
-	./kchashmgr check -onr casket
-	./kchashtest order -th 4 -etc \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest order -th 4 -etc \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
-	./kchashmgr check -onr casket
-	./kchashtest order -th 4 -etc -rnd \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest order -th 4 -etc -rnd \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
-	./kchashmgr check -onr casket
-	./kchashtest order -th 4 -etc -rnd \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest order -th 4 -etc -rnd \
 	  -ts -tl -tc -dfunit 2 casket 25000
-	./kchashmgr check -onr casket
-	./kchashtest queue -th 4 -it 10 \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest queue -th 4 -it 10 \
 	  -bnum 1000000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 casket 250000
-	./kchashmgr check -onr casket
-	./kchashtest queue -th 4 -it 5 -rnd \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest queue -th 4 -it 5 -rnd \
 	  -ts -tl -tc -dfunit 2 casket 25000
-	./kchashmgr check -onr casket
-	./kchashtest queue -th 4 -it 2 -oat -rnd \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest queue -th 4 -it 2 -oat -rnd \
 	  -bnum 1000 -dfunit 8 casket 25000
-	./kchashmgr check -onr casket
-	./kchashtest queue -th 4 -it 2 -oas -rnd \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest queue -th 4 -it 2 -oas -rnd \
 	  -bnum 1000 -dfunit 8 casket 2500
-	./kchashmgr check -onr casket
-	./kchashtest wicked -th 4 -it 10 \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest wicked -th 4 -it 10 \
 	  -bnum 1000000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 casket 250000
-	./kchashmgr check -onr casket
-	./kchashtest wicked -th 4 -it 5 \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest wicked -th 4 -it 5 \
 	  -ts -tl -tc -dfunit 2 casket 25000
-	./kchashmgr check -onr casket
-	./kchashtest wicked -th 4 -it 2 -oat \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest wicked -th 4 -it 2 -oat \
 	  -bnum 1000 -dfunit 8 casket 25000
-	./kchashmgr check -onr casket
-	./kchashtest wicked -th 4 -it 2 -oas \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest wicked -th 4 -it 2 -oas \
 	  -bnum 1000 -dfunit 8 casket 2500
-	./kchashmgr check -onr casket
-	./kchashtest tran -th 4 -it 10 \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest tran -th 4 -it 10 \
 	  -apow 2 -fpow 2 -bnum 500000 -msiz 50m -dfunit 2 casket 250000
-	./kchashmgr check -onr casket
-	./kchashtest tran -th 4 -it 5 \
+	$(RUNENV) ./kchashmgr check -onr casket
+	$(RUNENV) ./kchashtest tran -th 4 -it 5 \
 	  -ts -tl -tc -dfunit 2 casket 250000
-	./kchashmgr check -onr casket
+	$(RUNENV) ./kchashmgr check -onr casket
 
 
 check-tree-heavy :
-	./kctreetest order -th 4 \
+	$(RUNENV) ./kctreetest order -th 4 \
 	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
-	./kctreemgr check -onr casket
-	./kctreetest order -th 4 -rnd \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest order -th 4 -rnd \
 	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
-	./kctreemgr check -onr casket
-	./kctreetest order -th 4 -etc \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest order -th 4 -etc \
 	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
-	./kctreemgr check -onr casket
-	./kctreetest order -th 4 -etc -rnd \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest order -th 4 -etc -rnd \
 	  -apow 2 -fpow 2 -bnum 50000 -psiz 1000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
-	./kctreemgr check -onr casket
-	./kctreetest order -th 4 -etc -rnd \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest order -th 4 -etc -rnd \
 	  -ts -tl -tc -dfunit 2 casket 25000
-	./kctreemgr check -onr casket
-	./kctreetest queue -th 4 -it 10 \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest queue -th 4 -it 10 \
 	  -bnum 1000000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 -pccap 10m casket 250000
-	./kctreemgr check -onr casket
-	./kctreetest queue -th 4 -it 5 -rnd \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest queue -th 4 -it 5 -rnd \
 	  -ts -tl -tc -dfunit 2 -pccap 10m casket 25000
-	./kctreemgr check -onr casket
-	./kctreetest queue -th 4 -it 2 -oat -rnd \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest queue -th 4 -it 2 -oat -rnd \
 	  -bnum 1000 -dfunit 8 -pccap 10m casket 25000
-	./kctreemgr check -onr casket
-	./kctreetest queue -th 4 -it 2 -oas -rnd \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest queue -th 4 -it 2 -oas -rnd \
 	  -bnum 1000 -dfunit 8 -pccap 10m casket 2500
-	./kctreemgr check -onr casket
-	./kctreetest wicked -th 4 -it 5 \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest wicked -th 4 -it 5 \
 	  -bnum 100000 -apow 4 -fpow 12 -msiz 100m -dfunit 2 -pccap 10m casket 250000
-	./kctreemgr check -onr casket
-	./kctreetest wicked -th 4 -it 2 \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest wicked -th 4 -it 2 \
 	  -ts -tl -tc -dfunit 2 -pccap 10m casket 25000
-	./kctreemgr check -onr casket
-	./kctreetest wicked -th 4 -it 2 -oat \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest wicked -th 4 -it 2 -oat \
 	  -bnum 1000 -dfunit 8 -pccap 10m casket 25000
-	./kctreemgr check -onr casket
-	./kctreetest wicked -th 4 -it 2 -oas \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest wicked -th 4 -it 2 -oas \
 	  -bnum 1000 -dfunit 8 -pccap 10m casket 2500
-	./kctreemgr check -onr casket
-	./kctreetest tran -th 4 -it 5 \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest tran -th 4 -it 5 \
 	  -apow 2 -fpow 2 -bnum 50000 -msiz 50m -dfunit 2 -pccap 10m casket 250000
-	./kctreemgr check -onr casket
-	./kctreetest tran -th 4 -it 2 \
+	$(RUNENV) ./kctreemgr check -onr casket
+	$(RUNENV) ./kctreetest tran -th 4 -it 2 \
 	  -ts -tl -tc -dfunit 2 -pccap 10m casket 250000
-	./kctreemgr check -onr casket
+	$(RUNENV) ./kctreemgr check -onr casket
 
 
 check-segv :
-	./lab/segvtest hash "0.5" 100
-	./lab/segvtest hash "" 10
-	./lab/segvtest hash "100" 1
-	./lab/segvtest tree "0.5" 100
-	./lab/segvtest tree "" 10
-	./lab/segvtest tree "100" 1
-	./lab/segvtest dir "0.5" 100
-	./lab/segvtest dir "" 10
-	./lab/segvtest dir "100" 1
-	./lab/segvtest forest "0.5" 100
-	./lab/segvtest forest "" 10
-	./lab/segvtest forest "100" 1
+	$(RUNENV) ./lab/segvtest hash "0.5" 100
+	$(RUNENV) ./lab/segvtest hash "" 10
+	$(RUNENV) ./lab/segvtest hash "100" 1
+	$(RUNENV) ./lab/segvtest hash -oat "0.5" 100
+	$(RUNENV) ./lab/segvtest hash -oat "" 10
+	$(RUNENV) ./lab/segvtest hash -oat "100" 1
+	$(RUNENV) ./lab/segvtest hash -tran "" 10
+	$(RUNENV) ./lab/segvtest tree "0.5" 100
+	$(RUNENV) ./lab/segvtest tree "" 10
+	$(RUNENV) ./lab/segvtest tree "100" 1
+	$(RUNENV) ./lab/segvtest tree -oat "0.5" 100
+	$(RUNENV) ./lab/segvtest tree -oat "" 10
+	$(RUNENV) ./lab/segvtest tree -oat "100" 1
+	$(RUNENV) ./lab/segvtest tree -tran "" 10
+	$(RUNENV) ./lab/segvtest dir -oat "" 10
+	$(RUNENV) ./lab/segvtest dir -oat "0.5" 100
+	$(RUNENV) ./lab/segvtest dir -oat "" 10
+	$(RUNENV) ./lab/segvtest dir -oat "100" 1
+	$(RUNENV) ./lab/segvtest dir -tran "" 10
+	$(RUNENV) ./lab/segvtest forest "" 10
+	$(RUNENV) ./lab/segvtest forest -oat "0.5" 100
+	$(RUNENV) ./lab/segvtest forest -oat "" 10
+	$(RUNENV) ./lab/segvtest forest -oat "100" 1
+	$(RUNENV) ./lab/segvtest forest -tran "" 10
 
 
 check-forever :

@@ -500,7 +500,7 @@ public:
     }
     int64_t allcnt = recs_.size();
     if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       return false;
     }
     typename STRMAP::iterator it = recs_.begin();
@@ -525,12 +525,12 @@ public:
       }
       curcnt++;
       if (checker && !checker->check("iterate", "processing", curcnt, allcnt)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         return false;
       }
     }
     if (checker && !checker->check("iterate", "ending", -1, allcnt)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       return false;
     }
     return true;
@@ -545,12 +545,22 @@ public:
   }
   /**
    * Set the error information.
+   * @param file the file name of the program source code.
+   * @param line the line number of the program source code.
+   * @param func the function name of the program source code.
    * @param code an error code.
    * @param message a supplement message.
    */
-  void set_error(Error::Code code, const char* message) {
-    _assert_(message);
+  void set_error(const char* file, int32_t line, const char* func,
+                 Error::Code code, const char* message) {
+    _assert_(file && line > 0 && func && message);
     error_->set(code, message);
+    if (logger_) {
+      Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
+        Logger::ERROR : Logger::INFO;
+      if (kind & logkinds_)
+        report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
+    }
   }
   /**
    * Open a database file.
@@ -631,12 +641,12 @@ public:
     bool err = false;
     if ((omode_ & OWRITER) && checker &&
         !checker->check("synchronize", "nothing to be synchronized", -1, -1)) {
-      set_error(Error::LOGIC, "checker failed");
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       return false;
     }
     if (proc) {
       if (checker && !checker->check("synchronize", "running the post processor", -1, -1)) {
-        set_error(Error::LOGIC, "checker failed");
+        set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
         return false;
       }
       if (!proc->process(path_, recs_.size(), size_)) {
@@ -848,6 +858,7 @@ public:
    * @param kinds kinds of logged messages by bitwise-or: Logger::DEBUG for debugging,
    * Logger::INFO for normal information, Logger::WARN for warning, and Logger::ERROR for fatal
    * error.
+   * @return true on success, or false on failure.
    */
   bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) {
     _assert_(logger);
@@ -891,25 +902,6 @@ public:
     return true;
   }
 protected:
-  /**
-   * Set the error information.
-   * @param file the file name of the program source code.
-   * @param line the line number of the program source code.
-   * @param func the function name of the program source code.
-   * @param code an error code.
-   * @param message a supplement message.
-   */
-  void set_error(const char* file, int32_t line, const char* func,
-                 Error::Code code, const char* message) {
-    _assert_(file && line > 0 && func && message);
-    set_error(code, message);
-    if (logger_) {
-      Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
-        Logger::ERROR : Logger::INFO;
-      if (kind & logkinds_)
-        report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
-    }
-  }
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.

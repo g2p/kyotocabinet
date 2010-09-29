@@ -193,6 +193,7 @@ static void dbmetaprint(kc::BasicDB* db, bool verbose) {
 
 // parse arguments of order command
 static int32_t runorder(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
@@ -208,8 +209,10 @@ static int32_t runorder(int argc, char** argv) {
   int64_t dfunit = -1;
   bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rnd")) {
@@ -263,6 +266,7 @@ static int32_t runorder(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];
@@ -282,6 +286,7 @@ static int32_t runorder(int argc, char** argv) {
 
 // parse arguments of queue command
 static int32_t runqueue(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
@@ -296,8 +301,10 @@ static int32_t runqueue(int argc, char** argv) {
   int64_t dfunit = -1;
   bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-it")) {
@@ -342,6 +349,7 @@ static int32_t runqueue(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];
@@ -361,6 +369,7 @@ static int32_t runqueue(int argc, char** argv) {
 
 // parse arguments of wicked command
 static int32_t runwicked(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
@@ -374,8 +383,10 @@ static int32_t runwicked(int argc, char** argv) {
   int64_t dfunit = -1;
   bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-it")) {
@@ -418,6 +429,7 @@ static int32_t runwicked(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];
@@ -437,6 +449,7 @@ static int32_t runwicked(int argc, char** argv) {
 
 // parse arguments of tran command
 static int32_t runtran(int argc, char** argv) {
+  bool argbrk = false;
   const char* path = NULL;
   const char* rstr = NULL;
   int32_t thnum = 1;
@@ -451,8 +464,10 @@ static int32_t runtran(int argc, char** argv) {
   int64_t dfunit = -1;
   bool lv = false;
   for (int32_t i = 2; i < argc; i++) {
-    if (!path && argv[i][0] == '-') {
-      if (!std::strcmp(argv[i], "-th")) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-th")) {
         if (++i >= argc) usage();
         thnum = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-it")) {
@@ -497,6 +512,7 @@ static int32_t runtran(int argc, char** argv) {
         usage();
       }
     } else if (!path) {
+      argbrk = true;
       path = argv[i];
     } else if (!rstr) {
       rstr = argv[i];
@@ -1789,7 +1805,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
       }
       void run() {
         kc::DB::Cursor* cur = db_->cursor();
-        int64_t range = rnum_ * thnum_;
+        int64_t range = rnum_ * thnum_ / 2;
         for (int64_t i = 1; !err_ && i <= rnum_; i++) {
           bool tran = myrand(100) == 0;
           if (tran) {
@@ -1871,9 +1887,9 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
                   }
                 } else {
                   double num = myrand(rnum_ * 10) / (myrand(rnum_) + 1.0);
-                  if (kc::chknan(db_->increment(kbuf, ksiz, num)) &&
+                  if (kc::chknan(db_->increment_double(kbuf, ksiz, num)) &&
                       db_->error() != kc::BasicDB::Error::LOGIC) {
-                    dberrprint(db_, __LINE__, "DB::increment");
+                    dberrprint(db_, __LINE__, "DB::increment_double");
                     err_ = true;
                   }
                 }

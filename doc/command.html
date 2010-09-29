@@ -653,13 +653,13 @@
 <p>The command `<code>kcpolytest</code>' is a utility for facility test and performance test of the polymorphic database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kcpolytest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcpolytest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kcpolytest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcpolytest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kcpolytest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcpolytest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kcpolytest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcpolytest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 <dt><code>kcpolytest misc <var>path</var></code></dt>
 <dd>Performs miscellaneous tests.</dd>
@@ -681,6 +681,7 @@
 <li><code>-onl</code> : opens the database with the no locking option.</li>
 <li><code>-otl</code> : opens the database with the try locking option.</li>
 <li><code>-onr</code> : opens the database with the no auto repair option.</li>
+<li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 <li><code>-hard</code> : performs physical synchronization.</li>
 </ul>
