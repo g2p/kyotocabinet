@@ -21,10 +21,11 @@ case "$1" in
 kch|hash)
   testcmd="kchashtest"
   mgrcmd="kchashmgr"
+  testopts="$testopts -dfunit 8"
   ;;
 kct|tree)
   testcmd="kctreetest"
-  testopts="$testopts -pccap 10k"
+  testopts="$testopts -dfunit 8 -pccap 10k"
   mgrcmd="kctreemgr"
   ;;
 kcd|dir)
@@ -79,11 +80,15 @@ do
   fi
   printf '\n==== iteration: %d (%.1f sec.)\n\n' "$cnt" "$sleepsec"
   rm -rf casket* "$testcmd.log"
+  echo "$testcmd" order $testopts casket 10000000
   "$testcmd" order $testopts casket 10000000 & \
     ( sleep "$sleepsec" ; killall -SEGV "$testcmd" )
   cp -rf casket casket-back 2>/dev/null
   cp -rf casket.wal casket-back.wal 2>/dev/null
   printf '\n'
+  ls -ld casket
+  [ -e casket.wal ] && ls -ld casket.wal
+  echo "$mgrcmd" check casket
   if "$mgrcmd" check casket
   then
     true

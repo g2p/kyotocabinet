@@ -107,7 +107,7 @@ static void usage() {
 
 // print the error message of a database
 static void dberrprint(kc::BasicDB* db, int32_t line, const char* func) {
-  kc::BasicDB::Error err = db->error();
+  const kc::BasicDB::Error& err = db->error();
   iprintf("%s: %d: %s: %s: %d: %s: %s\n",
           g_progname, line, func, db->path().c_str(), err.code(), err.name(), err.message());
 }

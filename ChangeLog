@@ -1,3 +1,15 @@
+2010-10-01  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcfile.cc (File::open): how to set the recover flag was modified.
+
+	* kcfile.cc (File::rename, File::remove): difference of Win32 was absorbed.
+
+	* kchashdb.h (HashDB::defrag_impl): auto transaction is now supported.
+
+	* kchashdb.h (HashDB::abort_transaction): a bug related to the open flag was fixed.
+
+	- Release: 1.2.15
+
 2010-09-23  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcdb.h (BasicDB::tune_logger): new function.

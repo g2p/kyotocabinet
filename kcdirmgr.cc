@@ -114,7 +114,7 @@ static void usage() {
 
 // print error message of database
 static void dberrprint(kc::BasicDB* db, const char* info) {
-  kc::BasicDB::Error err = db->error();
+  const kc::BasicDB::Error& err = db->error();
   eprintf("%s: %s: %s: %d: %s: %s\n",
           g_progname, info, db->path().c_str(), err.code(), err.name(), err.message());
 }

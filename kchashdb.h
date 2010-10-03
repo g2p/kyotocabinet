@@ -2007,17 +2007,26 @@ private:
       delete[] rec.bbuf;
       dfcur_ += rec.rsiz;
     }
+    bool atran = false;
+    if (autotran_ && !tran_) {
+      if (!begin_auto_transaction()) return false;
+      atran = true;
+    }
     int64_t base = dfcur_;
     int64_t dest = base;
     dfcur_ += rec.rsiz;
     step++;
     while (step-- > 0 && dfcur_ < end) {
       rec.off = dfcur_;
-      if (!read_record(&rec, rbuf)) return false;
+      if (!read_record(&rec, rbuf)) {
+        if (atran) abort_auto_transaction();
+        return false;
+      }
       escape_cursors(rec.off, dest);
       dfcur_ += rec.rsiz;
       if (rec.psiz != UINT16_MAX) {
         if (!rec.vbuf && !read_record_body(&rec)) {
+          if (atran) abort_auto_transaction();
           delete[] rec.bbuf;
           return false;
         }
@@ -2027,6 +2036,7 @@ private:
           rec.rsiz -= diff;
         }
         if (!shift_record(&rec, dest)) {
+          if (atran) abort_auto_transaction();
           delete[] rec.bbuf;
           return false;
         }
@@ -2038,14 +2048,25 @@ private:
     if (dfcur_ >= end) {
       lsiz_ = dest;
       psiz_ = lsiz_;
-      if (!file_.truncate(lsiz_)) return false;
+      if (!file_.truncate(lsiz_)) {
+        if (atran) abort_auto_transaction();
+        return false;
+      }
       trim_cursors();
       dfcur_ = roff_;
     } else {
       size_t rsiz = dfcur_ - dest;
-      if (!write_free_block(dest, rsiz, rbuf)) return false;
+      if (!write_free_block(dest, rsiz, rbuf)) {
+        if (atran) abort_auto_transaction();
+        return false;
+      }
       insert_free_block(dest, rsiz);
       dfcur_ = dest;
+    }
+    if (atran) {
+      if (!commit_auto_transaction()) return false;
+    } else if (autosync_) {
+      if (!synchronize_meta()) return false;
     }
     return true;
   }
@@ -3251,7 +3272,9 @@ private:
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
+    bool flagopen = flagopen_;
     if (!load_meta()) err = true;
+    flagopen_ = flagopen;
     calc_meta();
     disable_cursors();
     fbp_.swap(trfbp_);

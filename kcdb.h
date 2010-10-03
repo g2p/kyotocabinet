@@ -900,7 +900,7 @@ public:
      * Cast operator to integer.
      * @return the error code.
      */
-    operator int32_t() {
+    operator int32_t() const {
       return code_;
     }
   private:

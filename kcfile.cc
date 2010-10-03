@@ -329,9 +329,9 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
     ::HANDLE walfh = ::CreateFile(wpath.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING,
                                   FILE_ATTRIBUTE_NORMAL, NULL);
     if (walfh && walfh != INVALID_HANDLE_VALUE) {
+      recov = true;
       ::LARGE_INTEGER li;
       if (::GetFileSizeEx(walfh, &li) && li.QuadPart >= (int64_t)sizeof(WALMAGICDATA)) {
-        recov = true;
         char mbuf[sizeof(WALMAGICDATA)];
         if (myread(walfh, mbuf, sizeof(mbuf)) &&
             !std::memcmp(mbuf, WALMAGICDATA, sizeof(WALMAGICDATA))) {
@@ -358,7 +358,7 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
         }
       }
       if (!::CloseHandle(walfh)) seterrmsg(core, "CloseHandle failed");
-      DeleteFile(wpath.c_str());
+      ::DeleteFile(wpath.c_str());
     }
   }
   int64_t lsiz = sbuf.QuadPart;
@@ -374,7 +374,7 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
     msiz = lsiz;
   }
   sbuf.QuadPart = msiz;
-  HANDLE mh = NULL;
+  ::HANDLE mh = NULL;
   void* map = NULL;
   if (msiz > 0) {
     mh = ::CreateFileMapping(fh, NULL, mprot, sbuf.HighPart, sbuf.LowPart, NULL);
@@ -449,37 +449,37 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
   bool recov = false;
   if ((!(mode & OWRITER) || !(mode & OTRUNCATE)) && !(mode & ONOLOCK)) {
     const std::string& wpath = walpath(path);
-    struct ::stat wsbuf;
-    if (::stat(wpath.c_str(), &wsbuf) == 0 &&
-        wsbuf.st_size >= (int64_t)sizeof(WALMAGICDATA) && wsbuf.st_uid == sbuf.st_uid) {
-      int32_t walfd = ::open(wpath.c_str(), O_RDWR, FILEPERM);
-      if (walfd >= 0) {
+    int32_t walfd = ::open(wpath.c_str(), O_RDWR, FILEPERM);
+    if (walfd >= 0) {
+      struct ::stat wsbuf;
+      if (::fstat(walfd, &wsbuf) == 0 && wsbuf.st_uid == sbuf.st_uid) {
         recov = true;
-        char mbuf[sizeof(WALMAGICDATA)];
-        if (myread(walfd, mbuf, sizeof(mbuf)) &&
-            !std::memcmp(mbuf, WALMAGICDATA, sizeof(WALMAGICDATA))) {
-          int32_t ofd = mode & OWRITER ? fd : ::open(path.c_str(), O_WRONLY, FILEPERM);
-          if (ofd >= 0) {
-            core->fd = ofd;
-            core->walfd = walfd;
-            walapply(core);
-            if (ofd != fd && ::close(ofd) != 0) seterrmsg(core, "close failed");
-            if (::ftruncate(walfd, 0) != 0) seterrmsg(core, "ftruncate failed");
-            core->fd = -1;
-            core->walfd = -1;
-            if (::fstat(fd, &sbuf) != 0) {
-              seterrmsg(core, "fstat failed");
-              ::close(fd);
-              return false;
+        if (wsbuf.st_size >= (int64_t)sizeof(WALMAGICDATA)) {
+          char mbuf[sizeof(WALMAGICDATA)];
+          if (myread(walfd, mbuf, sizeof(mbuf)) &&
+              !std::memcmp(mbuf, WALMAGICDATA, sizeof(WALMAGICDATA))) {
+            int32_t ofd = mode & OWRITER ? fd : ::open(path.c_str(), O_WRONLY, FILEPERM);
+            if (ofd >= 0) {
+              core->fd = ofd;
+              core->walfd = walfd;
+              walapply(core);
+              if (ofd != fd && ::close(ofd) != 0) seterrmsg(core, "close failed");
+              if (::ftruncate(walfd, 0) != 0) seterrmsg(core, "ftruncate failed");
+              core->fd = -1;
+              core->walfd = -1;
+              if (::fstat(fd, &sbuf) != 0) {
+                seterrmsg(core, "fstat failed");
+                ::close(fd);
+                return false;
+              }
+            } else {
+              seterrmsg(core, "open failed");
             }
-          } else {
-            seterrmsg(core, "open failed");
           }
         }
-        if (::close(walfd) != 0) seterrmsg(core, "close failed");
-        if (::lstat(wpath.c_str(), &wsbuf) == 0 && S_ISREG(wsbuf.st_mode) &&
-            ::unlink(wpath.c_str()) != 0) seterrmsg(core, "unlink failed");
       }
+      if (::close(walfd) != 0) seterrmsg(core, "close failed");
+      if (::unlink(wpath.c_str()) != 0) seterrmsg(core, "unlink failed");
     }
   }
   int64_t lsiz = sbuf.st_size;
@@ -529,7 +529,7 @@ bool File::close() {
       err = true;
     }
     const std::string& wpath = walpath(core->path);
-    DeleteFile(wpath.c_str());
+    ::DeleteFile(wpath.c_str());
   }
   if (core->msiz > 0) {
     if (!::UnmapViewOfFile(core->map)) {
@@ -1685,6 +1685,18 @@ bool File::remove(const std::string& path) {
     Thread::sleep(wsec);
     wsec *= 2;
   }
+  std::string tmppath;
+  strprintf(&tmppath, "%s%ctmp%c%llx", path.c_str(), EXTCHR, EXTCHR,
+            ((unsigned long long)(time() * UINT16_MAX)) % UINT32_MAX);
+  if (::MoveFileEx(path.c_str(), tmppath.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+    ::DeleteFile(tmppath.c_str());
+    ::DWORD amode = GENERIC_READ | GENERIC_WRITE;
+    ::DWORD smode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+    ::HANDLE fh = ::CreateFile(tmppath.c_str(), amode, smode, NULL, OPEN_EXISTING,
+                               FILE_FLAG_DELETE_ON_CLOSE, NULL);
+    if (fh && fh != INVALID_HANDLE_VALUE) ::CloseHandle(fh);
+    return true;
+  }
   return false;
 #else
   _assert_(true);
@@ -1706,6 +1718,28 @@ bool File::rename(const std::string& opath, const std::string& npath) {
     if (wsec > 1.0) wsec = 1.0;
     Thread::sleep(wsec);
     wsec *= 2;
+  }
+  std::string tmppath;
+  strprintf(&tmppath, "%s%ctmp%c%llx", npath.c_str(), EXTCHR, EXTCHR,
+            ((unsigned long long)(time() * UINT16_MAX)) % UINT32_MAX);
+  if (::MoveFileEx(npath.c_str(), tmppath.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+    if (::MoveFileEx(opath.c_str(), npath.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+      ::DeleteFile(tmppath.c_str());
+      ::DWORD amode = GENERIC_READ | GENERIC_WRITE;
+      ::DWORD smode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+      ::HANDLE fh = ::CreateFile(tmppath.c_str(), amode, smode, NULL, OPEN_EXISTING,
+                                 FILE_FLAG_DELETE_ON_CLOSE, NULL);
+      if (fh && fh != INVALID_HANDLE_VALUE) ::CloseHandle(fh);
+      return true;
+    } else {
+      wsec = 1.0 / CLOCKTICK;
+      for (int32_t i = 0; i < 10; i++) {
+        if (::MoveFileEx(tmppath.c_str(), npath.c_str(), MOVEFILE_REPLACE_EXISTING)) break;
+        if (wsec > 1.0) wsec = 1.0;
+        Thread::sleep(wsec);
+        wsec *= 2;
+      }
+    }
   }
   return false;
 #else

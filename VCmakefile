@@ -89,27 +89,27 @@ check-util :
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
 	kcutilmgr version
-	kcutilmgr hex Makefile > check.in
+	kcutilmgr hex VCmakefile > check.in
 	kcutilmgr hex -d check.in > check.out
-	kcutilmgr enc Makefile > check.in
+	kcutilmgr enc VCmakefile > check.in
 	kcutilmgr enc -d check.in > check.out
-	kcutilmgr enc -hex Makefile > check.in
+	kcutilmgr enc -hex VCmakefile > check.in
 	kcutilmgr enc -hex -d check.in > check.out
-	kcutilmgr enc -url Makefile > check.in
+	kcutilmgr enc -url VCmakefile > check.in
 	kcutilmgr enc -url -d check.in > check.out
-	kcutilmgr enc -quote Makefile > check.in
+	kcutilmgr enc -quote VCmakefile > check.in
 	kcutilmgr enc -quote -d check.in > check.out
-	kcutilmgr ciph -key "hoge" Makefile > check.in
+	kcutilmgr ciph -key "hoge" VCmakefile > check.in
 	kcutilmgr ciph -key "hoge" check.in > check.out
-	kcutilmgr comp -gz Makefile > check.in
+	kcutilmgr comp -gz VCmakefile > check.in
 	kcutilmgr comp -gz -d check.in > check.out
-	kcutilmgr comp -lzo Makefile > check.in
+	kcutilmgr comp -lzo VCmakefile > check.in
 	kcutilmgr comp -lzo -d check.in > check.out
-	kcutilmgr comp -lzma Makefile > check.in
+	kcutilmgr comp -lzma VCmakefile > check.in
 	kcutilmgr comp -lzma -d check.in > check.out
-	kcutilmgr hash Makefile > check.in
-	kcutilmgr hash -fnv Makefile > check.out
-	kcutilmgr hash -path Makefile > check.out
+	kcutilmgr hash VCmakefile > check.in
+	kcutilmgr hash -fnv VCmakefile > check.out
+	kcutilmgr hash -path VCmakefile > check.out
 	kcutilmgr conf
 	-del casket* /F /Q > NUL: 2>&1
 	kcutiltest mutex -th 4 -iv -1 10000
