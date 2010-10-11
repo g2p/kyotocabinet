@@ -649,7 +649,7 @@ public:
       if (std::strstr(emsg, "(permission denied)") || std::strstr(emsg, "(directory)")) {
         code = Error::NOPERM;
       } else if (std::strstr(emsg, "(file not found)") || std::strstr(emsg, "(invalid path)")) {
-        code = Error::NOFILE;
+        code = Error::NOENTRY;
       }
       set_error(_KCCODELINE_, code, emsg);
       return false;
@@ -1196,7 +1196,7 @@ public:
    * @param step the number of steps.  If it is not more than 0, the whole region is defraged.
    * @return true on success, or false on failure.
    */
-  bool defrag(int64_t step) {
+  bool defrag(int64_t step = 0) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, true);
     if (omode_ == 0) {
@@ -1968,6 +1968,7 @@ private:
         err = true;
       }
     }
+    if (writer_ && !autotran_ && !set_flag(FOPEN, true)) err = true;
     return !err;
   }
   /**

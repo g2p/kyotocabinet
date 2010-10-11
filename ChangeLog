@@ -1,3 +1,11 @@
+2010-10-03  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcdb.h (BasicDB::Error::NOENTRY): new constant instead of "NOFILE".
+
+	* kchashdb. (HashDB::synchronize_impl): open flag handling was modified.
+
+	- Release: 1.2.16
+
 2010-10-01  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcfile.cc (File::open): how to set the recover flag was modified.

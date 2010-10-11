@@ -1830,7 +1830,7 @@ public:
    * @param step the number of steps.  If it is not more than 0, the whole region is defraged.
    * @return true on success, or false on failure.
    */
-  bool defrag(int64_t step) {
+  bool defrag(int64_t step = 0) {
     _assert_(true);
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {

@@ -792,7 +792,7 @@ public:
       SUCCESS,                           ///< success
       NOIMPL,                            ///< not implemented
       INVALID,                           ///< invalid operation
-      NOFILE,                            ///< file not found
+      NOENTRY,                           ///< file not found
       NOPERM,                            ///< no permission
       BROKEN,                            ///< broken file
       DUPREC,                            ///< record duplication
@@ -873,7 +873,7 @@ public:
         case SUCCESS: return "success";
         case NOIMPL: return "not implemented";
         case INVALID: return "invalid operation";
-        case NOFILE: return "file not found";
+        case NOENTRY: return "file not found";
         case NOPERM: return "no permission";
         case BROKEN: return "broken file";
         case DUPREC: return "record duplication";
@@ -1810,7 +1810,7 @@ public:
     std::ofstream ofs;
     ofs.open(dest.c_str(), std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
     if (!ofs) {
-      set_error(_KCCODELINE_, Error::NOFILE, "open failed");
+      set_error(_KCCODELINE_, Error::NOENTRY, "open failed");
       return false;
     }
     bool err = false;
@@ -1913,7 +1913,7 @@ public:
     std::ifstream ifs;
     ifs.open(src.c_str(), std::ios_base::in | std::ios_base::binary);
     if (!ifs) {
-      set_error(_KCCODELINE_, Error::NOFILE, "open failed");
+      set_error(_KCCODELINE_, Error::NOENTRY, "open failed");
       return false;
     }
     bool err = false;

@@ -593,7 +593,7 @@ public:
         return false;
       }
     } else {
-      set_error(_KCCODELINE_, Error::NOFILE, "open failed (file not found)");
+      set_error(_KCCODELINE_, Error::NOENTRY, "open failed (file not found)");
       return false;
     }
     if (hot) {
@@ -1298,7 +1298,7 @@ private:
    * Perform defragmentation of the file.
    * @note This is a dummy implementation for compatibility.
    */
-  bool defrag(int64_t step) {
+  bool defrag(int64_t step = 0) {
     return true;
   }
   /**

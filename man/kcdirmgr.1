@@ -1,4 +1,4 @@
-.TH "KCDIRMGR" 1 "2010-10-03" "Man Page" "Kyoto Cabinet"
+.TH "KCDIRMGR" 1 "2010-10-09" "Man Page" "Kyoto Cabinet"
 
 .SH NAME
 kcdirmgr \- command line interface to manage the directory hash database
@@ -46,17 +46,17 @@ Imports records from a TSV file.
 .br
 \fBkcdirmgr copy \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIfile\fB\fR
 .RS
-Copy the whole database.
+Copies the whole database.
 .RE
 .br
 \fBkcdirmgr dump \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fR[\fB\fIfile\fB\fR]\fB\fR
 .RS
-Dump records into a snapshot file.
+Dumps records into a snapshot file.
 .RE
 .br
 \fBkcdirmgr load \fR[\fB\-otr\fR]\fB \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fR[\fB\fIfile\fB\fR]\fB\fR
 .RS
-Load records from a snapshot file.
+Loads records from a snapshot file.
 .RE
 .br
 \fBkcdirmgr defrag \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB\fR
@@ -101,7 +101,7 @@ Options feature the following.
 .br
 \fB\-pz\fR : does not append line feed at the end of the output.
 .br
-\fB\-max\fR : specifies the maximum number of shown records.
+\fB\-max \fInum\fR\fR : specifies the maximum number of shown records.
 .br
 \fB\-pv\fR : prints values of records also.
 .br

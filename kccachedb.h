@@ -1158,7 +1158,7 @@ private:
    * Perform defragmentation of the file.
    * @note This is a dummy implementation for compatibility.
    */
-  bool defrag(int64_t step) {
+  bool defrag(int64_t step = 0) {
     return true;
   }
   /**

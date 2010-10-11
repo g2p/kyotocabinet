@@ -1,11 +1,11 @@
-.TH "KCPOLYMGR" 1 "2010-10-03" "Man Page" "Kyoto Cabinet"
+.TH "KCPOLYMGR" 1 "2010-10-09" "Man Page" "Kyoto Cabinet"
 
 .SH NAME
 kcpolymgr \- command line interface to manage the polymorphic database
 
 .SH DESCRIPTION
 .PP
-The command `\fBkcpolymgr\fR' is a utility for test and debugging of the file hash database and its applications.  `\fIpath\fR' specifies the path of a database file.  `\fIkey\fR' specifies the key of a record.  `\fIvalue\fR' specifies the value of a record.  `\fIfile\fR' specifies the input/output file.  `\fIsrc\fR' specifies other database files.
+The command `\fBkcpolymgr\fR' is a utility for test and debugging of the polymorphic database and its applications.  `\fIpath\fR' specifies the path of a database file.  `\fIkey\fR' specifies the key of a record.  `\fIvalue\fR' specifies the value of a record.  `\fIfile\fR' specifies the input/output file.  `\fIsrc\fR' specifies other database files.
 .PP
 .RS
 .br
@@ -34,7 +34,7 @@ Removes a record.
 Prints the value of a record.
 .RE
 .br
-\fBkcpolymgr list \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-max \fInum\fB\fR]\fB \fR[\fB\-sx\fR]\fB \fR[\fB\-pv\fR]\fB \fR[\fB\-px\fR]\fB \fIpath\fB \fR[\fB\fIkey\fB\fR]\fB\fR
+\fBkcpolymgr list \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-des\fR]\fB \fR[\fB\-max \fInum\fB\fR]\fB \fR[\fB\-sx\fR]\fB \fR[\fB\-pv\fR]\fB \fR[\fB\-px\fR]\fB \fIpath\fB \fR[\fB\fIkey\fB\fR]\fB\fR
 .RS
 Prints keys of all records, separated by line feeds.
 .RE
@@ -46,17 +46,17 @@ Imports records from a TSV file.
 .br
 \fBkcpolymgr copy \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIfile\fB\fR
 .RS
-Copy the whole database.
+Copies the whole database.
 .RE
 .br
 \fBkcpolymgr dump \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fR[\fB\fIfile\fB\fR]\fB\fR
 .RS
-Dump records into a snapshot file.
+Dumps records into a snapshot file.
 .RE
 .br
 \fBkcpolymgr load \fR[\fB\-otr\fR]\fB \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fR[\fB\fIfile\fB\fR]\fB\fR
 .RS
-Load records from a snapshot file.
+Loads records from a snapshot file.
 .RE
 .br
 \fBkcpolymgr merge \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-add\fR|\fB\-app\fR|\fB\-rep\fR]\fB \fIpath\fB \fIsrc\fB...\fR
@@ -99,7 +99,9 @@ Options feature the following.
 .br
 \fB\-pz\fR : does not append line feed at the end of the output.
 .br
-\fB\-max\fR : specifies the maximum number of shown records.
+\fB\-des\fR : visits records in descending order.
+.br
+\fB\-max \fInum\fR\fR : specifies the maximum number of shown records.
 .br
 \fB\-pv\fR : prints values of records also.
 .br

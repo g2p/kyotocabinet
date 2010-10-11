@@ -23,7 +23,7 @@
 <h1 id="headline">Specificatoins of Command Line Utilities of Kyoto Cabinet</h1>
 
 <div class="note">Copyright (C) 2009-2010 FAL Labs</div>
-<div class="note">Last Update: Sun, 03 Oct 2010 09:13:23 +0900</div>
+<div class="note">Last Update: Sat, 09 Oct 2010 11:16:21 +0900</div>
 
 <hr />
 
@@ -87,15 +87,15 @@
 
 <dl class="api">
 <dt><code>kcutilmgr hex [-d] [<var>file</var>]</code></dt>
-<dd>Perform hexadecimal encoding and its decoding.</dd>
+<dd>Performs hexadecimal encoding and its decoding.</dd>
 <dt><code>kcutilmgr enc [-hex|-url|-quote] [-d] [<var>file</var>]</code></dt>
-<dd>Perform Base64 encoding and its decoding.</dd>
+<dd>Performs Base64 encoding and its decoding.</dd>
 <dt><code>kcutilmgr ciph [-key <var>str</var>] [<var>file</var>]</code></dt>
-<dd>Perform Arcfour cipher and its decipher.</dd>
+<dd>Performs Arcfour cipher and its decipher.</dd>
 <dt><code>kcutilmgr comp [-def|-gz|-lzo|-lzma] [-d] [<var>file</var>]</code></dt>
-<dd>Perform ZLIB encoding and its decoding.  By default, use the raw format.</dd>
+<dd>Performs ZLIB encoding and its decoding.  By default, use the raw format.</dd>
 <dt><code>kcutilmgr hash [-fnv|-path|-crc] [<var>file</var>]</code></dt>
-<dd>Calculate the hash value.  By default, use MurMur hashing.</dd>
+<dd>Calculates the hash value.  By default, use MurMur hashing.</dd>
 <dt><code>kcutilmgr conf [-v|-i|-l|-p]</code></dt>
 <dd>Shows the configuration of Kyoto Cabinet.</dd>
 <dt><code>kcutilmgr version</code></dt>
@@ -294,11 +294,11 @@
 <dt><code>kchashmgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
 <dt><code>kchashmgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
-<dd>Copy the whole database.</dd>
+<dd>Copies the whole database.</dd>
 <dt><code>kchashmgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Dump records into a snapshot file.</dd>
+<dd>Dumps records into a snapshot file.</dd>
 <dt><code>kchashmgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Load records from a snapshot file.</dd>
+<dd>Loads records from a snapshot file.</dd>
 <dt><code>kchashmgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Performs defragmentation.</dd>
 <dt><code>kchashmgr check [-onl|-otl|-onr] <var>path</var></code></dt>
@@ -327,7 +327,7 @@
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
 <li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
 <li><code>-pz</code> : does not append line feed at the end of the output.</li>
-<li><code>-max</code> : specifies the maximum number of shown records.</li>
+<li><code>-max <var>num</var></code> : specifies the maximum number of shown records.</li>
 <li><code>-pv</code> : prints values of records also.</li>
 </ul>
 
@@ -401,16 +401,16 @@
 <dd>Removes a record.</dd>
 <dt><code>kctreemgr get [-onl|-otl|-onr] [-sx] [-px] [-pz] <var>path</var> <var>key</var></code></dt>
 <dd>Prints the value of a record.</dd>
-<dt><code>kctreemgr list [-onl|-otl|-onr] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
+<dt><code>kctreemgr list [-onl|-otl|-onr] [-des] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
 <dd>Prints keys of all records, separated by line feeds.</dd>
 <dt><code>kctreemgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
 <dt><code>kctreemgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
-<dd>Copy the whole database.</dd>
+<dd>Copies the whole database.</dd>
 <dt><code>kctreemgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Dump records into a snapshot file.</dd>
+<dd>Dumps records into a snapshot file.</dd>
 <dt><code>kctreemgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Load records from a snapshot file.</dd>
+<dd>Loads records from a snapshot file.</dd>
 <dt><code>kctreemgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Performs defragmentation.</dd>
 <dt><code>kctreemgr check [-onl|-otl|-onr] <var>path</var></code></dt>
@@ -441,7 +441,8 @@
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
 <li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
 <li><code>-pz</code> : does not append line feed at the end of the output.</li>
-<li><code>-max</code> : specifies the maximum number of shown records.</li>
+<li><code>-des</code> : visits records in descending order.</li>
+<li><code>-max <var>num</var></code> : specifies the maximum number of shown records.</li>
 <li><code>-pv</code> : prints values of records also.</li>
 </ul>
 
@@ -510,11 +511,11 @@
 <dt><code>kcdirmgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
 <dt><code>kcdirmgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
-<dd>Copy the whole database.</dd>
+<dd>Copies the whole database.</dd>
 <dt><code>kcdirmgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Dump records into a snapshot file.</dd>
+<dd>Dumps records into a snapshot file.</dd>
 <dt><code>kcdirmgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Load records from a snapshot file.</dd>
+<dd>Loads records from a snapshot file.</dd>
 <dt><code>kcdirmgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Performs defragmentation.</dd>
 <dt><code>kcdirmgr check [-onl|-otl|-onr] <var>path</var></code></dt>
@@ -538,7 +539,7 @@
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
 <li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
 <li><code>-pz</code> : does not append line feed at the end of the output.</li>
-<li><code>-max</code> : specifies the maximum number of shown records.</li>
+<li><code>-max <var>num</var></code> : specifies the maximum number of shown records.</li>
 <li><code>-pv</code> : prints values of records also.</li>
 </ul>
 
@@ -606,16 +607,16 @@
 <dd>Removes a record.</dd>
 <dt><code>kcforestmgr get [-onl|-otl|-onr] [-sx] [-px] [-pz] <var>path</var> <var>key</var></code></dt>
 <dd>Prints the value of a record.</dd>
-<dt><code>kcforestmgr list [-onl|-otl|-onr] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
+<dt><code>kcforestmgr list [-onl|-otl|-onr] [-des] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
 <dd>Prints keys of all records, separated by line feeds.</dd>
 <dt><code>kcforestmgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
 <dt><code>kcforestmgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
-<dd>Copy the whole database.</dd>
+<dd>Copies the whole database.</dd>
 <dt><code>kcforestmgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Dump records into a snapshot file.</dd>
+<dd>Dumps records into a snapshot file.</dd>
 <dt><code>kcforestmgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Load records from a snapshot file.</dd>
+<dd>Loads records from a snapshot file.</dd>
 <dt><code>kcforestmgr check [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Checks consistency.</dd>
 </dl>
@@ -640,7 +641,8 @@
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
 <li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
 <li><code>-pz</code> : does not append line feed at the end of the output.</li>
-<li><code>-max</code> : specifies the maximum number of shown records.</li>
+<li><code>-des</code> : visits records in descending order.</li>
+<li><code>-max <var>num</var></code> : specifies the maximum number of shown records.</li>
 <li><code>-pv</code> : prints values of records also.</li>
 </ul>
 
@@ -692,7 +694,7 @@
 
 <h2 id="kcpolymgr">kcpolymgr</h2>
 
-<p>The command `<code>kcpolymgr</code>' is a utility for test and debugging of the file hash database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input/output file.  `<var>src</var>' specifies other database files.</p>
+<p>The command `<code>kcpolymgr</code>' is a utility for test and debugging of the polymorphic database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input/output file.  `<var>src</var>' specifies other database files.</p>
 
 <dl class="api">
 <dt><code>kcpolymgr create [-otr] [-onl|-otl|-onr] <var>path</var></code></dt>
@@ -705,16 +707,16 @@
 <dd>Removes a record.</dd>
 <dt><code>kcpolymgr get [-onl|-otl|-onr] [-sx] [-px] [-pz] <var>path</var> <var>key</var></code></dt>
 <dd>Prints the value of a record.</dd>
-<dt><code>kcpolymgr list [-onl|-otl|-onr] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
+<dt><code>kcpolymgr list [-onl|-otl|-onr] [-des] [-max <var>num</var>] [-sx] [-pv] [-px] <var>path</var> [<var>key</var>]</code></dt>
 <dd>Prints keys of all records, separated by line feeds.</dd>
 <dt><code>kcpolymgr import [-onl|-otl|-onr] [-sx] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Imports records from a TSV file.</dd>
 <dt><code>kcpolymgr copy [-onl|-otl|-onr] <var>path</var> <var>file</var></code></dt>
-<dd>Copy the whole database.</dd>
+<dd>Copies the whole database.</dd>
 <dt><code>kcpolymgr dump [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Dump records into a snapshot file.</dd>
+<dd>Dumps records into a snapshot file.</dd>
 <dt><code>kcpolymgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
-<dd>Load records from a snapshot file.</dd>
+<dd>Loads records from a snapshot file.</dd>
 <dt><code>kcpolymgr merge [-onl|-otl|-onr] [-add|-app|-rep] <var>path</var> <var>src</var>...</code></dt>
 <dd>Merge records from other databases.</dd>
 <dt><code>kcpolymgr check [-onl|-otl|-onr] <var>path</var></code></dt>
@@ -737,7 +739,8 @@
 <li><code>-sx</code> : the input data is evaluated as a hexadecimal data string.</li>
 <li><code>-px</code> : the output data is converted into a hexadecimal data string.</li>
 <li><code>-pz</code> : does not append line feed at the end of the output.</li>
-<li><code>-max</code> : specifies the maximum number of shown records.</li>
+<li><code>-des</code> : visits records in descending order.</li>
+<li><code>-max <var>num</var></code> : specifies the maximum number of shown records.</li>
 <li><code>-pv</code> : prints values of records also.</li>
 </ul>
 

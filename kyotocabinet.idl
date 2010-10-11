@@ -25,6 +25,7 @@ module kyotocabinet {
   interface Error;
   interface Visitor;
   interface FileProcessor;
+  interface Logger;
   interface Cursor;
   interface DB;
   //----------------------------------------------------------------
@@ -46,7 +47,7 @@ module kyotocabinet {
     const long SUCCESS = 0;
     const long NOIMPL = 1;
     const long INVALID = 2;
-    const long NOFILE = 3;
+    const long NOENTRY = 3;
     const long NOPERM = 4;
     const long BROKEN = 5;
     const long DUPREC = 6;
@@ -122,7 +123,7 @@ module kyotocabinet {
     boolean add(in string key, in string value);
     boolean replace(in string key, in string value);
     boolean append(in string key, in string value);
-    long increment(in string key, in long num);
+    long long increment(in string key, in long long num);
     double increment_double(in string key, in double num);
     boolean cas(in string key, in string oval, in string nval);
     boolean remove(in string key);

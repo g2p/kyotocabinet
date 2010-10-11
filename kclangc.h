@@ -54,7 +54,7 @@ enum {
   KCESUCCESS,                            /**< success */
   KCENOIMPL,                             /**< not implemented */
   KCEINVALID,                            /**< invalid operation */
-  KCENOFILE,                             /**< file not found */
+  KCENOENTRY,                            /**< file not found */
   KCENOPERM,                             /**< no permission */
   KCEBROKEN,                             /**< broken file */
   KCEDUPREC,                             /**< record duplication */
