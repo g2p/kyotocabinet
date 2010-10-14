@@ -649,7 +649,7 @@ public:
       if (std::strstr(emsg, "(permission denied)") || std::strstr(emsg, "(directory)")) {
         code = Error::NOPERM;
       } else if (std::strstr(emsg, "(file not found)") || std::strstr(emsg, "(invalid path)")) {
-        code = Error::NOENTRY;
+        code = Error::NOREPOS;
       }
       set_error(_KCCODELINE_, code, emsg);
       return false;

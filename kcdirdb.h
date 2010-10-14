@@ -593,7 +593,7 @@ public:
         return false;
       }
     } else {
-      set_error(_KCCODELINE_, Error::NOENTRY, "open failed (file not found)");
+      set_error(_KCCODELINE_, Error::NOREPOS, "open failed (file not found)");
       return false;
     }
     if (hot) {

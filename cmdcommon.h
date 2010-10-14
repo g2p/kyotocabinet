@@ -214,18 +214,18 @@ inline bool getline(std::istream* is, std::string* str) {
 
 // convert a number into the string with the decimal unit
 inline std::string unitnumstr(int64_t num) {
-  if (num >= pow(1000.0, 6)) {
-    return kc::strprintf("%.3Lf quintillion", (long double)num / pow(1000.0, 6));
-  } else if (num >= pow(1000.0, 5)) {
-    return kc::strprintf("%.3Lf quadrillion", (long double)num / pow(1000.0, 5));
-  } else if (num >= pow(1000.0, 4)) {
-    return kc::strprintf("%.3Lf trillion", (long double)num / pow(1000.0, 4));
-  } else if (num >= pow(1000.0, 3)) {
-    return kc::strprintf("%.3Lf billion", (long double)num / pow(1000.0, 3));
-  } else if (num >= pow(1000.0, 2)) {
-    return kc::strprintf("%.3Lf million", (long double)num / pow(1000.0, 2));
-  } else if (num >= pow(1000.0, 1)) {
-    return kc::strprintf("%.3Lf thousand", (long double)num / pow(1000.0, 1));
+  if (num >= std::pow(1000.0, 6)) {
+    return kc::strprintf("%.3Lf quintillion", (long double)num / std::pow(1000.0, 6));
+  } else if (num >= std::pow(1000.0, 5)) {
+    return kc::strprintf("%.3Lf quadrillion", (long double)num / std::pow(1000.0, 5));
+  } else if (num >= std::pow(1000.0, 4)) {
+    return kc::strprintf("%.3Lf trillion", (long double)num / std::pow(1000.0, 4));
+  } else if (num >= std::pow(1000.0, 3)) {
+    return kc::strprintf("%.3Lf billion", (long double)num / std::pow(1000.0, 3));
+  } else if (num >= std::pow(1000.0, 2)) {
+    return kc::strprintf("%.3Lf million", (long double)num / std::pow(1000.0, 2));
+  } else if (num >= std::pow(1000.0, 1)) {
+    return kc::strprintf("%.3Lf thousand", (long double)num / std::pow(1000.0, 1));
   }
   return kc::strprintf("%lld", (long long)num);
 }

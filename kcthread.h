@@ -52,13 +52,13 @@ public:
    */
   void detach();
   /**
-   * Yield the processor from the running thread.
-   */
-  static void yield();
-  /**
    * Terminate the running thread.
    */
   static void exit();
+  /**
+   * Yield the processor from the current thread.
+   */
+  static void yield();
   /**
    * Suspend execution of the current thread.
    * @param sec the interval of the suspension in seconds.

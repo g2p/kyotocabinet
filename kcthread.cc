@@ -157,20 +157,6 @@ void Thread::detach() {
 
 
 /**
- * Yield the processor from the running thread.
- */
-void Thread::yield() {
-#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(true);
-  ::Sleep(0);
-#else
-  _assert_(true);
-  ::sched_yield();
-#endif
-}
-
-
-/**
  * Terminate the running thread.
  */
 void Thread::exit() {
@@ -180,6 +166,20 @@ void Thread::exit() {
 #else
   _assert_(true);
   ::pthread_exit(NULL);
+#endif
+}
+
+
+/**
+ * Yield the processor from the current thread.
+ */
+void Thread::yield() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  ::Sleep(0);
+#else
+  _assert_(true);
+  ::sched_yield();
 #endif
 }
 

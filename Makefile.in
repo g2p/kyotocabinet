@@ -155,7 +155,8 @@ dist :
 
 distclean : clean
 	cd example && $(MAKE) clean
-	rm -rf Makefile kyotocabinet.pc config.cache config.log config.status autom4te.cache
+	rm -rf Makefile kyotocabinet.pc \
+	  config.cache config.log config.status config.tmp autom4te.cache
 	which ccache >/dev/null 2>&1 && ccache -C >/dev/null 2>&1
 
 

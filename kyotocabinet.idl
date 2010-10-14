@@ -47,7 +47,7 @@ module kyotocabinet {
     const long SUCCESS = 0;
     const long NOIMPL = 1;
     const long INVALID = 2;
-    const long NOENTRY = 3;
+    const long NOREPOS = 3;
     const long NOPERM = 4;
     const long BROKEN = 5;
     const long DUPREC = 6;
