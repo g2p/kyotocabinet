@@ -305,6 +305,7 @@ check-hash :
 	$(RUNENV) $(RUNCMD) ./kchashmgr get -px casket mikio > check.out
 	$(RUNENV) $(RUNCMD) ./kchashmgr list casket > check.out
 	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kchashmgr clear casket
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kchashtest order -set -bnum 5000 -msiz 50000 casket 10000
 	$(RUNENV) $(RUNCMD) ./kchashtest order -get -msiz 50000 casket 10000
@@ -398,6 +399,7 @@ check-tree :
 	$(RUNENV) $(RUNCMD) ./kctreemgr get -px casket mikio > check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr list casket > check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kctreemgr clear casket
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kctreetest order -set \
 	  -psiz 100 -bnum 5000 -msiz 50000 -pccap 100k casket 10000
@@ -495,6 +497,7 @@ check-dir :
 	$(RUNENV) $(RUNCMD) ./kcdirmgr get -px casket mikio > check.out
 	$(RUNENV) $(RUNCMD) ./kcdirmgr list casket > check.out
 	$(RUNENV) $(RUNCMD) ./kcdirmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcdirmgr clear casket
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcdirtest order -set casket 1000
 	$(RUNENV) $(RUNCMD) ./kcdirtest order -get casket 1000
@@ -573,6 +576,7 @@ check-forest :
 	$(RUNENV) $(RUNCMD) ./kcforestmgr get -px casket mikio > check.out
 	$(RUNENV) $(RUNCMD) ./kcforestmgr list casket > check.out
 	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
+	$(RUNENV) $(RUNCMD) ./kcforestmgr clear casket
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcforesttest order -set \
 	  -psiz 100 -bnum 5000 -pccap 100k casket 10000
@@ -671,6 +675,7 @@ check-poly :
 	$(RUNENV) $(RUNCMD) ./kcpolymgr get -px casket.kct mikio > check.out
 	$(RUNENV) $(RUNCMD) ./kcpolymgr list casket.kct > check.out
 	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kct
+	$(RUNENV) $(RUNCMD) ./kcpolymgr clear casket.kct
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcpolytest order -set "casket.kct#bnum=5000#msiz=50000" 10000
 	$(RUNENV) $(RUNCMD) ./kcpolytest order -get "casket.kct#msiz=50000" 10000

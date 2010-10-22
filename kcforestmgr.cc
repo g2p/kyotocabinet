@@ -31,6 +31,7 @@ static int32_t runset(int argc, char** argv);
 static int32_t runremove(int argc, char** argv);
 static int32_t runget(int argc, char** argv);
 static int32_t runlist(int argc, char** argv);
+static int32_t runclear(int argc, char** argv);
 static int32_t runimport(int argc, char** argv);
 static int32_t runcopy(int argc, char** argv);
 static int32_t rundump(int argc, char** argv);
@@ -46,6 +47,7 @@ static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
                        int32_t oflags, bool px, bool pz);
 static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t oflags,
                         bool des, int64_t max, bool pv, bool px);
+static int32_t procclear(const char* path, int32_t oflags);
 static int32_t procimport(const char* path, const char* file, int32_t oflags, bool sx);
 static int32_t proccopy(const char* path, const char* file, int32_t oflags);
 static int32_t procdump(const char* path, const char* file, int32_t oflags);
@@ -71,6 +73,8 @@ int main(int argc, char** argv) {
     rv = runget(argc, argv);
   } else if (!std::strcmp(argv[1], "list")) {
     rv = runlist(argc, argv);
+  } else if (!std::strcmp(argv[1], "clear")) {
+    rv = runclear(argc, argv);
   } else if (!std::strcmp(argv[1], "import")) {
     rv = runimport(argc, argv);
   } else if (!std::strcmp(argv[1], "copy")) {
@@ -105,6 +109,7 @@ static void usage() {
   eprintf("  %s get [-onl|-otl|-onr] [-sx] [-px] [-pz] path key\n", g_progname);
   eprintf("  %s list [-onl|-otl|-onr] [-des] [-max num] [-sx] [-pv] [-px] path [key]\n",
           g_progname);
+  eprintf("  %s clear [-onl|-otl|-onr] path\n", g_progname);
   eprintf("  %s import [-onl|-otl|-onr] [-sx] path [file]\n", g_progname);
   eprintf("  %s copy [-onl|-otl|-onr] path file\n", g_progname);
   eprintf("  %s dump [-onl|-otl|-onr] path [file]\n", g_progname);
@@ -432,6 +437,37 @@ static int32_t runlist(int argc, char** argv) {
   }
   int32_t rv = proclist(path, kbuf, ksiz, oflags, des, max, pv, px);
   delete[] kbuf;
+  return rv;
+}
+
+
+// parse arguments of clear command
+static int32_t runclear(int argc, char** argv) {
+  bool argbrk = false;
+  const char* path = NULL;
+  int32_t oflags = 0;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
+        oflags |= kc::ForestDB::ONOLOCK;
+      } else if (!std::strcmp(argv[i], "-otl")) {
+        oflags |= kc::ForestDB::OTRYLOCK;
+      } else if (!std::strcmp(argv[i], "-onr")) {
+        oflags |= kc::ForestDB::ONOREPAIR;
+      } else {
+        usage();
+      }
+    } else if (!path) {
+      argbrk = true;
+      path = argv[i];
+    } else {
+      usage();
+    }
+  }
+  if (!path) usage();
+  int32_t rv = procclear(path, oflags);
   return rv;
 }
 
@@ -933,6 +969,27 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
       dberrprint(&db, "DB::iterate failed");
       err = true;
     }
+  }
+  if (!db.close()) {
+    dberrprint(&db, "DB::close failed");
+    err = true;
+  }
+  return err ? 1 : 0;
+}
+
+
+// perform clear command
+static int32_t procclear(const char* path, int32_t oflags) {
+  kc::ForestDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
+  if (!db.open(path, kc::ForestDB::OWRITER | oflags)) {
+    dberrprint(&db, "DB::open failed");
+    return 1;
+  }
+  bool err = false;
+  if (!db.clear()) {
+    dberrprint(&db, "DB::clear failed");
+    err = true;
   }
   if (!db.close()) {
     dberrprint(&db, "DB::close failed");

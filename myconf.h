@@ -90,7 +90,7 @@
 
 #endif
 
-#define _KC_VERSION    "1.2.17"
+#define _KC_VERSION    "1.2.18"
 #define _KC_LIBVER     6
 #define _KC_LIBREV     2
 #define _KC_FMTVER     5

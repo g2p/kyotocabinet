@@ -1564,8 +1564,10 @@ private:
   bool accept_impl(const char* kbuf, size_t ksiz, Visitor* visitor,
                    int64_t bidx, uint32_t pivot, bool isiter) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor && bidx >= 0);
-    int64_t off = get_bucket(bidx);
+    int64_t top = get_bucket(bidx);
+    int64_t off = top;
     if (off < 0) return false;
+    enum { DIREMPTY, DIRLEFT, DIRRIGHT, DIRMIXED } entdir = DIREMPTY;
     int64_t entoff = 0;
     Record rec;
     char rbuf[HDBRECBUFSIZ];
@@ -1582,10 +1584,20 @@ private:
       if (pivot > tpivot) {
         delete[] rec.bbuf;
         off = rec.left;
+        switch (entdir) {
+          case DIREMPTY: entdir = DIRLEFT; break;
+          case DIRRIGHT: entdir = DIRMIXED; break;
+          default: break;
+        }
         entoff = rec.off + sizeof(uint16_t);
       } else if (pivot < tpivot) {
         delete[] rec.bbuf;
         off = rec.right;
+        switch (entdir) {
+          case DIREMPTY: entdir = DIRRIGHT; break;
+          case DIRLEFT: entdir = DIRMIXED; break;
+          default: break;
+        }
         entoff = rec.off + sizeof(uint16_t) + width_;
       } else {
         int32_t kcmp = compare_keys(kbuf, ksiz, rec.kbuf, rec.ksiz);
@@ -1593,10 +1605,20 @@ private:
         if (kcmp > 0) {
           delete[] rec.bbuf;
           off = rec.left;
+          switch (entdir) {
+            case DIREMPTY: entdir = DIRLEFT; break;
+            case DIRRIGHT: entdir = DIRMIXED; break;
+            default: break;
+          }
           entoff = rec.off + sizeof(uint16_t);
         } else if (kcmp < 0) {
           delete[] rec.bbuf;
           off = rec.right;
+          switch (entdir) {
+            case DIREMPTY: entdir = DIRRIGHT; break;
+            case DIRLEFT: entdir = DIRMIXED; break;
+            default: break;
+          }
           entoff = rec.off + sizeof(uint16_t) + width_;
         } else {
           if (!rec.vbuf && !read_record_body(&rec)) {
@@ -1772,8 +1794,28 @@ private:
       rec.psiz = psiz;
       rec.ksiz = ksiz;
       rec.vsiz = vsiz;
-      rec.left = 0;
-      rec.right = 0;
+      switch(entdir) {
+        default: {
+          rec.left = 0;
+          rec.right = 0;
+          break;
+        }
+        case DIRLEFT: {
+          if (linear_) {
+            rec.left = top;
+            rec.right = 0;
+          } else {
+            rec.left = 0;
+            rec.right = top;
+          }
+          break;
+        }
+        case DIRRIGHT: {
+          rec.left = top;
+          rec.right = 0;
+          break;
+        }
+      }
       rec.kbuf = kbuf;
       rec.vbuf = vbuf;
       bool over = false;
@@ -1798,13 +1840,13 @@ private:
       }
       if (!over) psiz_.secure_least(rec.off + rec.rsiz);
       delete[] zbuf;
-      if (entoff > 0) {
-        if (!set_chain(entoff, rec.off)) {
+      if (entoff < 1 || entdir == DIRLEFT || entdir == DIRRIGHT) {
+        if (!set_bucket(bidx, rec.off)) {
           if (atran) abort_auto_transaction();
           return false;
         }
       } else {
-        if (!set_bucket(bidx, rec.off)) {
+        if (!set_chain(entoff, rec.off)) {
           if (atran) abort_auto_transaction();
           return false;
         }

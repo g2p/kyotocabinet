@@ -1,3 +1,11 @@
+2010-10-15  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kchashdb.h (HashDB::accept_impl): hash chaining algorithm was modified.
+
+	* kcpolymgr.cc (runclear, procclear): new functions.
+
+	- Release: 1.2.18
+
 2010-10-11  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcdb.h (BasicDB::Error::NOREPOS): new constant instead of "NOENTRY".

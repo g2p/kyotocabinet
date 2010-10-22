@@ -75,7 +75,7 @@ const char* const FEATURES = ""
 #if _KC_LZO
 "(lzo)"
 #endif
-#if _KC_LMMA
+#if _KC_LZMA
 "(lzma)"
 #endif
   ;
