@@ -1741,6 +1741,23 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
                     err_ = true;
                   }
                 }
+                if (myrand(rnum_ / 50 + 1) == 0) {
+                  std::vector<std::string> keys;
+                  std::string prefix(kbuf, ksiz > 0 ? ksiz - 1 : 0);
+                  if (db_->match_prefix(prefix, &keys, myrand(10)) == -1) {
+                    dberrprint(db_, __LINE__, "DB::match_prefix");
+                    err_ = true;
+                  }
+                }
+                if (myrand(rnum_ / 50 + 1) == 0) {
+                  std::vector<std::string> keys;
+                  std::string regex(kbuf, ksiz > 0 ? ksiz - 1 : 0);
+                  if (db_->match_regex(regex, &keys, myrand(10)) == -1 &&
+                      db_->error() != kc::BasicDB::Error::LOGIC) {
+                    dberrprint(db_, __LINE__, "DB::match_regex");
+                    err_ = true;
+                  }
+                }
                 break;
               }
               default: {

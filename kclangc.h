@@ -628,6 +628,32 @@ char* kcdbstatus(KCDB* db);
 
 
 /**
+ * Get keys matching a prefix string.
+ * @param db a database object.
+ * @param prefix the prefix string.
+ * @param strary an array to contain the result.  Its size must be sufficient.
+ * @param max the maximum number to retrieve.
+ * @return the number of retrieved keys or -1 on failure.
+ * @note The region of each element of the result should be released with the kcfree function
+ * when it is no longer in use.
+ */
+int64_t kcdbmatchprefix(KCDB* db, const char* prefix, char** strary, int64_t max);
+
+
+/**
+ * Get keys matching a regular expression string.
+ * @param db a database object.
+ * @param regex the regular expression string.
+ * @param strary an array to contain the result.  Its size must be sufficient.
+ * @param max the maximum number to retrieve.
+ * @return the number of retrieved keys or -1 on failure.
+ * @note The region of each element of the result should be released with the kcfree function
+ * when it is no longer in use.
+ */
+int64_t kcdbmatchregex(KCDB* db, const char* regex, char** strary, int64_t max);
+
+
+/**
  * Merge records from other databases.
  * @param db a database object.
  * @param srcary an array of the source detabase objects.

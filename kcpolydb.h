@@ -23,6 +23,7 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcregex.h>
 #include <kcdb.h>
 #include <kcplantdb.h>
 #include <kcprotodb.h>
@@ -895,6 +896,158 @@ public:
       return NULL;
     }
     return db_;
+  }
+  /**
+   * Get keys matching a prefix string.
+   * @param prefix the prefix string.
+   * @param strvec a string vector to contain the result.
+   * @param max the maximum number to retrieve.  If it is negative, no limit is specified.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
+   * @return the number of retrieved keys or -1 on failure.
+   */
+  int64_t match_prefix(const std::string& prefix, std::vector<std::string>* strvec,
+                       int64_t max = -1, ProgressChecker* checker = NULL) {
+    _assert_(strvec);
+    const char* pbuf = prefix.data();
+    size_t psiz = prefix.size();
+    if (max < 0) max = INT64_MAX;
+    Comparator* comp;
+    switch (type_) {
+      case TYPEGRASS: {
+        comp = ((GrassDB*)db_)->rcomp();
+        break;
+      }
+      case TYPETREE: {
+        comp = ((TreeDB*)db_)->rcomp();
+        break;
+      }
+      case TYPEFOREST: {
+        comp = ((ForestDB*)db_)->rcomp();
+        break;
+      }
+      default: {
+        comp = NULL;
+        break;
+      }
+    }
+    bool err = false;
+    int64_t allcnt = count();
+    if (checker && !checker->check("match_prefix", "beginning", 0, allcnt)) {
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
+      err = true;
+    }
+    strvec->clear();
+    Cursor* cur = cursor();
+    int64_t curcnt = 0;
+    if (comp == &LEXICALCOMP) {
+      if (cur->jump(pbuf, psiz)) {
+        while ((int64_t)strvec->size() < max) {
+          size_t ksiz;
+          char* kbuf = cur->get_key(&ksiz, true);
+          if (kbuf) {
+            if (ksiz >= psiz && !std::memcmp(kbuf, pbuf, psiz)) {
+              strvec->push_back(std::string(kbuf, ksiz));
+            } else {
+              delete[] kbuf;
+              break;
+            }
+            delete[] kbuf;
+          } else {
+            if (cur->error() != Error::NOREC) err = true;
+            break;
+          }
+          curcnt++;
+          if (checker && !checker->check("match_prefix", "processing", curcnt, allcnt)) {
+            set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
+            err = true;
+          }
+        }
+      } else if (cur->error() != Error::NOREC) {
+        err = true;
+      }
+    } else {
+      if (cur->jump()) {
+        while ((int64_t)strvec->size() < max) {
+          size_t ksiz;
+          char* kbuf = cur->get_key(&ksiz, true);
+          if (kbuf) {
+            if (ksiz >= psiz && !std::memcmp(kbuf, pbuf, psiz))
+              strvec->push_back(std::string(kbuf, ksiz));
+            delete[] kbuf;
+          } else {
+            if (cur->error() != Error::NOREC) err = true;
+            break;
+          }
+          curcnt++;
+          if (checker && !checker->check("match_prefix", "processing", curcnt, allcnt)) {
+            set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
+            err = true;
+          }
+        }
+      } else if (cur->error() != Error::NOREC) {
+        err = true;
+      }
+    }
+    if (checker && !checker->check("match_prefix", "ending", strvec->size(), allcnt)) {
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
+      err = true;
+    }
+    delete cur;
+    return err ? -1 : strvec->size();
+  }
+  /**
+   * Get keys matching a regular expression string.
+   * @param regex the regular expression string.
+   * @param strvec a string vector to contain the result.
+   * @param max the maximum number to retrieve.  If it is negative, no limit is specified.
+   * @param checker a progress checker object.  If it is NULL, no checking is performed.
+   * @return the number of retrieved keys or -1 on failure.
+   */
+  int64_t match_regex(const std::string& regex, std::vector<std::string>* strvec,
+                      int64_t max = -1, ProgressChecker* checker = NULL) {
+    _assert_(strvec);
+    if (max < 0) max = INT64_MAX;
+    Regex reg;
+    if (!reg.compile(regex, Regex::MATCHONLY)) {
+      set_error(_KCCODELINE_, Error::LOGIC, "compilation failed");
+      return -1;
+    }
+    bool err = false;
+    int64_t allcnt = count();
+    if (checker && !checker->check("match_regex", "beginning", 0, allcnt)) {
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
+      err = true;
+    }
+    strvec->clear();
+    Cursor* cur = cursor();
+    int64_t curcnt = 0;
+    if (cur->jump()) {
+      while ((int64_t)strvec->size() < max) {
+        size_t ksiz;
+        char* kbuf = cur->get_key(&ksiz, true);
+        if (kbuf) {
+          std::string key(kbuf, ksiz);
+          if (reg.match(key)) strvec->push_back(key);
+          delete[] kbuf;
+        } else {
+          if (cur->error() != Error::NOREC) err = true;
+          break;
+        }
+        curcnt++;
+        if (checker && !checker->check("match_regex", "processing", curcnt, allcnt)) {
+          set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
+          err = true;
+        }
+      }
+    } else if (cur->error() != Error::NOREC) {
+      err = true;
+    }
+    if (checker && !checker->check("match_regex", "ending", strvec->size(), allcnt)) {
+      set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
+      err = true;
+    }
+    delete cur;
+    return err ? -1 : strvec->size();
   }
   /**
    * Merge records from other databases.

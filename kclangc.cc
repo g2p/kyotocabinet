@@ -514,6 +514,52 @@ char* kcdbstatus(KCDB* db) {
 
 
 /**
+ * Get keys matching a prefix string.
+ */
+int64_t kcdbmatchprefix(KCDB* db, const char* prefix, char** strary, int64_t max) {
+  _assert_(db && prefix && strary && max >= 0 && max <= MEMMAXSIZ);
+  PolyDB* pdb = (PolyDB*)db;
+  std::vector<std::string> strvec;
+  if (pdb->match_prefix(std::string(prefix), &strvec, max) == -1) return -1;
+  int64_t cnt = 0;
+  std::vector<std::string>::iterator it = strvec.begin();
+  std::vector<std::string>::iterator itend = strvec.end();
+  while (it != itend) {
+    size_t ksiz = it->size();
+    char* kbuf = new char[ksiz+1];
+    std::memcpy(kbuf, it->data(), ksiz);
+    kbuf[ksiz] = '\0';
+    strary[cnt++] = kbuf;
+    it++;
+  }
+  return cnt;
+}
+
+
+/**
+ * Get keys matching a regular expression string.
+ */
+int64_t kcdbmatchregex(KCDB* db, const char* regex, char** strary, int64_t max) {
+  _assert_(db && regex && strary && max >= 0 && max <= MEMMAXSIZ);
+  PolyDB* pdb = (PolyDB*)db;
+  std::vector<std::string> strvec;
+  if (pdb->match_regex(std::string(regex), &strvec, max) == -1) return -1;
+  int64_t cnt = 0;
+  std::vector<std::string>::iterator it = strvec.begin();
+  std::vector<std::string>::iterator itend = strvec.end();
+  while (it != itend) {
+    size_t ksiz = it->size();
+    char* kbuf = new char[ksiz+1];
+    std::memcpy(kbuf, it->data(), ksiz);
+    kbuf[ksiz] = '\0';
+    strary[cnt++] = kbuf;
+    it++;
+  }
+  return cnt;
+}
+
+
+/**
  * Merge records from other databases.
  */
 int32_t kcdbmerge(KCDB* db, KCDB** srcary, size_t srcnum, uint32_t mode) {

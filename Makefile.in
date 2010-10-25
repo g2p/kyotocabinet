@@ -202,6 +202,8 @@ check-util :
 	$(RUNENV) $(RUNCMD) ./kcutilmgr hash Makefile > check.in
 	$(RUNENV) $(RUNCMD) ./kcutilmgr hash -fnv Makefile > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilmgr hash -path Makefile > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr regex mikio Makefile > check.out
+	$(RUNENV) $(RUNCMD) ./kcutilmgr regex -alt "hirarin" mikio Makefile > check.out
 	$(RUNENV) $(RUNCMD) ./kcutilmgr conf
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcutiltest mutex -th 4 -iv -1 10000
@@ -1055,67 +1057,87 @@ kccompare.o : kccommon.h kcutil.h kccompare.h myconf.h
 
 kcmap.o : kccommon.h kcutil.h kcmap.h myconf.h
 
-kcdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h
+kcregex.o : kccommon.h kcutil.h kcregex.h myconf.h
 
-kcplantdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kcdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h
+
+kcplantdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h
 
-kcprotodb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kcprotodb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h
 
-kccachedb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kccachedb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kccachedb.h
 
-kchashdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kchashdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kchashdb.h
 
-kcdirdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kcdirdb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcdirdb.h
 
-kcpolydb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kcpolydb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h
 
-kclangc.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kclangc.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
 
 kcutiltest.o kcutilmgr.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   cmdcommon.h
 
 kcprototest.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h cmdcommon.h
 
 kccachetest.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kccachedb.h cmdcommon.h
 
 kcgrasstest.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kccachedb.h cmdcommon.h
 
 kchashtest.o kchashmgr.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kchashdb.h cmdcommon.h
 
 kctreetest.o kctreemgr.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kchashdb.h cmdcommon.h
 
 kcdirtest.o kcdirmgr.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcdirdb.h cmdcommon.h
 
 kcforesttest.o kcforestmgr.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcdirdb.h cmdcommon.h
 
 kcpolytest.o kcpolymgr.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h cmdcommon.h
 
 kclangctest.o : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
 
 

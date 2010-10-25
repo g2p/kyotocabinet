@@ -90,9 +90,9 @@
 
 #endif
 
-#define _KC_VERSION    "1.2.18"
+#define _KC_VERSION    "1.2.19"
 #define _KC_LIBVER     6
-#define _KC_LIBREV     2
+#define _KC_LIBREV     3
 #define _KC_FMTVER     5
 
 #if defined(_MYBIGEND)
@@ -123,6 +123,12 @@
 #define _KC_LZMA       1
 #else
 #define _KC_LZMA       0
+#endif
+
+#if defined(_SYS_MSVC_)
+#define _KC_PXREGEX    0
+#else
+#define _KC_PXREGEX    1
 #endif
 
 

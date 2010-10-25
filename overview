@@ -247,6 +247,7 @@ namespace kyotocabinet {}
  * @file kccompress.h   data compressor and decompressor
  * @file kccompare.h    comparator functions
  * @file kcmap.h        data mapping structures
+ * @file kcregex.h      regular expression
  * @file kcplantdb.h    plant database
  * @file kcprotodb.h    prototype database
  * @file kccachedb.h    cache hash database

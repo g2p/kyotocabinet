@@ -83,7 +83,7 @@
 
 <h2 id="kcutilmgr">kcutilmgr</h2>
 
-<p>The command `<code>kcutilmgr</code>' is a tool of miscellaneous utilities, and to show the configuration.  This command is used in the following format.  `<var>file</var>' specifies a input file.  If it is omitted, the standard input is read.  If it begins with "@", the trailing substring is treated as the input.</p>
+<p>The command `<code>kcutilmgr</code>' is a tool of miscellaneous utilities, and to show the configuration.  This command is used in the following format.  `<var>file</var>' specifies a input file.  If it is omitted, the standard input is read.  If it begins with "@", the trailing substring is treated as the input.  `<var>pattern</var>' specifies an matching pattern.</p>
 
 <dl class="api">
 <dt><code>kcutilmgr hex [-d] [<var>file</var>]</code></dt>
@@ -96,6 +96,8 @@
 <dd>Performs ZLIB encoding and its decoding.  By default, use the raw format.</dd>
 <dt><code>kcutilmgr hash [-fnv|-path|-crc] [<var>file</var>]</code></dt>
 <dd>Calculates the hash value.  By default, use MurMur hashing.</dd>
+<dt><code>kcutilmgr regex [-alt <var>str</var>] [-ic] <var>pattern</var> [<var>file</var>]</code></dt>
+<dd>Prints lines matching a regular expression.</dd>
 <dt><code>kcutilmgr conf [-v|-i|-l|-p]</code></dt>
 <dd>Shows the configuration of Kyoto Cabinet.</dd>
 <dt><code>kcutilmgr version</code></dt>
@@ -117,6 +119,8 @@
 <li><code>-fnv</code> : use FNV hashing.</li>
 <li><code>-path</code> : use the path hashing of the directory database.</li>
 <li><code>-crc</code> : calculate the CRC32 checksum.</li>
+<li><code>-alt <var>str</var></code> : replaces matching substring with the alternative string.</li>
+<li><code>-ic</code> : ignores difference between upper and lower cases.</li>
 <li><code>-v</code> : show the version number of Kyoto Cabinet.</li>
 <li><code>-i</code> : show options to include the headers of Tokyo Cabinet.</li>
 <li><code>-l</code> : show options to link the library of Tokyo Cabinet.</li>

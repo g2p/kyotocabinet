@@ -192,6 +192,7 @@
 /usr/local/include/kccompress.h
 /usr/local/include/kccompare.h
 /usr/local/include/kcmap.h
+/usr/local/include/kcregex.h
 /usr/local/include/kcdb.h
 /usr/local/include/kcplantdb.h
 /usr/local/include/kcprotodb.h
@@ -739,7 +740,7 @@ db.open(...);
 
 <p>If you want to cache ten millions of records and keep the memory usage as small as possible, the following tuning is suggested for example.</p>
 
-<pre>db.tune_options(TreeDB::TCCOMPESS);
+<pre>db.tune_options(GrassDB::TCCOMPESS);
 db.tune_buckets(500LL * 1000);
 db.tune_page(32768);
 db.tune_page_cache(1LL &lt;&lt; 20);
@@ -768,7 +769,7 @@ db.open(...);
 
 <p>The optional features by `<code>tune_options</code>' is useful to reduce the size of the database file at the expense of scalability or time efficiency.  If `<code>HashDB::TSMALL</code>' is specified, the width of record addressing is reduced from 6 bytes to 4 bytes.  As the result, the footprint for each record is reduced from 16 bytes to 12 bytes.  However, it limits the maximum size of the database file up to 16GB (2GB multiplied by the alignment).  If `<code>HashDB::TLINEAR</code>' is specified, the data structure of the collision chain of hash table is changed from binary tree to linear linked list.  In that case, the footprint of each record is reduced from 16 bytes to 10 bytes although the time efficiency becomes sensitive to the number of the hash buckets.  If `<code>HashDB::TCOMPRESS</code>' is specified, the value of each record is compressed implicitly when stored in the file.  If the value is bigger than 1KB or more, compression is effective.</p>
 
-<p>The default tuning of the bucket number is about one million.  If you intend to store more records, call `<code>tune_buckets</code>' to set the bucket number.  The suggested ratio of the bucket number is the twice of the total number of records and it is okay from 100% to 400%.  If the ratio decreases smaller than 100%, the time efficiency will decrease gradually.</p>
+<p>The default tuning of the bucket number is about one million.  If you intend to store more records, call `<code>tune_buckets</code>' to set the bucket number.  The suggested ratio of the bucket number is the twice of the total number of records and it is okay from 100% to 400%.  If the ratio decreases smaller than 100%, the time efficiency will decrease gradually.  If you set the bucket number, setting the `<code>HashDB::TLINEAR</code>' option is recommended to improve time and space efficiency.</p>
 
 <p>The default tuning of the size of the internal memory-mapped region is 64MB.  If the database size is expected to be larger than 64MB, call `<code>tune_map</code> to set the map size larger than the expected size of the database.  Although the capacity of the RAM on the machine limits the map size, increasing the map size is effective to improve performance.</p>
 
@@ -785,9 +786,10 @@ db.tune_defrag(8);
 db.open(...);
 </pre>
 
-<p>If you have a monster machine and intend to store ten billion records and improve time efficiency as possible, the following tuning is suggested for example.</p>
+<p>If you have a monster machine with 512GB RAM and intend to store ten billion records and improve time efficiency as possible, the following tuning is suggested for example.</p>
 
-<pre>db.tune_buckets(20LL * 1000 * 1000 * 1000);
+<pre>db.tune_options(HashDB::TLINEAR);
+db.tune_buckets(20LL * 1000 * 1000 * 1000);
 db.tune_map(300LL &lt;&lt; 30);
 db.open(...);
 </pre>
@@ -821,7 +823,7 @@ db.tune_page(32768);
 db.open(...);
 </pre>
 
-<p>If you have a monster machine and intend to store ten billion records and improve time efficiency as possible, the following tuning is suggested for example.</p>
+<p>If you have a monster machine with 512GB RAM and intend to store ten billion records and improve time efficiency as possible, the following tuning is suggested for example.</p>
 
 <pre>db.tune_buckets(1LL * 1000 * 1000 * 1000);
 db.tune_map(300LL &lt;&lt; 30);

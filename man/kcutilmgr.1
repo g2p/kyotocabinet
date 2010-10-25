@@ -5,7 +5,8 @@ kcutilmgr \- command line interface of miscellaneous utilities
 
 .SH DESCRIPTION
 .PP
-The command `\fBkcutilmgr\fR' is a tool of miscellaneous utilities, and to show the configuration.  This command is used in the following format.  `\fIfile\fR' specifies a input file.  If it is omitted, the standard input is read.  If it begins with "@", the trailing substring is treated as the input.
+.PP
+The command `\fBkcutilmgr\fR' is a tool of miscellaneous utilities, and to show the configuration.  This command is used in the following format.  `\fIfile\fR' specifies a input file.  If it is omitted, the standard input is read.  If it begins with "@", the trailing substring is treated as the input.  `\fIpattern\fR' specifies an matching pattern.
 .PP
 .RS
 .br
@@ -34,9 +35,19 @@ Performs ZLIB encoding and its decoding.  By default, use the raw format.
 Calculates the hash value.  By default, use MurMur hashing.
 .RE
 .br
+\fBkcutilmgr regex \fR[\fB\-alt \fIstr\fB\fR]\fB \fR[\fB\-ic\fR]\fB \fIpattern\fB \fR[\fB\fIfile\fB\fR]\fB\fR
+.RS
+Prints lines matching a regular expression.
+.RE
+.br
 \fBkcutilmgr conf \fR[\fB\-v\fR|\fB\-i\fR|\fB\-l\fR|\fB\-p\fR]\fB\fR
 .RS
 Shows the configuration of Kyoto Cabinet.
+.RE
+.br
+\fBkcutilmgr version\fR
+.RS
+Shows the version information of Kyoto Cabinet.
 .RE
 .RE
 .PP
@@ -66,6 +77,10 @@ Options feature the following.
 \fB\-path\fR : use the path hashing of the directory database.
 .br
 \fB\-crc\fR : calculate the CRC32 checksum.
+.br
+\fB\-alt \fIstr\fR\fR : replaces matching substring with the alternative string.
+.br
+\fB\-ic\fR : ignores difference between upper and lower cases.
 .br
 \fB\-v\fR : show the version number of Kyoto Cabinet.
 .br

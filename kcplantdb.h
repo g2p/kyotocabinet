@@ -23,6 +23,7 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcregex.h>
 #include <kcdb.h>
 
 namespace kyotocabinet {                 // common namespace

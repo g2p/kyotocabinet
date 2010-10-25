@@ -15,7 +15,7 @@ SDKPATH = C:\Program Files\Microsoft SDKs\Windows\v7.0A
 # Targets
 LIBRARYFILES = kyotocabinet.lib
 LIBOBJFILES = kcutil.obj kcdb.obj kcthread.obj kcfile.obj \
-  kccompress.obj kccompare.obj kcmap.obj kcplantdb.obj \
+  kccompress.obj kccompare.obj kcmap.obj kcregex.obj kcplantdb.obj \
   kcprotodb.obj kccachedb.obj kchashdb.obj kcdirdb.obj kcpolydb.obj kclangc.obj
 COMMANDFILES = kcutiltest.exe kcutilmgr.exe kcprototest.exe kccachetest.exe kcgrasstest.exe \
   kchashtest.exe kchashmgr.exe kctreetest.exe kctreemgr.exe \
@@ -110,6 +110,8 @@ check-util :
 	kcutilmgr hash VCmakefile > check.in
 	kcutilmgr hash -fnv VCmakefile > check.out
 	kcutilmgr hash -path VCmakefile > check.out
+	kcutilmgr regex mikio VCmakefile > check.out
+	kcutilmgr regex -alt "hirarin" mikio VCmakefile > check.out
 	kcutilmgr conf
 	-del casket* /F /Q > NUL: 2>&1
 	kcutiltest mutex -th 4 -iv -1 10000
@@ -772,53 +774,69 @@ kccompare.obj : kccommon.h kcutil.h kccompare.h myconf.h
 
 kcmap.obj : kccommon.h kcutil.h kcmap.h myconf.h
 
-kcplantdb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kcregex.obj : kccommon.h kcutil.h kcregex.h myconf.h
+
+kcplantdb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h
 
-kcprotodb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kcprotodb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h
 
-kccachedb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kccachedb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kccachedb.h
 
-kchashdb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kchashdb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kchashdb.h
 
-kcdirdb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kcdirdb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcdirdb.h
 
-kcpolydb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kcpolydb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h
 
-kclangc.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+kclangc.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
 
 kcutiltest.obj kcutilmgr.obj : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   cmdcommon.h
 
 kcprototest.obj : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h cmdcommon.h
 
 kccachetest.obj kcgrasstest.obj : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kccachedb.h cmdcommon.h
 
 kchashtest.obj kchashmgr.obj kctreetest.obj kctreemgr.obj : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kchashdb.h cmdcommon.h
 
 kcdirtest.obj kcdirmgr.obj kcforesttest.obj kcforestmgr.obj : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcdirdb.h cmdcommon.h
 
 kcpolytest.obj kcpolymgr.obj : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h cmdcommon.h
 
 kclangctest.obj : \
-  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
 
 

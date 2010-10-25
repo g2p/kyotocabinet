@@ -7,19 +7,20 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.18)
+AC_INIT(kyotocabinet, 1.2.19)
 
 # Package information
 MYLIBVER=6
-MYLIBREV=2
+MYLIBREV=3
 MYFORMATVER=5
 
 # Targets
-MYHEADERFILES="kccommon.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h kcmap.h"
+MYHEADERFILES="kccommon.h kcutil.h kcthread.h kcfile.h"
+MYHEADERFILES="$MYHEADERFILES kccompress.h kccompare.h kcmap.h kcregex.h"
 MYHEADERFILES="$MYHEADERFILES kcdb.h kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h"
 MYHEADERFILES="$MYHEADERFILES kcpolydb.h kclangc.h"
 MYLIBRARYFILES="libkyotocabinet.a"
-MYLIBOBJFILES="kcutil.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o"
+MYLIBOBJFILES="kcutil.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o kcregex.o"
 MYLIBOBJFILES="$MYLIBOBJFILES kcdb.o kcplantdb.o kcprotodb.o kccachedb.o kchashdb.o"
 MYLIBOBJFILES="$MYLIBOBJFILES kcdirdb.o kcpolydb.o kclangc.o"
 MYCOMMANDFILES="kcutiltest kcutilmgr kcprototest kccachetest kcgrasstest"
@@ -260,6 +261,7 @@ AC_CHECK_HEADER(unistd.h, true, AC_MSG_ERROR([unistd.h is required]))
 AC_CHECK_HEADER(fcntl.h, true, AC_MSG_ERROR([fcntl.h is required]))
 AC_CHECK_HEADER(dirent.h, true, AC_MSG_ERROR([dirent.h is required]))
 AC_CHECK_HEADER(pthread.h, true, AC_MSG_ERROR([pthread.h is required]))
+AC_CHECK_HEADER(regex.h, true, AC_MSG_ERROR([regex.h is required]))
 if test "$enable_zlib" != "no"
 then
   AC_CHECK_HEADER(zlib.h, true, AC_MSG_ERROR([zlib.h is required]))

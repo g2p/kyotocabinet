@@ -23,6 +23,7 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcregex.h>
 #include <kcdb.h>
 #include <kcplantdb.h>
 
@@ -1794,7 +1795,7 @@ private:
       rec.psiz = psiz;
       rec.ksiz = ksiz;
       rec.vsiz = vsiz;
-      switch(entdir) {
+      switch (entdir) {
         default: {
           rec.left = 0;
           rec.right = 0;

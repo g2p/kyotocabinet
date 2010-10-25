@@ -2068,6 +2068,9 @@ static int32_t procmisc(int64_t rnum) {
       errprint(__LINE__, "LZO::compress");
       err = true;
     }
+    std::string ustr((char*)ubuf, usiz);
+    kc::Regex::match(ustr, ".(\x80).");
+    kc::Regex::replace(ustr, ".(\x80).", "[$0$1$2$&]");
     if (rnum > 250 && i % (rnum / 250) == 0) {
       iputchar('.');
       if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);

@@ -28,12 +28,14 @@ static int32_t runenc(int argc, char** argv);
 static int32_t runciph(int argc, char** argv);
 static int32_t runcomp(int argc, char** argv);
 static int32_t runhash(int argc, char** argv);
+static int32_t runregex(int argc, char** argv);
 static int32_t runconf(int argc, char** argv);
 static int32_t prochex(const char* file, bool dec);
 static int32_t procenc(const char* file, int32_t mode, bool dec);
 static int32_t procciph(const char* file, const char* key);
 static int32_t proccomp(const char* file, int32_t mode, bool dec);
 static int32_t prochash(const char* file, int32_t mode);
+static int32_t procregex(const char* file, const char* pattern, const char* alt, int32_t opts);
 static int32_t procconf(int32_t mode);
 
 
@@ -53,6 +55,8 @@ int main(int argc, char** argv) {
     rv = runcomp(argc, argv);
   } else if (!std::strcmp(argv[1], "hash")) {
     rv = runhash(argc, argv);
+  } else if (!std::strcmp(argv[1], "regex")) {
+    rv = runregex(argc, argv);
   } else if (!std::strcmp(argv[1], "conf")) {
     rv = runconf(argc, argv);
   } else if (!std::strcmp(argv[1], "version") || !std::strcmp(argv[1], "--version")) {
@@ -76,6 +80,7 @@ static void usage() {
   eprintf("  %s ciph [-key str] [file]\n", g_progname);
   eprintf("  %s comp [-def|-gz|-lzo|-lzma] [-d] [file]\n", g_progname);
   eprintf("  %s hash [-fnv|-path|-crc] [file]\n", g_progname);
+  eprintf("  %s regex [-alt str] [-ic] pattern [file]\n", g_progname);
   eprintf("  %s conf [-v|-i|-l|-p]\n", g_progname);
   eprintf("  %s version\n", g_progname);
   eprintf("\n");
@@ -230,6 +235,40 @@ static int32_t runhash(int argc, char** argv) {
     }
   }
   int32_t rv = prochash(file, mode);
+  return rv;
+}
+
+
+// parse arguments of regex command
+static int32_t runregex(int argc, char** argv) {
+  bool argbrk = false;
+  const char* pattern = NULL;
+  const char* file = NULL;
+  const char* alt = NULL;
+  int32_t opts = 0;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-alt")) {
+        if (++i >= argc) usage();
+        alt = argv[i];
+      } else if (!std::strcmp(argv[i], "-ic")) {
+        opts |= kc::Regex::IGNCASE;
+      } else {
+        usage();
+      }
+    } else if (!pattern) {
+      argbrk = true;
+      pattern = argv[i];
+    } else if (!file) {
+      file = argv[i];
+    } else {
+      usage();
+    }
+  }
+  if (!pattern) usage();
+  int32_t rv = procregex(file, pattern, alt, opts);
   return rv;
 }
 
@@ -626,6 +665,56 @@ static int32_t prochash(const char* file, int32_t mode) {
       uint32_t hash = kc::ZLIB::calculate_crc(ostr.data(), ostr.size());
       iprintf("%08x\n", (unsigned)hash);
       break;
+    }
+  }
+  return 0;
+}
+
+
+// perform regex command
+static int32_t procregex(const char* file, const char* pattern, const char* alt, int32_t opts) {
+  const char* istr = file && *file == '@' ? file + 1 : NULL;
+  std::istream *is;
+  std::ifstream ifs;
+  std::istringstream iss(istr ? istr : "");
+  if (file) {
+    if (istr) {
+      is = &iss;
+    } else {
+      ifs.open(file, std::ios_base::in | std::ios_base::binary);
+      if (!ifs) {
+        eprintf("%s: %s: open error\n", g_progname, file);
+        return 1;
+      }
+      is = &ifs;
+    }
+  } else {
+    is = &std::cin;
+  }
+  if (alt) {
+    kc::Regex regex;
+    if (!regex.compile(pattern, opts)) {
+      eprintf("%s: %s: compilation failed\n", g_progname, pattern);
+      return 1;
+    }
+    std::string altstr(alt);
+    std::string line;
+    while (mygetline(is, &line)) {
+
+      std::cout << regex.replace(line, altstr) << std::endl;
+    }
+
+
+
+  } else {
+    kc::Regex regex;
+    if (!regex.compile(pattern, opts | kc::Regex::MATCHONLY)) {
+      eprintf("%s: %s: compilation failed\n", g_progname, pattern);
+      return 1;
+    }
+    std::string line;
+    while (mygetline(is, &line)) {
+      if (regex.match(line)) std::cout << line << std::endl;
     }
   }
   return 0;

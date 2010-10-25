@@ -1087,7 +1087,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
   int64_t cnt = 0;
   std::string line;
   std::vector<std::string> fields;
-  while (!err && getline(is, &line)) {
+  while (!err && mygetline(is, &line)) {
     cnt++;
     kc::strsplit(line, '\t', &fields);
     if (sx) {

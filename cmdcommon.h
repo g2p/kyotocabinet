@@ -23,6 +23,7 @@
 #include <kccompress.h>
 #include <kccompare.h>
 #include <kcmap.h>
+#include <kcregex.h>
 #include <kcdb.h>
 #include <kcplantdb.h>
 
@@ -73,7 +74,7 @@ void iputchar(char c);
 void eprintf(const char* format, ...);
 void printversion();
 void printdata(const char* buf, int32_t size, bool px);
-bool getline(std::istream* is, std::string* str);
+bool mygetline(std::istream* is, std::string* str);
 std::string unitnumstr(int64_t num);
 std::string unitnumstrbyte(int64_t num);
 kc::BasicDB::ProgressChecker* stdchecker(const char* prefix, std::ostream* strm);
@@ -198,7 +199,7 @@ inline void printdata(const char* buf, int32_t size, bool px) {
 
 
 // read a line from a file descriptor
-inline bool getline(std::istream* is, std::string* str) {
+inline bool mygetline(std::istream* is, std::string* str) {
   str->clear();
   bool hit = false;
   char c;

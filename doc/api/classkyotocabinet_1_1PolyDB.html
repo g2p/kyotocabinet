@@ -93,6 +93,10 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#a92047d400162479dbc4a354ff7929912"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a0dd5de1071f29d77f705943746f160c8">reveal_inner_db</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Reveal the inner database object.  <a href="#a0dd5de1071f29d77f705943746f160c8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#ae1a3c5cf00e8b44d058e13bef372cc4f">match_prefix</a> (const std::string &amp;prefix, std::vector&lt; std::string &gt; *strvec, int64_t max=-1, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get keys matching a prefix string.  <a href="#ae1a3c5cf00e8b44d058e13bef372cc4f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a23cafa21e981567d1d3f82b437ebcd9d">match_regex</a> (const std::string &amp;regex, std::vector&lt; std::string &gt; *strvec, int64_t max=-1, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get keys matching a regular expression string.  <a href="#a23cafa21e981567d1d3f82b437ebcd9d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a7795422aa9b57fed8385425ae58f7c7a">merge</a> (<a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> **srcary, size_t srcnum, <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523">MergeMode</a> mode=MSET, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Merge records from other databases.  <a href="#a7795422aa9b57fed8385425ae58f7c7a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1DB_1_1Cursor.html">Cursor</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a54f983af2afab8f667d1e28595b224c2">cursor</a> ()</td></tr>
@@ -750,6 +754,108 @@
 
 </div>
 </div>
+<a class="anchor" id="ae1a3c5cf00e8b44d058e13bef372cc4f"></a><!-- doxytag: member="kyotocabinet::PolyDB::match_prefix" ref="ae1a3c5cf00e8b44d058e13bef372cc4f" args="(const std::string &amp;prefix, std::vector&lt; std::string &gt; *strvec, int64_t max=&#45;1, ProgressChecker *checker=NULL)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kyotocabinet::PolyDB::match_prefix </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>prefix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::string &gt; *&nbsp;</td>
+          <td class="paramname"> <em>strvec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t&nbsp;</td>
+          <td class="paramname"> <em>max</em> = <code>-1</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get keys matching a prefix string. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>prefix</em>&nbsp;</td><td>the prefix string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>strvec</em>&nbsp;</td><td>a string vector to contain the result. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>max</em>&nbsp;</td><td>the maximum number to retrieve. If it is negative, no limit is specified. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the number of retrieved keys or -1 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a23cafa21e981567d1d3f82b437ebcd9d"></a><!-- doxytag: member="kyotocabinet::PolyDB::match_regex" ref="a23cafa21e981567d1d3f82b437ebcd9d" args="(const std::string &amp;regex, std::vector&lt; std::string &gt; *strvec, int64_t max=&#45;1, ProgressChecker *checker=NULL)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kyotocabinet::PolyDB::match_regex </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>regex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::string &gt; *&nbsp;</td>
+          <td class="paramname"> <em>strvec</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t&nbsp;</td>
+          <td class="paramname"> <em>max</em> = <code>-1</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *&nbsp;</td>
+          <td class="paramname"> <em>checker</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get keys matching a regular expression string. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>regex</em>&nbsp;</td><td>the regular expression string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>strvec</em>&nbsp;</td><td>a string vector to contain the result. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>max</em>&nbsp;</td><td>the maximum number to retrieve. If it is negative, no limit is specified. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>checker</em>&nbsp;</td><td>a progress checker object. If it is NULL, no checking is performed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the number of retrieved keys or -1 on failure. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a7795422aa9b57fed8385425ae58f7c7a"></a><!-- doxytag: member="kyotocabinet::PolyDB::merge" ref="a7795422aa9b57fed8385425ae58f7c7a" args="(BasicDB **srcary, size_t srcnum, MergeMode mode=MSET, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
@@ -862,7 +968,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Oct 15 21:44:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Oct 25 03:50:37 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

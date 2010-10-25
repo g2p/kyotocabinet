@@ -1,3 +1,13 @@
+2010-10-21  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcpolydb.h (PolyDB::match_prefix, PolyDB::match_regex): new functions.
+
+	* kclangc.h (kcdbmatchprefix, kcdbmatchregex): new functions.
+
+	* kcregex.h: new file.
+
+	- Release: 1.2.19
+
 2010-10-15  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kchashdb.h (HashDB::accept_impl): hash chaining algorithm was modified.
