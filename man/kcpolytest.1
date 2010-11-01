@@ -1,4 +1,4 @@
-.TH "KCPOLYTEST" 1 "2010-10-09" "Man Page" "Kyoto Cabinet"
+.TH "KCPOLYTEST" 1 "2010-11-01" "Man Page" "Kyoto Cabinet"
 
 .SH NAME
 kcpolytest \- command line interface to test the polymorphic database
@@ -9,24 +9,29 @@ The command `\fBkcpolytest\fR' is a utility for facility test and performance te
 .PP
 .RS
 .br
-\fBkcpolytest order \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-rnd\fR]\fB \fR[\fB\-set\fR|\fB\-get\fR|\fB\-getw\fR|\fB\-rem\fR|\fB\-etc\fR]\fB \fR[\fB\-tran\fR]\fB \fR[\fB\-oat\fR|\fB\-onl\fR|\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIrnum\fB\fR
+\fBkcpolytest order \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-rnd\fR]\fB \fR[\fB\-set\fR|\fB\-get\fR|\fB\-getw\fR|\fB\-rem\fR|\fB\-etc\fR]\fB \fR[\fB\-tran\fR]\fB \fR[\fB\-oat\fR|\fB\-onl\fR|\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-lv\fR]\fB \fIpath\fB \fIrnum\fB\fR
 .RS
 Performs in\-order tests.
 .RE
 .br
-\fBkcpolytest queue \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-rnd\fR]\fB \fR[\fB\-oat\fR|\fB\-onl\fR|\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIrnum\fB\fR
+\fBkcpolytest queue \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-rnd\fR]\fB \fR[\fB\-oat\fR|\fB\-onl\fR|\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-lv\fR]\fB \fIpath\fB \fIrnum\fB\fR
 .RS
 Performs queuing operations.
 .RE
 .br
-\fBkcpolytest wicked \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-oat\fR|\fB\-onl\fR|\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIrnum\fB\fR
+\fBkcpolytest wicked \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-oat\fR|\fB\-onl\fR|\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-lv\fR]\fB \fIpath\fB \fIrnum\fB\fR
 .RS
 Performs mixed operations selected at random.
 .RE
 .br
-\fBkcpolytest tran \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-hard\fR]\fB \fR[\fB\-oat\fR|\fB\-onl\fR|\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIrnum\fB\fR
+\fBkcpolytest tran \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-hard\fR]\fB \fR[\fB\-oat\fR|\fB\-onl\fR|\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-lv\fR]\fB \fIpath\fB \fIrnum\fB\fR
 .RS
 Performs test of transaction.
+.RE
+.br
+\fBkcpolytest mapred \fR[\fB\-rnd\fR]\fB \fR[\fB\-oat\fR|\fB\-onl\fR|\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-lv\fR]\fB \fR[\fB\-tmp \fIstr\fB\fR]\fB \fR[\fB\-dbnum \fInum\fB\fR]\fB \fR[\fB\-clim \fInum\fB\fR]\fB \fIpath\fB \fIrnum\fB\fR
+.RS
+Performs MapReduce operations.
 .RE
 .br
 \fBkcpolytest misc \fIpath\fB\fR
@@ -64,9 +69,17 @@ Options feature the following.
 .br
 \fB\-onr\fR : opens the database with the no auto repair option.
 .br
+\fB\-lv\fR : reports all errors.
+.br
 \fB\-it \fInum\fR\fR : specifies the number of repetition.
 .br
 \fB\-hard\fR : performs physical synchronization.
+.br
+\fB\-tmp \fIstr\fR\fR : specifies the path of a directory for temporary storage.
+.br
+\fB\-dbnum \fInum\fR\fR : specifies the number of temporary databases.
+.br
+\fB\-clim \fInum\fR\fR : specifies the limit size of cache memory.
 .br
 .RE
 .PP

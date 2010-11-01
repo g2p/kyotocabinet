@@ -23,7 +23,7 @@
 <h1 id="headline">Specificatoins of Command Line Utilities of Kyoto Cabinet</h1>
 
 <div class="note">Copyright (C) 2009-2010 FAL Labs</div>
-<div class="note">Last Update: Sat, 09 Oct 2010 11:16:21 +0900</div>
+<div class="note">Last Update: Mon, 01 Nov 2010 20:23:12 +0900</div>
 
 <hr />
 
@@ -675,6 +675,8 @@
 <dd>Performs mixed operations selected at random.</dd>
 <dt><code>kcpolytest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
+<dt><code>kcpolytest mapred [-rnd] [-oat|-onl|-onl|-otl|-onr] [-lv] [-tmp <var>str</var>] [-dbnum <var>num</var>] [-clim <var>num</var>] <var>path</var> <var>rnum</var></code></dt>
+<dd>Performs MapReduce operations.</dd>
 <dt><code>kcpolytest misc <var>path</var></code></dt>
 <dd>Performs miscellaneous tests.</dd>
 </dl>
@@ -698,6 +700,9 @@
 <li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 <li><code>-hard</code> : performs physical synchronization.</li>
+<li><code>-tmp <var>str</var></code> : specifies the path of a directory for temporary storage.</li>
+<li><code>-dbnum <var>num</var></code> : specifies the number of temporary databases.</li>
+<li><code>-clim <var>num</var></code> : specifies the limit size of cache memory.</li>
 </ul>
 
 <p>This command returns 0 on success, another on failure.</p>

@@ -169,7 +169,7 @@
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p>Basic implementation of database. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>This class is an abstract class to prescribe the interface of file operations and provide mix-in methods. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1BasicDB.html#a6f8ee2f3bde5f5389119fe43696f9bdc" title="Open a database file.">BasicDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1BasicDB.html#a8863ffedb9604742305ece7ccdb23c2a" title="Close the database file.">BasicDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This class is an abstract class to prescribe the interface of file operations and provide mix-in methods. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1BasicDB.html#a6f8ee2f3bde5f5389119fe43696f9bdc" title="Open a database file.">BasicDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1BasicDB.html#a8863ffedb9604742305ece7ccdb23c2a" title="Close the database file.">BasicDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. It is forbidden to share a database object with child processes. </dd></dl>
 <hr/><h2>Member Enumeration Documentation</h2>
 <a class="anchor" id="aa1db8f4472965b12b6648728bcd44c7f"></a><!-- doxytag: member="kyotocabinet::BasicDB::Type" ref="aa1db8f4472965b12b6648728bcd44c7f" args="" -->
 <div class="memitem">
@@ -470,7 +470,7 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
 
 <p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a668ed0f22f9b9538ffcde8466fc2f5ec">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a6687ee72cae51c608a622a6db973d39d">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a38780730815dfcf830c348c889477587">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#abd20793d6349fdc38a6cb5c7d85af8de">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a27be5998494e81a5fa4be24e6047f4de">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#abefeb7da685d9c99a7dbc8c88a7b2f49">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
 
@@ -1777,7 +1777,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Oct 25 03:50:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 1 21:55:45 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

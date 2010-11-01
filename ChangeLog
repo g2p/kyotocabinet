@@ -1,3 +1,11 @@
+2010-10-29  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcdbext.h, kcdbext.cc: new files.
+
+	* kcpolytest.cc (runmapred, procmapred): new functions.
+
+	- Release: 1.2.20
+
 2010-10-21  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcpolydb.h (PolyDB::match_prefix, PolyDB::match_regex): new functions.

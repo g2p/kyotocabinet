@@ -2,6 +2,11 @@ EXPORTS
   KCVERSION = KCVERSION CONSTANT
   KCVISNOP = KCVISNOP CONSTANT
   KCVISREMOVE = KCVISREMOVE CONSTANT
+  kcatof = kcatof
+  kcatoi = kcatoi
+  kcatoix = kcatoix
+  kcchkinf = kcchkinf
+  kcchknan = kcchknan
   kccuraccept = kccuraccept
   kccurdb = kccurdb
   kccurdel = kccurdel
@@ -11,9 +16,13 @@ EXPORTS
   kccurgetkey = kccurgetkey
   kccurgetvalue = kccurgetvalue
   kccurjump = kccurjump
+  kccurjumpback = kccurjumpback
+  kccurjumpbackkey = kccurjumpbackkey
   kccurjumpkey = kccurjumpkey
   kccurremove = kccurremove
+  kccursetvalue = kccursetvalue
   kccurstep = kccurstep
+  kccurstepback = kccurstepback
   kcdbaccept = kcdbaccept
   kcdbadd = kcdbadd
   kcdbappend = kcdbappend
@@ -22,6 +31,7 @@ EXPORTS
   kcdbcas = kcdbcas
   kcdbclear = kcdbclear
   kcdbclose = kcdbclose
+  kcdbcopy = kcdbcopy
   kcdbcount = kcdbcount
   kcdbcursor = kcdbcursor
   kcdbdel = kcdbdel
@@ -35,10 +45,14 @@ EXPORTS
   kcdbincrint = kcdbincrint
   kcdbiterate = kcdbiterate
   kcdbloadsnap = kcdbloadsnap
+  kcdbmatchprefix = kcdbmatchprefix
+  kcdbmatchregex = kcdbmatchregex
+  kcdbmerge = kcdbmerge
   kcdbnew = kcdbnew
   kcdbopen = kcdbopen
   kcdbpath = kcdbpath
   kcdbremove = kcdbremove
+  kcdbreplace = kcdbreplace
   kcdbset = kcdbset
   kcdbsize = kcdbsize
   kcdbstatus = kcdbstatus
@@ -47,5 +61,7 @@ EXPORTS
   kcfree = kcfree
   kchashfnv = kchashfnv
   kchashmurmur = kchashmurmur
+  kcinf = kcinf
   kcmalloc = kcmalloc
+  kcnan = kcnan
   kctime = kctime

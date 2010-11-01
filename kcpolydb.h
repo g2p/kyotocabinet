@@ -42,7 +42,7 @@ namespace kyotocabinet {                 // common namespace
  * database file and connect the database object to it.  To avoid data missing or corruption, it
  * is important to close every database file by the PolyDB::close method when the database is no
  * longer in use.  It is forbidden for multible database objects in a process to open the same
- * database at the same time.
+ * database at the same time.  It is forbidden to share a database object with child processes.
  */
 class PolyDB : public BasicDB {
 public:
@@ -83,8 +83,9 @@ public:
      * @param writable true for writable operation, or false for read-only operation.
      * @param step true to move the cursor to the next record, or false for no move.
      * @return true on success, or false on failure.
-     * @note the operation for each record is performed atomically and other threads accessing
-     * the same record are blocked.
+     * @note The operation for each record is performed atomically and other threads accessing
+     * the same record are blocked.  To avoid deadlock, any database operation must not be
+     * performed in this function.
      */
     bool accept(Visitor* visitor, bool writable = true, bool step = false) {
       _assert_(visitor);
@@ -260,8 +261,9 @@ public:
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
-   * @note the operation for each record is performed atomically and other threads accessing the
-   * same record are blocked.
+   * @note The operation for each record is performed atomically and other threads accessing the
+   * same record are blocked.  To avoid deadlock, any database operation must not be performed in
+   * this function.
    */
   bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
@@ -277,7 +279,8 @@ public:
    * @param writable true for writable operation, or false for read-only operation.
    * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
-   * @note the whole iteration is performed atomically and other threads are blocked.
+   * @note The whole iteration is performed atomically and other threads are blocked.  To avoid
+   * deadlock, any database operation must not be performed in this function.
    */
   bool iterate(Visitor *visitor, bool writable = true, ProgressChecker* checker = NULL) {
     _assert_(visitor);

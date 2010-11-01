@@ -150,7 +150,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p>On-memory hash database with LRU deletion. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>This class is a concrete class to operate a hash database on memory. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1CacheDB.html#aff8d30ef3cd6990348c47a88983548bf" title="Open a database file.">CacheDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0" title="Close the database file.">CacheDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This class is a concrete class to operate a hash database on memory. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1CacheDB.html#aff8d30ef3cd6990348c47a88983548bf" title="Open a database file.">CacheDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0" title="Close the database file.">CacheDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. It is forbidden to share a database object with child processes. </dd></dl>
 <hr/><h2>Member Enumeration Documentation</h2>
 <a class="anchor" id="ade67fcf7ec690cbfd0e1758301c45a09"></a><!-- doxytag: member="kyotocabinet::CacheDB::Option" ref="ade67fcf7ec690cbfd0e1758301c45a09" args="" -->
 <div class="memitem">
@@ -294,7 +294,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>the operation for each record is performed atomically and other threads accessing the same record are blocked. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operation for each record is performed atomically and other threads accessing the same record are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a5ae32216900a642c5182e7ee67677467">kyotocabinet::DB</a>.</p>
 
@@ -341,7 +341,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>the whole iteration is performed atomically and other threads are blocked. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a809c175a7a69deaa56ed6b9cef9fa973">kyotocabinet::BasicDB</a>.</p>
 
@@ -1382,7 +1382,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; CacheDB,
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Oct 25 03:50:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 1 21:55:45 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

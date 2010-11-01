@@ -23,7 +23,7 @@
 <h1 id="headline">Fundamental Specifications of Kyoto Cabinet Version 1</h1>
 
 <div class="note">Copyright (C) 2009-2010 FAL Labs</div>
-<div class="note">Last Update: Sat, 09 Oct 2010 11:16:21 +0900</div>
+<div class="note">Last Update: Mon, 01 Nov 2010 20:23:12 +0900</div>
 
 <hr />
 
@@ -129,6 +129,8 @@
 
 <p>Kyoto Cabinet supports the "visitor" pattern.  You can define arbitrary database operations with call back functions.  The visitor class encapsulates that call back functions and their state data.  The database class has the "accept" method, which accepts an instance of the visitor class and calls its functions with a record data.  The return value of the call back function is reflected as the new state of the record.</p>
 
+<p>In addition, a lot of useful utilities are provided such as "prefix search", "regex search", "logging", "hot backup", "pseudo-snapshot", and "merging".  A framework for "MapReduce" is also provided.  Although it is not distributed or concurrent, it is useful for aggregate calculation with less CPU loading and less memory usage.</p>
+
 <p>While the core API is provided for C++, bindings for other languages such as C, Java, Python, Ruby, Perl, and Lua are also provided.  Command line interfaces are also provided corresponding to each API.  They are useful for prototyping, test, and debugging.</p>
 
 <hr />
@@ -201,6 +203,7 @@
 /usr/local/include/kcdirdb.h
 /usr/local/include/kcforestdb.h
 /usr/local/include/kcpolydb.h
+/usr/local/include/kcdbext.h
 /usr/local/include/kclangc.h
 /usr/local/lib/libkyotocabinet.a
 /usr/local/lib/libkyotocabinet.so.x.y.z
@@ -816,7 +819,7 @@ db.open(...);
 
 <p>If you intend to store ten thousands of records and reduce the database size as possible, the following tuning is suggested for example.</p>
 
-<pre>db.tune_options(TreeDB::TCCOMPESS);
+<pre>db.tune_options(TreeDB::TLINEAR | TreeDB::TCCOMPESS);
 db.tune_buckets(1LL * 1000);
 db.tune_defrag(8);
 db.tune_page(32768);
@@ -825,9 +828,10 @@ db.open(...);
 
 <p>If you have a monster machine with 512GB RAM and intend to store ten billion records and improve time efficiency as possible, the following tuning is suggested for example.</p>
 
-<pre>db.tune_buckets(1LL * 1000 * 1000 * 1000);
+<pre>db.tune_options(TreeDB::TLINEAR);
+db.tune_buckets(1LL * 1000 * 1000 * 1000);
 db.tune_map(300LL &lt;&lt; 30);
-db.tune_page_cache(2LL &lt;&lt; 30);
+db.tune_page_cache(8LL &lt;&lt; 30);
 db.open(...);
 </pre>
 
@@ -931,7 +935,7 @@ db.synchronize(&amp;proc);
 
 <h3 id="tips_snapshot">Pseudo-snapshot</h3>
 
-<p>Chiefly for the cache hash database and the cache tree database, the pseudo-snapshot mechanism is provided.  The `<code>BasicDB::dump_snapshot</code>' dumps all records into a stream or a file.  The `<code>BasicDB::load_snapshot</code>' method loads records from a stream or a file.  Although the operations are performed atomically, they don't finish momentarily but take time in proportion of the database size with blocking the other threads.  Because the format of pseudo-snapshot data is common among the all database classes, it is useful to migrate records for each other.</p>
+<p>Chiefly for the cache hash database and the cache tree database, the "pseudo-snapshot" mechanism is provided.  The `<code>BasicDB::dump_snapshot</code>' dumps all records into a stream or a file.  The `<code>BasicDB::load_snapshot</code>' method loads records from a stream or a file.  Although the operations are performed atomically, they don't finish momentarily but take time in proportion of the database size with blocking the other threads.  Because the format of pseudo-snapshot data is common among the all database classes, it is useful to migrate records for each other.</p>
 
 <pre>db.dump_snapshot("backup.kcss");
 db.load_snapshot("backup.kcss");
@@ -966,9 +970,9 @@ db.open("casket.kct#zcomp=arc#zkey=foobarbaz", ...);
 
 <p>The cache hash database (CacheDB) and the cache tree database (GrassDB) are useful to save memory usage of associative array of strings.  They can substitute std::map of C++, java.lang.Map of Java, and built-in "hash" mechanisms of many scripting languages.  The cache hash database improves space efficiency by serializing the key and the value of each record into a byte array.  The cache tree database improves space efficiency by serializing records in each page into a byte array.</p>
 
-<p>For example, if you store ten million records and each is composed of a 8-byte key and a 8-byte value, `std::map&lt;std::string, std::string&gt;' (ProtoTreeDB) uses about 1.2GB memory.  In the same situation, the cache hash database uses 620MB memory and the cache tree database uses 318MB memory.  The cache tree database provides the best space efficiency in this use case.  However, as for time efficiency, the cache hash database is superior to the cache tree database, due to the difference of hash table and B+ tree.  Note that B+ tree is very good at sequeitial access but not suitable for random access.</p>
+<p>For example, if you store ten million records and each is composed of a 8-byte key and a 8-byte value, `std::map&lt;std::string, std::string&gt;' (ProtoTreeDB) uses about 1.2GB memory.  In the same situation, the cache hash database uses 620MB memory and the cache tree database uses 318MB memory.  The cache tree database provides the best space efficiency in this use case.  However, as for time efficiency, the cache hash database is superior to the cache tree database, due to the difference of hash table and B+ tree.  Note that B+ tree is very good at sequeitial access but not suitable for random access.  To improve time efficency of B+ tree, set the page size 1024 or less.</p>
 
-<p>If you want to reduce the memory usage extremely, use the cache tree database with the compression option.  Moreover, set the bucket number about 5% of the record number, set the page size 32768 or more, and set the capacity of the page cache less than 5% of the total record size.  For example, for the above situation of ten million records, the bucket number should be 500 thousand, the page size should be 32768, and the page cache should be 8MB.  Those are expressed as "%#opts=c#bnum=500k#psiz=32768#pccap=8m" for the polymorphic database.  Consequently, it uses 60MB memory only.</p>
+<p>If you want to reduce the memory usage extremely, use the cache tree database with the compression option.  Moreover, set the bucket number around 5% of the record number, set the page size 32768 or more, and set the capacity of the page cache less than 5% of the total record size.  For example, for the above situation of ten million records, the bucket number should be 500 thousand, the page size should be 32768, and the page cache should be 8MB.  Those are expressed as "%#opts=c#bnum=500k#psiz=32768#pccap=8m" for the polymorphic database.  Consequently, ten million records take 60MB memory only.</p>
 
 <hr />
 

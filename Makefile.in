@@ -727,6 +727,8 @@ check-poly :
 	$(RUNENV) $(RUNCMD) ./kcpolytest tran -th 2 -it 4 casket.kct 10000
 	$(RUNENV) $(RUNCMD) ./kcpolytest tran -th 2 -it 4 \
 	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=10000#msiz=0#dfunit=1" 1000
+	$(RUNENV) $(RUNCMD) ./kcpolytest mapred -dbnum 2 -clim 10k casket.kct 10000
+	$(RUNENV) $(RUNCMD) ./kcpolytest mapred -rnd -dbnum 2 -clim 10k casket.kct 10000
 	rm -rf casket*
 	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd "casket.kch#opts=s#bnum=256" 1000
 	$(RUNENV) $(RUNCMD) ./kcpolytest order -rnd "casket.kct#opts=l#psiz=256" 1000
@@ -1086,9 +1088,13 @@ kcpolydb.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompa
   kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h
 
+kcdbext.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
+  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kcdbext.h
+
 kclangc.o : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
-  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
+  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kcdbext.h kclangc.h
 
 kcutiltest.o kcutilmgr.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
@@ -1133,12 +1139,14 @@ kcforesttest.o kcforestmgr.o : \
 kcpolytest.o kcpolymgr.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
-  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h cmdcommon.h
+  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h \
+  kcpolydb.h kcdbext.h cmdcommon.h
 
 kclangctest.o : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
-  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kclangc.h
+  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h \
+  kcpolydb.h kcdbext.h kclangc.h
 
 
 

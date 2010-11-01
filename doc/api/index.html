@@ -146,6 +146,67 @@ Example</a></h2>
 
   <span class="keywordflow">return</span> 0;
 }
+</pre></div><p>The following code is an example of word counting with the MapReduce framework.</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="kcpolydb_8h.html" title="polymorphic database">kcpolydb.h</a>&gt;</span>
+<span class="preprocessor">#include &lt;<a class="code" href="kcdbext_8h.html" title="database extension">kcdbext.h</a>&gt;</span>
+
+<span class="keyword">using namespace </span>std;
+<span class="keyword">using namespace </span>kyotocabinet;
+
+<span class="comment">// main routine</span>
+<span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>** argv) {
+
+  <span class="comment">// create the database object</span>
+  PolyDB db;
+
+  <span class="comment">// open the database</span>
+  <span class="keywordflow">if</span> (!db.open(<span class="stringliteral">&quot;*&quot;</span>)) {
+    cerr &lt;&lt; <span class="stringliteral">&quot;open error: &quot;</span> &lt;&lt; db.error().name() &lt;&lt; endl;
+  }
+
+  <span class="comment">// store records</span>
+  db.set(<span class="stringliteral">&quot;1&quot;</span>, <span class="stringliteral">&quot;this is a pen&quot;</span>);
+  db.set(<span class="stringliteral">&quot;2&quot;</span>, <span class="stringliteral">&quot;what a beautiful pen this is&quot;</span>);
+  db.set(<span class="stringliteral">&quot;3&quot;</span>, <span class="stringliteral">&quot;she is beautiful&quot;</span>);
+
+  <span class="comment">// define the mapper and the reducer</span>
+  <span class="keyword">class </span>MapReduceImpl : <span class="keyword">public</span> MapReduce {
+    <span class="comment">// call back function of the mapper</span>
+    <span class="keywordtype">bool</span> map(<span class="keyword">const</span> <span class="keywordtype">char</span>* kbuf, <span class="keywordtype">size_t</span> ksiz, <span class="keyword">const</span> <span class="keywordtype">char</span>* vbuf, <span class="keywordtype">size_t</span> vsiz,
+             MapEmitter* emitter) {
+      std::vector&lt;std::string&gt; words;
+      <a class="code" href="namespacekyotocabinet.html#a295fcdb0ba9274e2d986a66e1eb189b8" title="Split a string with a delimiter.">strsplit</a>(vbuf, <span class="charliteral">&#39; &#39;</span>, &amp;words);
+      <span class="keywordflow">for</span> (std::vector&lt;std::string&gt;::iterator it = words.begin();
+           it != words.end(); it++) {
+        emitter-&gt;emit(it-&gt;data(), it-&gt;size(), <span class="stringliteral">&quot;&quot;</span>, 0);
+      }
+      <span class="keywordflow">return</span> <span class="keyword">true</span>;
+    }
+    <span class="comment">// call back function of the reducer</span>
+    <span class="keywordtype">bool</span> reduce(<span class="keyword">const</span> <span class="keywordtype">char</span>* kbuf, <span class="keywordtype">size_t</span> ksiz, ValueIterator* iter) {
+      <span class="keywordtype">size_t</span> count = 0;
+      <span class="keyword">const</span> <span class="keywordtype">char</span>* vbuf;
+      <span class="keywordtype">size_t</span> vsiz;
+      <span class="keywordflow">while</span> ((vbuf = iter-&gt;next(&amp;vsiz)) != NULL) {
+        count++;
+      }
+      std::cout &lt;&lt; std::string(kbuf, ksiz) &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; count &lt;&lt; std::endl;
+      <span class="keywordflow">return</span> <span class="keyword">true</span>;
+    }
+  } mr;
+
+  <span class="comment">// execute the MapReduce process</span>
+  <span class="keywordflow">if</span> (!mr.execute(&amp;db)) {
+    cerr &lt;&lt; <span class="stringliteral">&quot;MapReduce error: &quot;</span> &lt;&lt; db.error().name() &lt;&lt; endl;
+  }
+
+  <span class="comment">// close the database</span>
+  <span class="keywordflow">if</span> (!db.close()) {
+    cerr &lt;&lt; <span class="stringliteral">&quot;close error: &quot;</span> &lt;&lt; db.error().name() &lt;&lt; endl;
+  }
+
+  <span class="keywordflow">return</span> 0;
+}
 </pre></div><p>The C language binding is also provided as a wrapper of the polymorphic database API. The following code is an example.</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="kclangc_8h.html" title="C language binding.">kclangc.h</a>&gt;</span>
 
@@ -229,7 +290,7 @@ Example</a></h2>
   <span class="keywordflow">return</span> 0;
 }
 </pre></div> </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Oct 25 03:50:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 1 21:55:44 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

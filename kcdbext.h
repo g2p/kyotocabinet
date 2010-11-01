@@ -1,0 +1,586 @@
+/*************************************************************************************************
+ * Database extension
+ *                                                               Copyright (C) 2009-2010 FAL Labs
+ * This file is part of Kyoto Cabinet.
+ * This program is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either version
+ * 3 of the License, or any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program.
+ * If not, see <http://www.gnu.org/licenses/>.
+ *************************************************************************************************/
+
+
+#ifndef _KCDBEXT_H                       // duplication check
+#define _KCDBEXT_H
+
+#include <kccommon.h>
+#include <kcutil.h>
+#include <kcthread.h>
+#include <kcfile.h>
+#include <kccompress.h>
+#include <kccompare.h>
+#include <kcmap.h>
+#include <kcregex.h>
+#include <kcdb.h>
+#include <kcplantdb.h>
+#include <kcprotodb.h>
+#include <kccachedb.h>
+#include <kchashdb.h>
+#include <kcdirdb.h>
+#include <kcpolydb.h>
+
+namespace kyotocabinet {                 // common namespace
+
+
+/**
+ * Constants for implementation.
+ */
+namespace {
+const size_t MRDEFDBNUM = 8;             ///< default number of temporary databases
+const size_t MRMAXDBNUM = 256;           ///< maxinum number of temporary databases
+const int64_t MRDEFCLIM = 512LL << 20;   ///< default cache limit
+const int64_t MRDBBNUM = 256LL << 10;    ///< bucket number of temprary databases
+const int32_t MRDBPSIZ = 32768;          ///< page size of temprary databases
+const int64_t MRDBMSIZ = 16LL << 20;     ///< mapped size of temprary databases
+const int64_t MRDBPCCAP = 16LL << 20;    ///< page cache capacity of temprary databases
+const size_t MRCRSIZMAX = 2048;          ///< maximum size of a cached record
+}
+
+
+/**
+ * MapReduce framework.
+ * @note Although this framework is not distributed or concurrent, it is useful for aggregate
+ * calculation with less CPU loading and less memory usage.
+ */
+class MapReduce {
+public:
+  class MapEmitter;
+  class ValueIterator;
+private:
+  struct CacheComparator;
+  struct MergeLine;
+  /** An alias of vector of cached records. */
+  typedef std::vector<char*> Cache;
+  /** An alias of vector of loaded values. */
+  typedef std::vector<std::string> Values;
+public:
+  /**
+   * Data emitter for the mapper.
+   */
+  class MapEmitter {
+    friend class MapReduce;
+  public:
+    /**
+     * Emit a record from the mapper.
+     * @param kbuf the pointer to the key region.
+     * @param ksiz the size of the key region.
+     * @param vbuf the pointer to the value region.
+     * @param vsiz the size of the value region.
+     * @return true on success, or false on failure.
+     */
+    bool emit(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+      bool err = false;
+      char numbuf[NUMBUFSIZ];
+      char* wp = numbuf;
+      wp += writevarnum(wp, ksiz);
+      wp += writevarnum(wp, vsiz);
+      size_t rsiz = (wp - numbuf) + ksiz + vsiz;
+      char* rbuf = new char[rsiz];
+      wp = rbuf;
+      wp += writevarnum(wp, ksiz);
+      std::memcpy(wp, kbuf, ksiz);
+      wp += ksiz;
+      wp += writevarnum(wp, vsiz);
+      std::memcpy(wp, vbuf, vsiz);
+      mr_->cache_.push_back(rbuf);
+      mr_->csiz_ += rsiz;
+      if (mr_->csiz_ >= mr_->clim_ && !mr_->flush_cache()) err = true;
+      return !err;
+    }
+  private:
+    /**
+     * Default constructor.
+     */
+    MapEmitter(MapReduce* mr) : mr_(mr) {
+      _assert_(true);
+    }
+    /**
+     * Destructor.
+     */
+    ~MapEmitter() {
+      _assert_(true);
+    }
+    /** Dummy constructor to forbid the use. */
+    MapEmitter(const MapEmitter&);
+    /** Dummy Operator to forbid the use. */
+    MapEmitter& operator =(const MapEmitter&);
+    /** The owner object. */
+    MapReduce* mr_;
+  };
+  /**
+   * Value iterator for reducer.
+   */
+  class ValueIterator {
+    friend class MapReduce;
+  public:
+    /**
+     * Get the next value.
+     * @param sp the pointer to the variable into which the size of the region of the return
+     * value is assigned.
+     * @return the pointer to the next value region, or NULL if no value remains.
+     */
+    const char* next(size_t* sp) {
+      _assert_(sp);
+      if (!vptr_) {
+        if (vit_ == vend_) return NULL;
+        vptr_ = vit_->data();
+        vsiz_ = vit_->size();
+        vit_++;
+      }
+      size_t vsiz;
+      size_t step = readvarnum(vptr_, vsiz_, &vsiz);
+      vptr_ += step;
+      vsiz_ -= step;
+      const char* vbuf = vptr_;
+      *sp = vsiz;
+      vptr_ += vsiz;
+      vsiz_ -= vsiz;
+      if (vsiz_ < 1) vptr_ = NULL;
+      return vbuf;
+    }
+  private:
+    /**
+     * Default constructor.
+     */
+    ValueIterator(Values::const_iterator vit, Values::const_iterator vend) :
+      vit_(vit), vend_(vend), vptr_(NULL), vsiz_(0) {
+      _assert_(true);
+    }
+    /**
+     * Destructor.
+     */
+    ~ValueIterator() {
+      _assert_(true);
+    }
+    /** Dummy constructor to forbid the use. */
+    ValueIterator(const ValueIterator&);
+    /** Dummy Operator to forbid the use. */
+    ValueIterator& operator =(const ValueIterator&);
+    /** The current iterator of loaded values. */
+    Values::const_iterator vit_;
+    /** The ending iterator of loaded values. */
+    Values::const_iterator vend_;
+    /** The pointer of the current value. */
+    const char* vptr_;
+    /** The size of the current value. */
+    size_t vsiz_;
+  };
+  /**
+   * Default constructor.
+   */
+  MapReduce() :
+    tmpdbs_(NULL), dbnum_(MRDEFDBNUM), dbclock_(0), keyclock_(0),
+    cache_(), csiz_(0), clim_(MRDEFCLIM) {
+    _assert_(true);
+  }
+  /**
+   * Set the storage configurations.
+   * @param dbnum the number of temporary databases.
+   * @param clim the limit size of the internal cache.
+   */
+  void tune_storage(int32_t dbnum, int64_t clim) {
+    _assert_(true);
+    dbnum_ = dbnum > 0 ? dbnum : MRDEFDBNUM;
+    if (dbnum_ > MRMAXDBNUM) dbnum_ = MRMAXDBNUM;
+    clim_ = clim > 0 ? clim : MRDEFCLIM;
+  }
+  /**
+   * Map a record data.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param vbuf the pointer to the value region.
+   * @param vsiz the size of the value region.
+   * @param emitter the emitter object.
+   * @return true on success, or false on failure.
+   * @note To avoid deadlock, any database operation must not be performed in this function.
+   */
+  virtual bool map(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz,
+                   MapEmitter* emitter) = 0;
+  /**
+   * Reduce a record data.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param iter the iterator to get the values.
+   * @return true on success, or false on failure.
+   * @note Database operations can be performed in this function.
+   */
+  virtual bool reduce(const char* kbuf, size_t ksiz, ValueIterator* iter) = 0;
+  /**
+   * Process a log message.
+   * @param name the name of the event.
+   * @param message a supplement message.
+   * @return true on success, or false on failure.
+   */
+  virtual bool log(const char* name, const char* message) {
+    _assert_(name && message);
+    return true;
+  }
+  /**
+   * Execute the MapReduce process about a database.
+   * @param db the source database.
+   * @param tmppath the path of a directory for the temporary data storage.  If it is an empty
+   * string, temporary data are handled on memory.
+   * @return true on success, or false on failure.
+   */
+  bool execute(BasicDB* db, const std::string& tmppath = "") {
+    bool err = false;
+    double stime, etime;
+    tmpdbs_ = new BasicDB*[dbnum_];
+    if (tmppath.empty()) {
+      if (!logf("prepare", "started to open temporary databases on memory")) err = true;
+      stime = time();
+      for (size_t i = 0; i < dbnum_; i++) {
+        GrassDB* gdb = new GrassDB;
+        gdb->tune_options(GrassDB::TCOMPRESS);
+        gdb->tune_buckets(MRDBBNUM);
+        gdb->tune_page(MRDBPSIZ);
+        gdb->tune_page_cache(MRDBPCCAP);
+        gdb->open("%", GrassDB::OWRITER | GrassDB::OCREATE | GrassDB::OTRUNCATE);
+        tmpdbs_[i] = gdb;
+      }
+      etime = time();
+      if (!logf("prepare", "opening temporary databases finished: time=%.6f", etime - stime))
+        err = true;
+      if (err) {
+        delete[] tmpdbs_;
+        return false;
+      }
+    } else {
+      File::Status sbuf;
+      if (!File::status(tmppath, &sbuf) || !sbuf.isdir) {
+        db->set_error(_KCCODELINE_, BasicDB::Error::NOREPOS, "no such directory");
+        delete[] tmpdbs_;
+        return false;
+      }
+      if (!logf("prepare", "started to open temporary databases under %s", tmppath.c_str()))
+        err = true;
+      stime = time();
+      for (size_t i = 0; i < dbnum_; i++) {
+        std::string childpath = strprintf("%s%cmr%08d%ckct",
+                                          tmppath.c_str(), File::PATHCHR, i + 1, File::EXTCHR);
+
+        std::cout << childpath << std::endl;
+
+        TreeDB* tdb = new TreeDB;
+        tdb->tune_options(TreeDB::TLINEAR | TreeDB::TCOMPRESS);
+        tdb->tune_buckets(MRDBBNUM);
+        tdb->tune_page(MRDBPSIZ);
+        tdb->tune_map(MRDBMSIZ);
+        tdb->tune_page_cache(MRDBPCCAP);
+        if (!tdb->open(childpath, TreeDB::OWRITER | TreeDB::OCREATE | TreeDB::OTRUNCATE)) {
+          const BasicDB::Error& e = tdb->error();
+          db->set_error(_KCCODELINE_, e.code(), e.message());
+          err = true;
+        }
+        tmpdbs_[i] = tdb;
+      }
+      etime = time();
+      if (!logf("prepare", "opening temporary databases finished: time=%.6f", etime - stime))
+        err = true;
+      if (err) {
+        for (size_t i = 0; i < dbnum_; i++) {
+          delete tmpdbs_[i];
+        }
+        delete[] tmpdbs_;
+        return false;
+      }
+    }
+    dbclock_ = 0;
+    keyclock_ = 0;
+    cache_.clear();
+    csiz_ = 0;
+    class MapChecker : public BasicDB::ProgressChecker {
+    public:
+      MapChecker() : stop_(false) {}
+      void stop() {
+        stop_ = true;
+      }
+      bool stopped() {
+        return stop_;
+      }
+    private:
+      bool check(const char* name, const char* message, int64_t curcnt, int64_t allcnt) {
+        return !stop_;
+      }
+      bool stop_;
+    };
+    class MapVisitor : public BasicDB::Visitor {
+    public:
+      MapVisitor(MapReduce* mr, MapChecker* checker) :
+        mr_(mr), checker_(checker), emitter_(mr) {}
+    private:
+      const char* visit_full(const char* kbuf, size_t ksiz,
+                             const char* vbuf, size_t vsiz, size_t* sp) {
+        if (!mr_->map(kbuf, ksiz, vbuf, vsiz, &emitter_)) checker_->stop();
+        return NOP;
+      }
+      MapReduce* mr_;
+      MapChecker* checker_;
+      MapEmitter emitter_;
+    };
+    int64_t scale = db->count();
+    Thread::yield();
+    if (!logf("map", "started the map process: scale=%lld", (long long)scale)) err = true;
+    stime = time();
+    MapChecker mapchecker;
+    MapVisitor mapvisitor(this, &mapchecker);
+    if (!err && !db->iterate(&mapvisitor, false, &mapchecker)) err = true;
+    if (!flush_cache()) err = true;
+    etime = time();
+    if (!logf("map", "the map process finished: time=%.6f", etime - stime)) err = true;
+    Thread::yield();
+    scale = 0;
+    for (size_t i = 0; i < dbnum_; i++) {
+      scale += tmpdbs_[i]->count();
+    }
+    if (!logf("reduce", "started the reduce process: scale=%lld", (long long)scale)) err = true;
+    stime = time();
+    std::priority_queue<MergeLine> lines;
+    for (size_t i = 0; i < dbnum_; i++) {
+      MergeLine line;
+      line.cur = tmpdbs_[i]->cursor();
+      line.comp = &LEXICALCOMP;
+      line.cur->jump();
+      line.kbuf = line.cur->get(&line.ksiz, &line.vbuf, &line.vsiz, true);
+      if (line.kbuf) {
+        lines.push(line);
+      } else {
+        delete line.cur;
+      }
+    }
+    char* lkbuf = NULL;
+    size_t lksiz = 0;
+    Values values;
+    while (!err && !lines.empty()) {
+      MergeLine line = lines.top();
+      lines.pop();
+      if (lkbuf && (lksiz != line.ksiz ||
+                    std::memcmp(lkbuf, line.kbuf, lksiz - sizeof(uint32_t)))) {
+        if (!call_reducer(lkbuf, lksiz - sizeof(uint32_t), values)) err = true;
+        values.clear();
+      }
+      values.push_back(std::string(line.vbuf, line.vsiz));
+      delete[] lkbuf;
+      lkbuf = line.kbuf;
+      lksiz = line.ksiz;
+      line.kbuf = line.cur->get(&line.ksiz, &line.vbuf, &line.vsiz, true);
+      if (line.kbuf) {
+        lines.push(line);
+      } else {
+        delete line.cur;
+      }
+    }
+    if (lkbuf) {
+      if (!err && !call_reducer(lkbuf, lksiz - sizeof(uint32_t), values)) err = true;
+      values.clear();
+      delete[] lkbuf;
+    }
+    while (!lines.empty()) {
+      MergeLine line = lines.top();
+      lines.pop();
+      delete[] line.kbuf;
+      delete line.cur;
+    }
+    etime = time();
+    if (!logf("reduce", "the reduce process finished: time=%.6f", etime - stime)) err = true;
+    Thread::yield();
+    if (!logf("clean", "closing the temporary databases")) err = true;
+    stime = time();
+    for (size_t i = 0; i < dbnum_; i++) {
+      assert(tmpdbs_[i]);
+      std::string path = tmpdbs_[i]->path();
+      if (!tmpdbs_[i]->clear()) {
+        const BasicDB::Error& e = tmpdbs_[i]->error();
+        db->set_error(_KCCODELINE_, e.code(), e.message());
+        err = true;
+      }
+      if (!tmpdbs_[i]->close()) {
+        const BasicDB::Error& e = tmpdbs_[i]->error();
+        db->set_error(_KCCODELINE_, e.code(), e.message());
+        err = true;
+      }
+      if (!tmppath.empty()) File::remove(path);
+      delete tmpdbs_[i];
+    }
+    etime = time();
+    if (!logf("clean", "closing the temporary databases finished: time=%.6f",
+              etime - stime)) err = true;
+    delete[] tmpdbs_;
+    return !err;
+  }
+private:
+  /**
+   * Comparator for cache records.
+   */
+  struct CacheComparator {
+    LexicalComparator comp;              ///< lexical comparator
+    /** comparing operator */
+    bool operator()(char* const & abuf, char* const& bbuf) {
+      size_t aksiz;
+      char* akbuf = abuf + readvarnum(abuf, sizeof(int64_t), &aksiz);
+      size_t bksiz;
+      char* bkbuf = bbuf + readvarnum(bbuf, sizeof(int64_t), &bksiz);
+      return comp.compare(akbuf, aksiz, bkbuf, bksiz) < 0;
+    }
+  };
+  /**
+   * Front line of a merging list.
+   */
+  struct MergeLine {
+    BasicDB::Cursor* cur;                ///< cursor
+    Comparator* comp;                    ///< lexical comparator
+    char* kbuf;                          ///< pointer to the key
+    size_t ksiz;                         ///< size of the key
+    const char* vbuf;                    ///< pointer to the value
+    size_t vsiz;                         ///< size of the value
+    /** comparing operator */
+    bool operator <(const MergeLine& right) const {
+      return comp->compare(kbuf, ksiz, right.kbuf, right.ksiz) > 0;
+    }
+  };
+  /**
+   * Process a log message.
+   * @param name the name of the event.
+   * @param format the printf-like format string.
+   * @param ... used according to the format string.
+   * @return true on success, or false on failure.
+   */
+  bool logf(const char* name, const char* format, ...) {
+    _assert_(name && format);
+    va_list ap;
+    va_start(ap, format);
+    std::string message;
+    vstrprintf(&message, format, ap);
+    va_end(ap);
+    return log(name, message.c_str());
+  }
+  /**
+   * Flush all cache records.
+   * @return true on success, or false on failure.
+   */
+  bool flush_cache() {
+    _assert_(true);
+    bool err = false;
+    if (!logf("map", "started to flushing the cache")) err = true;
+    double stime = time();
+    CacheComparator comp;
+    std::sort(cache_.begin(), cache_.end(), comp);
+    Cache::iterator cit = cache_.begin();
+    Cache::iterator citend = cache_.end();
+    char* lbuf = NULL;
+    const char* lkbuf = NULL;
+    size_t lksiz = 0;
+    std::string values;
+    while (!err && cit != citend) {
+      char* rbuf = *cit;
+      size_t ksiz;
+      const char* kbuf = rbuf + readvarnum(rbuf, sizeof(int64_t), &ksiz);
+      const char* vbuf = kbuf + ksiz;
+      size_t vsiz;
+      size_t step = readvarnum(vbuf, sizeof(int64_t), &vsiz);
+      if (lkbuf && (lksiz != ksiz || std::memcmp(lkbuf, kbuf, lksiz))) {
+        if (!write_record(lkbuf, lksiz, values.data(), values.size())) err = true;
+        values.clear();
+      }
+      values.append(vbuf, step + vsiz);
+      delete[] lbuf;
+      lbuf = rbuf;
+      lkbuf = kbuf;
+      lksiz = ksiz;
+      if (values.size() >= MRCRSIZMAX) {
+        if (!write_record(lkbuf, lksiz, values.data(), values.size())) err = true;
+        values.clear();
+        delete[] lbuf;
+        lbuf = NULL;
+        lkbuf = NULL;
+        lksiz = 0;
+      }
+      cit++;
+    }
+    if (lkbuf) {
+      if (!write_record(lkbuf, lksiz, values.data(), values.size())) err = true;
+      values.clear();
+      delete[] lbuf;
+    }
+    cache_.clear();
+    csiz_ = 0;
+    dbclock_ = (dbclock_ + 1) % dbnum_;
+    double etime = time();
+    if (!logf("map", "flushing the cache finished: time=%.6f", etime - stime)) err = true;
+    return !err;
+  }
+  /**
+   * Write a record into the temporary database.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param vbuf the pointer to the value region.
+   * @param vsiz the size of the value region.
+   * @return true on success, or false on failure.
+   */
+  bool write_record(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+    bool err = false;
+    uint32_t tail = keyclock_++;
+    size_t rsiz = ksiz + sizeof(tail);
+    char stack[NUMBUFSIZ*2];
+    char* rbuf = rsiz > sizeof(stack) ? new char[rsiz] : stack;
+    std::memcpy(rbuf, kbuf, ksiz);
+    writefixnum(rbuf + ksiz, tail, sizeof(tail));
+    if (!tmpdbs_[dbclock_]->append(rbuf, rsiz, vbuf, vsiz)) err = true;
+    if (rbuf != stack) delete[] rbuf;
+    return !err;
+  }
+  /**
+   * Call the reducer.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param values a vector of the values.
+   * @return true on success, or false on failure.
+   */
+  bool call_reducer(const char* kbuf, size_t ksiz, const Values& values) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
+    bool err = false;
+    ValueIterator iter(values.begin(), values.end());
+    if (!reduce(kbuf, ksiz, &iter)) err = true;
+    return !err;
+  }
+  /** Dummy constructor to forbid the use. */
+  MapReduce(const MapReduce&);
+  /** Dummy Operator to forbid the use. */
+  MapReduce& operator =(const MapReduce&);
+  /** The temporary databases. */
+  BasicDB** tmpdbs_;
+  /** The number of temporary databases. */
+  size_t dbnum_;
+  /** The logical clock for temporary databases. */
+  int64_t dbclock_;
+  /** The logical clock for keys. */
+  int64_t keyclock_;
+  /** The cache for emitter. */
+  Cache cache_;
+  /** The current size of the cache for emitter. */
+  int64_t csiz_;
+  /** The limit size of the cache for emitter. */
+  int64_t clim_;
+};
+
+
+}                                        // common namespace
+
+#endif                                   // duplication check
+
+// END OF FILE

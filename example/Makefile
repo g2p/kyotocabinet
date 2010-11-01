@@ -12,7 +12,7 @@ SHELL = /bin/sh
 
 # Targets
 MYBINS = kcprotoex kccacheex kcgrassex kchashex kctreeex kcdirex kcforestex \
-  kcpolyex kcvisex kclangcex
+  kcpolyex kcvisex kcmrex kclangcex
 
 # Building binaries
 CC = gcc
@@ -113,6 +113,10 @@ kcpolyex : kcpolyex.o
 
 
 kcvisex : kcvisex.o
+	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
+
+
+kcmrex : kcmrex.o
 	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LIBS)
 
 

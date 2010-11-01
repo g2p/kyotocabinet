@@ -188,6 +188,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the miscellaneous status information.  <a href="#a156561acce1ad4f2db9c00f1b5c01e7b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#ad5c2697cda42ae1ddda0232124add786">kcdbmatchprefix</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, const char *prefix, char **strary, int64_t max)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get keys matching a prefix string.  <a href="#ad5c2697cda42ae1ddda0232124add786"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a896e2c260e06f135d33af4df75c72e49">kcdbmatchregex</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, const char *regex, char **strary, int64_t max)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get keys matching a regular expression string.  <a href="#a896e2c260e06f135d33af4df75c72e49"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#a20e630cadb0b3518c13c9ca6cff60aed">kcdbmerge</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db, <a class="el" href="unionKCDB.html">KCDB</a> **srcary, size_t srcnum, uint32_t mode)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Merge records from other databases.  <a href="#a20e630cadb0b3518c13c9ca6cff60aed"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="unionKCCUR.html">KCCUR</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="kclangc_8h.html#adccaf4771f7804511791af33a316e0ba">kcdbcursor</a> (<a class="el" href="unionKCDB.html">KCDB</a> *db)</td></tr>
@@ -2107,6 +2109,58 @@
 
 </div>
 </div>
+<a class="anchor" id="a896e2c260e06f135d33af4df75c72e49"></a><!-- doxytag: member="kclangc.h::kcdbmatchregex" ref="a896e2c260e06f135d33af4df75c72e49" args="(KCDB *db, const char *regex, char **strary, int64_t max)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kcdbmatchregex </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="unionKCDB.html">KCDB</a> *&nbsp;</td>
+          <td class="paramname"> <em>db</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>regex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&nbsp;</td>
+          <td class="paramname"> <em>strary</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t&nbsp;</td>
+          <td class="paramname"> <em>max</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Get keys matching a regular expression string. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>db</em>&nbsp;</td><td>a database object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>regex</em>&nbsp;</td><td>the regular expression string. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>strary</em>&nbsp;</td><td>an array to contain the result. Its size must be sufficient. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>max</em>&nbsp;</td><td>the maximum number to retrieve. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the number of retrieved keys or -1 on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The region of each element of the result should be released with the kcfree function when it is no longer in use. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a20e630cadb0b3518c13c9ca6cff60aed"></a><!-- doxytag: member="kclangc.h::kcdbmerge" ref="a20e630cadb0b3518c13c9ca6cff60aed" args="(KCDB *db, KCDB **srcary, size_t srcnum, uint32_t mode)" -->
 <div class="memitem">
 <div class="memproto">
@@ -2825,7 +2879,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Oct 25 03:50:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 1 21:55:45 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

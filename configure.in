@@ -7,7 +7,7 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.19)
+AC_INIT(kyotocabinet, 1.2.20)
 
 # Package information
 MYLIBVER=6
@@ -18,11 +18,11 @@ MYFORMATVER=5
 MYHEADERFILES="kccommon.h kcutil.h kcthread.h kcfile.h"
 MYHEADERFILES="$MYHEADERFILES kccompress.h kccompare.h kcmap.h kcregex.h"
 MYHEADERFILES="$MYHEADERFILES kcdb.h kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h"
-MYHEADERFILES="$MYHEADERFILES kcpolydb.h kclangc.h"
+MYHEADERFILES="$MYHEADERFILES kcpolydb.h kcdbext.h kclangc.h"
 MYLIBRARYFILES="libkyotocabinet.a"
 MYLIBOBJFILES="kcutil.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o kcregex.o"
 MYLIBOBJFILES="$MYLIBOBJFILES kcdb.o kcplantdb.o kcprotodb.o kccachedb.o kchashdb.o"
-MYLIBOBJFILES="$MYLIBOBJFILES kcdirdb.o kcpolydb.o kclangc.o"
+MYLIBOBJFILES="$MYLIBOBJFILES kcdirdb.o kcpolydb.o kcdbext.o kclangc.o"
 MYCOMMANDFILES="kcutiltest kcutilmgr kcprototest kccachetest kcgrasstest"
 MYCOMMANDFILES="$MYCOMMANDFILES kchashtest kchashmgr kctreetest kctreemgr"
 MYCOMMANDFILES="$MYCOMMANDFILES kcdirtest kcdirmgr kcforesttest kcforestmgr"
