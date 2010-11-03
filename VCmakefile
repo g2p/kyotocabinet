@@ -643,6 +643,8 @@ check-poly :
 	kcpolytest tran -th 2 -it 4 \
 	  "casket.kct#apow=2#fpow=3#opts=slc#bnum=10000#msiz=0#dfunit=1" 1000
 	kcpolytest mapred -dbnum 2 -clim 10k casket.kct 10000
+	kcpolytest mapred -tmp . -dbnum 2 -clim 10k -xnl -xnc \
+	  casket.kct 10000
 	kcpolytest mapred -rnd -dbnum 2 -clim 10k casket.kct 10000
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1

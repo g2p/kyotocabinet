@@ -42,9 +42,9 @@ namespace {
 const size_t MRDEFDBNUM = 8;             ///< default number of temporary databases
 const size_t MRMAXDBNUM = 256;           ///< maxinum number of temporary databases
 const int64_t MRDEFCLIM = 512LL << 20;   ///< default cache limit
-const int64_t MRDBBNUM = 256LL << 10;    ///< bucket number of temprary databases
+const int64_t MRDBBNUM = 512LL << 10;    ///< bucket number of temprary databases
 const int32_t MRDBPSIZ = 32768;          ///< page size of temprary databases
-const int64_t MRDBMSIZ = 16LL << 20;     ///< mapped size of temprary databases
+const int64_t MRDBMSIZ = 4LL << 20;      ///< mapped size of temprary databases
 const int64_t MRDBPCCAP = 16LL << 20;    ///< page cache capacity of temprary databases
 const size_t MRCRSIZMAX = 2048;          ///< maximum size of a cached record
 }
@@ -60,6 +60,7 @@ public:
   class MapEmitter;
   class ValueIterator;
 private:
+  class MapVisitor;
   struct CacheComparator;
   struct MergeLine;
   /** An alias of vector of cached records. */
@@ -72,6 +73,7 @@ public:
    */
   class MapEmitter {
     friend class MapReduce;
+    friend class MapReduce::MapVisitor;
   public:
     /**
      * Emit a record from the mapper.
@@ -105,7 +107,7 @@ public:
     /**
      * Default constructor.
      */
-    MapEmitter(MapReduce* mr) : mr_(mr) {
+    explicit MapEmitter(MapReduce* mr) : mr_(mr) {
       _assert_(true);
     }
     /**
@@ -141,7 +143,7 @@ public:
         vsiz_ = vit_->size();
         vit_++;
       }
-      size_t vsiz;
+      uint64_t vsiz;
       size_t step = readvarnum(vptr_, vsiz_, &vsiz);
       vptr_ += step;
       vsiz_ -= step;
@@ -156,7 +158,7 @@ public:
     /**
      * Default constructor.
      */
-    ValueIterator(Values::const_iterator vit, Values::const_iterator vend) :
+    explicit ValueIterator(Values::const_iterator vit, Values::const_iterator vend) :
       vit_(vit), vend_(vend), vptr_(NULL), vsiz_(0) {
       _assert_(true);
     }
@@ -180,9 +182,16 @@ public:
     size_t vsiz_;
   };
   /**
+   * Execution options.
+   */
+  enum Option {
+    XNOLOCK = 1 << 0,                    ///< avoid locking against update operations
+    XNOCOMP = 1 << 1                     ///< avoid compression of temporary databases
+  };
+  /**
    * Default constructor.
    */
-  MapReduce() :
+  explicit MapReduce() :
     tmpdbs_(NULL), dbnum_(MRDEFDBNUM), dbclock_(0), keyclock_(0),
     cache_(), csiz_(0), clim_(MRDEFCLIM) {
     _assert_(true);
@@ -234,9 +243,12 @@ public:
    * @param db the source database.
    * @param tmppath the path of a directory for the temporary data storage.  If it is an empty
    * string, temporary data are handled on memory.
+   * @param opts the optional features by bitwise-or: MapReduce::XNOLOCK to avoid locking
+   * against update operations by other threads, MapReduce::XNOCOMP to avoid compression of
+   * temporary databases.
    * @return true on success, or false on failure.
    */
-  bool execute(BasicDB* db, const std::string& tmppath = "") {
+  bool execute(BasicDB* db, const std::string& tmppath = "", uint32_t opts = 0) {
     bool err = false;
     double stime, etime;
     tmpdbs_ = new BasicDB*[dbnum_];
@@ -245,8 +257,10 @@ public:
       stime = time();
       for (size_t i = 0; i < dbnum_; i++) {
         GrassDB* gdb = new GrassDB;
-        gdb->tune_options(GrassDB::TCOMPRESS);
-        gdb->tune_buckets(MRDBBNUM);
+        int32_t myopts = 0;
+        if (!(opts & XNOCOMP)) myopts |= GrassDB::TCOMPRESS;
+        gdb->tune_options(myopts);
+        gdb->tune_buckets(MRDBBNUM / 2);
         gdb->tune_page(MRDBPSIZ);
         gdb->tune_page_cache(MRDBPCCAP);
         gdb->open("%", GrassDB::OWRITER | GrassDB::OCREATE | GrassDB::OTRUNCATE);
@@ -269,14 +283,17 @@ public:
       if (!logf("prepare", "started to open temporary databases under %s", tmppath.c_str()))
         err = true;
       stime = time();
+      uint32_t pid = getpid() & UINT16_MAX;
+      uint32_t tid = Thread::hash() & UINT16_MAX;
+      uint32_t ts = time() * 1000;
       for (size_t i = 0; i < dbnum_; i++) {
-        std::string childpath = strprintf("%s%cmr%08d%ckct",
-                                          tmppath.c_str(), File::PATHCHR, i + 1, File::EXTCHR);
-
-        std::cout << childpath << std::endl;
-
+        std::string childpath =
+          strprintf("%s%cmr-%04x-%04x-%08x-%03d%ckct",
+                    tmppath.c_str(), File::PATHCHR, pid, tid, ts, (int)(i + 1), File::EXTCHR);
         TreeDB* tdb = new TreeDB;
-        tdb->tune_options(TreeDB::TLINEAR | TreeDB::TCOMPRESS);
+        int32_t myopts = TreeDB::TSMALL | TreeDB::TLINEAR;
+        if (!(opts & XNOCOMP)) myopts |= TreeDB::TCOMPRESS;
+        tdb->tune_options(myopts);
         tdb->tune_buckets(MRDBBNUM);
         tdb->tune_page(MRDBPSIZ);
         tdb->tune_map(MRDBMSIZ);
@@ -303,43 +320,28 @@ public:
     keyclock_ = 0;
     cache_.clear();
     csiz_ = 0;
-    class MapChecker : public BasicDB::ProgressChecker {
-    public:
-      MapChecker() : stop_(false) {}
-      void stop() {
-        stop_ = true;
-      }
-      bool stopped() {
-        return stop_;
-      }
-    private:
-      bool check(const char* name, const char* message, int64_t curcnt, int64_t allcnt) {
-        return !stop_;
-      }
-      bool stop_;
-    };
-    class MapVisitor : public BasicDB::Visitor {
-    public:
-      MapVisitor(MapReduce* mr, MapChecker* checker) :
-        mr_(mr), checker_(checker), emitter_(mr) {}
-    private:
-      const char* visit_full(const char* kbuf, size_t ksiz,
-                             const char* vbuf, size_t vsiz, size_t* sp) {
-        if (!mr_->map(kbuf, ksiz, vbuf, vsiz, &emitter_)) checker_->stop();
-        return NOP;
-      }
-      MapReduce* mr_;
-      MapChecker* checker_;
-      MapEmitter emitter_;
-    };
     int64_t scale = db->count();
     Thread::yield();
     if (!logf("map", "started the map process: scale=%lld", (long long)scale)) err = true;
     stime = time();
     MapChecker mapchecker;
     MapVisitor mapvisitor(this, &mapchecker);
-    if (!err && !db->iterate(&mapvisitor, false, &mapchecker)) err = true;
-    if (!flush_cache()) err = true;
+    if (opts & XNOLOCK) {
+      if (!err) {
+        BasicDB::Cursor* cur = db->cursor();
+        if (!cur->jump()) err = true;
+        while (!err) {
+          if (!cur->accept(&mapvisitor, false, true)) {
+            if (cur->error() != BasicDB::Error::NOREC) err = true;
+            break;
+          }
+        }
+        delete cur;
+      }
+    } else {
+      if (!err && !db->iterate(&mapvisitor, false, &mapchecker)) err = true;
+    }
+    if (!cache_.empty() && !flush_cache()) err = true;
     etime = time();
     if (!logf("map", "the map process finished: time=%.6f", etime - stime)) err = true;
     Thread::yield();
@@ -424,16 +426,57 @@ public:
   }
 private:
   /**
+   * Checker for the map process.
+   */
+  class MapChecker : public BasicDB::ProgressChecker {
+  public:
+    /** constructor */
+    explicit MapChecker() : stop_(false) {}
+    /** stop the process */
+    void stop() {
+      stop_ = true;
+    }
+    /** check whether stopped */
+    bool stopped() {
+      return stop_;
+    }
+  private:
+    /** check whether stopped */
+    bool check(const char* name, const char* message, int64_t curcnt, int64_t allcnt) {
+      return !stop_;
+    }
+    bool stop_;                          ///< flag for stop
+  };
+  /**
+   * Visitor for the map process.
+   */
+  class MapVisitor : public BasicDB::Visitor {
+  public:
+    /** constructor */
+    explicit MapVisitor(MapReduce* mr, MapChecker* checker) :
+      mr_(mr), checker_(checker), emitter_(mr) {}
+  private:
+    /** visit a record */
+    const char* visit_full(const char* kbuf, size_t ksiz,
+                           const char* vbuf, size_t vsiz, size_t* sp) {
+      if (!mr_->map(kbuf, ksiz, vbuf, vsiz, &emitter_)) checker_->stop();
+      return NOP;
+    }
+    MapReduce* mr_;                      ///< driver
+    MapChecker* checker_;                ///< checker
+    MapEmitter emitter_;                 ///< emitter
+  };
+  /**
    * Comparator for cache records.
    */
   struct CacheComparator {
     LexicalComparator comp;              ///< lexical comparator
     /** comparing operator */
     bool operator()(char* const & abuf, char* const& bbuf) {
-      size_t aksiz;
-      char* akbuf = abuf + readvarnum(abuf, sizeof(int64_t), &aksiz);
-      size_t bksiz;
-      char* bkbuf = bbuf + readvarnum(bbuf, sizeof(int64_t), &bksiz);
+      uint64_t aksiz;
+      char* akbuf = abuf + readvarnum(abuf, sizeof(aksiz), &aksiz);
+      uint64_t bksiz;
+      char* bkbuf = bbuf + readvarnum(bbuf, sizeof(bksiz), &bksiz);
       return comp.compare(akbuf, aksiz, bkbuf, bksiz) < 0;
     }
   };
@@ -487,11 +530,11 @@ private:
     std::string values;
     while (!err && cit != citend) {
       char* rbuf = *cit;
-      size_t ksiz;
-      const char* kbuf = rbuf + readvarnum(rbuf, sizeof(int64_t), &ksiz);
+      uint64_t ksiz;
+      const char* kbuf = rbuf + readvarnum(rbuf, sizeof(ksiz), &ksiz);
       const char* vbuf = kbuf + ksiz;
-      size_t vsiz;
-      size_t step = readvarnum(vbuf, sizeof(int64_t), &vsiz);
+      uint64_t vsiz;
+      size_t step = readvarnum(vbuf, sizeof(vsiz), &vsiz);
       if (lkbuf && (lksiz != ksiz || std::memcmp(lkbuf, kbuf, lksiz))) {
         if (!write_record(lkbuf, lksiz, values.data(), values.size())) err = true;
         values.clear();

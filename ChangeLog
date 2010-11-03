@@ -1,3 +1,13 @@
+2010-11-02  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcdbext.h (MapReduce::Emitter::emit): a bug on 32-bit environment was fixed.
+
+	* kcdbext.h (MapReduce::execute): naming convention of databases was modified.
+
+	* kcregex.cc (Regex::compile): a bug related to error handling was fixed.
+
+	- Release: 1.2.21
+
 2010-10-29  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcdbext.h, kcdbext.cc: new files.

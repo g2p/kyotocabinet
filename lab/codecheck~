@@ -8,7 +8,7 @@
 
 SUFFIXES = /\.(h|cc)$/
 IGNORES = /(kccommon\.h)/
-BADOPEN = /[^\w](if|while|for|switch|catch)\(/
+BADOPEN = /[^\w](if|while|for|switch)\(/
 BADCLOSE = /\)\{/
 BADTYPE = /[^\w](u)*(void|char|int|double|size_t|std::string)[0-9]*(_t)* +\*/
 BADFUNCS = [

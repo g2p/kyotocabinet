@@ -675,7 +675,7 @@
 <dd>Performs mixed operations selected at random.</dd>
 <dt><code>kcpolytest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
-<dt><code>kcpolytest mapred [-rnd] [-oat|-onl|-onl|-otl|-onr] [-lv] [-tmp <var>str</var>] [-dbnum <var>num</var>] [-clim <var>num</var>] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcpolytest mapred [-rnd] [-oat|-onl|-onl|-otl|-onr] [-lv] [-tmp <var>str</var>] [-dbnum <var>num</var>] [-clim <var>num</var>] [-xnl] [-xnc] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs MapReduce operations.</dd>
 <dt><code>kcpolytest misc <var>path</var></code></dt>
 <dd>Performs miscellaneous tests.</dd>
@@ -703,6 +703,8 @@
 <li><code>-tmp <var>str</var></code> : specifies the path of a directory for temporary storage.</li>
 <li><code>-dbnum <var>num</var></code> : specifies the number of temporary databases.</li>
 <li><code>-clim <var>num</var></code> : specifies the limit size of cache memory.</li>
+<li><code>-xnl</code> : executes with the no locking option.</li>
+<li><code>-xnc</code> : executes with the no compression option.</li>
 </ul>
 
 <p>This command returns 0 on success, another on failure.</p>

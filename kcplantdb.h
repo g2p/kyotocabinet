@@ -899,7 +899,7 @@ public:
     int64_t lid_;
   };
   /**
-   * Tuning Options.
+   * Tuning options.
    */
   enum Option {
     TSMALL = BASEDB::TSMALL,             ///< use 32-bit addressing

@@ -40,12 +40,22 @@
 <tr><td colspan="2"><h2>Classes</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><b>CacheComparator</b></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><a class="el" href="classkyotocabinet_1_1Comparator.html" title="Interfrace of comparator of record keys.">Comparator</a> for cache records. <br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><b>MapChecker</b></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Checker for the map process. <br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce_1_1MapEmitter.html">MapEmitter</a></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Data emitter for the mapper.  <a href="classkyotocabinet_1_1MapReduce_1_1MapEmitter.html#_details">More...</a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><b>MapVisitor</b></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Visitor for the map process. <br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><b>MergeLine</b></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Front line of a merging list. <br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce_1_1ValueIterator.html">ValueIterator</a></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Value iterator for reducer.  <a href="classkyotocabinet_1_1MapReduce_1_1ValueIterator.html#_details">More...</a><br/></td></tr>
+<tr><td colspan="2"><h2>Public Types</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201dd">Option</a> { <a class="el" href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201dda7755be537e266017d8b78b3bafb5f1dd">XNOLOCK</a> =  1 &lt;&lt; 0, 
+<a class="el" href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201ddaa36e72ad9da0e9ce2a8c31a3a44b9716">XNOCOMP</a> =  1 &lt;&lt; 1
+ }</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><p>Execution options. </p>
+ <a href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201dd">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#ad94405a7bd1231c5369bdf624eae48ab">MapReduce</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Default constructor.  <a href="#ad94405a7bd1231c5369bdf624eae48ab"></a><br/></td></tr>
@@ -57,12 +67,38 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Reduce a record data.  <a href="#aeab1043e26d29c1cb37c2582ab359821"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#acf8b6e8bfbd50ca3a226624fac04091d">log</a> (const char *name, const char *message)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Process a log message.  <a href="#acf8b6e8bfbd50ca3a226624fac04091d"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a05212f9347819b6f15d7e9d197f29b8c">execute</a> (<a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> *db, const std::string &amp;tmppath=&quot;&quot;)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Execute the <a class="el" href="classkyotocabinet_1_1MapReduce.html" title="MapReduce framework.">MapReduce</a> process about a database.  <a href="#a05212f9347819b6f15d7e9d197f29b8c"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a7aa3490fcb749154f158aec35234b4ce">execute</a> (<a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> *db, const std::string &amp;tmppath=&quot;&quot;, uint32_t opts=0)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Execute the <a class="el" href="classkyotocabinet_1_1MapReduce.html" title="MapReduce framework.">MapReduce</a> process about a database.  <a href="#a7aa3490fcb749154f158aec35234b4ce"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p><a class="el" href="classkyotocabinet_1_1MapReduce.html" title="MapReduce framework.">MapReduce</a> framework. </p>
 <dl class="note"><dt><b>Note:</b></dt><dd>Although this framework is not distributed or concurrent, it is useful for aggregate calculation with less CPU loading and less memory usage. </dd></dl>
+<hr/><h2>Member Enumeration Documentation</h2>
+<a class="anchor" id="a59a43dbd3b73c163942960cf87b201dd"></a><!-- doxytag: member="kyotocabinet::MapReduce::Option" ref="a59a43dbd3b73c163942960cf87b201dd" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201dd">kyotocabinet::MapReduce::Option</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Execution options. </p>
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="a59a43dbd3b73c163942960cf87b201dda7755be537e266017d8b78b3bafb5f1dd"></a><!-- doxytag: member="XNOLOCK" ref="a59a43dbd3b73c163942960cf87b201dda7755be537e266017d8b78b3bafb5f1dd" args="" -->XNOLOCK</em>&nbsp;</td><td>
+<p>avoid locking against update operations </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="a59a43dbd3b73c163942960cf87b201ddaa36e72ad9da0e9ce2a8c31a3a44b9716"></a><!-- doxytag: member="XNOCOMP" ref="a59a43dbd3b73c163942960cf87b201ddaa36e72ad9da0e9ce2a8c31a3a44b9716" args="" -->XNOCOMP</em>&nbsp;</td><td>
+<p>avoid compression of temporary databases </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+
+</div>
+</div>
 <hr/><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="ad94405a7bd1231c5369bdf624eae48ab"></a><!-- doxytag: member="kyotocabinet::MapReduce::MapReduce" ref="ad94405a7bd1231c5369bdf624eae48ab" args="()" -->
 <div class="memitem">
@@ -73,7 +109,7 @@
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
-          <td></td>
+          <td><code> [explicit]</code></td>
         </tr>
       </table>
 </div>
@@ -261,7 +297,7 @@
 
 </div>
 </div>
-<a class="anchor" id="a05212f9347819b6f15d7e9d197f29b8c"></a><!-- doxytag: member="kyotocabinet::MapReduce::execute" ref="a05212f9347819b6f15d7e9d197f29b8c" args="(BasicDB *db, const std::string &amp;tmppath=&quot;&quot;)" -->
+<a class="anchor" id="a7aa3490fcb749154f158aec35234b4ce"></a><!-- doxytag: member="kyotocabinet::MapReduce::execute" ref="a7aa3490fcb749154f158aec35234b4ce" args="(BasicDB *db, const std::string &amp;tmppath=&quot;&quot;, uint32_t opts=0)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -275,7 +311,13 @@
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
-          <td class="paramname"> <em>tmppath</em> = <code>&quot;&quot;</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>tmppath</em> = <code>&quot;&quot;</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&nbsp;</td>
+          <td class="paramname"> <em>opts</em> = <code>0</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -291,6 +333,7 @@
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>db</em>&nbsp;</td><td>the source database. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>tmppath</em>&nbsp;</td><td>the path of a directory for the temporary data storage. If it is an empty string, temporary data are handled on memory. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>opts</em>&nbsp;</td><td>the optional features by bitwise-or: <a class="el" href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201dda7755be537e266017d8b78b3bafb5f1dd" title="avoid locking against update operations">MapReduce::XNOLOCK</a> to avoid locking against update operations by other threads, <a class="el" href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201ddaa36e72ad9da0e9ce2a8c31a3a44b9716" title="avoid compression of temporary databases">MapReduce::XNOCOMP</a> to avoid compression of temporary databases. </td></tr>
   </table>
   </dd>
 </dl>
@@ -299,7 +342,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 1 21:55:45 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Nov 3 10:48:22 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

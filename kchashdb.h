@@ -458,7 +458,7 @@ public:
     int64_t end_;
   };
   /**
-   * Tuning Options.
+   * Tuning options.
    */
   enum Option {
     TSMALL = 1 << 0,                     ///< use 32-bit addressing

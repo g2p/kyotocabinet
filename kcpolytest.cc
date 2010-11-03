@@ -44,7 +44,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
 static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t itnum, bool hard,
                         int32_t oflags, bool lv);
 static int32_t procmapred(const char* path, int64_t rnum, bool rnd, int32_t oflags, bool lv,
-                          const char* tmp, int64_t dbnum, int64_t clim);
+                          const char* tmp, int64_t dbnum, int64_t clim, int32_t opts);
 static int32_t procmisc(const char* path);
 
 
@@ -98,7 +98,7 @@ static void usage() {
   eprintf("  %s tran [-th num] [-it num] [-hard] [-oat|-oas|-onl|-otl|-onr] [-lv]"
           " path rnum\n", g_progname);
   eprintf("  %s mapred [-rnd] [-oat|-oas|-onl|-otl|-onr] [-lv] [-tmp str]"
-          " [-dbnum num] [-clim num] path rnum\n", g_progname);
+          " [-dbnum num] [-clim num] [-xnl] [-xnc] path rnum\n", g_progname);
   eprintf("  %s misc path\n", g_progname);
   eprintf("\n");
   std::exit(1);
@@ -372,6 +372,7 @@ static int32_t runmapred(int argc, char** argv) {
   const char* tmp = "";
   int64_t dbnum = -1;
   int64_t clim = -1;
+  int32_t opts = 0;
   for (int32_t i = 2; i < argc; i++) {
     if (!argbrk && argv[i][0] == '-') {
       if (!std::strcmp(argv[i], "--")) {
@@ -399,6 +400,10 @@ static int32_t runmapred(int argc, char** argv) {
       } else if (!std::strcmp(argv[i], "-clim")) {
         if (++i >= argc) usage();
         clim = kc::atoix(argv[i]);
+      } else if (!std::strcmp(argv[i], "-xnl")) {
+        opts |= kc::MapReduce::XNOLOCK;
+      } else if (!std::strcmp(argv[i], "-xnc")) {
+        opts |= kc::MapReduce::XNOCOMP;
       } else {
         usage();
       }
@@ -414,7 +419,7 @@ static int32_t runmapred(int argc, char** argv) {
   if (!path || !rstr) usage();
   int64_t rnum = kc::atoix(rstr);
   if (rnum < 1) usage();
-  int32_t rv = procmapred(path, rnum, rnd, oflags, lv, tmp, dbnum, clim);
+  int32_t rv = procmapred(path, rnum, rnd, oflags, lv, tmp, dbnum, clim, opts);
   return rv;
 }
 
@@ -2133,11 +2138,11 @@ static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t i
 
 // perform mapred command
 static int32_t procmapred(const char* path, int64_t rnum, bool rnd, int32_t oflags, bool lv,
-                          const char* tmp, int64_t dbnum, int64_t clim) {
+                          const char* tmp, int64_t dbnum, int64_t clim, int32_t opts) {
   iprintf("<MapReduce Test>\n  seed=%u  path=%s  rnum=%lld  rnd=%d  oflags=%d  lv=%d"
-          "  tmp=%s  dbnum=%lld  clim=%lld\n\n",
+          "  tmp=%s  dbnum=%lld  clim=%lld  opts=%d\n\n",
           g_randseed, path, (long long)rnum, rnd, oflags, lv,
-          tmp, (long long)dbnum, (long long)clim);
+          tmp, (long long)dbnum, (long long)clim, opts);
   bool err = false;
   kc::PolyDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
@@ -2193,7 +2198,7 @@ static int32_t procmapred(const char* path, int64_t rnum, bool rnd, int32_t ofla
       err = true;
     }
   }
-  if (!mr.execute(&db, tmp)) {
+  if (!mr.execute(&db, tmp, opts)) {
     dberrprint(&db, __LINE__, "MapReduce::execute");
     err = true;
   }

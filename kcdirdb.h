@@ -355,7 +355,7 @@ public:
     std::string name_;
   };
   /**
-   * Tuning Options.
+   * Tuning options.
    */
   enum Option {
     TSMALL = 1 << 0,                     ///< dummy for compatibility

@@ -106,10 +106,15 @@ bool Regex::compile(const std::string& regex, uint32_t opts) {
     delete core->rbuf;
     core->rbuf = NULL;
   }
-  int32_t cflags = std::regex::extended;
+  int32_t cflags = std::regex::ECMAScript;
   if (opts & IGNCASE) cflags |= std::regex::icase;
   if ((opts & MATCHONLY) || regex.empty()) cflags |= std::regex::nosubs;
-  core->rbuf = new std::regex(regex.c_str());
+  try {
+    core->rbuf = new std::regex(regex, (std::regex::flag_type)cflags);
+  } catch (...) {
+    core->rbuf = NULL;
+    return false;
+  }
   return true;
 #endif
 }
@@ -129,6 +134,7 @@ bool Regex::match(const std::string& str) {
 #else
   _assert_(true);
   RegexCore* core = (RegexCore*)opq_;
+  if (!core->rbuf) return false;
   std::smatch res;
   return std::regex_search(str, res, *core->rbuf);
 #endif
@@ -178,6 +184,7 @@ std::string Regex::replace(const std::string& str, const std::string& alt) {
 #else
   _assert_(true);
   RegexCore* core = (RegexCore*)opq_;
+  if (!core->rbuf) return str;
   return std::regex_replace(str, *core->rbuf, alt);
 #endif
 }
