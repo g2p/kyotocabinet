@@ -69,8 +69,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a964cb7b588736a0db61306994cf50823"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#ae0d3c7cf0ef46d518878860615c880b6">set_error</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information without source code information.  <a href="#ae0d3c7cf0ef46d518878860615c880b6"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#ab0536be21e360747cbb4e91281168460">open</a> (const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#ab0536be21e360747cbb4e91281168460"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#afa8c3c70857dd74c460407d62167350e">open</a> (const std::string &amp;path=&quot;*&quot;, uint32_t mode=OWRITER|OCREATE)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#afa8c3c70857dd74c460407d62167350e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8">close</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#acf5dd748aed15bb2866e8f12c6e2b3f8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#ace50ae3d13ba63e258673c80cca7b5c8">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
@@ -106,7 +106,7 @@
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p>Polymorphic database. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>This class is a concrete class to operate an arbitrary database whose type is determined in runtime. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1PolyDB.html#ab0536be21e360747cbb4e91281168460" title="Open a database file.">PolyDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8" title="Close the database file.">PolyDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. It is forbidden to share a database object with child processes. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This class is a concrete class to operate an arbitrary database whose type is determined in runtime. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1PolyDB.html#afa8c3c70857dd74c460407d62167350e" title="Open a database file.">PolyDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8" title="Close the database file.">PolyDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. It is forbidden to share a database object with child processes. </dd></dl>
 <hr/><h2>Member Enumeration Documentation</h2>
 <a class="anchor" id="af7b027daeddd1017bdc4caba82c34523"></a><!-- doxytag: member="kyotocabinet::PolyDB::MergeMode" ref="af7b027daeddd1017bdc4caba82c34523" args="" -->
 <div class="memitem">
@@ -422,7 +422,7 @@
 
 </div>
 </div>
-<a class="anchor" id="ab0536be21e360747cbb4e91281168460"></a><!-- doxytag: member="kyotocabinet::PolyDB::open" ref="ab0536be21e360747cbb4e91281168460" args="(const std::string &amp;path, uint32_t mode=OWRITER|OCREATE)" -->
+<a class="anchor" id="afa8c3c70857dd74c460407d62167350e"></a><!-- doxytag: member="kyotocabinet::PolyDB::open" ref="afa8c3c70857dd74c460407d62167350e" args="(const std::string &amp;path=&quot;*&quot;, uint32_t mode=OWRITER|OCREATE)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -430,7 +430,7 @@
           <td class="memname">bool kyotocabinet::PolyDB::open </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
-          <td class="paramname"> <em>path</em>, </td>
+          <td class="paramname"> <em>path</em> = <code>&quot;*&quot;</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -968,7 +968,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Nov 3 10:48:23 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Nov 5 04:10:37 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

@@ -49,7 +49,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><b>MergeLine</b></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Front line of a merging list. <br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce_1_1ValueIterator.html">ValueIterator</a></td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Value iterator for reducer.  <a href="classkyotocabinet_1_1MapReduce_1_1ValueIterator.html#_details">More...</a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Value iterator for the reducer.  <a href="classkyotocabinet_1_1MapReduce_1_1ValueIterator.html#_details">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2>Public Types</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201dd">Option</a> { <a class="el" href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201dda7755be537e266017d8b78b3bafb5f1dd">XNOLOCK</a> =  1 &lt;&lt; 0, 
 <a class="el" href="classkyotocabinet_1_1MapReduce.html#a59a43dbd3b73c163942960cf87b201ddaa36e72ad9da0e9ce2a8c31a3a44b9716">XNOCOMP</a> =  1 &lt;&lt; 1
@@ -59,8 +59,8 @@
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#ad94405a7bd1231c5369bdf624eae48ab">MapReduce</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Default constructor.  <a href="#ad94405a7bd1231c5369bdf624eae48ab"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a6de8593f460bdc66281e277b9d9b069e">tune_storage</a> (int32_t dbnum, int64_t clim)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the storage configurations.  <a href="#a6de8593f460bdc66281e277b9d9b069e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#aa1845300d38d7732a26270b7778c794b">~MapReduce</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#aa1845300d38d7732a26270b7778c794b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a5cba394fcb6361902f12ecc710392ade">map</a> (const char *kbuf, size_t ksiz, const char *vbuf, size_t vsiz, <a class="el" href="classkyotocabinet_1_1MapReduce_1_1MapEmitter.html">MapEmitter</a> *emitter)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Map a record data.  <a href="#a5cba394fcb6361902f12ecc710392ade"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#aeab1043e26d29c1cb37c2582ab359821">reduce</a> (const char *kbuf, size_t ksiz, <a class="el" href="classkyotocabinet_1_1MapReduce_1_1ValueIterator.html">ValueIterator</a> *iter)=0</td></tr>
@@ -69,6 +69,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Process a log message.  <a href="#acf8b6e8bfbd50ca3a226624fac04091d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a7aa3490fcb749154f158aec35234b4ce">execute</a> (<a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> *db, const std::string &amp;tmppath=&quot;&quot;, uint32_t opts=0)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Execute the <a class="el" href="classkyotocabinet_1_1MapReduce.html" title="MapReduce framework.">MapReduce</a> process about a database.  <a href="#a7aa3490fcb749154f158aec35234b4ce"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a6de8593f460bdc66281e277b9d9b069e">tune_storage</a> (int32_t dbnum, int64_t clim)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the storage configurations.  <a href="#a6de8593f460bdc66281e277b9d9b069e"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p><a class="el" href="classkyotocabinet_1_1MapReduce.html" title="MapReduce framework.">MapReduce</a> framework. </p>
@@ -119,43 +121,26 @@
 
 </div>
 </div>
-<hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="a6de8593f460bdc66281e277b9d9b069e"></a><!-- doxytag: member="kyotocabinet::MapReduce::tune_storage" ref="a6de8593f460bdc66281e277b9d9b069e" args="(int32_t dbnum, int64_t clim)" -->
+<a class="anchor" id="aa1845300d38d7732a26270b7778c794b"></a><!-- doxytag: member="kyotocabinet::MapReduce::~MapReduce" ref="aa1845300d38d7732a26270b7778c794b" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void kyotocabinet::MapReduce::tune_storage </td>
+          <td class="memname">kyotocabinet::MapReduce::~MapReduce </td>
           <td>(</td>
-          <td class="paramtype">int32_t&nbsp;</td>
-          <td class="paramname"> <em>dbnum</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
           <td></td>
-          <td class="paramtype">int64_t&nbsp;</td>
-          <td class="paramname"> <em>clim</em></td><td>&nbsp;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td><td></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
-<p>Set the storage configurations. </p>
-<dl><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>dbnum</em>&nbsp;</td><td>the number of temporary databases. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>clim</em>&nbsp;</td><td>the limit size of the internal cache. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Destructor. </p>
 
 </div>
 </div>
+<hr/><h2>Member Function Documentation</h2>
 <a class="anchor" id="a5cba394fcb6361902f12ecc710392ade"></a><!-- doxytag: member="kyotocabinet::MapReduce::map" ref="a5cba394fcb6361902f12ecc710392ade" args="(const char *kbuf, size_t ksiz, const char *vbuf, size_t vsiz, MapEmitter *emitter)=0" -->
 <div class="memitem">
 <div class="memproto">
@@ -341,8 +326,44 @@
 
 </div>
 </div>
+<a class="anchor" id="a6de8593f460bdc66281e277b9d9b069e"></a><!-- doxytag: member="kyotocabinet::MapReduce::tune_storage" ref="a6de8593f460bdc66281e277b9d9b069e" args="(int32_t dbnum, int64_t clim)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::MapReduce::tune_storage </td>
+          <td>(</td>
+          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramname"> <em>dbnum</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t&nbsp;</td>
+          <td class="paramname"> <em>clim</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Nov 3 10:48:22 2010 for Kyoto Cabinet by&nbsp;
+<div class="memdoc">
+
+<p>Set the storage configurations. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>dbnum</em>&nbsp;</td><td>the number of temporary databases. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>clim</em>&nbsp;</td><td>the limit size of the internal cache. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div>
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Nov 5 04:10:37 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

@@ -1,3 +1,11 @@
+2010-11-04  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcutil.h (strsplit): new function.
+
+	* kcpolydb.h (PolyDB::match_prefix): performance of the prototype tree was improved.
+
+	- Release: 1.2.22
+
 2010-11-02  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcdbext.h (MapReduce::Emitter::emit): a bug on 32-bit environment was fixed.

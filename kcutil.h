@@ -292,13 +292,24 @@ std::string strprintf(const char* format, ...);
 
 
 /**
- * Split a string with a delimiter
+ * Split a string with a delimiter.
  * @param str the string.
  * @param delim the delimiter.
  * @param elems a vector object into which the result elements are pushed.
  * @return the number of result elements.
  */
 size_t strsplit(const std::string& str, char delim, std::vector<std::string>* elems);
+
+
+/**
+ * Split a string with delimiters.
+ * @param str the string.
+ * @param delims the delimiters.
+ * @param elems a vector object into which the result elements are pushed.
+ * @return the number of result elements.
+ */
+size_t strsplit(const std::string& str, const std::string& delims,
+                std::vector<std::string>* elems);
 
 
 /**
@@ -1286,6 +1297,30 @@ inline size_t strsplit(const std::string& str, char delim, std::vector<std::stri
       std::string col(pv, it);
       elems->push_back(col);
       pv = it + 1;
+    }
+    it++;
+  }
+  std::string col(pv, it);
+  elems->push_back(col);
+  return elems->size();
+}
+
+
+/**
+ * Split a string with delimiters.
+ */
+inline size_t strsplit(const std::string& str, const std::string& delims,
+                       std::vector<std::string>* elems) {
+  _assert_(elems);
+  elems->clear();
+  std::string::const_iterator it = str.begin();
+  std::string::const_iterator pv = it;
+  while (it != str.end()) {
+    while (delims.find(*it, 0) != std::string::npos) {
+      std::string col(pv, it);
+      elems->push_back(col);
+      pv = it + 1;
+      break;
     }
     it++;
   }

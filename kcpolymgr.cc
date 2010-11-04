@@ -1036,7 +1036,7 @@ static int32_t proccopy(const char* path, const char* file, int32_t oflags) {
     dberrprint(&db, "DB::close failed");
     err = true;
   }
-  if (!err) iprintf("%lld blocks were merged successfully\n", (long long)checker.count());
+  if (!err) iprintf("%lld blocks were copied successfully\n", (long long)checker.count());
   return err ? 1 : 0;
 }
 
@@ -1106,7 +1106,7 @@ static int32_t procload(const char* path, const char* file, int32_t oflags) {
 }
 
 
-// perform check command
+// perform merge command
 static int32_t procmerge(const char* path, int32_t oflags, kc::PolyDB::MergeMode mode,
                          const std::vector<std::string>& srcpaths) {
   kc::PolyDB db;

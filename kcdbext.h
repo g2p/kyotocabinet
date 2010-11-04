@@ -124,7 +124,7 @@ public:
     MapReduce* mr_;
   };
   /**
-   * Value iterator for reducer.
+   * Value iterator for the reducer.
    */
   class ValueIterator {
     friend class MapReduce;
@@ -197,15 +197,10 @@ public:
     _assert_(true);
   }
   /**
-   * Set the storage configurations.
-   * @param dbnum the number of temporary databases.
-   * @param clim the limit size of the internal cache.
+   * Destructor.
    */
-  void tune_storage(int32_t dbnum, int64_t clim) {
+  ~MapReduce() {
     _assert_(true);
-    dbnum_ = dbnum > 0 ? dbnum : MRDEFDBNUM;
-    if (dbnum_ > MRMAXDBNUM) dbnum_ = MRMAXDBNUM;
-    clim_ = clim > 0 ? clim : MRDEFCLIM;
   }
   /**
    * Map a record data.
@@ -423,6 +418,17 @@ public:
               etime - stime)) err = true;
     delete[] tmpdbs_;
     return !err;
+  }
+  /**
+   * Set the storage configurations.
+   * @param dbnum the number of temporary databases.
+   * @param clim the limit size of the internal cache.
+   */
+  void tune_storage(int32_t dbnum, int64_t clim) {
+    _assert_(true);
+    dbnum_ = dbnum > 0 ? dbnum : MRDEFDBNUM;
+    if (dbnum_ > MRMAXDBNUM) dbnum_ = MRMAXDBNUM;
+    clim_ = clim > 0 ? clim : MRDEFCLIM;
   }
 private:
   /**

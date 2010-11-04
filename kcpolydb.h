@@ -380,7 +380,7 @@ public:
    * it is no longer in use.  It is not allowed for two or more database objects in the same
    * process to keep their connections to the same database file at the same time.
    */
-  bool open(const std::string& path, uint32_t mode = OWRITER | OCREATE) {
+  bool open(const std::string& path = "*", uint32_t mode = OWRITER | OCREATE) {
     _assert_(true);
     if (type_ == TYPEMISC) return db_->open(path, mode);
     if (type_ != TYPEVOID) {
@@ -916,6 +916,10 @@ public:
     if (max < 0) max = INT64_MAX;
     Comparator* comp;
     switch (type_) {
+      case TYPEPTREE: {
+        comp = &LEXICALCOMP;
+        break;
+      }
       case TYPEGRASS: {
         comp = ((GrassDB*)db_)->rcomp();
         break;
@@ -1116,21 +1120,21 @@ public:
       lines.pop();
       switch (mode) {
         case MSET: {
-          if (!db_->set(line.kbuf, line.ksiz, line.vbuf, line.vsiz)) err = true;
+          if (!set(line.kbuf, line.ksiz, line.vbuf, line.vsiz)) err = true;
           break;
         }
         case MADD: {
-          if (!db_->add(line.kbuf, line.ksiz, line.vbuf, line.vsiz) &&
-              db_->error() != Error::DUPREC) err = true;
+          if (!add(line.kbuf, line.ksiz, line.vbuf, line.vsiz) &&
+              error() != Error::DUPREC) err = true;
           break;
         }
         case MREPLACE: {
-          if (!db_->replace(line.kbuf, line.ksiz, line.vbuf, line.vsiz) &&
-              db_->error() != Error::NOREC) err = true;
+          if (!replace(line.kbuf, line.ksiz, line.vbuf, line.vsiz) &&
+              error() != Error::NOREC) err = true;
           break;
         }
         case MAPPEND: {
-          if (!db_->append(line.kbuf, line.ksiz, line.vbuf, line.vsiz)) err = true;
+          if (!append(line.kbuf, line.ksiz, line.vbuf, line.vsiz)) err = true;
           break;
         }
       }

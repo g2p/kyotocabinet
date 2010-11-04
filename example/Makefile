@@ -68,6 +68,8 @@ check :
 	$(RUNENV) ./kcdirex
 	$(RUNENV) ./kcforestex
 	$(RUNENV) ./kcpolyex
+	$(RUNENV) ./kcvisex
+	$(RUNENV) ./kcmrex
 	$(RUNENV) ./kclangcex
 
 

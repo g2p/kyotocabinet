@@ -1083,7 +1083,7 @@ static int32_t proccopy(const char* path, const char* file, int32_t oflags) {
     dberrprint(&db, "DB::close failed");
     err = true;
   }
-  if (!err) iprintf("%lld blocks were merged successfully\n", (long long)checker.count());
+  if (!err) iprintf("%lld blocks were copied successfully\n", (long long)checker.count());
   return err ? 1 : 0;
 }
 

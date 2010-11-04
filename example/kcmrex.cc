@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   PolyDB db;
 
   // open the database
-  if (!db.open("*")) {
+  if (!db.open()) {
     cerr << "open error: " << db.error().name() << endl;
   }
 
