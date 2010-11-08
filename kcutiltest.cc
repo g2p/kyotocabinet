@@ -36,12 +36,14 @@ static void filemetaprint(kc::File* file);
 static int32_t runmutex(int argc, char** argv);
 static int32_t runpara(int argc, char** argv);
 static int32_t runfile(int argc, char** argv);
-static int32_t runmap(int argc, char** argv);
+static int32_t runthmap(int argc, char** argv);
+static int32_t runlhmap(int argc, char** argv);
 static int32_t runmisc(int argc, char** argv);
 static int32_t procmutex(int64_t rnum, int32_t thnum, double iv);
 static int32_t procpara(int64_t rnum, int32_t thnum, double iv);
 static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd, int64_t msiz);
-static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum);
+static int32_t procthmap(int64_t rnum, bool rnd, int64_t bnum);
+static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum);
 static int32_t procmisc(int64_t rnum);
 
 
@@ -61,8 +63,10 @@ int main(int argc, char** argv) {
     rv = runpara(argc, argv);
   } else if (!std::strcmp(argv[1], "file")) {
     rv = runfile(argc, argv);
-  } else if (!std::strcmp(argv[1], "map")) {
-    rv = runmap(argc, argv);
+  } else if (!std::strcmp(argv[1], "thmap")) {
+    rv = runthmap(argc, argv);
+  } else if (!std::strcmp(argv[1], "lhmap")) {
+    rv = runlhmap(argc, argv);
   } else if (!std::strcmp(argv[1], "misc")) {
     rv = runmisc(argc, argv);
   } else {
@@ -87,7 +91,8 @@ static void usage() {
   eprintf("  %s mutex [-th num] [-iv num] rnum\n", g_progname);
   eprintf("  %s para [-th num] [-iv num] rnum\n", g_progname);
   eprintf("  %s file [-th num] [-rnd] [-msiz num] path rnum\n", g_progname);
-  eprintf("  %s map [-rnd] [-bnum num] rnum\n", g_progname);
+  eprintf("  %s thmap [-rnd] [-bnum num] rnum\n", g_progname);
+  eprintf("  %s lhmap [-rnd] [-bnum num] rnum\n", g_progname);
   eprintf("  %s misc rnum\n", g_progname);
   eprintf("\n");
   std::exit(1);
@@ -231,11 +236,10 @@ static int32_t runfile(int argc, char** argv) {
 }
 
 
-// parse arguments of map command
-static int32_t runmap(int argc, char** argv) {
+// parse arguments of thmap command
+static int32_t runthmap(int argc, char** argv) {
   bool argbrk = false;
   const char* rstr = NULL;
-  int32_t thnum = 1;
   bool rnd = false;
   int64_t bnum = -1;
   for (int32_t i = 2; i < argc; i++) {
@@ -259,9 +263,41 @@ static int32_t runmap(int argc, char** argv) {
   }
   if (!rstr) usage();
   int64_t rnum = kc::atoix(rstr);
-  if (rnum < 1 || thnum < 1) usage();
-  if (thnum > THREADMAX) thnum = THREADMAX;
-  int32_t rv = procmap(rnum, rnd, bnum);
+  if (rnum < 1) usage();
+  int32_t rv = procthmap(rnum, rnd, bnum);
+  return rv;
+}
+
+
+// parse arguments of lhmap command
+static int32_t runlhmap(int argc, char** argv) {
+  bool argbrk = false;
+  const char* rstr = NULL;
+  bool rnd = false;
+  int64_t bnum = -1;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-rnd")) {
+        rnd = true;
+      } else if (!std::strcmp(argv[i], "-bnum")) {
+        if (++i >= argc) usage();
+        bnum = kc::atoix(argv[i]);
+      } else {
+        usage();
+      }
+    } else if (!rstr) {
+      argbrk = true;
+      rstr = argv[i];
+    } else {
+      usage();
+    }
+  }
+  if (!rstr) usage();
+  int64_t rnum = kc::atoix(rstr);
+  if (rnum < 1) usage();
+  int32_t rv = proclhmap(rnum, rnd, bnum);
   return rv;
 }
 
@@ -1685,9 +1721,186 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
 }
 
 
-// perform map command
-static int32_t procmap(int64_t rnum, bool rnd, int64_t bnum) {
-  iprintf("<Linked Hash Map Test>\n  seed=%u  rnum=%lld  rnd=%d  bnum=%lld\n\n",
+// perform thmap command
+static int32_t procthmap(int64_t rnum, bool rnd, int64_t bnum) {
+  iprintf("<Memory-saving Hash Map Test>\n  seed=%u  rnum=%lld  rnd=%d  bnum=%lld\n\n",
+          g_randseed, (long long)rnum, rnd, (long long)bnum);
+  bool err = false;
+  if (bnum < 0) bnum = 0;
+  kc::TinyHashMap map(bnum);
+  iprintf("setting records:\n");
+  double stime = kc::time();
+  for (int64_t i = 1; i <= rnum; i++) {
+    char kbuf[RECBUFSIZ];
+    size_t ksiz = std::sprintf(kbuf, "%08lld", (long long)(rnd ? myrand(rnum) + 1 : i));
+    map.set(kbuf, ksiz, kbuf, ksiz);
+    if (rnum > 250 && i % (rnum / 250) == 0) {
+      iputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+    }
+  }
+  double etime = kc::time();
+  iprintf("time: %.3f\n", etime - stime);
+  iprintf("count: %lld\n", (long long)map.count());
+  int64_t musage = memusage();
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  iprintf("getting records:\n");
+  stime = kc::time();
+  for (int64_t i = 1; !err && i <= rnum; i++) {
+    char kbuf[RECBUFSIZ];
+    size_t ksiz = std::sprintf(kbuf, "%08lld", (long long)(rnd ? myrand(rnum) + 1 : i));
+    size_t vsiz;
+    const char* vbuf = map.get(kbuf, ksiz, &vsiz);
+    if (!vbuf && !rnd) {
+      errprint(__LINE__, "TinyHashMap::get: %s", kbuf);
+      err = true;
+    }
+    if (rnum > 250 && i % (rnum / 250) == 0) {
+      iputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+    }
+  }
+  etime = kc::time();
+  iprintf("time: %.3f\n", etime - stime);
+  iprintf("count: %lld\n", (long long)map.count());
+  musage = memusage();
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  iprintf("appending records:\n");
+  stime = kc::time();
+  for (int64_t i = 1; !err && i <= rnum; i++) {
+    char kbuf[RECBUFSIZ];
+    size_t ksiz = std::sprintf(kbuf, "%08lld", (long long)(rnd ? myrand(rnum) + 1 : i));
+    map.append(kbuf, ksiz, kbuf, ksiz);
+    if (rnum > 250 && i % (rnum / 250) == 0) {
+      iputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+    }
+  }
+  etime = kc::time();
+  iprintf("time: %.3f\n", etime - stime);
+  iprintf("count: %lld\n", (long long)map.count());
+  musage = memusage();
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  iprintf("traversing records:\n");
+  stime = kc::time();
+  int64_t cnt = 0;
+  kc::TinyHashMap::Iterator it(&map);
+  const char* kbuf, *vbuf;
+  size_t ksiz, vsiz;
+  while ((kbuf = it.get(&ksiz, &vbuf, &vsiz)) != NULL) {
+    cnt++;
+    it.step();
+    if (rnum > 250 && cnt % (rnum / 250) == 0) {
+      iputchar('.');
+      if (cnt == rnum || cnt % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)cnt);
+    }
+  }
+  if (rnd) iprintf(" (end)\n");
+  if (cnt != (int64_t)map.count()) {
+    errprint(__LINE__, "TinyHashMap::count");
+    err = true;
+  }
+  etime = kc::time();
+  iprintf("time: %.3f\n", etime - stime);
+  iprintf("count: %lld\n", (long long)map.count());
+  musage = memusage();
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  iprintf("sorting records:\n");
+  stime = kc::time();
+  cnt = 0;
+  kc::TinyHashMap::Sorter sorter(&map);
+  while ((kbuf = sorter.get(&ksiz, &vbuf, &vsiz)) != NULL) {
+    cnt++;
+    sorter.step();
+    if (rnum > 250 && cnt % (rnum / 250) == 0) {
+      iputchar('.');
+      if (cnt == rnum || cnt % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)cnt);
+    }
+  }
+  if (rnd) iprintf(" (end)\n");
+  if (cnt != (int64_t)map.count()) {
+    errprint(__LINE__, "TinyHashMap::count");
+    err = true;
+  }
+  etime = kc::time();
+  iprintf("time: %.3f\n", etime - stime);
+  iprintf("count: %lld\n", (long long)map.count());
+  musage = memusage();
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  iprintf("removing records:\n");
+  stime = kc::time();
+  for (int64_t i = 1; !err && i <= rnum; i++) {
+    char kbuf[RECBUFSIZ];
+    size_t ksiz = std::sprintf(kbuf, "%08lld", (long long)(rnd ? myrand(rnum) + 1 : i));
+    if (!map.remove(kbuf, ksiz) && !rnd) {
+      errprint(__LINE__, "TinyHashMap::remove: %s", kbuf);
+      err = true;
+    }
+    if (rnum > 250 && i % (rnum / 250) == 0) {
+      iputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+    }
+  }
+  etime = kc::time();
+  iprintf("time: %.3f\n", etime - stime);
+  iprintf("count: %lld\n", (long long)map.count());
+  musage = memusage();
+  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (rnd) {
+    iprintf("wicked testing:\n");
+    stime = kc::time();
+    char lbuf[RECBUFSIZL];
+    std::memset(lbuf, '*', sizeof(lbuf));
+    for (int64_t i = 1; !err && i <= rnum; i++) {
+      char kbuf[RECBUFSIZ];
+      size_t ksiz = std::sprintf(kbuf, "%lld", (long long)(myrand(rnum) + 1));
+      size_t vsiz = myrand(sizeof(lbuf));
+      switch (myrand(6)) {
+        case 0: {
+          map.set(kbuf, ksiz, lbuf, vsiz);
+          break;
+        }
+        case 1: {
+          map.add(kbuf, ksiz, lbuf, vsiz);
+          break;
+        }
+        case 2: {
+          map.replace(kbuf, ksiz, lbuf, vsiz);
+          break;
+        }
+        case 3: {
+          map.append(kbuf, ksiz, lbuf, vsiz);
+          break;
+        }
+        case 6: {
+          map.remove(kbuf, ksiz);
+          break;
+        }
+        default: {
+          map.get(kbuf, ksiz, &vsiz);
+          break;
+        }
+      }
+      if (myrand(rnum * 2 + 1) == 0) map.clear();
+      if (rnum > 250 && i % (rnum / 250) == 0) {
+        iputchar('.');
+        if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      }
+    }
+    etime = kc::time();
+    iprintf("time: %.3f\n", etime - stime);
+    iprintf("count: %lld\n", (long long)map.count());
+    musage = memusage();
+    if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  }
+  iprintf("%s\n\n", err ? "error" : "ok");
+  return err ? 1 : 0;
+}
+
+
+// perform lhmap command
+static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
+  iprintf("<Doubly-linked Hash Map Test>\n  seed=%u  rnum=%lld  rnd=%d  bnum=%lld\n\n",
           g_randseed, (long long)rnum, rnd, (long long)bnum);
   bool err = false;
   if (bnum < 0) bnum = 0;
@@ -1927,6 +2140,10 @@ static int32_t procmisc(int64_t rnum) {
     }
     unsigned char ubuf[RECBUFSIZ];
     unsigned char* uwp = ubuf;
+    if (kc::writevarnum(uwp, num32) != kc::sizevarnum(num32)) {
+      errprint(__LINE__, "sizevarnum: %llu", (unsigned long long)num32);
+      err = true;
+    }
     uwp += kc::writevarnum(uwp, num16);
     uwp += kc::writevarnum(uwp, num32);
     uwp += kc::writevarnum(uwp, num64);

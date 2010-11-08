@@ -119,8 +119,10 @@ check-util :
 	kcutiltest para -th 4 -iv -1 10000
 	kcutiltest file -th 4 casket 10000
 	kcutiltest file -th 4 -rnd -msiz 1m casket 10000
-	kcutiltest map -bnum 1000 10000
-	kcutiltest map -rnd -bnum 1000 10000
+	kcutiltest thmap -bnum 1000 10000
+	kcutiltest thmap -rnd -bnum 1000 10000
+	kcutiltest lhmap -bnum 1000 10000
+	kcutiltest lhmap -rnd -bnum 1000 10000
 	kcutiltest misc 10000
 
 

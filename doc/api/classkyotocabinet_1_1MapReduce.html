@@ -38,8 +38,6 @@
 <p><a href="classkyotocabinet_1_1MapReduce-members.html">List of all members.</a></p>
 <table border="0" cellpadding="0" cellspacing="0">
 <tr><td colspan="2"><h2>Classes</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><b>CacheComparator</b></td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><a class="el" href="classkyotocabinet_1_1Comparator.html" title="Interfrace of comparator of record keys.">Comparator</a> for cache records. <br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><b>MapChecker</b></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Checker for the map process. <br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce_1_1MapEmitter.html">MapEmitter</a></td></tr>
@@ -69,8 +67,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Process a log message.  <a href="#acf8b6e8bfbd50ca3a226624fac04091d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a7aa3490fcb749154f158aec35234b4ce">execute</a> (<a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> *db, const std::string &amp;tmppath=&quot;&quot;, uint32_t opts=0)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Execute the <a class="el" href="classkyotocabinet_1_1MapReduce.html" title="MapReduce framework.">MapReduce</a> process about a database.  <a href="#a7aa3490fcb749154f158aec35234b4ce"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#a6de8593f460bdc66281e277b9d9b069e">tune_storage</a> (int32_t dbnum, int64_t clim)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the storage configurations.  <a href="#a6de8593f460bdc66281e277b9d9b069e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1MapReduce.html#ab8d38fb10c49d2c26d9681910d96dd77">tune_storage</a> (int32_t dbnum, int64_t clim, int64_t cbnum)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the storage configurations.  <a href="#ab8d38fb10c49d2c26d9681910d96dd77"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p><a class="el" href="classkyotocabinet_1_1MapReduce.html" title="MapReduce framework.">MapReduce</a> framework. </p>
@@ -326,7 +324,7 @@
 
 </div>
 </div>
-<a class="anchor" id="a6de8593f460bdc66281e277b9d9b069e"></a><!-- doxytag: member="kyotocabinet::MapReduce::tune_storage" ref="a6de8593f460bdc66281e277b9d9b069e" args="(int32_t dbnum, int64_t clim)" -->
+<a class="anchor" id="ab8d38fb10c49d2c26d9681910d96dd77"></a><!-- doxytag: member="kyotocabinet::MapReduce::tune_storage" ref="ab8d38fb10c49d2c26d9681910d96dd77" args="(int32_t dbnum, int64_t clim, int64_t cbnum)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -340,7 +338,13 @@
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int64_t&nbsp;</td>
-          <td class="paramname"> <em>clim</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>clim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t&nbsp;</td>
+          <td class="paramname"> <em>cbnum</em></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -356,6 +360,7 @@
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>dbnum</em>&nbsp;</td><td>the number of temporary databases. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>clim</em>&nbsp;</td><td>the limit size of the internal cache. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>cbnum</em>&nbsp;</td><td>the bucket number of the internal cache. </td></tr>
   </table>
   </dd>
 </dl>
@@ -363,7 +368,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Nov 5 04:10:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 8 03:22:42 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

@@ -179,7 +179,7 @@ public:
      * @param vsp the pointer to the variable into which the size of the value region is
      * assigned.
      * @param step true to move the cursor to the next record, or false for no move.
-     * @return the pointer to the pair of the key region, or NULL on failure.
+     * @return the pointer to the key region, or NULL on failure.
      * @note If the cursor is invalidated, NULL is returned.  Because an additional zero code is
      * appended at the end of each region of the key and the value, each region can be treated
      * as a C-style string.  The return value should be deleted explicitly by the caller with
@@ -693,7 +693,7 @@ public:
      * @param vsp the pointer to the variable into which the size of the value region is
      * assigned.
      * @param step true to move the cursor to the next record, or false for no move.
-     * @return the pointer to the pair of the key region, or NULL on failure.
+     * @return the pointer to the key region, or NULL on failure.
      * @note If the cursor is invalidated, NULL is returned.  Because an additional zero code is
      * appended at the end of each region of the key and the value, each region can be treated
      * as a C-style string.  The return value should be deleted explicitly by the caller with

@@ -68,8 +68,10 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Directory stream abstraction.  <a href="classkyotocabinet_1_1DirStream.html#_details">More...</a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1HashDB.html">HashDB</a></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight"><a class="el" href="classkyotocabinet_1_1File.html" title="Filesystem abstraction.">File</a> hash database.  <a href="classkyotocabinet_1_1HashDB.html#_details">More...</a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1TinyHashMap.html">TinyHashMap</a></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Memory-saving hash map.  <a href="classkyotocabinet_1_1TinyHashMap.html#_details">More...</a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1LinkedHashMap.html">LinkedHashMap</a></td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Double linked hash map.  <a href="classkyotocabinet_1_1LinkedHashMap.html#_details">More...</a><br/></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Doubly-linked hash map.  <a href="classkyotocabinet_1_1LinkedHashMap.html#_details">More...</a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PlantDB.html">PlantDB</a></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Plant database.  <a href="classkyotocabinet_1_1PlantDB.html#_details">More...</a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html">PolyDB</a></td></tr>
@@ -165,6 +167,8 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Write a number in variable length format into a buffer.  <a href="#a03c4e24c499a108d621db0a11d90373a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">size_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a16132e0ce72cae571f1141fd6ffc1be2">readvarnum</a> (const void *buf, size_t size, uint64_t *np)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Read a number in variable length format from a buffer.  <a href="#a16132e0ce72cae571f1141fd6ffc1be2"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">size_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a13e22f466f762c802b40d350d6348de8">sizevarnum</a> (uint64_t num)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check the size of variable length format of a number.  <a href="#a13e22f466f762c802b40d350d6348de8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a0a5204c2146a15fc10235415c2116a7e">hashmurmur</a> (const void *buf, size_t size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the hash value by MurMur hashing.  <a href="#a0a5204c2146a15fc10235415c2116a7e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a081b00a7f1052ce0ac40cf231c8308b6">hashfnv</a> (const void *buf, size_t size)</td></tr>
@@ -824,6 +828,27 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the length of the read region, or 0 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a13e22f466f762c802b40d350d6348de8"></a><!-- doxytag: member="kyotocabinet::sizevarnum" ref="a13e22f466f762c802b40d350d6348de8" args="(uint64_t num)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t kyotocabinet::sizevarnum </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&nbsp;</td>
+          <td class="paramname"> <em>num</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Check the size of variable length format of a number. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the size of variable length format. </dd></dl>
 
 </div>
 </div>
@@ -2509,7 +2534,7 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Nov 5 04:10:37 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 8 03:22:42 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

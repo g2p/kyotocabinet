@@ -1544,7 +1544,7 @@ private:
   private:
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
-      _assert_(kbuf && vbuf && sp);
+      _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
       *sp = vsiz_;
       return vbuf_;
     }
@@ -2479,7 +2479,7 @@ private:
    * @return the hash value.
    */
   uint64_t hash_record(const char* kbuf, size_t ksiz) {
-    _assert_(kbuf);
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
     return hashmurmur(kbuf, ksiz);
   }
   /**

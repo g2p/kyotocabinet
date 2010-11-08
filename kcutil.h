@@ -194,6 +194,13 @@ size_t readvarnum(const void* buf, size_t size, uint64_t* np);
 
 
 /**
+ * Check the size of variable length format of a number.
+ * @return the size of variable length format.
+ */
+size_t sizevarnum(uint64_t num);
+
+
+/**
  * Get the hash value by MurMur hashing.
  * @param buf the source buffer.
  * @param size the size of the source buffer.
@@ -945,6 +952,24 @@ inline size_t readvarnum(const void* buf, size_t size, uint64_t* np) {
   } while (c >= 0x80);
   *np = num;
   return rp - (const unsigned char*)buf;
+}
+
+
+/**
+ * Check the size of variable length format of a number.
+ */
+inline size_t sizevarnum(uint64_t num) {
+  _assert_(true);
+  if (num < (1ULL << 7)) return 1;
+  if (num < (1ULL << 14)) return 2;
+  if (num < (1ULL << 21)) return 3;
+  if (num < (1ULL << 28)) return 4;
+  if (num < (1ULL << 35)) return 5;
+  if (num < (1ULL << 42)) return 6;
+  if (num < (1ULL << 49)) return 7;
+  if (num < (1ULL << 56)) return 8;
+  if (num < (1ULL << 63)) return 9;
+  return 10;
 }
 
 

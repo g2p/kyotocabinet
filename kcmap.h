@@ -26,13 +26,648 @@ namespace kyotocabinet {                 // common namespace
  * Constants for implementation.
  */
 namespace {
-const size_t LHMDEFBNUM = 31;            ///< default bucket number of hash table
-const size_t LHMZMAPBNUM = 32768;        ///< mininum number of buckets to use mmap
+const size_t MAPDEFBNUM = 31;            ///< default bucket number of hash table
+const size_t MAPZMAPBNUM = 32768;        ///< mininum number of buckets to use mmap
 }
 
 
 /**
- * Double linked hash map.
+ * Memory-saving hash map.
+ */
+class TinyHashMap {
+public:
+  class Iterator;
+private:
+  struct Record;
+  struct RecordComparator;
+public:
+  /**
+   * Iterator of records.
+   */
+  class Iterator {
+    friend class TinyHashMap;
+  public:
+    /**
+     * Constructor.
+     * @param map the container.
+     */
+    explicit Iterator(TinyHashMap* map) : map_(map), bidx_(-1), ridx_(0), recs_() {
+      _assert_(map);
+      step();
+    }
+    /**
+     * Destructor.
+     */
+    ~Iterator() {
+      _assert_(true);
+      free_records();
+    }
+    /**
+     * Get the key of the current record.
+     * @param sp the pointer to the variable into which the size of the region of the return
+     * value is assigned.
+     * @return the pointer to the key region of the current record, or NULL on failure.
+     */
+    const char* get_key(size_t* sp) {
+      _assert_(sp);
+      if (ridx_ >= recs_.size()) return NULL;
+      Record rec(recs_[ridx_]);
+      *sp = rec.ksiz_;
+      return rec.kbuf_;
+    }
+    /**
+     * Get the value of the current record.
+     * @param sp the pointer to the variable into which the size of the region of the return
+     * value is assigned.
+     * @return the pointer to the value region of the current record, or NULL on failure.
+     */
+    const char* get_value(size_t* sp) {
+      _assert_(sp);
+      if (ridx_ >= recs_.size()) return NULL;
+      Record rec(recs_[ridx_]);
+      *sp = rec.vsiz_;
+      return rec.vbuf_;
+    }
+    /**
+     * Get a pair of the key and the value of the current record.
+     * @param ksp the pointer to the variable into which the size of the region of the return
+     * value is assigned.
+     * @param vbp the pointer to the variable into which the pointer to the value region is
+     * assigned.
+     * @param vsp the pointer to the variable into which the size of the value region is
+     * assigned.
+     * @return the pointer to the key region, or NULL on failure.
+     */
+    const char* get(size_t* ksp, const char** vbp, size_t* vsp) {
+      _assert_(ksp && vbp && vsp);
+      if (ridx_ >= recs_.size()) return NULL;
+      Record rec(recs_[ridx_]);
+      *ksp = rec.ksiz_;
+      *vbp = rec.vbuf_;
+      *vsp = rec.vsiz_;
+      return rec.kbuf_;
+    }
+    /**
+     * Step the cursor to the next record.
+     */
+    void step() {
+      _assert_(true);
+      if (++ridx_ >= recs_.size()) {
+        ridx_ = 0;
+        free_records();
+        while (true) {
+          bidx_++;
+          if (bidx_ >= (int64_t)map_->bnum_) return;
+          read_records();
+          if (recs_.size() > 0) break;
+        }
+      }
+    }
+  private:
+    /** Dummy constructor to forbid the use. */
+    Iterator(const Iterator&);
+    /** Dummy Operator to forbid the use. */
+    Iterator& operator =(const Iterator&);
+    /**
+     * Read records of the current bucket.
+     */
+    void read_records() {
+      char* rbuf = map_->buckets_[bidx_];
+      while (rbuf) {
+        Record rec(rbuf);
+        size_t rsiz = sizeof(rec.child_) + sizevarnum(rec.ksiz_) + rec.ksiz_ +
+          sizevarnum(rec.vsiz_) + rec.vsiz_ + sizevarnum(rec.psiz_);
+        char* nbuf = new char[rsiz];
+        std::memcpy(nbuf, rbuf, rsiz);
+        recs_.push_back(nbuf);
+        rbuf = rec.child_;
+      }
+    }
+    /**
+     * Release recources of the current records.
+     */
+    void free_records() {
+      std::vector<char*>::iterator it = recs_.begin();
+      std::vector<char*>::iterator itend = recs_.end();
+      while (it != itend) {
+        char* rbuf = *it;
+        delete[] rbuf;
+        it++;
+      }
+      recs_.clear();
+    }
+    /** The container. */
+    TinyHashMap* map_;
+    /** The current bucket index. */
+    int64_t bidx_;
+    /** The current record index. */
+    size_t ridx_;
+    /** The current records. */
+    std::vector<char*> recs_;
+  };
+  /**
+   * Sorter of records.
+   */
+  class Sorter {
+  public:
+    /**
+     * Constructor.
+     * @param map the container.
+     */
+    explicit Sorter(TinyHashMap* map) : map_(map), ridx_(0), recs_() {
+      _assert_(map);
+      recs_.reserve(map->count_);
+      char** buckets = map_->buckets_;
+      size_t bnum = map_->bnum_;
+      for (size_t i = 0; i < bnum; i++) {
+        char* rbuf = buckets[i];
+        while (rbuf) {
+          Record rec(rbuf);
+          recs_.push_back(rbuf);
+          rbuf = *(char**)rbuf;
+        }
+      }
+      std::sort(recs_.begin(), recs_.end(), RecordComparator());
+    }
+    /**
+     * Destructor.
+     */
+    ~Sorter() {
+      _assert_(true);
+    }
+    /**
+     * Get the key of the current record.
+     * @param sp the pointer to the variable into which the size of the region of the return
+     * value is assigned.
+     * @return the pointer to the key region of the current record, or NULL on failure.
+     */
+    const char* get_key(size_t* sp) {
+      _assert_(sp);
+      if (ridx_ >= recs_.size()) return NULL;
+      Record rec(recs_[ridx_]);
+      *sp = rec.ksiz_;
+      return rec.kbuf_;
+    }
+    /**
+     * Get the value of the current record.
+     * @param sp the pointer to the variable into which the size of the region of the return
+     * value is assigned.
+     * @return the pointer to the value region of the current record, or NULL on failure.
+     */
+    const char* get_value(size_t* sp) {
+      _assert_(sp);
+      if (ridx_ >= recs_.size()) return NULL;
+      Record rec(recs_[ridx_]);
+      *sp = rec.vsiz_;
+      return rec.vbuf_;
+    }
+    /**
+     * Get a pair of the key and the value of the current record.
+     * @param ksp the pointer to the variable into which the size of the region of the return
+     * value is assigned.
+     * @param vbp the pointer to the variable into which the pointer to the value region is
+     * assigned.
+     * @param vsp the pointer to the variable into which the size of the value region is
+     * assigned.
+     * @return the pointer to the key region, or NULL on failure.
+     */
+    const char* get(size_t* ksp, const char** vbp, size_t* vsp) {
+      _assert_(ksp && vbp && vsp);
+      if (ridx_ >= recs_.size()) return NULL;
+      Record rec(recs_[ridx_]);
+      *ksp = rec.ksiz_;
+      *vbp = rec.vbuf_;
+      *vsp = rec.vsiz_;
+      return rec.kbuf_;
+    }
+    /**
+     * Step the cursor to the next record.
+     */
+    void step() {
+      _assert_(true);
+      ridx_++;
+    }
+    /** The container. */
+    TinyHashMap* map_;
+    /** The current record index. */
+    size_t ridx_;
+    /** The current records. */
+    std::vector<char*> recs_;
+  };
+  /**
+   * Default constructor.
+   */
+  explicit TinyHashMap() : buckets_(NULL), bnum_(MAPDEFBNUM), count_(0) {
+    _assert_(true);
+    initialize();
+  }
+  /**
+   * Constructor.
+   * @param bnum the number of buckets of the hash table.
+   */
+  explicit TinyHashMap(size_t bnum) : buckets_(NULL), bnum_(bnum), count_(0) {
+    _assert_(true);
+    if (bnum_ < 1) bnum_ = MAPDEFBNUM;
+    initialize();
+  }
+  /**
+   * Destructor.
+   */
+  ~TinyHashMap() {
+    _assert_(true);
+    destroy();
+  }
+  /**
+   * Set the value of a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param vbuf the pointer to the value region.
+   * @param vsiz the size of the value region.
+   * @note If no record corresponds to the key, a new record is created.  If the corresponding
+   * record exists, the value is overwritten.
+   */
+  void set(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+    size_t bidx = hash_record(kbuf, ksiz) % bnum_;
+    char* rbuf = buckets_[bidx];
+    char** entp = buckets_ + bidx;
+    while (rbuf) {
+      Record rec(rbuf);
+      if (rec.ksiz_ == ksiz && !std::memcmp(rec.kbuf_, kbuf, ksiz)) {
+        int32_t oh = (int32_t)sizevarnum(vsiz) - (int32_t)sizevarnum(rec.vsiz_);
+        int64_t psiz = (int64_t)(rec.vsiz_ + rec.psiz_) - (int64_t)(vsiz + oh);
+        if (psiz >= 0) {
+          rec.overwrite(rbuf, vbuf, vsiz, psiz);
+        } else {
+          Record nrec(rec.child_, kbuf, ksiz, vbuf, vsiz, 0);
+          delete[] rbuf;
+          *entp = nrec.serialize();
+        }
+        return;
+      }
+      entp = (char**)rbuf;
+      rbuf = rec.child_;
+    }
+    Record nrec(NULL, kbuf, ksiz, vbuf, vsiz, 0);
+    *entp = nrec.serialize();
+    count_++;
+  }
+  /**
+   * Add a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param vbuf the pointer to the value region.
+   * @param vsiz the size of the value region.
+   * @return true on success, or false on failure.
+   * @note If no record corresponds to the key, a new record is created.  If the corresponding
+   * record exists, the record is not modified and false is returned.
+   */
+  bool add(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+    size_t bidx = hash_record(kbuf, ksiz) % bnum_;
+    char* rbuf = buckets_[bidx];
+    char** entp = buckets_ + bidx;
+    while (rbuf) {
+      Record rec(rbuf);
+      if (rec.ksiz_ == ksiz && !std::memcmp(rec.kbuf_, kbuf, ksiz)) return false;
+      entp = (char**)rbuf;
+      rbuf = rec.child_;
+    }
+    Record nrec(NULL, kbuf, ksiz, vbuf, vsiz, 0);
+    *entp = nrec.serialize();
+    count_++;
+    return true;
+  }
+  /**
+   * Replace the value of a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param vbuf the pointer to the value region.
+   * @param vsiz the size of the value region.
+   * @return true on success, or false on failure.
+   * @note If no record corresponds to the key, no new record is created and false is returned.
+   * If the corresponding record exists, the value is modified.
+   */
+  bool replace(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+    size_t bidx = hash_record(kbuf, ksiz) % bnum_;
+    char* rbuf = buckets_[bidx];
+    char** entp = buckets_ + bidx;
+    while (rbuf) {
+      Record rec(rbuf);
+      if (rec.ksiz_ == ksiz && !std::memcmp(rec.kbuf_, kbuf, ksiz)) {
+        int32_t oh = (int32_t)sizevarnum(vsiz) - (int32_t)sizevarnum(rec.vsiz_);
+        int64_t psiz = (int64_t)(rec.vsiz_ + rec.psiz_) - (int64_t)(vsiz + oh);
+        if (psiz >= 0) {
+          rec.overwrite(rbuf, vbuf, vsiz, psiz);
+        } else {
+          Record nrec(rec.child_, kbuf, ksiz, vbuf, vsiz, 0);
+          delete[] rbuf;
+          *entp = nrec.serialize();
+        }
+        return true;
+      }
+      entp = (char**)rbuf;
+      rbuf = rec.child_;
+    }
+    return false;
+  }
+  /**
+   * Append the value of a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param vbuf the pointer to the value region.
+   * @param vsiz the size of the value region.
+   * @note If no record corresponds to the key, a new record is created.  If the corresponding
+   * record exists, the given value is appended at the end of the existing value.
+   */
+  void append(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+    size_t bidx = hash_record(kbuf, ksiz) % bnum_;
+    char* rbuf = buckets_[bidx];
+    char** entp = buckets_ + bidx;
+    while (rbuf) {
+      Record rec(rbuf);
+      if (rec.ksiz_ == ksiz && !std::memcmp(rec.kbuf_, kbuf, ksiz)) {
+        size_t nsiz = rec.vsiz_ + vsiz;
+        int32_t oh = (int32_t)sizevarnum(nsiz) - (int32_t)sizevarnum(rec.vsiz_);
+        int64_t psiz = (int64_t)(rec.vsiz_ + rec.psiz_) - (int64_t)(nsiz + oh);
+        if (psiz >= 0) {
+          rec.append(rbuf, oh, vbuf, vsiz, psiz);
+        } else {
+          psiz = nsiz + nsiz / 2;
+          Record nrec(rec.child_, kbuf, ksiz, "", 0, psiz);
+          char* nbuf = nrec.serialize();
+          oh = (int32_t)sizevarnum(nsiz) - 1;
+          psiz = (int64_t)psiz - (int64_t)(nsiz + oh);
+          rec.concatenate(nbuf, rec.vbuf_, rec.vsiz_, vbuf, vsiz, psiz);
+          delete[] rbuf;
+          *entp = nbuf;
+        }
+        return;
+      }
+      entp = (char**)rbuf;
+      rbuf = rec.child_;
+    }
+    Record nrec(NULL, kbuf, ksiz, vbuf, vsiz, 0);
+    *entp = nrec.serialize();
+    count_++;
+  }
+  /**
+   * Remove a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @return true on success, or false on failure.
+   * @note If no record corresponds to the key, false is returned.
+   */
+  bool remove(const char* kbuf, size_t ksiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
+    size_t bidx = hash_record(kbuf, ksiz) % bnum_;
+    char* rbuf = buckets_[bidx];
+    char** entp = buckets_ + bidx;
+    while (rbuf) {
+      Record rec(rbuf);
+      if (rec.ksiz_ == ksiz && !std::memcmp(rec.kbuf_, kbuf, ksiz)) {
+        *entp = rec.child_;
+        delete[] rbuf;
+        count_--;
+        return true;
+      }
+      entp = (char**)rbuf;
+      rbuf = rec.child_;
+    }
+    return false;
+  }
+  /**
+   * Retrieve the value of a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @param sp the pointer to the variable into which the size of the region of the return
+   * value is assigned.
+   * @return the pointer to the value region of the corresponding record, or NULL on failure.
+   */
+  const char* get(const char* kbuf, size_t ksiz, size_t* sp) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ && sp);
+    size_t bidx = hash_record(kbuf, ksiz) % bnum_;
+    char* rbuf = buckets_[bidx];
+    while (rbuf) {
+      Record rec(rbuf);
+      if (rec.ksiz_ == ksiz && !std::memcmp(rec.kbuf_, kbuf, ksiz)) {
+        *sp = rec.vsiz_;
+        return rec.vbuf_;
+      }
+      rbuf = rec.child_;
+    }
+    return NULL;
+  }
+  /**
+   * Remove all records.
+   */
+  void clear() {
+    _assert_(true);
+    if (count_ < 1) return;
+    for (size_t i = 0; i < bnum_; i++) {
+      char* rbuf = buckets_[i];
+      while (rbuf) {
+        Record rec(rbuf);
+        char* child = rec.child_;
+        delete[] rbuf;
+        rbuf = child;
+      }
+      buckets_[i] = NULL;
+    }
+    count_ = 0;
+  }
+  /**
+   * Get the number of records.
+   * @return the number of records.
+   */
+  size_t count() {
+    _assert_(true);
+    return count_;
+  }
+private:
+  /**
+   * Record data.
+   */
+  struct Record {
+    /** constructor */
+    Record(char* child, const char* kbuf, uint64_t ksiz,
+           const char* vbuf, uint64_t vsiz, uint64_t psiz) :
+      child_(child), kbuf_(kbuf), ksiz_(ksiz), vbuf_(vbuf), vsiz_(vsiz), psiz_(psiz) {
+      _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && psiz <= MEMMAXSIZ);
+    }
+    /** constructor */
+    Record(const char* rbuf) :
+      child_(NULL), kbuf_(NULL), ksiz_(0), vbuf_(NULL), vsiz_(0), psiz_(0) {
+      _assert_(rbuf);
+      deserialize(rbuf);
+    }
+    /** overwrite the buffer */
+    void overwrite(char* rbuf, const char* vbuf, size_t vsiz, size_t psiz) {
+      _assert_(rbuf && vbuf && vsiz <= MEMMAXSIZ && psiz <= MEMMAXSIZ);
+      char* wp = rbuf + sizeof(child_) + sizevarnum(ksiz_) + ksiz_;
+      wp += writevarnum(wp, vsiz);
+      std::memcpy(wp, vbuf, vsiz);
+      wp += vsiz;
+      writevarnum(wp, psiz);
+    }
+    /** append a value */
+    void append(char* rbuf, int32_t oh, const char* vbuf, size_t vsiz, size_t psiz) {
+      _assert_(rbuf && vbuf && vsiz <= MEMMAXSIZ && psiz <= MEMMAXSIZ);
+      char* wp = rbuf + sizeof(child_) + sizevarnum(ksiz_) + ksiz_;
+      if (oh > 0) {
+        char* pv = wp + sizevarnum(vsiz_);
+        std::memmove(pv + oh, pv, vsiz_);
+        wp += writevarnum(wp, vsiz_ + vsiz);
+        wp = pv + oh + vsiz_;
+      } else {
+        wp += writevarnum(wp, vsiz_ + vsiz);
+        wp += vsiz_;
+      }
+      std::memcpy(wp, vbuf, vsiz);
+      wp += vsiz;
+      writevarnum(wp, psiz);
+    }
+    /** concatenate two values */
+    void concatenate(char* rbuf, const char* ovbuf, size_t ovsiz,
+                     const char* nvbuf, size_t nvsiz, size_t psiz) {
+      _assert_(rbuf && ovbuf && ovsiz <= MEMMAXSIZ && nvbuf && nvsiz <= MEMMAXSIZ);
+      char* wp = rbuf + sizeof(child_) + sizevarnum(ksiz_) + ksiz_;
+      wp += writevarnum(wp, ovsiz + nvsiz);
+      std::memcpy(wp, ovbuf, ovsiz);
+      wp += ovsiz;
+      std::memcpy(wp, nvbuf, nvsiz);
+      wp += nvsiz;
+      writevarnum(wp, psiz);
+    }
+    /** serialize data into a buffer */
+    char* serialize() {
+      _assert_(true);
+      uint64_t rsiz = sizeof(child_) + sizevarnum(ksiz_) + ksiz_ + sizevarnum(vsiz_) + vsiz_ +
+        sizevarnum(psiz_) + psiz_;
+      char* rbuf = new char[rsiz];
+      char* wp = rbuf;
+      *(char**)wp = child_;
+      wp += sizeof(child_);
+      wp += writevarnum(wp, ksiz_);
+      std::memcpy(wp, kbuf_, ksiz_);
+      wp += ksiz_;
+      wp += writevarnum(wp, vsiz_);
+      std::memcpy(wp, vbuf_, vsiz_);
+      wp += vsiz_;
+      writevarnum(wp, psiz_);
+      return rbuf;
+    }
+    /** deserialize a buffer into object */
+    void deserialize(const char* rbuf) {
+      _assert_(rbuf);
+      const char* rp = rbuf;
+      child_ = *(char**)rp;
+      rp += sizeof(child_);
+      rp += readvarnum(rp, sizeof(ksiz_), &ksiz_);
+      kbuf_ = rp;
+      rp += ksiz_;
+      rp += readvarnum(rp, sizeof(vsiz_), &vsiz_);
+      vbuf_ = rp;
+      rp += vsiz_;
+      readvarnum(rp, sizeof(psiz_), &psiz_);
+    }
+    /** print debug info */
+    void print() {
+      std::cout << "child:" << (void*)child_ << std::endl;
+      std::cout << "key:" << std::string(kbuf_, ksiz_) << std::endl;
+      std::cout << "value:" << std::string(vbuf_, vsiz_) << std::endl;
+      std::cout << "ksiz:" << ksiz_ << std::endl;
+      std::cout << "vsiz:" << vsiz_ << std::endl;
+      std::cout << "psiz:" << psiz_ << std::endl;
+    }
+    char* child_;                        ///< region of the child
+    const char* kbuf_;                   ///< region of the key
+    uint64_t ksiz_;                      ///< size of the key
+    const char* vbuf_;                   ///< region of the value
+    uint64_t vsiz_;                      ///< size of the key
+    uint64_t psiz_;                      ///< size of the padding
+  };
+  /**
+   * Comparator for records.
+   */
+  struct RecordComparator {
+    /** comparing operator */
+    bool operator ()(char* const& abuf, char* const& bbuf) {
+      const char* akbuf = abuf + sizeof(char**);
+      uint64_t aksiz;
+      akbuf += readvarnum(akbuf, sizeof(aksiz), &aksiz);
+      const char* bkbuf = bbuf + sizeof(char**);
+      uint64_t bksiz;
+      bkbuf += readvarnum(bkbuf, sizeof(bksiz), &bksiz);
+      uint64_t msiz = aksiz < bksiz ? aksiz : bksiz;
+      for (uint64_t i = 0; i < msiz; i++) {
+        if (((uint8_t*)akbuf)[i] != ((uint8_t*)bkbuf)[i])
+          return ((uint8_t*)akbuf)[i] < ((uint8_t*)bkbuf)[i];
+      }
+      return (int32_t)aksiz < (int32_t)bksiz;
+    }
+  };
+  /** Dummy constructor to forbid the use. */
+  TinyHashMap(const TinyHashMap&);
+  /** Dummy Operator to forbid the use. */
+  TinyHashMap& operator =(const TinyHashMap&);
+  /**
+   * Initialize fields.
+   */
+  void initialize() {
+    _assert_(true);
+    if (bnum_ >= MAPZMAPBNUM) {
+      buckets_ = (char**)mapalloc(sizeof(*buckets_) * bnum_);
+    } else {
+      buckets_ = new char*[bnum_];
+      for (size_t i = 0; i < bnum_; i++) {
+        buckets_[i] = NULL;
+      }
+    }
+  }
+  /**
+   * Clean up fields.
+   */
+  void destroy() {
+    _assert_(true);
+    for (size_t i = 0; i < bnum_; i++) {
+      char* rbuf = buckets_[i];
+      while (rbuf) {
+        Record rec(rbuf);
+        char* child = rec.child_;
+        delete[] rbuf;
+        rbuf = child;
+      }
+    }
+    if (bnum_ >= MAPZMAPBNUM) {
+      mapfree(buckets_);
+    } else {
+      delete[] buckets_;
+    }
+  }
+  /**
+   * Get the hash value of a record.
+   * @param kbuf the pointer to the key region.
+   * @param ksiz the size of the key region.
+   * @return the hash value.
+   */
+  size_t hash_record(const char* kbuf, size_t ksiz) {
+    _assert_(kbuf && ksiz <= MEMMAXSIZ);
+    return hashmurmur(kbuf, ksiz);
+  }
+  /** The bucket array. */
+  char** buckets_;
+  /** The number of buckets. */
+  size_t bnum_;
+  /** The number of records. */
+  size_t count_;
+};
+
+
+/**
+ * Doubly-linked hash map.
  * @param KEY the key type.
  * @param VALUE the value type.
  * @param HASH the hash functor.
@@ -175,7 +810,7 @@ public:
    * Default constructor.
    */
   explicit LinkedHashMap() :
-    buckets_(NULL), bnum_(LHMDEFBNUM), first_(NULL), last_(NULL), count_(0) {
+    buckets_(NULL), bnum_(MAPDEFBNUM), first_(NULL), last_(NULL), count_(0) {
     _assert_(true);
     initialize();
   }
@@ -186,7 +821,7 @@ public:
   explicit LinkedHashMap(size_t bnum) :
     buckets_(NULL), bnum_(bnum), first_(NULL), last_(NULL), count_(0) {
     _assert_(true);
-    if (bnum_ < 1) bnum_ = LHMDEFBNUM;
+    if (bnum_ < 1) bnum_ = MAPDEFBNUM;
     initialize();
   }
   /**
@@ -551,12 +1186,16 @@ private:
       _assert_(true);
     }
   };
+  /** Dummy constructor to forbid the use. */
+  LinkedHashMap(const LinkedHashMap&);
+  /** Dummy Operator to forbid the use. */
+  LinkedHashMap& operator =(const LinkedHashMap&);
   /**
    * Initialize fields.
    */
   void initialize() {
     _assert_(true);
-    if (bnum_ >= LHMZMAPBNUM) {
+    if (bnum_ >= MAPZMAPBNUM) {
       buckets_ = (Record**)mapalloc(sizeof(*buckets_) * bnum_);
     } else {
       buckets_ = new Record*[bnum_];
@@ -576,7 +1215,7 @@ private:
       delete rec;
       rec = prev;
     }
-    if (bnum_ >= LHMZMAPBNUM) {
+    if (bnum_ >= MAPZMAPBNUM) {
       mapfree(buckets_);
     } else {
       delete[] buckets_;
@@ -584,7 +1223,7 @@ private:
   }
   /** The functor of the hash function. */
   HASH hash_;
-  /** The functor of the hash function. */
+  /** The functor of the equalto function. */
   EQUALTO equalto_;
   /** The bucket array. */
   Record** buckets_;

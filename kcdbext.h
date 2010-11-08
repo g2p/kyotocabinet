@@ -42,11 +42,11 @@ namespace {
 const size_t MRDEFDBNUM = 8;             ///< default number of temporary databases
 const size_t MRMAXDBNUM = 256;           ///< maxinum number of temporary databases
 const int64_t MRDEFCLIM = 512LL << 20;   ///< default cache limit
+const int64_t MRDEFCBNUM = 1048583LL;    ///< default cache bucket numer
 const int64_t MRDBBNUM = 512LL << 10;    ///< bucket number of temprary databases
 const int32_t MRDBPSIZ = 32768;          ///< page size of temprary databases
-const int64_t MRDBMSIZ = 4LL << 20;      ///< mapped size of temprary databases
+const int64_t MRDBMSIZ = 516LL * 4096;   ///< mapped size of temprary databases
 const int64_t MRDBPCCAP = 16LL << 20;    ///< page cache capacity of temprary databases
-const size_t MRCRSIZMAX = 2048;          ///< maximum size of a cached record
 }
 
 
@@ -61,10 +61,7 @@ public:
   class ValueIterator;
 private:
   class MapVisitor;
-  struct CacheComparator;
   struct MergeLine;
-  /** An alias of vector of cached records. */
-  typedef std::vector<char*> Cache;
   /** An alias of vector of loaded values. */
   typedef std::vector<std::string> Values;
 public:
@@ -86,21 +83,15 @@ public:
     bool emit(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
       bool err = false;
-      char numbuf[NUMBUFSIZ];
-      char* wp = numbuf;
-      wp += writevarnum(wp, ksiz);
-      wp += writevarnum(wp, vsiz);
-      size_t rsiz = (wp - numbuf) + ksiz + vsiz;
-      char* rbuf = new char[rsiz];
-      wp = rbuf;
-      wp += writevarnum(wp, ksiz);
-      std::memcpy(wp, kbuf, ksiz);
-      wp += ksiz;
-      wp += writevarnum(wp, vsiz);
+      size_t rsiz = sizevarnum(vsiz) + vsiz;
+      char stack[NUMBUFSIZ*4];
+      char* rbuf = rsiz > sizeof(stack) ? new char[rsiz] : stack;
+      char* wp = rbuf;
+      wp += writevarnum(rbuf, vsiz);
       std::memcpy(wp, vbuf, vsiz);
-      mr_->cache_.push_back(rbuf);
+      mr_->cache_->append(kbuf, ksiz, rbuf, rsiz);
+      if (rbuf != stack) delete[] rbuf;
       mr_->csiz_ += rsiz;
-      if (mr_->csiz_ >= mr_->clim_ && !mr_->flush_cache()) err = true;
       return !err;
     }
   private:
@@ -193,7 +184,7 @@ public:
    */
   explicit MapReduce() :
     tmpdbs_(NULL), dbnum_(MRDEFDBNUM), dbclock_(0), keyclock_(0),
-    cache_(), csiz_(0), clim_(MRDEFCLIM) {
+    cache_(NULL), csiz_(0), clim_(MRDEFCLIM), cbnum_(MRDEFCBNUM) {
     _assert_(true);
   }
   /**
@@ -313,7 +304,7 @@ public:
     }
     dbclock_ = 0;
     keyclock_ = 0;
-    cache_.clear();
+    cache_ = new TinyHashMap(cbnum_);
     csiz_ = 0;
     int64_t scale = db->count();
     Thread::yield();
@@ -336,7 +327,8 @@ public:
     } else {
       if (!err && !db->iterate(&mapvisitor, false, &mapchecker)) err = true;
     }
-    if (!cache_.empty() && !flush_cache()) err = true;
+    if (cache_->count() > 0 && !flush_cache()) err = true;
+    delete cache_;
     etime = time();
     if (!logf("map", "the map process finished: time=%.6f", etime - stime)) err = true;
     Thread::yield();
@@ -365,9 +357,8 @@ public:
     while (!err && !lines.empty()) {
       MergeLine line = lines.top();
       lines.pop();
-      if (lkbuf && (lksiz != line.ksiz ||
-                    std::memcmp(lkbuf, line.kbuf, lksiz - sizeof(uint32_t)))) {
-        if (!call_reducer(lkbuf, lksiz - sizeof(uint32_t), values)) err = true;
+      if (lkbuf && (lksiz != line.ksiz || std::memcmp(lkbuf, line.kbuf, lksiz))) {
+        if (!call_reducer(lkbuf, lksiz, values)) err = true;
         values.clear();
       }
       values.push_back(std::string(line.vbuf, line.vsiz));
@@ -382,7 +373,7 @@ public:
       }
     }
     if (lkbuf) {
-      if (!err && !call_reducer(lkbuf, lksiz - sizeof(uint32_t), values)) err = true;
+      if (!err && !call_reducer(lkbuf, lksiz, values)) err = true;
       values.clear();
       delete[] lkbuf;
     }
@@ -423,12 +414,15 @@ public:
    * Set the storage configurations.
    * @param dbnum the number of temporary databases.
    * @param clim the limit size of the internal cache.
+   * @param cbnum the bucket number of the internal cache.
    */
-  void tune_storage(int32_t dbnum, int64_t clim) {
+  void tune_storage(int32_t dbnum, int64_t clim, int64_t cbnum) {
     _assert_(true);
     dbnum_ = dbnum > 0 ? dbnum : MRDEFDBNUM;
     if (dbnum_ > MRMAXDBNUM) dbnum_ = MRMAXDBNUM;
     clim_ = clim > 0 ? clim : MRDEFCLIM;
+    cbnum_ = cbnum > 0 ? cbnum : MRDEFCBNUM;
+    if (cbnum_ > INT16_MAX) cbnum_ = nearbyprime(cbnum_);
   }
 private:
   /**
@@ -466,25 +460,12 @@ private:
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       if (!mr_->map(kbuf, ksiz, vbuf, vsiz, &emitter_)) checker_->stop();
+      if (mr_->csiz_ >= mr_->clim_ && !mr_->flush_cache()) checker_->stop();
       return NOP;
     }
     MapReduce* mr_;                      ///< driver
     MapChecker* checker_;                ///< checker
     MapEmitter emitter_;                 ///< emitter
-  };
-  /**
-   * Comparator for cache records.
-   */
-  struct CacheComparator {
-    LexicalComparator comp;              ///< lexical comparator
-    /** comparing operator */
-    bool operator()(char* const & abuf, char* const& bbuf) {
-      uint64_t aksiz;
-      char* akbuf = abuf + readvarnum(abuf, sizeof(aksiz), &aksiz);
-      uint64_t bksiz;
-      char* bkbuf = bbuf + readvarnum(bbuf, sizeof(bksiz), &bksiz);
-      return comp.compare(akbuf, aksiz, bkbuf, bksiz) < 0;
-    }
   };
   /**
    * Front line of a merging list.
@@ -501,6 +482,10 @@ private:
       return comp->compare(kbuf, ksiz, right.kbuf, right.ksiz) > 0;
     }
   };
+  /** Dummy constructor to forbid the use. */
+  MapReduce(const MapReduce&);
+  /** Dummy Operator to forbid the use. */
+  MapReduce& operator =(const MapReduce&);
   /**
    * Process a log message.
    * @param name the name of the event.
@@ -524,73 +509,22 @@ private:
   bool flush_cache() {
     _assert_(true);
     bool err = false;
-    if (!logf("map", "started to flushing the cache")) err = true;
+    if (!logf("map", "started to flushing the cache: count=%lld size=%lld",
+              (long long)cache_->count(), (long long)csiz_)) err = true;
     double stime = time();
-    CacheComparator comp;
-    std::sort(cache_.begin(), cache_.end(), comp);
-    Cache::iterator cit = cache_.begin();
-    Cache::iterator citend = cache_.end();
-    char* lbuf = NULL;
-    const char* lkbuf = NULL;
-    size_t lksiz = 0;
-    std::string values;
-    while (!err && cit != citend) {
-      char* rbuf = *cit;
-      uint64_t ksiz;
-      const char* kbuf = rbuf + readvarnum(rbuf, sizeof(ksiz), &ksiz);
-      const char* vbuf = kbuf + ksiz;
-      uint64_t vsiz;
-      size_t step = readvarnum(vbuf, sizeof(vsiz), &vsiz);
-      if (lkbuf && (lksiz != ksiz || std::memcmp(lkbuf, kbuf, lksiz))) {
-        if (!write_record(lkbuf, lksiz, values.data(), values.size())) err = true;
-        values.clear();
-      }
-      values.append(vbuf, step + vsiz);
-      delete[] lbuf;
-      lbuf = rbuf;
-      lkbuf = kbuf;
-      lksiz = ksiz;
-      if (values.size() >= MRCRSIZMAX) {
-        if (!write_record(lkbuf, lksiz, values.data(), values.size())) err = true;
-        values.clear();
-        delete[] lbuf;
-        lbuf = NULL;
-        lkbuf = NULL;
-        lksiz = 0;
-      }
-      cit++;
+    BasicDB* db = tmpdbs_[dbclock_];
+    TinyHashMap::Sorter sorter(cache_);
+    const char* kbuf, *vbuf;
+    size_t ksiz, vsiz;
+    while ((kbuf = sorter.get(&ksiz, &vbuf, &vsiz)) != NULL) {
+      if (!db->append(kbuf, ksiz, vbuf, vsiz)) err = true;
+      sorter.step();
     }
-    if (lkbuf) {
-      if (!write_record(lkbuf, lksiz, values.data(), values.size())) err = true;
-      values.clear();
-      delete[] lbuf;
-    }
-    cache_.clear();
+    cache_->clear();
     csiz_ = 0;
     dbclock_ = (dbclock_ + 1) % dbnum_;
     double etime = time();
     if (!logf("map", "flushing the cache finished: time=%.6f", etime - stime)) err = true;
-    return !err;
-  }
-  /**
-   * Write a record into the temporary database.
-   * @param kbuf the pointer to the key region.
-   * @param ksiz the size of the key region.
-   * @param vbuf the pointer to the value region.
-   * @param vsiz the size of the value region.
-   * @return true on success, or false on failure.
-   */
-  bool write_record(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
-    _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
-    bool err = false;
-    uint32_t tail = keyclock_++;
-    size_t rsiz = ksiz + sizeof(tail);
-    char stack[NUMBUFSIZ*2];
-    char* rbuf = rsiz > sizeof(stack) ? new char[rsiz] : stack;
-    std::memcpy(rbuf, kbuf, ksiz);
-    writefixnum(rbuf + ksiz, tail, sizeof(tail));
-    if (!tmpdbs_[dbclock_]->append(rbuf, rsiz, vbuf, vsiz)) err = true;
-    if (rbuf != stack) delete[] rbuf;
     return !err;
   }
   /**
@@ -607,10 +541,6 @@ private:
     if (!reduce(kbuf, ksiz, &iter)) err = true;
     return !err;
   }
-  /** Dummy constructor to forbid the use. */
-  MapReduce(const MapReduce&);
-  /** Dummy Operator to forbid the use. */
-  MapReduce& operator =(const MapReduce&);
   /** The temporary databases. */
   BasicDB** tmpdbs_;
   /** The number of temporary databases. */
@@ -620,11 +550,13 @@ private:
   /** The logical clock for keys. */
   int64_t keyclock_;
   /** The cache for emitter. */
-  Cache cache_;
+  TinyHashMap* cache_;
   /** The current size of the cache for emitter. */
   int64_t csiz_;
   /** The limit size of the cache for emitter. */
   int64_t clim_;
+  /** The bucket number of the cache for emitter. */
+  int64_t cbnum_;
 };
 
 

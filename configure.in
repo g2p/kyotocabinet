@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.22)
+AC_INIT(kyotocabinet, 1.2.23)
 
 # Package information
 MYLIBVER=6
-MYLIBREV=5
+MYLIBREV=6
 MYFORMATVER=5
 
 # Targets

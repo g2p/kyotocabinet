@@ -211,8 +211,10 @@ check-util :
 	$(RUNENV) $(RUNCMD) ./kcutiltest para -th 4 -iv -1 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest file -th 4 casket 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest file -th 4 -rnd -msiz 1m casket 10000
-	$(RUNENV) $(RUNCMD) ./kcutiltest map -bnum 1000 10000
-	$(RUNENV) $(RUNCMD) ./kcutiltest map -rnd -bnum 1000 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest thmap -bnum 1000 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest thmap -rnd -bnum 1000 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest lhmap -bnum 1000 10000
+	$(RUNENV) $(RUNCMD) ./kcutiltest lhmap -rnd -bnum 1000 10000
 	$(RUNENV) $(RUNCMD) ./kcutiltest misc 10000
 
 
