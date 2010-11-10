@@ -767,7 +767,7 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
       int64_t bnum = kc::atoi(status["bnum"].c_str());
       int64_t bnumused = kc::atoi(status["bnum_used"].c_str());
       int64_t count = kc::atoi(status["count"].c_str());
-      double load = 1;
+      double load = 0;
       if (count > 0 && bnumused > 0) {
         load = (double)count / bnumused;
         if (!(opts & kc::HashDB::TLINEAR)) load = std::log(load + 1) / std::log(2.0);

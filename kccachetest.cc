@@ -147,7 +147,7 @@ static void dbmetaprint(kc::BasicDB* db, bool verbose) {
       int64_t bnum = kc::atoi(status["bnum"].c_str());
       int64_t bnumused = kc::atoi(status["bnum_used"].c_str());
       int64_t count = kc::atoi(status["count"].c_str());
-      double load = 1;
+      double load = 0;
       if (count > 0 && bnumused > 0) {
         load = (double)count / bnumused;
         if (!(opts & kc::CacheDB::TLINEAR)) load = std::log(load + 1) / std::log(2.0);
@@ -729,7 +729,7 @@ static int32_t procorder(int64_t rnum, int32_t thnum, bool rnd, bool etc, bool t
     iprintf("time: %.3f\n", etime - stime);
     char* opaque = db.opaque();
     if (opaque) {
-      std::sprintf(opaque, "1234567890123456");
+      std::memcpy(opaque, "1234567890123456", 16);
       if (!db.synchronize_opaque()) {
         dberrprint(&db, __LINE__, "DB::synchronize_opaque");
         err = true;
@@ -1383,7 +1383,7 @@ static int32_t procorder(int64_t rnum, int32_t thnum, bool rnd, bool etc, bool t
     }
   }
   etime = kc::time();
-  dbmetaprint(&db, etc);
+  dbmetaprint(&db, true);
   iprintf("time: %.3f\n", etime - stime);
   iprintf("closing the database:\n");
   stime = kc::time();

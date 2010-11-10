@@ -740,7 +740,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
     iprintf("time: %.3f\n", etime - stime);
     char* opaque = db.opaque();
     if (opaque) {
-      std::sprintf(opaque, "1234567890123456");
+      std::memcpy(opaque, "1234567890123456", 16);
       if (!db.synchronize_opaque()) {
         dberrprint(&db, __LINE__, "DB::synchronize_opaque");
         err = true;

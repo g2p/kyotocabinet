@@ -27,6 +27,7 @@
 #include <kcdb.h>
 #include <kcplantdb.h>
 #include <kcprotodb.h>
+#include <kcstashdb.h>
 #include <kccachedb.h>
 #include <kchashdb.h>
 #include <kcdirdb.h>
@@ -332,25 +333,26 @@ public:
   /**
    * Open a database file.
    * @param path the path of a database file.  If it is "-", the database will be a prototype
-   * hash database.  If it is "+", the database will be a prototype tree database.  If it is
-   * "*", the database will be a cache hash database.  If it is "%", the database will be a
-   * cache tree database.  If its suffix is ".kch", the database will be a file hash database.
-   * If its suffix is ".kct", the database will be a file tree database.  If its suffix is
-   * ".kcd", the database will be a directory hash database.  If its suffix is ".kcf", the
-   * database will be a directory tree database.  Otherwise, this function fails.  Tuning
-   * parameters can trail the name, separated by "#".  Each parameter is composed of the name
-   * and the value, separated by "=".  If the "type" parameter is specified, the database type
-   * is determined by the value in "-", "+", "*", "%", "kch", "kct", "kcd", and "kcf".  All
-   * database types support the logging parameters of "log", "logkinds", and "logpx".  The
-   * prototype hash database and the prototype tree database do not support any other tuning
-   * parameter.  The cache hash database supports "opts", "bnum", "zcomp", "capcount", "capsize",
-   * and "zkey".  The cache tree database supports all parameters of the cache hash database
-   * except for capacity limitation, and supports "psiz", "rcomp", "pccap" in addition.  The
-   * file hash database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", and
-   * "zkey".  The file tree database supports all parameters of the file hash database and
-   * "psiz", "rcomp", "pccap" in addition.  The directory hash database supports "opts", "zcomp",
-   * and "zkey".  The directory tree database supports all parameters of the directory hash
-   * database and "psiz", "rcomp", "pccap" in addition.
+   * hash database.  If it is "+", the database will be a prototype tree database.  If it is ":",
+   * the database will be a stash database.  If it is "*", the database will be a cache hash
+   * database.  If it is "%", the database will be a cache tree database.  If its suffix is
+   * ".kch", the database will be a file hash database.  If its suffix is ".kct", the database
+   * will be a file tree database.  If its suffix is ".kcd", the database will be a directory
+   * hash database.  If its suffix is ".kcf", the database will be a directory tree database.
+   * Otherwise, this function fails.  Tuning parameters can trail the name, separated by "#".
+   * Each parameter is composed of the name and the value, separated by "=".  If the "type"
+   * parameter is specified, the database type is determined by the value in "-", "+", ":", "*",
+   * "%", "kch", "kct", "kcd", and "kcf".  All database types support the logging parameters of
+   * "log", "logkinds", and "logpx".  The prototype hash database and the prototype tree
+   * database do not support any other tuning parameter.  The stash database supports "bnum".
+   * The cache hash database supports "opts", "bnum", "zcomp", "capcount", "capsize", and "zkey".
+   * The cache tree database supports all parameters of the cache hash database except for
+   * capacity limitation, and supports "psiz", "rcomp", "pccap" in addition.  The file hash
+   * database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", and "zkey".
+   * The file tree database supports all parameters of the file hash database and "psiz",
+   * "rcomp", "pccap" in addition.  The directory hash database supports "opts", "zcomp", and
+   * "zkey".  The directory tree database supports all parameters of the directory hash database
+   * and "psiz", "rcomp", "pccap" in addition.
    * @param mode the connection mode.  PolyDB::OWRITER as a writer, PolyDB::OREADER as a
    * reader.  The following may be added to the writer mode by bitwise-or: PolyDB::OCREATE,
    * which means it creates a new database if the file does not exist, PolyDB::OTRUNCATE, which
@@ -380,7 +382,7 @@ public:
    * it is no longer in use.  It is not allowed for two or more database objects in the same
    * process to keep their connections to the same database file at the same time.
    */
-  bool open(const std::string& path = "*", uint32_t mode = OWRITER | OCREATE) {
+  bool open(const std::string& path = ":", uint32_t mode = OWRITER | OCREATE) {
     _assert_(true);
     if (type_ == TYPEMISC) return db_->open(path, mode);
     if (type_ != TYPEVOID) {
@@ -422,6 +424,8 @@ public:
       type = TYPEPHASH;
     } else if (!std::strcmp(fstr, "+")) {
       type = TYPEPTREE;
+    } else if (!std::strcmp(fstr, ":")) {
+      type = TYPESTASH;
     } else if (!std::strcmp(fstr, "*")) {
       type = TYPECACHE;
     } else if (!std::strcmp(fstr, "%")) {
@@ -434,6 +438,8 @@ public:
           type = TYPEPHASH;
         } else if (!std::strcmp(pv, "kcpt") || !std::strcmp(pv, "ptdb")) {
           type = TYPEPTREE;
+        } else if (!std::strcmp(pv, "kcs") || !std::strcmp(pv, "sdb")) {
+          type = TYPESTASH;
         } else if (!std::strcmp(pv, "kcc") || !std::strcmp(pv, "cdb")) {
           type = TYPECACHE;
         } else if (!std::strcmp(pv, "kcg") || !std::strcmp(pv, "gdb")) {
@@ -461,6 +467,9 @@ public:
           } else if (!std::strcmp(value, "+") || !std::strcmp(value, "kcpt") ||
                      !std::strcmp(value, "ptdb") || !std::strcmp(value, "ptree")) {
             type = TYPEPTREE;
+          } else if (!std::strcmp(value, ":") || !std::strcmp(value, "kcs") ||
+                     !std::strcmp(value, "sdb") || !std::strcmp(value, "stash")) {
+            type = TYPESTASH;
           } else if (!std::strcmp(value, "*") || !std::strcmp(value, "kcc") ||
                      !std::strcmp(value, "cdb") || !std::strcmp(value, "cache")) {
             type = TYPECACHE;
@@ -610,6 +619,17 @@ public:
           ptdb->tune_logger(logger_, logkinds_);
         }
         db = ptdb;
+        break;
+      }
+      case TYPESTASH: {
+        StashDB* sdb = new StashDB();
+        if (stdlogger_) {
+          sdb->tune_logger(stdlogger_, logkinds);
+        } else if (logger_) {
+          sdb->tune_logger(logger_, logkinds_);
+        }
+        if (bnum > 0) sdb->tune_buckets(bnum);
+        db = sdb;
         break;
       }
       case TYPECACHE: {

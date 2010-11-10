@@ -33,6 +33,7 @@
 <li><a href="#kcutiltest">kcutiltest</a> : to test the utility functions.</li>
 <li><a href="#kcutilmgr">kcutilmgr</a> : miscellaneous utilities.</li>
 <li><a href="#kcprototest">kcprototest</a> : to test the prototype database.</li>
+<li><a href="#kcstashtest">kcstashtest</a> : to test the stash database.</li>
 <li><a href="#kccachetest">kccachetest</a> : to test the cache hash database.</li>
 <li><a href="#kcgrasstest">kcgrasstest</a> : to test the cache tree database.</li>
 <li><a href="#kchashtest">kchashtest</a> : to test the file hash database.</li>
@@ -156,6 +157,37 @@
 <li><code>-rnd</code> : performs random test.</li>
 <li><code>-etc</code> : performs miscellaneous operations.</li>
 <li><code>-tran</code> : performs transaction.</li>
+<li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
+</ul>
+
+<p>This command returns 0 on success, another on failure.</p>
+
+<hr />
+
+<h2 id="kcstashtest">kcstashtest</h2>
+
+<p>The command `<code>kcstashtest</code>' is a utility for facility test and performance test of the stash database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
+
+<dl class="api">
+<dt><code>kccachetest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-bnum <var>num</var>] [-lv] <var>rnum</var></code></dt>
+<dd>Performs in-order tests.</dd>
+<dt><code>kccachetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-bnum <var>num</var>] [-lv] <var>rnum</var></code></dt>
+<dd>Performs queuing operations.</dd>
+<dt><code>kccachetest wicked [-th <var>num</var>] [-it <var>num</var>] [-bnum <var>num</var>] [-lv] <var>rnum</var></code></dt>
+<dd>Performs mixed operations selected at random.</dd>
+<dt><code>kccachetest tran [-th <var>num</var>] [-it <var>num</var>] [-bnum <var>num</var>] [-lv] <var>rnum</var></code></dt>
+<dd>Performs test of transaction.</dd>
+</dl>
+
+<p>Options feature the following.</p>
+
+<ul class="options">
+<li><code>-th <var>num</var></code> : specifies the number of worker threads.</li>
+<li><code>-rnd</code> : performs random test.</li>
+<li><code>-etc</code> : performs miscellaneous operations.</li>
+<li><code>-tran</code> : performs transaction.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
+<li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 </ul>
 

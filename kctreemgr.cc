@@ -787,7 +787,7 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
       int64_t icnt = kc::atoi(status["icnt"].c_str());
       int32_t tlevel = kc::atoi(status["tree_level"].c_str());
       int32_t psiz = kc::atoi(status["psiz"].c_str());
-      double load = 1;
+      double load = 0;
       if (pnum > 0 && bnumused > 0) {
         load = (double)pnum / bnumused;
         if (!(opts & kc::TreeDB::TLINEAR)) load = std::log(load + 1) / std::log(2.0);

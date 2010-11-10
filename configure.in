@@ -7,27 +7,27 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.23)
+AC_INIT(kyotocabinet, 1.2.24)
 
 # Package information
 MYLIBVER=6
-MYLIBREV=6
+MYLIBREV=7
 MYFORMATVER=5
 
 # Targets
 MYHEADERFILES="kccommon.h kcutil.h kcthread.h kcfile.h"
 MYHEADERFILES="$MYHEADERFILES kccompress.h kccompare.h kcmap.h kcregex.h"
-MYHEADERFILES="$MYHEADERFILES kcdb.h kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h"
-MYHEADERFILES="$MYHEADERFILES kcpolydb.h kcdbext.h kclangc.h"
+MYHEADERFILES="$MYHEADERFILES kcdb.h kcplantdb.h kcprotodb.h kcstashdb.h kccachedb.h"
+MYHEADERFILES="$MYHEADERFILES kchashdb.h kcdirdb.h kcpolydb.h kcdbext.h kclangc.h"
 MYLIBRARYFILES="libkyotocabinet.a"
 MYLIBOBJFILES="kcutil.o kcthread.o kcfile.o kccompress.o kccompare.o kcmap.o kcregex.o"
-MYLIBOBJFILES="$MYLIBOBJFILES kcdb.o kcplantdb.o kcprotodb.o kccachedb.o kchashdb.o"
-MYLIBOBJFILES="$MYLIBOBJFILES kcdirdb.o kcpolydb.o kcdbext.o kclangc.o"
-MYCOMMANDFILES="kcutiltest kcutilmgr kcprototest kccachetest kcgrasstest"
+MYLIBOBJFILES="$MYLIBOBJFILES kcdb.o kcplantdb.o kcprotodb.o kcstashdb.o kccachedb.o"
+MYLIBOBJFILES="$MYLIBOBJFILES kchashdb.o kcdirdb.o kcpolydb.o kcdbext.o kclangc.o"
+MYCOMMANDFILES="kcutiltest kcutilmgr kcprototest kcstashtest kccachetest kcgrasstest"
 MYCOMMANDFILES="$MYCOMMANDFILES kchashtest kchashmgr kctreetest kctreemgr"
 MYCOMMANDFILES="$MYCOMMANDFILES kcdirtest kcdirmgr kcforesttest kcforestmgr"
 MYCOMMANDFILES="$MYCOMMANDFILES kcpolytest kcpolymgr kclangctest"
-MYMAN1FILES="kcutiltest.1 kcutilmgr.1 kcprototest.1 kccachetest.1 kcgrasstest.1"
+MYMAN1FILES="kcutiltest.1 kcutilmgr.1 kcprototest.1 kcstashtest.1 kccachetest.1 kcgrasstest.1"
 MYMAN1FILES="$MYMAN1FILES kchashtest.1 kchashmgr.1 kctreetest.1 kctreemgr.1"
 MYMAN1FILES="$MYMAN1FILES kcdirtest.1 kcdirmgr.1 kcforesttest.1 kcforestmgr.1"
 MYMAN1FILES="$MYMAN1FILES kcpolytest.1 kcpolymgr.1 kclangctest.1"
@@ -240,6 +240,7 @@ AC_CHECK_LIB(m, main)
 AC_CHECK_LIB(pthread, main)
 AC_CHECK_LIB(rt, main)
 AC_CHECK_LIB(stdc++, main)
+AC_CHECK_LIB(regex, main)
 if test "$enable_zlib" != "no"
 then
   AC_CHECK_LIB(z, main)

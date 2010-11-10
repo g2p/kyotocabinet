@@ -16,8 +16,10 @@ SDKPATH = C:\Program Files\Microsoft SDKs\Windows\v7.0A
 LIBRARYFILES = kyotocabinet.lib
 LIBOBJFILES = kcutil.obj kcdb.obj kcthread.obj kcfile.obj \
   kccompress.obj kccompare.obj kcmap.obj kcregex.obj kcplantdb.obj \
-  kcprotodb.obj kccachedb.obj kchashdb.obj kcdirdb.obj kcpolydb.obj kcdbext.obj kclangc.obj
-COMMANDFILES = kcutiltest.exe kcutilmgr.exe kcprototest.exe kccachetest.exe kcgrasstest.exe \
+  kcprotodb.obj kcstashdb.obj kccachedb.obj kchashdb.obj kcdirdb.obj \
+  kcpolydb.obj kcdbext.obj kclangc.obj
+COMMANDFILES = kcutiltest.exe kcutilmgr.exe kcprototest.exe \
+  kcstashtest.exe kccachetest.exe kcgrasstest.exe \
   kchashtest.exe kchashmgr.exe kctreetest.exe kctreemgr.exe \
   kcdirtest.exe kcdirmgr.exe kcforesttest.exe kcforestmgr.exe \
   kcpolytest.exe kcpolymgr.exe kclangctest.exe
@@ -75,7 +77,7 @@ clean :
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
 
 
-check : check-util check-proto check-cache check-grass \
+check : check-util check-proto check-stash check-cache check-grass \
   check-hash check-tree check-dir check-forest check-poly check-langc
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
@@ -146,6 +148,21 @@ check-proto :
 	kcprototest wicked -tree -th 4 -it 4 10000
 	kcprototest tran -tree 10000
 	kcprototest tran -tree -th 2 -it 4 10000
+
+
+check-stash :
+	-del casket* /F /Q > NUL: 2>&1
+	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
+	kcstashtest order -etc -bnum 5000 10000
+	kcstashtest order -th 4 -bnum 5000 10000
+	kcstashtest order -th 4 -rnd -etc -bnum 5000 10000
+	kcstashtest order -th 4 -rnd -etc -bnum 5000 10000
+	kcstashtest order -th 4 -rnd -etc -tran \
+	  -bnum 5000 10000
+	kcstashtest wicked -bnum 5000 10000
+	kcstashtest wicked -th 4 -it 4 -bnum 5000 10000
+	kcstashtest tran -bnum 5000 10000
+	kcstashtest tran -th 2 -it 4 -bnum 5000 10000
 
 
 check-cache :
@@ -417,40 +434,40 @@ check-dir :
 	kcdirmgr list casket > check.out
 	kcdirmgr check -onr casket
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
-	kcdirtest order -set casket 1000
-	kcdirtest order -get casket 1000
-	kcdirtest order -getw casket 1000
-	kcdirtest order -rem casket 1000
-	kcdirtest order casket 1000
-	kcdirtest order -etc casket 1000
-	kcdirtest order -th 4 casket 1000
-	kcdirtest order -th 4 -rnd -etc casket 1000
+	kcdirtest order -set casket 500
+	kcdirtest order -get casket 500
+	kcdirtest order -getw casket 500
+	kcdirtest order -rem casket 500
+	kcdirtest order casket 500
+	kcdirtest order -etc casket 500
+	kcdirtest order -th 4 casket 500
+	kcdirtest order -th 4 -rnd -etc casket 500
 	kcdirmgr check -onr casket
-	kcdirtest order -th 4 -rnd -etc -tran casket 1000
+	kcdirtest order -th 4 -rnd -etc -tran casket 500
 	kcdirmgr check -onr casket
-	kcdirtest order -th 4 -rnd -etc -oat casket 1000
+	kcdirtest order -th 4 -rnd -etc -oat casket 500
 	kcdirmgr check -onr casket
-	kcdirtest order -th 4 -rnd -etc -tc casket 1000
+	kcdirtest order -th 4 -rnd -etc -tc casket 500
 	kcdirmgr check -onr casket
-	kcdirtest queue casket 1000
+	kcdirtest queue casket 500
 	kcdirmgr check -onr casket
-	kcdirtest queue -rnd casket 1000
+	kcdirtest queue -rnd casket 500
 	kcdirmgr check -onr casket
-	kcdirtest queue -th 4 -it 4 casket 1000
+	kcdirtest queue -th 4 -it 4 casket 500
 	kcdirmgr check -onr casket
-	kcdirtest queue -th 4 -it 4 -rnd casket 1000
+	kcdirtest queue -th 4 -it 4 -rnd casket 500
 	kcdirmgr check -onr casket
-	kcdirtest wicked casket 1000
+	kcdirtest wicked casket 500
 	kcdirmgr check -onr casket
-	kcdirtest wicked -th 4 -it 4 casket 1000
+	kcdirtest wicked -th 4 -it 4 casket 500
 	kcdirmgr check -onr casket
-	kcdirtest wicked -th 4 -it 4 -oat casket 1000
+	kcdirtest wicked -th 4 -it 4 -oat casket 500
 	kcdirmgr check -onr casket
-	kcdirtest wicked -th 4 -it 4 -tc casket 1000
+	kcdirtest wicked -th 4 -it 4 -tc casket 500
 	kcdirmgr check -onr casket
-	kcdirtest tran casket 1000
-	kcdirtest tran -th 2 -it 4 casket 1000
-	kcdirtest tran -th 2 -it 4 -tc casket 1000
+	kcdirtest tran casket 500
+	kcdirtest tran -th 2 -it 4 casket 500
+	kcdirtest tran -th 2 -it 4 -tc casket 500
 
 
 check-forest :
@@ -498,59 +515,59 @@ check-forest :
 	kcforestmgr check -onr casket
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
 	kcforesttest order -set \
-	  -psiz 100 -bnum 5000 -pccap 100k casket 10000
+	  -psiz 100 -bnum 5000 -pccap 100k casket 5000
 	kcforesttest order -get \
-	  -pccap 100k casket 10000
+	  -pccap 100k casket 5000
 	kcforesttest order -getw \
-	  -pccap 100k casket 10000
+	  -pccap 100k casket 5000
 	kcforesttest order -rem \
-	  -pccap 100k casket 10000
+	  -pccap 100k casket 5000
 	kcforesttest order \
-	  -bnum 5000 -psiz 100 -pccap 100k casket 10000
+	  -bnum 5000 -psiz 100 -pccap 100k casket 5000
 	kcforesttest order -etc \
-	  -bnum 5000 -psiz 1000 -pccap 100k casket 10000
+	  -bnum 5000 -psiz 1000 -pccap 100k casket 5000
 	kcforesttest order -th 4 \
-	  -bnum 5000 -psiz 1000 -pccap 100k casket 10000
+	  -bnum 5000 -psiz 1000 -pccap 100k casket 5000
 	kcforesttest order -th 4 -pccap 100k -rnd -etc \
-	  -bnum 5000 -psiz 1000 -pccap 100k -rcd casket 10000
+	  -bnum 5000 -psiz 1000 -pccap 100k -rcd casket 5000
 	kcforestmgr check -onr casket
 	kcforesttest order -th 4 -rnd -etc -tran \
-	  -bnum 5000 -psiz 1000 -pccap 100k casket 1000
+	  -bnum 500 -psiz 1000 -pccap 100k casket 500
 	kcforestmgr check -onr casket
 	kcforesttest order -th 4 -rnd -etc -oat \
-	  -bnum 5000 -psiz 1000 -pccap 100k casket 1000
+	  -bnum 500 -psiz 1000 -pccap 100k casket 500
 	kcforestmgr check -onr casket
 	kcforesttest order -th 4 -rnd -etc \
-	  -tc -bnum 5000 -psiz 1000 casket 10000
+	  -tc -bnum 5000 -psiz 1000 casket 5000
 	kcforestmgr check -onr casket
 	kcforesttest queue \
-	  -bnum 5000 -psiz 500 casket 10000
+	  -bnum 5000 -psiz 500 casket 5000
 	kcforestmgr check -onr casket
 	kcforesttest queue -rnd \
-	  -bnum 5000 -psiz 500 casket 10000
+	  -bnum 5000 -psiz 500 casket 5000
 	kcforestmgr check -onr casket
 	kcforesttest queue -th 4 -it 4 \
-	  -bnum 5000 -psiz 500 casket 10000
+	  -bnum 5000 -psiz 500 casket 5000
 	kcforestmgr check -onr casket
 	kcforesttest queue -th 4 -it 4 -rnd \
-	  -bnum 5000 -psiz 500 casket 10000
+	  -bnum 5000 -psiz 500 casket 5000
 	kcforestmgr check -onr casket
 	kcforesttest wicked \
-	  -bnum 5000 -psiz 1000 -pccap 100k casket 10000
+	  -bnum 5000 -psiz 1000 -pccap 100k casket 5000
 	kcforestmgr check -onr casket
 	kcforesttest wicked -th 4 -it 4 \
-	  -bnum 5000 -pccap 100k -rcd casket 10000
+	  -bnum 5000 -pccap 100k -rcd casket 5000
 	kcforestmgr check -onr casket
 	kcforesttest wicked -th 4 -it 4 -oat \
-	  -bnum 5000 -pccap 100k casket 1000
+	  -bnum 5000 -pccap 100k casket 500
 	kcforestmgr check -onr casket
 	kcforesttest wicked -th 4 -it 4 \
-	  -tc -bnum 10000 casket 1000
+	  -tc -bnum 500 casket 500
 	kcforestmgr check -onr casket
-	kcforesttest tran casket 10000
-	kcforesttest tran -th 2 -it 4 -pccap 100k casket 10000
+	kcforesttest tran casket 5000
+	kcforesttest tran -th 2 -it 4 -pccap 100k casket 5000
 	kcforesttest tran -th 2 -it 4 \
-	  -tc -bnum 10000 -rcd casket 10000
+	  -tc -bnum 5000 -rcd casket 5000
 
 
 check-poly :
@@ -652,14 +669,15 @@ check-poly :
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
 	kcpolytest order -rnd "casket.kch#opts=s#bnum=256" 1000
 	kcpolytest order -rnd "casket.kct#opts=l#psiz=256" 1000
-	kcpolytest order -rnd "casket.kcd#opts=c#bnum=256" 1000
-	kcpolytest order -rnd "casket.kcf#opts=c#psiz=256" 1000
+	kcpolytest order -rnd "casket.kcd#opts=c#bnum=256" 500
+	kcpolytest order -rnd "casket.kcf#opts=c#psiz=256" 500
 	kcpolymgr merge -add "casket#type=kct" \
 	  casket.kch casket.kct casket.kcd casket.kcf
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
 	kcpolytest misc "casket#type=-"
 	kcpolytest misc "casket#type=+"
+	kcpolytest misc "casket#type=:"
 	kcpolytest misc "casket#type=*"
 	kcpolytest misc "casket#type=%"
 	-del casket* /F /Q > NUL: 2>&1
@@ -692,6 +710,19 @@ check-forever :
 	lab\vcmakecheck
 
 
+binpkg :
+	-rd kyotocabinet /S /Q > NUL: 2>&1
+	md kyotocabinet
+	md kyotocabinet\include
+	copy *.h kyotocabinet\include
+	del kyotocabinet\include\myconf.h
+	del kyotocabinet\include\cmdcommon.h
+	md kyotocabinet\lib
+	copy *.lib kyotocabinet\lib
+	md kyotocabinet\bin
+	copy *.exe kyotocabinet\bin
+
+
 
 #================================================================
 # Building binaries
@@ -712,6 +743,10 @@ kcutilmgr.exe : kcutilmgr.obj kyotocabinet.lib
 
 kcprototest.exe : kcprototest.obj kyotocabinet.lib
 	$(LINK) $(LINKFLAGS) /OUT:$@ kcprototest.obj kyotocabinet.lib
+
+
+kcstashtest.exe : kcstashtest.obj kyotocabinet.lib
+	$(LINK) $(LINKFLAGS) /OUT:$@ kcstashtest.obj kyotocabinet.lib
 
 
 kccachetest.exe : kccachetest.obj kyotocabinet.lib
@@ -790,6 +825,10 @@ kcprotodb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kcco
   kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h
 
+kcstashdb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
+  kcplantdb.h kcstashdb.h
+
 kccachedb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
   kcplantdb.h kccachedb.h
@@ -804,15 +843,16 @@ kcdirdb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccomp
 
 kcpolydb.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
-  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h
+  kcplantdb.h kcprotodb.h kcstashdb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h
 
 kcdbext.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
-  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kcdbext.h
+  kcplantdb.h kcprotodb.h kcstashdb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kcdbext.h
 
 kclangc.obj : kccommon.h kcutil.h kcdb.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
-  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kcdbext.h kclangc.h
+  kcplantdb.h kcprotodb.h kcstashdb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kcdbext.h \
+  kclangc.h
 
 kcutiltest.obj kcutilmgr.obj : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
@@ -823,6 +863,11 @@ kcprototest.obj : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
   kcplantdb.h kcprotodb.h cmdcommon.h
+
+kcstashtest.obj kcgrasstest.obj : \
+  kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
+  kcmap.h kcregex.h \
+  kcplantdb.h kcstashdb.h cmdcommon.h
 
 kccachetest.obj kcgrasstest.obj : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
@@ -842,12 +887,14 @@ kcdirtest.obj kcdirmgr.obj kcforesttest.obj kcforestmgr.obj : \
 kcpolytest.obj kcpolymgr.obj : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
-  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kcdbext.h cmdcommon.h
+  kcplantdb.h kcprotodb.h kcstashdb.h kccachedb.h kchashdb.h kcdirdb.h \
+  kcpolydb.h kcdbext.h cmdcommon.h
 
 kclangctest.obj : \
   kccommon.h kcdb.h kcutil.h kcthread.h kcfile.h kccompress.h kccompare.h \
   kcmap.h kcregex.h \
-  kcplantdb.h kcprotodb.h kccachedb.h kchashdb.h kcdirdb.h kcpolydb.h kcdbext.h kclangc.h
+  kcplantdb.h kcprotodb.h kcstashdb.h kccachedb.h kchashdb.h kcdirdb.h \
+  kcpolydb.h kcdbext.h kclangc.h
 
 
 

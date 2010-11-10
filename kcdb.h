@@ -467,6 +467,7 @@ public:
     TYPEVOID = 0x00,                     ///< void database
     TYPEPHASH = 0x10,                    ///< prototype hash database
     TYPEPTREE = 0x11,                    ///< prototype tree database
+    TYPESTASH = 0x18,                    ///< stash database
     TYPECACHE = 0x20,                    ///< cache hash database
     TYPEGRASS = 0x21,                    ///< cache tree database
     TYPEHASH = 0x30,                     ///< file hash database
@@ -1958,6 +1959,7 @@ public:
       case TYPEVOID: return "void";
       case TYPEPHASH: return "ProtoHashDB";
       case TYPEPTREE: return "ProtoTreeDB";
+      case TYPESTASH: return "StashDB";
       case TYPECACHE: return "CacheDB";
       case TYPEGRASS: return "GrassDB";
       case TYPEHASH: return "HashDB";
@@ -1979,6 +1981,7 @@ public:
       case TYPEVOID: return "void";
       case TYPEPHASH: return "prototype hash database";
       case TYPEPTREE: return "prototype tree database";
+      case TYPESTASH: return "stash database";
       case TYPECACHE: return "cache hash database";
       case TYPEGRASS: return "cache tree database";
       case TYPEHASH: return "file hash database";

@@ -158,7 +158,7 @@ static void dbmetaprint(kc::BasicDB* db, bool verbose) {
       int64_t icnt = kc::atoi(status["icnt"].c_str());
       int32_t tlevel = kc::atoi(status["tree_level"].c_str());
       int32_t psiz = kc::atoi(status["psiz"].c_str());
-      double load = 1;
+      double load = 0;
       if (pnum > 0 && bnum > 0) {
         load = (double)pnum / bnum;
         if (!(opts & kc::ForestDB::TLINEAR)) load = std::log(load + 1) / std::log(2.0);
@@ -841,7 +841,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
     iprintf("time: %.3f\n", etime - stime);
     char* opaque = db.opaque();
     if (opaque) {
-      std::sprintf(opaque, "1234567890123456");
+      std::memcpy(opaque, "1234567890123456", 16);
       if (!db.synchronize_opaque()) {
         dberrprint(&db, __LINE__, "DB::synchronize_opaque");
         err = true;

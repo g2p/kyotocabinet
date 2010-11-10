@@ -124,10 +124,6 @@ public:
       }
     }
   private:
-    /** Dummy constructor to forbid the use. */
-    Iterator(const Iterator&);
-    /** Dummy Operator to forbid the use. */
-    Iterator& operator =(const Iterator&);
     /**
      * Read records of the current bucket.
      */
@@ -156,6 +152,10 @@ public:
       }
       recs_.clear();
     }
+    /** Dummy constructor to forbid the use. */
+    Iterator(const Iterator&);
+    /** Dummy Operator to forbid the use. */
+    Iterator& operator =(const Iterator&);
     /** The container. */
     TinyHashMap* map_;
     /** The current bucket index. */
@@ -573,15 +573,6 @@ private:
       rp += vsiz_;
       readvarnum(rp, sizeof(psiz_), &psiz_);
     }
-    /** print debug info */
-    void print() {
-      std::cout << "child:" << (void*)child_ << std::endl;
-      std::cout << "key:" << std::string(kbuf_, ksiz_) << std::endl;
-      std::cout << "value:" << std::string(vbuf_, vsiz_) << std::endl;
-      std::cout << "ksiz:" << ksiz_ << std::endl;
-      std::cout << "vsiz:" << vsiz_ << std::endl;
-      std::cout << "psiz:" << psiz_ << std::endl;
-    }
     char* child_;                        ///< region of the child
     const char* kbuf_;                   ///< region of the key
     uint64_t ksiz_;                      ///< size of the key
@@ -609,10 +600,6 @@ private:
       return (int32_t)aksiz < (int32_t)bksiz;
     }
   };
-  /** Dummy constructor to forbid the use. */
-  TinyHashMap(const TinyHashMap&);
-  /** Dummy Operator to forbid the use. */
-  TinyHashMap& operator =(const TinyHashMap&);
   /**
    * Initialize fields.
    */
@@ -657,6 +644,10 @@ private:
     _assert_(kbuf && ksiz <= MEMMAXSIZ);
     return hashmurmur(kbuf, ksiz);
   }
+  /** Dummy constructor to forbid the use. */
+  TinyHashMap(const TinyHashMap&);
+  /** Dummy Operator to forbid the use. */
+  TinyHashMap& operator =(const TinyHashMap&);
   /** The bucket array. */
   char** buckets_;
   /** The number of buckets. */
@@ -1186,10 +1177,6 @@ private:
       _assert_(true);
     }
   };
-  /** Dummy constructor to forbid the use. */
-  LinkedHashMap(const LinkedHashMap&);
-  /** Dummy Operator to forbid the use. */
-  LinkedHashMap& operator =(const LinkedHashMap&);
   /**
    * Initialize fields.
    */
@@ -1221,6 +1208,10 @@ private:
       delete[] buckets_;
     }
   }
+  /** Dummy constructor to forbid the use. */
+  LinkedHashMap(const LinkedHashMap&);
+  /** Dummy Operator to forbid the use. */
+  LinkedHashMap& operator =(const LinkedHashMap&);
   /** The functor of the hash function. */
   HASH hash_;
   /** The functor of the equalto function. */

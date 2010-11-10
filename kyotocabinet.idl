@@ -153,6 +153,12 @@ module kyotocabinet {
   interface ProtoTreeDB :DB {
   };
   //----------------------------------------------------------------
+  // stash database
+  //----------------------------------------------------------------
+  interface StashDB :DB {
+    boolean tune_buckets(in long long bnum);
+  };
+  //----------------------------------------------------------------
   // cache hash database
   //----------------------------------------------------------------
   interface CacheDB :DB {

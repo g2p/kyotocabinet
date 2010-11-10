@@ -948,7 +948,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
-    (*strmap)["type"] = strprintf("%d", (int)TYPEDIR);
+    (*strmap)["type"] = strprintf("%u", (unsigned)TYPEDIR);
     (*strmap)["realtype"] = strprintf("%u", (unsigned)type_);
     (*strmap)["path"] = path_;
     (*strmap)["libver"] = strprintf("%u", libver_);

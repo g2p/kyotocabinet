@@ -53,14 +53,15 @@
 &nbsp;&nbsp;<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa5be3e804fc9e1c8770b0bc37ce75afe9">TYPEVOID</a> =  0x00, 
 <a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa21e357867392861a412ed7d982e9913b">TYPEPHASH</a> =  0x10, 
 <a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa257fa7af7461025c3c47f98c6be5d9b5">TYPEPTREE</a> =  0x11, 
-<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa281bc81f91b8b3fc39796f386be1f3fc">TYPECACHE</a> =  0x20, 
+<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fafe6b2d8395fdf7a6cfeaaccf95d9c3dc">TYPESTASH</a> =  0x18, 
 <br/>
-&nbsp;&nbsp;<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fac885d5d2e2d3417476d606f9ddff28d4">TYPEGRASS</a> =  0x21, 
+&nbsp;&nbsp;<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa281bc81f91b8b3fc39796f386be1f3fc">TYPECACHE</a> =  0x20, 
+<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fac885d5d2e2d3417476d606f9ddff28d4">TYPEGRASS</a> =  0x21, 
 <a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7facc621efd9dc349487c9bf139735a1547">TYPEHASH</a> =  0x30, 
 <a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7faf19657f41cdf16badd67d79889fef93d">TYPETREE</a> =  0x31, 
-<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa7a7e544979edd72ae4b53c5f5312a639">TYPEDIR</a> =  0x40, 
 <br/>
-&nbsp;&nbsp;<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa5fb8e5c5be4f7a2a051de911e0cc41c8">TYPEFOREST</a> =  0x41, 
+&nbsp;&nbsp;<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa7a7e544979edd72ae4b53c5f5312a639">TYPEDIR</a> =  0x40, 
+<a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fa5fb8e5c5be4f7a2a051de911e0cc41c8">TYPEFOREST</a> =  0x41, 
 <a class="el" href="classkyotocabinet_1_1BasicDB.html#aa1db8f4472965b12b6648728bcd44c7fada9cc0cd600e803427cc15ab9ce61c06">TYPEMISC</a> =  0x80
 <br/>
  }</td></tr>
@@ -193,6 +194,9 @@
 <tr><td valign="top"><em><a class="anchor" id="aa1db8f4472965b12b6648728bcd44c7fa257fa7af7461025c3c47f98c6be5d9b5"></a><!-- doxytag: member="TYPEPTREE" ref="aa1db8f4472965b12b6648728bcd44c7fa257fa7af7461025c3c47f98c6be5d9b5" args="" -->TYPEPTREE</em>&nbsp;</td><td>
 <p>prototype tree database </p>
 </td></tr>
+<tr><td valign="top"><em><a class="anchor" id="aa1db8f4472965b12b6648728bcd44c7fafe6b2d8395fdf7a6cfeaaccf95d9c3dc"></a><!-- doxytag: member="TYPESTASH" ref="aa1db8f4472965b12b6648728bcd44c7fafe6b2d8395fdf7a6cfeaaccf95d9c3dc" args="" -->TYPESTASH</em>&nbsp;</td><td>
+<p>stash database </p>
+</td></tr>
 <tr><td valign="top"><em><a class="anchor" id="aa1db8f4472965b12b6648728bcd44c7fa281bc81f91b8b3fc39796f386be1f3fc"></a><!-- doxytag: member="TYPECACHE" ref="aa1db8f4472965b12b6648728bcd44c7fa281bc81f91b8b3fc39796f386be1f3fc" args="" -->TYPECACHE</em>&nbsp;</td><td>
 <p>cache hash database </p>
 </td></tr>
@@ -306,7 +310,7 @@
 <p>Get the last happened error. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the last happened error. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a5574b0058edb29a5b696c53ec8b9a7bf">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a770fdcbe8639f25b888482291b4a7c50">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#adf0720f4a9622fef4b8ad7c9114efbbb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#ad261c3aee01e0add954c633f2d67e57c">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a7d247b16ee5250e1ed7b2768f6e030c3">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#ab5c7f6f70f64299c74d8855884a3a38a">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a5574b0058edb29a5b696c53ec8b9a7bf">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a770fdcbe8639f25b888482291b4a7c50">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#adf0720f4a9622fef4b8ad7c9114efbbb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#ad261c3aee01e0add954c633f2d67e57c">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a7d247b16ee5250e1ed7b2768f6e030c3">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#ab5c7f6f70f64299c74d8855884a3a38a">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a356e98971096a653bb1c5d1b3475e8f8">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -403,7 +407,7 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>Every opened database must be closed by the <a class="el" href="classkyotocabinet_1_1BasicDB.html#a8863ffedb9604742305ece7ccdb23c2a" title="Close the database file.">BasicDB::close</a> method when it is no longer in use. It is not allowed for two or more database objects in the same process to keep their connections to the same database file at the same time. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#aff8d30ef3cd6990348c47a88983548bf">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a368f4d0e72b0db3c37d368eea38cf523">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#af6d0ceb4887099a12ce069dcffd6ee58">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a9bd13f6a03519f525aee2b3c9ccf8674">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#afa8c3c70857dd74c460407d62167350e">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#acc4424e8780abf35cc4ea0e846e12243">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#aff8d30ef3cd6990348c47a88983548bf">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a368f4d0e72b0db3c37d368eea38cf523">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#af6d0ceb4887099a12ce069dcffd6ee58">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a9bd13f6a03519f525aee2b3c9ccf8674">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#afa8c3c70857dd74c460407d62167350e">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#acc4424e8780abf35cc4ea0e846e12243">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a03a64d5770ad4ba8d70e7651499f3913">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -425,7 +429,7 @@
 <p>Close the database file. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a0ed5fcf37852b77268d7b7267d20bf8b">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a825183c1c8810d538b9ce9a5ce789ffb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a6661d84682336411eac6b38baf16c64d">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a367504a44c75f05fb14647ec692255d5">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a0ed5fcf37852b77268d7b7267d20bf8b">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a825183c1c8810d538b9ce9a5ce789ffb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a6661d84682336411eac6b38baf16c64d">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a367504a44c75f05fb14647ec692255d5">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a9a27006d8710bd736a66cef46c6d5783">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -472,7 +476,7 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 <dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a668ed0f22f9b9538ffcde8466fc2f5ec">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a6687ee72cae51c608a622a6db973d39d">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a38780730815dfcf830c348c889477587">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#abd20793d6349fdc38a6cb5c7d85af8de">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a27be5998494e81a5fa4be24e6047f4de">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#abefeb7da685d9c99a7dbc8c88a7b2f49">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a668ed0f22f9b9538ffcde8466fc2f5ec">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a6687ee72cae51c608a622a6db973d39d">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a38780730815dfcf830c348c889477587">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#abd20793d6349fdc38a6cb5c7d85af8de">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a27be5998494e81a5fa4be24e6047f4de">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#abefeb7da685d9c99a7dbc8c88a7b2f49">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#ae9858542f7b15dce4daeec8df9027549">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -518,7 +522,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a142e5aede110bcdbe8bc5821259738a7">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#af66e7b519cc379afe31fef0dcd374ce5">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a95c76a2cef3f0d6e3843c1b8f45a51fb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a897d968c5d8c59ef65baa760eeb3bf49">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#ace50ae3d13ba63e258673c80cca7b5c8">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a0b8e02efc1451ecf5ad610671274de58">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a142e5aede110bcdbe8bc5821259738a7">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#af66e7b519cc379afe31fef0dcd374ce5">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a95c76a2cef3f0d6e3843c1b8f45a51fb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a897d968c5d8c59ef65baa760eeb3bf49">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#ace50ae3d13ba63e258673c80cca7b5c8">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a0b8e02efc1451ecf5ad610671274de58">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#ab4bef2c0d9ee18fc46ccbbff8e534cf8">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -584,7 +588,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a4a6206c4b92dddb8a9dde4e582b4af18">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#ad1b201ddde522b872d3663413a0f5d15">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a85d7fa1e12bd9d8452c6618c86f10b96">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a7e3ad76e45dab99b13901d93a38262ce">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#ae263750ceefb788101c26ecfc90255d0">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a1988087af949333896cc781804c52623">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a4a6206c4b92dddb8a9dde4e582b4af18">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#ad1b201ddde522b872d3663413a0f5d15">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a85d7fa1e12bd9d8452c6618c86f10b96">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a7e3ad76e45dab99b13901d93a38262ce">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#ae263750ceefb788101c26ecfc90255d0">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a1988087af949333896cc781804c52623">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a0d04996cd270488c2f5c981e2b9195cb">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -613,7 +617,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#ae6501a3b39a8c46c0645686fadef5893">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a66d01cd13ab8f45581c987447c3e0e11">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#aefedc762ec68e4f3d2dc702631bd25c7">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a079d7249a694c9f3a434aa374b8b9f37">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a4dfcad317e944a9da54df590840c520f">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a32b269c4a31bee3d2492a339bb9ef335">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#ae6501a3b39a8c46c0645686fadef5893">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a66d01cd13ab8f45581c987447c3e0e11">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#aefedc762ec68e4f3d2dc702631bd25c7">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a079d7249a694c9f3a434aa374b8b9f37">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a4dfcad317e944a9da54df590840c520f">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a32b269c4a31bee3d2492a339bb9ef335">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a9fcc5adb3c6046b6dd976b3ad5b12910">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -642,7 +646,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a6855f648dc86c9cef76e1200c278a019">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#aff72fcd1bf09d72db39c650d0e48144d">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a906510c5cd61f50cb9a992227eb0e243">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#aaac800d0e99039e4c4ebc910733b431d">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a8728e3d71c45b336b417f83ebf1eb6e2">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#aa2d052240defd43e541ebb32b96f8b03">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a6855f648dc86c9cef76e1200c278a019">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#aff72fcd1bf09d72db39c650d0e48144d">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a906510c5cd61f50cb9a992227eb0e243">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#aaac800d0e99039e4c4ebc910733b431d">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a8728e3d71c45b336b417f83ebf1eb6e2">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#aa2d052240defd43e541ebb32b96f8b03">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a4357716bf644ae984869ddef527b6fd2">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -664,7 +668,7 @@
 <p>Get the size of the database file. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the size of the database file in bytes, or -1 on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a7e6f0a8b3674c463e963a98ff3c5c23d">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#ae4dad3860a59e348b8e0ec74dafe67a6">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a2603372a3e0f745ad5b36f8df420d9cf">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a3def0d36c043569c2995ef1454581af0">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#acdf58b2cca54cbfd5aaffbc3d8d00788">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a7f94833d566301c3fecbe2640beb1508">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a7e6f0a8b3674c463e963a98ff3c5c23d">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#ae4dad3860a59e348b8e0ec74dafe67a6">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a2603372a3e0f745ad5b36f8df420d9cf">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a3def0d36c043569c2995ef1454581af0">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#acdf58b2cca54cbfd5aaffbc3d8d00788">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a7f94833d566301c3fecbe2640beb1508">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a841cf423ae3d712ce421e4cf767b056b">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -686,7 +690,7 @@
 <p>Get the path of the database file. </p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the path of the database file, or an empty string on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a8e10775100c9577f54c42e4df63db169">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a4677c9c5066ab94338438bce51030ee8">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a7f8f8d5a1d93bed6f0db8221ab9c5ba7">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#ac73484d4225d2e3f888c2c4af43cfc25">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a146aacb0c8b59955b9ee52d4d3c13ac6">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a37d77c8cf7cb658983ce9da8cd36c750">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a8e10775100c9577f54c42e4df63db169">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a4677c9c5066ab94338438bce51030ee8">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a7f8f8d5a1d93bed6f0db8221ab9c5ba7">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#ac73484d4225d2e3f888c2c4af43cfc25">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a146aacb0c8b59955b9ee52d4d3c13ac6">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a37d77c8cf7cb658983ce9da8cd36c750">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a026e2449a64b13e9c1b3f0c906310789">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -715,7 +719,7 @@
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#aa1f1aa4eea1413a010154c1e66507706">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a69ed1a736a8cb34be1b15e00570f27d5">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a1b0d75e7c29df4c7604447d1fb460318">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a1eecb3071cfc5e407c58ae47514fda38">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a92047d400162479dbc4a354ff7929912">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#ac2dd1444ce3263f41f5896f223ffc839">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#aa1f1aa4eea1413a010154c1e66507706">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a69ed1a736a8cb34be1b15e00570f27d5">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a1b0d75e7c29df4c7604447d1fb460318">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a1eecb3071cfc5e407c58ae47514fda38">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a92047d400162479dbc4a354ff7929912">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#ac2dd1444ce3263f41f5896f223ffc839">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#ae0060404761228e766294def6d8cb870">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -1679,7 +1683,7 @@
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a4b3050086c939eed6bd5f0fd32d3d526">kyotocabinet::DB</a>.</p>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a17e1259ddba5fc7d45185f715394c99b">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a022cc78478731810c4defb3e2e055b7b">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#af0924e24d436a6c4f827a2c0c6260f4d">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a93f1873138591d62a508c0cfef53d7ba">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a54f983af2afab8f667d1e28595b224c2">kyotocabinet::PolyDB</a>, and <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a8222c60d8d58fa1a45941507dc9deba1">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a17e1259ddba5fc7d45185f715394c99b">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a022cc78478731810c4defb3e2e055b7b">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#af0924e24d436a6c4f827a2c0c6260f4d">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a93f1873138591d62a508c0cfef53d7ba">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a54f983af2afab8f667d1e28595b224c2">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a8222c60d8d58fa1a45941507dc9deba1">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a277edca8ea85b329a13348f9784cea2e">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -1777,7 +1781,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 8 03:22:42 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Nov 10 12:49:50 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

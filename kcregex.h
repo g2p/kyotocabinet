@@ -93,7 +93,7 @@ public:
   static std::string replace(const std::string& str, const std::string& pattern,
                              const std::string& alt, uint32_t opts = 0) {
     Regex regex;
-    if (!regex.compile(pattern, opts)) return false;
+    if (!regex.compile(pattern, opts)) return str;
     return regex.replace(str, alt);
   }
 private:

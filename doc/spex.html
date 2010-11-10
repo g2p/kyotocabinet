@@ -50,7 +50,7 @@
 
 <p>Each operation of the B+ tree database has the time complexity of "O(log N)".  Therefore, in theory, the performance is logarithmic to the scale of the database.  Although the performance of random access of the B+ tree database is slower than that of the hash database, the B+ tree database supports sequential access in order of the keys, which realizes forward matching search for strings and range search for integers.  The performance of sequential access is much faster than that of random access.</p>
 
-<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class.  Beside them, six kinds of databases are provided under the same base class.  The prototype hash database is powered by the standard container of std::unordered_map.  The prototype tree database is powered by the standard container of std::map.  The cache hash database is powered by the original implementation of double-linked hash map with LRU deletion algorithm.  The cache tree database is powered by the cache hash database and provides B+ tree mechanism.  The directory hash database is powered by the directory mechanism of the file system and stores records as respective files in a directory.  The directory tree database is powered by the directory hash database and provides B+ tree mechanism.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.</p>
+<p>As the API is based on object-oriented design, the hash database and the the B+ tree database have same methods which inherited from the upper abstract class.  Beside them, seven kinds of databases are provided under the same base class.  The prototype hash database is powered by the standard container of std::unordered_map.  The prototype tree database is powered by the standard container of std::map.  The stash database is powered by the original implementation of naive hash map saving memory.  The cache hash database is powered by the original implementation of doubly-linked hash map with LRU deletion algorithm.  The cache tree database is powered by the cache hash database and provides B+ tree mechanism.  The directory hash database is powered by the directory mechanism of the file system and stores records as respective files in a directory.  The directory tree database is powered by the directory hash database and provides B+ tree mechanism.  All databases have practical utility methods related to transaction and cursor.  Programs for command line interface are also included in the package.</p>
 
 <p>Kyoto Cabinet runs very fast.  For example, elapsed time to store one million records is 0.9 seconds for the hash database, and 1.1 seconds for the B+ tree database.  Moreover, the size of database is very small.  For example, overhead for a record is 16 bytes for the hash database, and 4 bytes for the B+ tree database.  Furthermore, scalability of Kyoto Cabinet is great.  The database size can be up to 8EB (9.22e18 bytes).</p>
 
@@ -198,6 +198,7 @@
 /usr/local/include/kcdb.h
 /usr/local/include/kcplantdb.h
 /usr/local/include/kcprotodb.h
+/usr/local/include/kcstashdb.h
 /usr/local/include/kccachedb.h
 /usr/local/include/kchashdb.h
 /usr/local/include/kcdirdb.h
@@ -213,6 +214,7 @@
 /usr/local/bin/kcutiltest
 /usr/local/bin/kcutilmgr
 /usr/local/bin/kcprototest
+/usr/local/bin/kcstashtest
 /usr/local/bin/kccachetest
 /usr/local/bin/kcgrasstest
 /usr/local/bin/kchashtest
@@ -551,6 +553,14 @@ accept(kbuf, ksiz, &amp;setter, true);
 </td>
 </tr>
 <tr>
+<td><code>StashDB</code></td>
+<td>kcstashdb.h</td>
+<td>
+<div>stash database.</div>
+<div>on-memory database saving memory.</div>
+</td>
+</tr>
+<tr>
 <td><code>CacheDB</code></td>
 <td>kccachedb.h</td>
 <td>
@@ -636,6 +646,14 @@ accept(kbuf, ksiz, &amp;setter, true);
 <td>whole (rwlock)</td>
 </tr>
 <tr>
+<td><code>StashDB</code></td>
+<td>volatile</td>
+<td>hash table</td>
+<td>O(1)</td>
+<td>undefined</td>
+<td>record (rwlock)</td>
+</tr>
+<tr>
 <td><code>CacheDB</code></td>
 <td>volatile</td>
 <td>hash table</td>
@@ -695,6 +713,16 @@ accept(kbuf, ksiz, &amp;setter, true);
 
 <p>This section describes tips and hacks to use Kyoto Cabinet.</p>
 
+<h3 id="tips_tuningstash">Tuning the Stash Database</h3>
+
+<p>The stash database (StashDB) is on-memory database saving memory.  The following tuning methods are provided.</p>
+
+<ul>
+<li><code>tune_buckets</code> : sets the number of buckets of the hash table.</li>
+</ul>
+
+<p>The default tuning of the bucket number is about one million.  If you intend to store more records, call `<code>tune_buckets</code>' to set the bucket number.  The suggested ratio of the bucket number is the same to the total number of records and it is okay from 80% to 400%.  If the ratio decreases smaller than 100%, the time efficiency will decrease rapidly because the collision chain is linear linked list.</p>
+
 <h3 id="tips_tuningcache">Tuning the Cache Hash Database</h3>
 
 <p>The cache hash database (CacheDB) is on-memory database featuring LRU deletion.  The following tuning methods are provided.</p>
@@ -709,7 +737,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 
 <p>The optional features by `<code>tune_options</code>' is useful to reduce the memory usage at the expense of time efficiency.  If `<code>CacheDB::TCOMPRESS</code>' is specified, the key and the value of each record is compressed implicitly when stored in the file.  If the value is bigger than 1KB or more, compression is effective.</p>
 
-<p>The default tuning of the bucket number is about one million.  If you intend to store more records, call `<code>tune_buckets</code>' to set the bucket number.  The suggested ratio of the bucket number is the same to the total number of records and it is okay from 50% to 400%.  If the ratio decreases smaller than 50%, the time efficiency will decrease gradually.</p>
+<p>The default tuning of the bucket number is about one million.  If you intend to store more records, call `<code>tune_buckets</code>' to set the bucket number.  The suggested ratio of the bucket number is the same to the total number of records and it is okay from 50% to 400%.  If the ratio decreases smaller than 100%, the time efficiency will decrease gradually because the collision chain is binary search tree.</p>
 
 <p>The default compression algorithm of the `<code>CacheDB::TCOMPRESS</code>' option is "Deflate" by ZLIB.  If you want to use another algorithm, call `<code>tune_compressor</code>' to set a functor which implements compression and decompression functions.</p>
 
@@ -859,11 +887,21 @@ db.open(...);
 
 <h3 id="tips_choosedb">Choosing Suitable Databases</h3>
 
-<p>In order to choose suitable database types for your application, it is important to clarify the requirement specification.  If it does not require persistency of records, on-memory databases are suggested.  There are the prototype hash database (ProtoHashDB), the prototype tree database (ProtoTreeDB), the cache hash database (CacheDB), and the cache tree database (GrassDB).  If the order of keys is important for your application logic, the cache tree database is suitable.  If not, the cache hash database is suitable.  The memory usage of the cache tree database is smaller than the others.  The cache hash database can delete old records and keep the memory usage constant.  The prototype databases have few cases to flourish.</p>
+<p>In order to choose suitable database types for your application, it is important to clarify the requirement specification.  If it does not require persistency of records, on-memory databases are suggested.  There are the prototype hash database (ProtoHashDB), the prototype tree database (ProtoTreeDB), the stash database (StashDB), the cache hash database (CacheDB), and the cache tree database (GrassDB).  If the order of keys is important for your application logic, the cache tree database is suitable.  If not, the stash database is suitable.  The memory usage of the cache tree database is smaller than the others.  The cache hash database can delete old records and keep the memory usage constant.  The prototype databases have few cases to flourish.</p>
+
+<ul>
+<li>time efficiency: StashDB &gt; CacheDB &gt; ProtoHashDB &gt; ProtoTreeDB &gt; GrassDB</li>
+<li>space efficiency: GrassDB &gt; StashDB &gt; CacheDB &gt; ProtoHashDB &gt; ProtoTreeDB</li>
+</ul>
 
 <p>If your application requires persistency of records, persistent databases are suggested.  There are the file hash database (HashDB), the file tree database (TreeDB), the directory hash database (DirDB), and the directory tree database (ForestDB).  If the order of keys is important for your application logic, the file tree database is suitable.  If not, the file hash database is suitable.  In most cases, performance and concurrency of the file hash database is better than the others.  If the size of each record is large, the directory hash database is suitable.</p>
 
-<p>Most DBM implementations including Kyoto Cabinet and Tokyo Cabinet are optimized to store small records.  As it is, if you want to handle very large records, using the file system directly is better solution than using DBM.  If you store and retrieve large records, the processing time by the `write' and `read' system calls is dominant rather than the `open' and `lseek' system calls.  Although typical DBMs reduce the workload to locate the position of each record, they increase the workload to read/write the data of each record.  If you want to handle large records but don't want to use the file system directly, use the directory hash database.  It's a mere wrapper of the directory mechanism of the file system.  If you want to handle large records in order of keys, use the directory tree database.  The directory database is the final weapon of scalability.</p>
+<p>Most DBM implementations including Kyoto Cabinet and Tokyo Cabinet are optimized to store small records.  As it is, if you want to handle very large records, using the file system directly is better solution than using DBM.  If you store and retrieve large records, the processing time by the `write' and `read' system calls is dominant rather than the `open' and `lseek' system calls.  Although typical DBMs reduce the workload to locate the position of each record, they increase the workload to read/write the data of each record.  If you want to handle large records but don't want to use the file system directly, use the directory hash database.  It's a mere wrapper of the directory mechanism of the file system.  If you want to handle large records in order of keys, use the directory tree database.  The directory tree database is the final weapon of scalability.</p>
+
+<ul>
+<li>time efficiency: HashDB &gt; TreeDB &gt; DirDB &gt; ForestDB</li>
+<li>space efficiency: TreeDB &gt; HashDB &gt; ForestDB &gt; DirDB</li>
+</ul>
 
 <p>If you want to decide the database type doing performance test with the production code, use the polymorphic database.  It can specify the database type dinamically when opening the database.  In fact, the polymorphic database is suggested in most usecases though it involves a little bit of performance overhead in runtime.  That's why the official script language bindings support the polymorphic database only.</p>
 

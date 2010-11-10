@@ -1,3 +1,9 @@
+2010-11-10  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcstashdb.h, kcstashdb.o: new files.
+
+	- Release: 1.2.24
+
 2010-11-06  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcutil.h (sizevarnum): new function.

@@ -267,6 +267,60 @@ inline void quicksort(TYPE* ary, size_t nmemb) {
 
 
 /**
+ * Sort an array by merge sort.
+ * @param TYPE the type of each element of the array.
+ * @param LESS a functor to compare two elements and return true if the former is less.
+ * @param ary the array.
+ * @param nmemb the number of elements.
+ */
+template <class TYPE, class LESS>
+inline void mergesort(TYPE* ary, size_t nmemb, LESS less) {
+  if (nmemb < 2) return;
+  TYPE* tmp = new TYPE[nmemb];
+  struct {
+    LESS less;
+    void sort(TYPE* ary, TYPE* tmp, size_t low, size_t high) {
+      if (low >= high) return;
+      size_t mid = (low + high) / 2;
+      sort(ary, tmp, low, mid);
+      sort(ary, tmp, mid + 1, high);
+      for (size_t i = low; i <= mid; i++) {
+        tmp[i] = ary[i];
+      }
+      size_t bot = high;
+      for (size_t i = mid + 1; i <= high; i++) {
+        tmp[i] = ary[bot--];
+      }
+      size_t top = low;
+      bot = high;
+      for (size_t k = low; k <= high; k++) {
+        if (less(tmp[bot], tmp[top])) {
+          ary[k] = tmp[bot--];
+        } else {
+          ary[k] = tmp[top++];
+        }
+      }
+    }
+  } func;
+  func.less = less;
+  func.sort(ary, tmp, 0, nmemb - 1);
+  delete[] tmp;
+}
+
+
+/**
+ * Sort an array by merge sort.
+ * @param TYPE the type of each element of the array.
+ * @param ary the array.
+ * @param nmemb the number of elements.
+ */
+template <class TYPE>
+inline void mergesort(TYPE* ary, size_t nmemb) {
+  mergesort(ary, nmemb, std::less<TYPE>());
+}
+
+
+/**
  * Sort an array by top N heap sort.
  * @param TYPE the type of each element of the array.
  * @param LESS a functor to compare two elements and return true if the former is less.

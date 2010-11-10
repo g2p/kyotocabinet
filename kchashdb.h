@@ -984,8 +984,8 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
-    (*strmap)["type"] = strprintf("%d", (int)TYPEHASH);
-    (*strmap)["realtype"] = strprintf("%u", type_);
+    (*strmap)["type"] = strprintf("%u", (unsigned)TYPEHASH);
+    (*strmap)["realtype"] = strprintf("%u", (unsigned)type_);
     (*strmap)["path"] = path_;
     (*strmap)["libver"] = strprintf("%u", libver_);
     (*strmap)["librev"] = strprintf("%u", librev_);
@@ -1551,10 +1551,6 @@ private:
     const char* vbuf_;
     size_t vsiz_;
   };
-  /** Dummy constructor to forbid the use. */
-  HashDB(const HashDB&);
-  /** Dummy Operator to forbid the use. */
-  HashDB& operator =(const HashDB&);
   /**
    * Accept a visitor to a record.
    * @param kbuf the pointer to the key region.
@@ -3346,6 +3342,10 @@ private:
     atlock_.unlock();
     return !err;
   }
+  /** Dummy constructor to forbid the use. */
+  HashDB(const HashDB&);
+  /** Dummy Operator to forbid the use. */
+  HashDB& operator =(const HashDB&);
   /** The method lock. */
   SpinRWLock mlock_;
   /** The record locks. */

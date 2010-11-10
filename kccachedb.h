@@ -318,10 +318,6 @@ public:
       return db_;
     }
   private:
-    /** Dummy constructor to forbid the use. */
-    Cursor(const Cursor&);
-    /** Dummy Operator to forbid the use. */
-    Cursor& operator =(const Cursor&);
     /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
@@ -345,6 +341,10 @@ public:
       }
       return true;
     }
+    /** Dummy constructor to forbid the use. */
+    Cursor(const Cursor&);
+    /** Dummy Operator to forbid the use. */
+    Cursor& operator =(const Cursor&);
     /** The inner database. */
     CacheDB* db_;
     /** The index of the current slot. */
@@ -374,8 +374,7 @@ public:
     mlock_(), flock_(), error_(), logger_(NULL), logkinds_(0),
     omode_(0), curs_(), path_(""), type_(TYPECACHE),
     opts_(0), bnum_(CDBDEFBNUM), capcnt_(-1), capsiz_(-1),
-    opaque_(), embcomp_(&ZLIBRAWCOMP),
-    comp_(NULL), slots_(), tran_(false) {
+    opaque_(), embcomp_(&ZLIBRAWCOMP), comp_(NULL), slots_(), tran_(false) {
     _assert_(true);
   }
   /**
@@ -771,7 +770,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
-    (*strmap)["type"] = strprintf("%d", (int)TYPECACHE);
+    (*strmap)["type"] = strprintf("%u", (unsigned)TYPECACHE);
     (*strmap)["realtype"] = strprintf("%u", (unsigned)type_);
     (*strmap)["path"] = path_;
     (*strmap)["libver"] = strprintf("%u", LIBVER);
@@ -1257,43 +1256,49 @@ private:
    */
   class Repeater : public Visitor {
   public:
+    /** constructor */
     explicit Repeater(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
   private:
+    /** process a full record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
       *sp = vsiz_;
       return vbuf_;
     }
-    const char* vbuf_;
-    size_t vsiz_;
+    const char* vbuf_;                   ///< region of the value
+    size_t vsiz_;                        ///< size of the value
   };
   /**
    * Setting visitor.
    */
   class Setter : public Visitor {
   public:
+    /** constructor */
     explicit Setter(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
   private:
+    /** process a full record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
       *sp = vsiz_;
       return vbuf_;
     }
+    /** process an empty record */
     const char* visit_empty(const char* kbuf, size_t ksiz, size_t* sp) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && sp);
       *sp = vsiz_;
       return vbuf_;
     }
-    const char* vbuf_;
-    size_t vsiz_;
+    const char* vbuf_;                   ///< region of the value
+    size_t vsiz_;                        ///< size of the value
   };
   /**
    * Removing visitor.
    */
   class Remover : public Visitor {
   private:
+    /** constructor */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);

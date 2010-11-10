@@ -1591,7 +1591,7 @@ public:
       return false;
     }
     if (!db_.status(strmap)) return false;
-    (*strmap)["type"] = strprintf("%d", (int)DBTYPE);
+    (*strmap)["type"] = strprintf("%u", (unsigned)DBTYPE);
     (*strmap)["psiz"] = strprintf("%d", psiz_);
     (*strmap)["pccap"] = strprintf("%lld", (long long)pccap_);
     const char* compname = "external";

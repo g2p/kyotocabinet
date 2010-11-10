@@ -651,7 +651,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
     iprintf("time: %.3f\n", etime - stime);
     char* opaque = db.opaque();
     if (opaque) {
-      std::sprintf(opaque, "1234567890123456");
+      std::memcpy(opaque, "1234567890123456", 16);
       if (!db.synchronize_opaque()) {
         dberrprint(&db, __LINE__, "DB::synchronize_opaque");
         err = true;
@@ -1305,7 +1305,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
     }
   }
   etime = kc::time();
-  dbmetaprint(&db, etc);
+  dbmetaprint(&db, true);
   iprintf("time: %.3f\n", etime - stime);
   iprintf("closing the database:\n");
   stime = kc::time();
