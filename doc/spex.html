@@ -23,7 +23,7 @@
 <h1 id="headline">Fundamental Specifications of Kyoto Cabinet Version 1</h1>
 
 <div class="note">Copyright (C) 2009-2010 FAL Labs</div>
-<div class="note">Last Update: Mon, 01 Nov 2010 20:23:12 +0900</div>
+<div class="note">Last Update: Mon, 22 Nov 2010 03:13:12 +0900</div>
 
 <hr />
 
@@ -887,7 +887,7 @@ db.open(...);
 
 <h3 id="tips_choosedb">Choosing Suitable Databases</h3>
 
-<p>In order to choose suitable database types for your application, it is important to clarify the requirement specification.  If it does not require persistency of records, on-memory databases are suggested.  There are the prototype hash database (ProtoHashDB), the prototype tree database (ProtoTreeDB), the stash database (StashDB), the cache hash database (CacheDB), and the cache tree database (GrassDB).  If the order of keys is important for your application logic, the cache tree database is suitable.  If not, the stash database is suitable.  The memory usage of the cache tree database is smaller than the others.  The cache hash database can delete old records and keep the memory usage constant.  The prototype databases have few cases to flourish.</p>
+<p>In order to choose suitable database types for your application, it is important to clarify the requirement specification.  If it does not require persistency of records, on-memory databases are suggested.  There are the prototype hash database (ProtoHashDB), the prototype tree database (ProtoTreeDB), the stash database (StashDB), the cache hash database (CacheDB), and the cache tree database (GrassDB).  If the order of keys is important for your application logic, the cache tree database is suitable.  If not, the stash database is suitable.  The memory usage of the cache tree database is smaller than the others.  The cache hash database can delete old records implicitly and keep the memory usage constant.  The prototype databases have few cases to flourish.</p>
 
 <ul>
 <li>time efficiency: StashDB &gt; CacheDB &gt; ProtoHashDB &gt; ProtoTreeDB &gt; GrassDB</li>
@@ -1004,13 +1004,19 @@ db.open("casket.kct#zcomp=arc#zkey=foobarbaz", ...);
 
 <p>Note that the hash database types (CacheDB, HashDB, DirDB) compress the value of each record only.  That is, the key of each record is not compressed there.  However, the tree database types (GrassDB, TreeDB, ForestDB) compress all data in database.  So, if you want to use the compressor for encryption, choose one of tree database types.</p>
 
-<h3 id="tips_memsaving">On-memory Databases to Save Memory Usage</h3>
+<h3 id="tips_spaceefficiency">Space Efficiency of On-memory Databases</h3>
 
-<p>The cache hash database (CacheDB) and the cache tree database (GrassDB) are useful to save memory usage of associative array of strings.  They can substitute std::map of C++, java.lang.Map of Java, and built-in "hash" mechanisms of many scripting languages.  The cache hash database improves space efficiency by serializing the key and the value of each record into a byte array.  The cache tree database improves space efficiency by serializing records in each page into a byte array.</p>
+<p>The stash database (StashDB), the cache hash database (CacheDB), and the cache tree database (GrassDB) are useful to save memory usage of associative array of strings.  They can be substituted for std::map in C++, java.lang.Map in Java, and built-in associative array mechanisms of many scripting languages.  The stash database and the cache hash database improve space efficiency by serializing the key and the value of each record into a byte array.  The cache tree database improves space efficiency by serializing records in each page into a byte array.</p>
 
-<p>For example, if you store ten million records and each is composed of a 8-byte key and a 8-byte value, `std::map&lt;std::string, std::string&gt;' (ProtoTreeDB) uses about 1.2GB memory.  In the same situation, the cache hash database uses 620MB memory and the cache tree database uses 318MB memory.  The cache tree database provides the best space efficiency in this use case.  However, as for time efficiency, the cache hash database is superior to the cache tree database, due to the difference of hash table and B+ tree.  Note that B+ tree is very good at sequeitial access but not suitable for random access.  To improve time efficency of B+ tree, set the page size 1024 or less.</p>
+<p>For example, if you store ten million records and each is composed of a 8-byte key and a 8-byte value, `std::map&lt;std::string, std::string&gt;' (ProtoTreeDB) uses about 1.2GB memory.  In the same situation, the stash database uses 465MB memory; the cache hash database uses 618MB memory; and the cache tree database uses 318MB memory.  The cache tree database provides the best space efficiency in this use case.  However, as for time efficiency, the stash database and the cache hash database are superior to the cache tree database, due to the difference of hash table and B+ tree.  Note that B+ tree is very good at sequeitial access but not suitable for random access.  To improve time efficency of B+ tree, set the page size 1024 or less.</p>
 
 <p>If you want to reduce the memory usage extremely, use the cache tree database with the compression option.  Moreover, set the bucket number around 5% of the record number, set the page size 32768 or more, and set the capacity of the page cache less than 5% of the total record size.  For example, for the above situation of ten million records, the bucket number should be 500 thousand, the page size should be 32768, and the page cache should be 8MB.  Those are expressed as "%#opts=c#bnum=500k#psiz=32768#pccap=8m" for the polymorphic database.  Consequently, ten million records take 60MB memory only.</p>
+
+<h3 id="tips_multiprocess">Sharing One database by Multiple Processes</h3>
+
+<p>Multiple processes cannot access one database file at the same time.  A database file is locked by reader-writer lock while a process is connected to it.  Note that the `<code>BasicDB::ONOLOCK</code>' option should not be used in order to escape the file locking mechanism.  This option is for workaround against some file systems such as NFS, which does not support file locking mechanisms.</p>
+
+<p>If you want to get multiple processes to share one database, use <a href="http://fallabs.com/kyototycoon/">Kyoto Tycoon</a> instead.  It is a lightweight database server as network interface to Kyoto Cabinet.</p>
 
 <hr />
 

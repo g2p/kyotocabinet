@@ -459,6 +459,7 @@ public:
   class ProgressChecker;
   class FileProcessor;
   class Logger;
+  class MetaTrigger;
 public:
   /**
    * Database types.
@@ -988,6 +989,42 @@ public:
      */
     virtual void log(const char* file, int32_t line, const char* func, Kind kind,
                      const char* message) = 0;
+  };
+  /**
+   * Interface to trigger meta database operations.
+   */
+  class MetaTrigger {
+  public:
+    /**
+     * Event kinds.
+     */
+    enum Kind {
+      OPEN,                              ///< opening
+      CLOSE,                             ///< closing
+      CLEAR,                             ///< clearing
+      ITERATE,                           ///< iteration
+      SYNCHRONIZE,                       ///< synchronization
+      BEGINTRAN,                         ///< beginning transaction
+      COMMITTRAN,                        ///< committing transaction
+      ABORTTRAN,                         ///< aborting transaction
+      MISC = 15                          ///< miscellaneous operation
+    };
+    /**
+     * Destructor.
+     */
+    virtual ~MetaTrigger() {
+      _assert_(true);
+    }
+    /**
+     * Trigger a meta database operation.
+     * @param kind the kind of the event.  MetaTrigger::OPEN for opening, MetaTrigger::CLOSE for
+     * closing, MetaTrigger::CLEAR for clearing, MetaTrigger::ITERATE for iteration,
+     * MetaTrigger::SYNCHRONIZE for synchronization, MetaTrigger::BEGINTRAN for beginning
+     * transaction, MetaTrigger::COMMITTRAN for committing transaction, MetaTrigger::ABORTTRAN
+     * for aborting transaction, and MetaTrigger::MISC for miscellaneous operations.
+     * @param message the supplement message.
+     */
+    virtual void trigger(Kind kind, const char* message) = 0;
   };
   /**
    * Open modes.
@@ -1948,6 +1985,12 @@ public:
    * @return true on success, or false on failure.
    */
   virtual bool tune_logger(Logger* logger, uint32_t kinds = Logger::WARN | Logger::ERROR) = 0;
+  /**
+   * Set the internal meta operation trigger.
+   * @param trigger the trigger object.
+   * @return true on success, or false on failure.
+   */
+  virtual bool tune_meta_trigger(MetaTrigger* trigger) = 0;
   /**
    * Get the class name of a database type.
    * @param type the database type.

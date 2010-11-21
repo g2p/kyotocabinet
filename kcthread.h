@@ -1001,6 +1001,7 @@ public:
     }
     /**
      * Check whether the thread is to be aborted.
+     * @return true if the thread is to be aborted, or false if not.
      */
     bool aborted() {
       _assert_(true);

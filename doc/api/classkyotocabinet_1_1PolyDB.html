@@ -44,6 +44,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Front line of a merging list. <br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><b>StreamLogger</b></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Stream logger implementation. <br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">class &nbsp;</td><td class="memItemRight" valign="bottom"><b>StreamMetaTrigger</b></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Stream meta operation trigger implementation. <br/></td></tr>
 <tr><td colspan="2"><h2>Public Types</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523">MergeMode</a> { <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a82e55433716f2fb610486f520442ce71">MSET</a>, 
 <a class="el" href="classkyotocabinet_1_1PolyDB.html#af7b027daeddd1017bdc4caba82c34523a51788f6d47b73adc35eca71a6b97e7bc">MADD</a>, 
@@ -69,8 +71,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information.  <a href="#a964cb7b588736a0db61306994cf50823"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#ae0d3c7cf0ef46d518878860615c880b6">set_error</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html#aae81720eb2d1d8be04375d0f766d0fa2">Error::Code</a> code, const char *message)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the error information without source code information.  <a href="#ae0d3c7cf0ef46d518878860615c880b6"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#afa8c3c70857dd74c460407d62167350e">open</a> (const std::string &amp;path=&quot;*&quot;, uint32_t mode=OWRITER|OCREATE)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#afa8c3c70857dd74c460407d62167350e"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a09384a72e6a72a0be98c80a1856f34aa">open</a> (const std::string &amp;path=&quot;:&quot;, uint32_t mode=OWRITER|OCREATE)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#a09384a72e6a72a0be98c80a1856f34aa"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8">close</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#acf5dd748aed15bb2866e8f12c6e2b3f8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#ace50ae3d13ba63e258673c80cca7b5c8">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
@@ -103,10 +105,12 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#a54f983af2afab8f667d1e28595b224c2"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a012353e9d3ef0e8d591131536d4e0a3b">tune_logger</a> (Logger *logger, uint32_t kinds=Logger::WARN|Logger::ERROR)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal logger.  <a href="#a012353e9d3ef0e8d591131536d4e0a3b"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a219dcefd481a834b0a9f73011f32a592">tune_meta_trigger</a> (MetaTrigger *trigger)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal meta operation trigger.  <a href="#a219dcefd481a834b0a9f73011f32a592"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p>Polymorphic database. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>This class is a concrete class to operate an arbitrary database whose type is determined in runtime. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1PolyDB.html#afa8c3c70857dd74c460407d62167350e" title="Open a database file.">PolyDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8" title="Close the database file.">PolyDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. It is forbidden to share a database object with child processes. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>This class is a concrete class to operate an arbitrary database whose type is determined in runtime. This class can be inherited but overwriting methods is forbidden. Before every database operation, it is necessary to call the <a class="el" href="classkyotocabinet_1_1PolyDB.html#a09384a72e6a72a0be98c80a1856f34aa" title="Open a database file.">PolyDB::open</a> method in order to open a database file and connect the database object to it. To avoid data missing or corruption, it is important to close every database file by the <a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8" title="Close the database file.">PolyDB::close</a> method when the database is no longer in use. It is forbidden for multible database objects in a process to open the same database at the same time. It is forbidden to share a database object with child processes. </dd></dl>
 <hr/><h2>Member Enumeration Documentation</h2>
 <a class="anchor" id="af7b027daeddd1017bdc4caba82c34523"></a><!-- doxytag: member="kyotocabinet::PolyDB::MergeMode" ref="af7b027daeddd1017bdc4caba82c34523" args="" -->
 <div class="memitem">
@@ -422,7 +426,7 @@
 
 </div>
 </div>
-<a class="anchor" id="afa8c3c70857dd74c460407d62167350e"></a><!-- doxytag: member="kyotocabinet::PolyDB::open" ref="afa8c3c70857dd74c460407d62167350e" args="(const std::string &amp;path=&quot;*&quot;, uint32_t mode=OWRITER|OCREATE)" -->
+<a class="anchor" id="a09384a72e6a72a0be98c80a1856f34aa"></a><!-- doxytag: member="kyotocabinet::PolyDB::open" ref="a09384a72e6a72a0be98c80a1856f34aa" args="(const std::string &amp;path=&quot;:&quot;, uint32_t mode=OWRITER|OCREATE)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -430,7 +434,7 @@
           <td class="memname">bool kyotocabinet::PolyDB::open </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
-          <td class="paramname"> <em>path</em> = <code>&quot;*&quot;</code>, </td>
+          <td class="paramname"> <em>path</em> = <code>&quot;:&quot;</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -450,13 +454,13 @@
 <p>Open a database file. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>path</em>&nbsp;</td><td>the path of a database file. If it is "-", the database will be a prototype hash database. If it is "+", the database will be a prototype tree database. If it is ":", the database will be a stash database. If it is "*", the database will be a cache hash database. If it is "%", the database will be a cache tree database. If its suffix is ".kch", the database will be a file hash database. If its suffix is ".kct", the database will be a file tree database. If its suffix is ".kcd", the database will be a directory hash database. If its suffix is ".kcf", the database will be a directory tree database. Otherwise, this function fails. Tuning parameters can trail the name, separated by "#". Each parameter is composed of the name and the value, separated by "=". If the "type" parameter is specified, the database type is determined by the value in "-", "+", ":", "*", "%", "kch", "kct", "kcd", and "kcf". All database types support the logging parameters of "log", "logkinds", and "logpx". The prototype hash database and the prototype tree database do not support any other tuning parameter. The stash database supports "bnum". The cache hash database supports "opts", "bnum", "zcomp", "capcount", "capsize", and "zkey". The cache tree database supports all parameters of the cache hash database except for capacity limitation, and supports "psiz", "rcomp", "pccap" in addition. The file hash database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", and "zkey". The file tree database supports all parameters of the file hash database and "psiz", "rcomp", "pccap" in addition. The directory hash database supports "opts", "zcomp", and "zkey". The directory tree database supports all parameters of the directory hash database and "psiz", "rcomp", "pccap" in addition. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>path</em>&nbsp;</td><td>the path of a database file. If it is "-", the database will be a prototype hash database. If it is "+", the database will be a prototype tree database. If it is ":", the database will be a stash database. If it is "*", the database will be a cache hash database. If it is "%", the database will be a cache tree database. If its suffix is ".kch", the database will be a file hash database. If its suffix is ".kct", the database will be a file tree database. If its suffix is ".kcd", the database will be a directory hash database. If its suffix is ".kcf", the database will be a directory tree database. Otherwise, this function fails. Tuning parameters can trail the name, separated by "#". Each parameter is composed of the name and the value, separated by "=". If the "type" parameter is specified, the database type is determined by the value in "-", "+", ":", "*", "%", "kch", "kct", "kcd", and "kcf". All database types support the logging parameters of "log", "logkinds", and "logpx". The prototype hash database and the prototype tree database do not support any other tuning parameter. The stash database supports "bnum". The cache hash database supports "opts", "bnum", "zcomp", "capcnt", "capsiz", and "zkey". The cache tree database supports all parameters of the cache hash database except for capacity limitation, and supports "psiz", "rcomp", "pccap" in addition. The file hash database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", and "zkey". The file tree database supports all parameters of the file hash database and "psiz", "rcomp", "pccap" in addition. The directory hash database supports "opts", "zcomp", and "zkey". The directory tree database supports all parameters of the directory hash database and "psiz", "rcomp", "pccap" in addition. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>mode</em>&nbsp;</td><td>the connection mode. <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664daed0e4bf55347835f8a1c277487767485" title="open as a writer">PolyDB::OWRITER</a> as a writer, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664daac1e035a2264effff6af2f74af4fcf2d" title="open as a reader">PolyDB::OREADER</a> as a reader. The following may be added to the writer mode by bitwise-or: <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664dafddaf6558a2c6e43223eb5c6f0d0e240" title="writer creating">PolyDB::OCREATE</a>, which means it creates a new database if the file does not exist, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da84636e0600e10a014e61abcb53c11d39" title="writer truncating">PolyDB::OTRUNCATE</a>, which means it creates a new database regardless if the file exists, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da648178f135de06196ff0a59b6d50ffc0" title="auto transaction">PolyDB::OAUTOTRAN</a>, which means each updating operation is performed in implicit transaction, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664dac6952961b46d7d1e71df632e45d80a93" title="auto synchronization">PolyDB::OAUTOSYNC</a>, which means each updating operation is followed by implicit synchronization with the file system. The following may be added to both of the reader mode and the writer mode by bitwise-or: <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da3d1f28662fd5f8c91749aa57cc6f4732" title="open without locking">PolyDB::ONOLOCK</a>, which means it opens the database file without file locking, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da12f4827b918598179bf05c0797127687" title="lock without blocking">PolyDB::OTRYLOCK</a>, which means locking is performed without blocking, <a class="el" href="classkyotocabinet_1_1BasicDB.html#a61bb905975c5bb2e9d3d890e65cf664da4d79a8f0bc49849b0b434fb4fda4836a" title="open without auto repair">PolyDB::ONOREPAIR</a>, which means the database file is not repaired implicitly even if file destruction is detected. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The tuning parameter "log" is for the original "tune_logger" and the value specifies the path of the log file, or "-" for the standard output, or "+" for the standard error. "logkinds" specifies kinds of logged messages and the value can be "debug", "info", "warn", or "error". "logpx" specifies the prefix of each log message. "opts" is for "tune_options" and the value can contain "s" for the small option, "l" for the linear option, and "c" for the compress option. "bnum" corresponds to "tune_bucket". "zcomp" is for "tune_compressor" and the value can be "zlib" for the <a class="el" href="classkyotocabinet_1_1ZLIB.html" title="ZLIB compressor.">ZLIB</a> raw compressor, "def" for the <a class="el" href="classkyotocabinet_1_1ZLIB.html" title="ZLIB compressor.">ZLIB</a> deflate compressor, "gz" for the <a class="el" href="classkyotocabinet_1_1ZLIB.html" title="ZLIB compressor.">ZLIB</a> gzip compressor, "lzo" for the <a class="el" href="classkyotocabinet_1_1LZO.html" title="LZO compressor.">LZO</a> compressor, "lzma" for the <a class="el" href="classkyotocabinet_1_1LZMA.html" title="LZMA compressor.">LZMA</a> compressor, or "arc" for the Arcfour cipher. "zkey" specifies the cipher key of the compressor. "capcount" is for "cap_count". "capsize" is for "cap_size". "psiz" is for "tune_page". "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for the decimal comparator. "pccap" is for "tune_page_cache". "apow" is for "tune_alignment". "fpow" is for "tune_fbp". "msiz" is for "tune_map". "dfunit" is for "tune_defrag". Every opened database must be closed by the <a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8" title="Close the database file.">PolyDB::close</a> method when it is no longer in use. It is not allowed for two or more database objects in the same process to keep their connections to the same database file at the same time. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The tuning parameter "log" is for the original "tune_logger" and the value specifies the path of the log file, or "-" for the standard output, or "+" for the standard error. "logkinds" specifies kinds of logged messages and the value can be "debug", "info", "warn", or "error". "logpx" specifies the prefix of each log message. "opts" is for "tune_options" and the value can contain "s" for the small option, "l" for the linear option, and "c" for the compress option. "bnum" corresponds to "tune_bucket". "zcomp" is for "tune_compressor" and the value can be "zlib" for the <a class="el" href="classkyotocabinet_1_1ZLIB.html" title="ZLIB compressor.">ZLIB</a> raw compressor, "def" for the <a class="el" href="classkyotocabinet_1_1ZLIB.html" title="ZLIB compressor.">ZLIB</a> deflate compressor, "gz" for the <a class="el" href="classkyotocabinet_1_1ZLIB.html" title="ZLIB compressor.">ZLIB</a> gzip compressor, "lzo" for the <a class="el" href="classkyotocabinet_1_1LZO.html" title="LZO compressor.">LZO</a> compressor, "lzma" for the <a class="el" href="classkyotocabinet_1_1LZMA.html" title="LZMA compressor.">LZMA</a> compressor, or "arc" for the Arcfour cipher. "zkey" specifies the cipher key of the compressor. "capcnt" is for "cap_count". "capsiz" is for "cap_size". "psiz" is for "tune_page". "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical comparator or "dec" for the decimal comparator. "pccap" is for "tune_page_cache". "apow" is for "tune_alignment". "fpow" is for "tune_fbp". "msiz" is for "tune_map". "dfunit" is for "tune_defrag". Every opened database must be closed by the <a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8" title="Close the database file.">PolyDB::close</a> method when it is no longer in use. It is not allowed for two or more database objects in the same process to keep their connections to the same database file at the same time. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a6f8ee2f3bde5f5389119fe43696f9bdc">kyotocabinet::BasicDB</a>.</p>
 
@@ -967,8 +971,35 @@
 
 </div>
 </div>
+<a class="anchor" id="a219dcefd481a834b0a9f73011f32a592"></a><!-- doxytag: member="kyotocabinet::PolyDB::tune_meta_trigger" ref="a219dcefd481a834b0a9f73011f32a592" args="(MetaTrigger *trigger)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::PolyDB::tune_meta_trigger </td>
+          <td>(</td>
+          <td class="paramtype">MetaTrigger *&nbsp;</td>
+          <td class="paramname"> <em>trigger</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Nov 10 12:49:50 2010 for Kyoto Cabinet by&nbsp;
+<div class="memdoc">
+
+<p>Set the internal meta operation trigger. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>trigger</em>&nbsp;</td><td>the trigger object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
+</div>
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 22 03:48:43 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

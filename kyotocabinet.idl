@@ -84,6 +84,21 @@ module kyotocabinet {
     void log(in string file, in long line, in string func, in long kind, in string message);
   };
   //----------------------------------------------------------------
+  // meta operation trigger
+  //----------------------------------------------------------------
+  interface MetaTrigger {
+    const long OPEN = 0;
+    const long CLOSE = 1;
+    const long CLEAR = 2;
+    const long ITERATE = 3;
+    const long SYNCHRONIZE = 4;
+    const long BEGINTRAN = 5;
+    const long COMMITTRAN = 6;
+    const long ABORTTRAN = 7;
+    const long MISC = 15;
+    void trigger(in long kind, in string message);
+  };
+  //----------------------------------------------------------------
   // cursor
   //----------------------------------------------------------------
   interface Cursor {
@@ -141,6 +156,7 @@ module kyotocabinet {
     Map status();
     Cursor cursor();
     boolean tune_logger(inout Logger logger);
+    boolean tune_meta_trigger(inout MetaTrigger trigger);
   };
   //----------------------------------------------------------------
   // prototype hash database

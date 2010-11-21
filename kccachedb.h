@@ -371,7 +371,7 @@ public:
    * Default constructor.
    */
   explicit CacheDB() :
-    mlock_(), flock_(), error_(), logger_(NULL), logkinds_(0),
+    mlock_(), flock_(), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
     omode_(0), curs_(), path_(""), type_(TYPECACHE),
     opts_(0), bnum_(CDBDEFBNUM), capcnt_(-1), capsiz_(-1),
     opaque_(), embcomp_(&ZLIBRAWCOMP), comp_(NULL), slots_(), tran_(false) {
@@ -494,6 +494,7 @@ public:
       set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       return false;
     }
+    trigger_meta(MetaTrigger::ITERATE, "iterate");
     return true;
   }
   /**
@@ -562,6 +563,7 @@ public:
     }
     comp_ = (opts_ & TCOMPRESS) ? embcomp_ : NULL;
     std::memset(opaque_, 0, sizeof(opaque_));
+    trigger_meta(MetaTrigger::OPEN, "open");
     return true;
   }
   /**
@@ -582,6 +584,7 @@ public:
     }
     path_.clear();
     omode_ = 0;
+    trigger_meta(MetaTrigger::CLOSE, "close");
     return true;
   }
   /**
@@ -616,6 +619,7 @@ public:
         err = true;
       }
     }
+    trigger_meta(MetaTrigger::SYNCHRONIZE, "synchronize");
     return !err;
   }
   /**
@@ -644,6 +648,7 @@ public:
       Thread::sleep(wsec);
     }
     tran_ = true;
+    trigger_meta(MetaTrigger::BEGINTRAN, "begin_transaction");
     mlock_.unlock();
     return true;
   }
@@ -672,6 +677,7 @@ public:
       return false;
     }
     tran_ = true;
+    trigger_meta(MetaTrigger::BEGINTRAN, "begin_transaction_try");
     mlock_.unlock();
     return true;
   }
@@ -698,6 +704,7 @@ public:
       adjust_slot_capacity(slots_ + i);
     }
     tran_ = false;
+    trigger_meta(commit ? MetaTrigger::COMMITTRAN : MetaTrigger::ABORTTRAN, "end_transaction");
     return true;
   }
   /**
@@ -717,6 +724,7 @@ public:
       clear_slot(slot);
     }
     std::memset(opaque_, 0, sizeof(opaque_));
+    trigger_meta(MetaTrigger::CLEAR, "clear");
     return true;
   }
   /**
@@ -828,6 +836,21 @@ public:
     }
     logger_ = logger;
     logkinds_ = kinds;
+    return true;
+  }
+  /**
+   * Set the internal meta operation trigger.
+   * @param trigger the trigger object.
+   * @return true on success, or false on failure.
+   */
+  bool tune_meta_trigger(MetaTrigger* trigger) {
+    _assert_(trigger);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ != 0) {
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
+      return false;
+    }
+    mtrigger_ = trigger;
     return true;
   }
   /**
@@ -995,6 +1018,19 @@ protected:
     char* hex = hexencode(buf, size);
     report(file, line, func, kind, "%s=%s", name, hex);
     delete[] hex;
+  }
+  /**
+   * Trigger a meta database operation.
+   * @param kind the kind of the event.  MetaTrigger::OPEN for opening, MetaTrigger::CLOSE for
+   * closing, MetaTrigger::CLEAR for clearing, MetaTrigger::ITERATE for iteration,
+   * MetaTrigger::SYNCHRONIZE for synchronization, MetaTrigger::BEGINTRAN for beginning
+   * transaction, MetaTrigger::COMMITTRAN for committing transaction, MetaTrigger::ABORTTRAN
+   * for aborting transaction, and MetaTrigger::MISC for miscellaneous operations.
+   * @param message the supplement message.
+   */
+  void trigger_meta(MetaTrigger::Kind kind, const char* message) {
+    _assert_(message);
+    if (mtrigger_) mtrigger_->trigger(kind, message);
   }
   /**
    * Set the database type.
@@ -1724,6 +1760,8 @@ private:
   Logger* logger_;
   /** The kinds of logged messages. */
   uint32_t logkinds_;
+  /** The internal meta operation trigger. */
+  MetaTrigger* mtrigger_;
   /** The open mode. */
   uint32_t omode_;
   /** The cursor objects. */

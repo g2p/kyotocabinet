@@ -917,7 +917,7 @@ public:
    * Default constructor.
    */
   explicit PlantDB() :
-    mlock_(), omode_(0), writer_(false), autotran_(false), autosync_(false),
+    mlock_(), mtrigger_(NULL), omode_(0), writer_(false), autotran_(false), autosync_(false),
     db_(), curs_(), apow_(PDBDEFAPOW), fpow_(PDBDEFFPOW), opts_(0), bnum_(PDBDEFBNUM),
     psiz_(PDBDEFPSIZ), pccap_(PDBDEFPCCAP),
     root_(0), first_(0), last_(0), lcnt_(0), icnt_(0), count_(0), cusage_(0),
@@ -1166,6 +1166,7 @@ public:
     }
     if (atran && !commit_transaction()) err = true;
     if (autosync_ && !autotran_ && writable && !fix_auto_synchronization()) err = true;
+    trigger_meta(MetaTrigger::ITERATE, "iterate");
     return !err;
   }
   /**
@@ -1302,6 +1303,7 @@ public:
     cusage_ = 0;
     tran_ = false;
     trclock_ = 0;
+    trigger_meta(MetaTrigger::OPEN, "open");
     return true;
   }
   /**
@@ -1345,6 +1347,7 @@ public:
     if (writer_ && !dump_meta()) err = true;
     if (!db_.close()) err = true;
     omode_ = 0;
+    trigger_meta(MetaTrigger::CLOSE, "close");
     return !err;
   }
   /**
@@ -1413,6 +1416,7 @@ public:
       int64_t count_;
     } wrapper(proc, count_);
     if (!db_.synchronize(hard, &wrapper, checker)) err = true;
+    trigger_meta(MetaTrigger::SYNCHRONIZE, "synchronize");
     mlock_.unlock();
     return !err;
   }
@@ -1446,6 +1450,7 @@ public:
       return false;
     }
     tran_ = true;
+    trigger_meta(MetaTrigger::BEGINTRAN, "begin_transaction");
     mlock_.unlock();
     return true;
   }
@@ -1478,6 +1483,7 @@ public:
       return false;
     }
     tran_ = true;
+    trigger_meta(MetaTrigger::BEGINTRAN, "begin_transaction_try");
     mlock_.unlock();
     return true;
   }
@@ -1504,6 +1510,7 @@ public:
       if (!abort_transaction()) err = true;
     }
     tran_ = false;
+    trigger_meta(commit ? MetaTrigger::COMMITTRAN : MetaTrigger::ABORTTRAN, "end_transaction");
     return !err;
   }
   /**
@@ -1537,6 +1544,7 @@ public:
     if (!dump_meta()) err = true;
     if (!flush_leaf_cache(true)) err = true;
     cusage_ = 0;
+    trigger_meta(MetaTrigger::CLEAR, "clear");
     return !err;
   }
   /**
@@ -1654,6 +1662,21 @@ public:
       return false;
     }
     return db_.tune_logger(logger, kinds);
+  }
+  /**
+   * Set the internal meta operation trigger.
+   * @param trigger the trigger object.
+   * @return true on success, or false on failure.
+   */
+  bool tune_meta_trigger(MetaTrigger* trigger) {
+    _assert_(trigger);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ != 0) {
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
+      return false;
+    }
+    mtrigger_ = trigger;
+    return true;
   }
   /**
    * Set the power of the alignment of record size.
@@ -1919,6 +1942,19 @@ protected:
                      const char* name, const char* buf, size_t size) {
     _assert_(file && line > 0 && func && name && buf && size <= MEMMAXSIZ);
     db_.report_binary(file, line, func, kind, name, buf, size);
+  }
+  /**
+   * Trigger a meta database operation.
+   * @param kind the kind of the event.  MetaTrigger::OPEN for opening, MetaTrigger::CLOSE for
+   * closing, MetaTrigger::CLEAR for clearing, MetaTrigger::ITERATE for iteration,
+   * MetaTrigger::SYNCHRONIZE for synchronization, MetaTrigger::BEGINTRAN for beginning
+   * transaction, MetaTrigger::COMMITTRAN for committing transaction, MetaTrigger::ABORTTRAN
+   * for aborting transaction, and MetaTrigger::MISC for miscellaneous operations.
+   * @param message the supplement message.
+   */
+  void trigger_meta(MetaTrigger::Kind kind, const char* message) {
+    _assert_(message);
+    if (mtrigger_) mtrigger_->trigger(kind, message);
   }
 private:
   /**
@@ -3386,6 +3422,8 @@ private:
   PlantDB& operator =(const PlantDB&);
   /** The method lock. */
   SpinRWLock mlock_;
+  /** The internal meta operation trigger. */
+  MetaTrigger* mtrigger_;
   /** The open mode. */
   uint32_t omode_;
   /** The flag for writer. */

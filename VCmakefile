@@ -682,10 +682,10 @@ check-poly :
 	kcpolytest misc "casket#type=%"
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
-	kcpolytest misc "casket#type=kch#log=-#logkinds=debug#zcomp=lzocrc"
+	kcpolytest misc "casket#type=kch#log=-#logkinds=debug#mtrg=-#zcomp=lzocrc"
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
-	kcpolytest misc "casket#type=kct#log=-#logkinds=debug#zcomp=lzmacrc"
+	kcpolytest misc "casket#type=kct#log=-#logkinds=debug#mtrg=-#zcomp=lzmacrc"
 	-del casket* /F /Q > NUL: 2>&1
 	-rd casket casket.wal casket.tmp casket-para casket.kcd casket.kcf /S /Q > NUL: 2>&1
 	kcpolytest misc "casket#type=kcd#zcomp=arc#zkey=mikio"

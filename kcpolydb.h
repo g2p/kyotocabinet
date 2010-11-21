@@ -50,6 +50,7 @@ public:
   class Cursor;
 private:
   class StreamLogger;
+  class StreamMetaTrigger;
   struct MergeLine;
 public:
   /**
@@ -231,7 +232,8 @@ public:
    */
   explicit PolyDB() :
     type_(TYPEVOID), db_(NULL), error_(),
-    stdlogstrm_(NULL), stdlogger_(NULL), logger_(NULL), logkinds_(0), zcomp_(NULL) {
+    stdlogstrm_(NULL), stdlogger_(NULL), logger_(NULL), logkinds_(0),
+    stdmtrgstrm_(NULL), stdmtrigger_(NULL), mtrigger_(NULL), zcomp_(NULL) {
     _assert_(true);
   }
   /**
@@ -241,7 +243,8 @@ public:
    */
   explicit PolyDB(BasicDB* db) :
     type_(TYPEMISC), db_(db), error_(),
-    stdlogstrm_(NULL), stdlogger_(NULL), logger_(NULL), logkinds_(0), zcomp_(NULL) {
+    stdlogstrm_(NULL), stdlogger_(NULL), logger_(NULL), logkinds_(0),
+    stdmtrgstrm_(NULL), stdmtrigger_(NULL), mtrigger_(NULL), zcomp_(NULL) {
     _assert_(db);
   }
   /**
@@ -252,6 +255,8 @@ public:
     _assert_(true);
     if (type_ != TYPEVOID) close();
     delete zcomp_;
+    delete stdmtrigger_;
+    delete stdmtrgstrm_;
     delete stdlogger_;
     delete stdlogstrm_;
   }
@@ -345,7 +350,7 @@ public:
    * "%", "kch", "kct", "kcd", and "kcf".  All database types support the logging parameters of
    * "log", "logkinds", and "logpx".  The prototype hash database and the prototype tree
    * database do not support any other tuning parameter.  The stash database supports "bnum".
-   * The cache hash database supports "opts", "bnum", "zcomp", "capcount", "capsize", and "zkey".
+   * The cache hash database supports "opts", "bnum", "zcomp", "capcnt", "capsiz", and "zkey".
    * The cache tree database supports all parameters of the cache hash database except for
    * capacity limitation, and supports "psiz", "rcomp", "pccap" in addition.  The file hash
    * database supports "apow", "fpow", "opts", "bnum", "msiz", "dfunit", "zcomp", and "zkey".
@@ -374,7 +379,7 @@ public:
    * and the value can be "zlib" for the ZLIB raw compressor, "def" for the ZLIB deflate
    * compressor, "gz" for the ZLIB gzip compressor, "lzo" for the LZO compressor, "lzma" for the
    * LZMA compressor, or "arc" for the Arcfour cipher.  "zkey" specifies the cipher key of the
-   * compressor.  "capcount" is for "cap_count".  "capsize" is for "cap_size".  "psiz" is for
+   * compressor.  "capcnt" is for "cap_count".  "capsiz" is for "cap_size".  "psiz" is for
    * "tune_page".  "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical
    * comparator or "dec" for the decimal comparator.  "pccap" is for "tune_page_cache".  "apow"
    * is for "tune_alignment".  "fpow" is for "tune_fbp".  "msiz" is for "tune_map".  "dfunit" is
@@ -396,9 +401,11 @@ public:
     std::string logname = "";
     std::string logpx = "";
     uint32_t logkinds = Logger::WARN | Logger::ERROR;
+    std::string mtrgname = "";
+    std::string mtrgpx = "";
     int64_t bnum = -1;
-    int64_t capcount = -1;
-    int64_t capsize = -1;
+    int64_t capcnt = -1;
+    int64_t capsiz = -1;
     int32_t apow = -1;
     int32_t fpow = -1;
     bool tsmall = false;
@@ -505,12 +512,19 @@ public:
           }
         } else if (!std::strcmp(key, "logpx") || !std::strcmp(key, "lpx")) {
           logpx = value;
+        } else if (!std::strcmp(key, "mtrg") || !std::strcmp(key, "metatrigger") ||
+                   !std::strcmp(key, "meta_trigger")) {
+          mtrgname = value;
+        } else if (!std::strcmp(key, "mtrgpx") || !std::strcmp(key, "mtpx")) {
+          mtrgpx = value;
         } else if (!std::strcmp(key, "bnum") || !std::strcmp(key, "buckets")) {
           bnum = atoix(value);
-        } else if (!std::strcmp(key, "capcount") || !std::strcmp(key, "cap_count")) {
-          capcount = atoix(value);
-        } else if (!std::strcmp(key, "capsize") || !std::strcmp(key, "cap_size")) {
-          capsize = atoix(value);
+        } else if (!std::strcmp(key, "capcnt") || !std::strcmp(key, "capcount") ||
+                   !std::strcmp(key, "cap_count")) {
+          capcnt = atoix(value);
+        } else if (!std::strcmp(key, "capsiz") || !std::strcmp(key, "capsize") ||
+                   !std::strcmp(key, "cap_size")) {
+          capsiz = atoix(value);
         } else if (!std::strcmp(key, "apow") || !std::strcmp(key, "alignment")) {
           apow = atoix(value);
         } else if (!std::strcmp(key, "fpow") || !std::strcmp(key, "fbp")) {
@@ -566,6 +580,30 @@ public:
       }
       if (stdlogstrm) stdlogger_ = new StreamLogger(stdlogstrm, logpx.c_str());
     }
+    delete stdmtrigger_;
+    delete stdmtrgstrm_;
+    stdmtrgstrm_ = NULL;
+    stdmtrigger_ = NULL;
+    if (!mtrgname.empty()) {
+      std::ostream* stdmtrgstrm = NULL;
+      if (mtrgname == "-" || mtrgname == "[stdout]" || mtrgname == "[cout]") {
+        stdmtrgstrm = &std::cout;
+      } else if (mtrgname == "+" || mtrgname == "[stderr]" || mtrgname == "[cerr]") {
+        stdmtrgstrm = &std::cerr;
+      } else {
+        std::ofstream *ofs = new std::ofstream;
+        ofs->open(mtrgname.c_str(),
+                  std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+        if (!*ofs) ofs->open(mtrgname.c_str(), std::ios_base::out | std::ios_base::binary);
+        if (ofs) {
+          stdmtrgstrm = ofs;
+          stdmtrgstrm_ = ofs;
+        } else {
+          delete ofs;
+        }
+      }
+      if (stdmtrgstrm) stdmtrigger_ = new StreamMetaTrigger(stdmtrgstrm, mtrgpx.c_str());
+    }
     delete zcomp_;
     zcomp_ = NULL;
     ArcfourCompressor* arccomp = NULL;
@@ -608,6 +646,11 @@ public:
         } else if (logger_) {
           phdb->tune_logger(logger_, logkinds_);
         }
+        if (stdmtrigger_) {
+          phdb->tune_meta_trigger(stdmtrigger_);
+        } else if (mtrigger_) {
+          phdb->tune_meta_trigger(mtrigger_);
+        }
         db = phdb;
         break;
       }
@@ -618,6 +661,11 @@ public:
         } else if (logger_) {
           ptdb->tune_logger(logger_, logkinds_);
         }
+        if (stdmtrigger_) {
+          ptdb->tune_meta_trigger(stdmtrigger_);
+        } else if (mtrigger_) {
+          ptdb->tune_meta_trigger(mtrigger_);
+        }
         db = ptdb;
         break;
       }
@@ -627,6 +675,11 @@ public:
           sdb->tune_logger(stdlogger_, logkinds);
         } else if (logger_) {
           sdb->tune_logger(logger_, logkinds_);
+        }
+        if (stdmtrigger_) {
+          sdb->tune_meta_trigger(stdmtrigger_);
+        } else if (mtrigger_) {
+          sdb->tune_meta_trigger(mtrigger_);
         }
         if (bnum > 0) sdb->tune_buckets(bnum);
         db = sdb;
@@ -641,11 +694,16 @@ public:
         } else if (logger_) {
           cdb->tune_logger(logger_, logkinds_);
         }
+        if (stdmtrigger_) {
+          cdb->tune_meta_trigger(stdmtrigger_);
+        } else if (mtrigger_) {
+          cdb->tune_meta_trigger(mtrigger_);
+        }
         if (opts > 0) cdb->tune_options(opts);
         if (bnum > 0) cdb->tune_buckets(bnum);
         if (zcomp_) cdb->tune_compressor(zcomp_);
-        if (capcount > 0) cdb->cap_count(capcount);
-        if (capsize > 0) cdb->cap_size(capsize);
+        if (capcnt > 0) cdb->cap_count(capcnt);
+        if (capsiz > 0) cdb->cap_size(capsiz);
         db = cdb;
         break;
       }
@@ -657,6 +715,11 @@ public:
           gdb->tune_logger(stdlogger_, logkinds);
         } else if (logger_) {
           gdb->tune_logger(logger_, logkinds_);
+        }
+        if (stdmtrigger_) {
+          gdb->tune_meta_trigger(stdmtrigger_);
+        } else if (mtrigger_) {
+          gdb->tune_meta_trigger(mtrigger_);
         }
         if (opts > 0) gdb->tune_options(opts);
         if (bnum > 0) gdb->tune_buckets(bnum);
@@ -678,6 +741,11 @@ public:
         } else if (logger_) {
           hdb->tune_logger(logger_, logkinds_);
         }
+        if (stdmtrigger_) {
+          hdb->tune_meta_trigger(stdmtrigger_);
+        } else if (mtrigger_) {
+          hdb->tune_meta_trigger(mtrigger_);
+        }
         if (apow >= 0) hdb->tune_alignment(apow);
         if (fpow >= 0) hdb->tune_fbp(fpow);
         if (opts > 0) hdb->tune_options(opts);
@@ -698,6 +766,11 @@ public:
           tdb->tune_logger(stdlogger_, logkinds);
         } else if (logger_) {
           tdb->tune_logger(logger_, logkinds_);
+        }
+        if (stdmtrigger_) {
+          tdb->tune_meta_trigger(stdmtrigger_);
+        } else if (mtrigger_) {
+          tdb->tune_meta_trigger(mtrigger_);
         }
         if (apow >= 0) tdb->tune_alignment(apow);
         if (fpow >= 0) tdb->tune_fbp(fpow);
@@ -721,6 +794,11 @@ public:
         } else if (logger_) {
           ddb->tune_logger(logger_, logkinds_);
         }
+        if (stdmtrigger_) {
+          ddb->tune_meta_trigger(stdmtrigger_);
+        } else if (mtrigger_) {
+          ddb->tune_meta_trigger(mtrigger_);
+        }
         if (opts > 0) ddb->tune_options(opts);
         if (zcomp_) ddb->tune_compressor(zcomp_);
         db = ddb;
@@ -734,6 +812,11 @@ public:
           fdb->tune_logger(stdlogger_, logkinds);
         } else if (logger_) {
           fdb->tune_logger(logger_, logkinds_);
+        }
+        if (stdmtrigger_) {
+          fdb->tune_meta_trigger(stdmtrigger_);
+        } else if (mtrigger_) {
+          fdb->tune_meta_trigger(mtrigger_);
         }
         if (opts > 0) fdb->tune_options(opts);
         if (bnum > 0) fdb->tune_buckets(bnum);
@@ -779,6 +862,8 @@ public:
       err = true;
     }
     delete zcomp_;
+    delete stdmtrigger_;
+    delete stdmtrgstrm_;
     delete stdlogger_;
     delete stdlogstrm_;
     delete db_;
@@ -786,6 +871,8 @@ public:
     db_ = NULL;
     stdlogstrm_ = NULL;
     stdlogger_ = NULL;
+    stdmtrgstrm_ = NULL;
+    stdmtrigger_ = NULL;
     zcomp_ = NULL;
     return !err;
   }
@@ -1212,6 +1299,20 @@ public:
     logkinds_ = kinds;
     return true;
   }
+  /**
+   * Set the internal meta operation trigger.
+   * @param trigger the trigger object.
+   * @return true on success, or false on failure.
+   */
+  bool tune_meta_trigger(MetaTrigger* trigger) {
+    _assert_(trigger);
+    if (type_ != TYPEVOID) {
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
+      return false;
+    }
+    mtrigger_ = trigger;
+    return true;
+  }
 private:
   /**
    * Stream logger implementation.
@@ -1234,6 +1335,35 @@ private:
       if (!prefix_.empty()) *strm_ << prefix_ << ": ";
       *strm_ << "[" << kstr << "]: " << file << ": " << line << ": " << func << ": " <<
         message << std::endl;
+    }
+  private:
+    std::ostream* strm_;                 ///< output stream
+    std::string prefix_;                 ///< prefix of each message
+  };
+  /**
+   * Stream meta operation trigger implementation.
+   */
+  class StreamMetaTrigger : public MetaTrigger {
+  public:
+    /** constructor */
+    StreamMetaTrigger(std::ostream* strm, const char* prefix) : strm_(strm), prefix_(prefix) {}
+    /** print a meta operation */
+    void trigger(Kind kind, const char* message) {
+      _assert_(message);
+      const char* kstr = "unknown";
+      switch (kind) {
+        case MetaTrigger::OPEN: kstr = "OPEN"; break;
+        case MetaTrigger::CLOSE: kstr = "CLOSE"; break;
+        case MetaTrigger::CLEAR: kstr = "CLEAR"; break;
+        case MetaTrigger::ITERATE: kstr = "ITERATE"; break;
+        case MetaTrigger::SYNCHRONIZE: kstr = "SYNCHRONIZE"; break;
+        case MetaTrigger::BEGINTRAN: kstr = "BEGINTRAN"; break;
+        case MetaTrigger::COMMITTRAN: kstr = "COMMITTRAN"; break;
+        case MetaTrigger::ABORTTRAN: kstr = "ABORTTRAN"; break;
+        case MetaTrigger::MISC: kstr = "MISC"; break;
+      }
+      if (!prefix_.empty()) *strm_ << prefix_ << ": ";
+      *strm_ << "[" << kstr << "]: " << message << std::endl;
     }
   private:
     std::ostream* strm_;                 ///< output stream
@@ -1272,6 +1402,12 @@ private:
   Logger* logger_;
   /** The kinds of logged messages. */
   uint32_t logkinds_;
+  /** The standard meta operation trigger stream. */
+  std::ostream* stdmtrgstrm_;
+  /** The standard meta operation trigger. */
+  MetaTrigger* stdmtrigger_;
+  /** The internal meta operation trigger. */
+  MetaTrigger* mtrigger_;
   /** The custom compressor. */
   Compressor* zcomp_;
 };

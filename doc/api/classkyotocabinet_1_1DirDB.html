@@ -93,6 +93,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a cursor object.  <a href="#a022cc78478731810c4defb3e2e055b7b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB.html#a291ca13a48656dfad8152905f1e6d413">tune_logger</a> (Logger *logger, uint32_t kinds=Logger::WARN|Logger::ERROR)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal logger.  <a href="#a291ca13a48656dfad8152905f1e6d413"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB.html#a920b71be06faa384b92ef60a9009cc4c">tune_meta_trigger</a> (MetaTrigger *trigger)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal meta operation trigger.  <a href="#a920b71be06faa384b92ef60a9009cc4c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB.html#a3bc65ca4e31d96c9936a07b655d49091">tune_options</a> (int8_t opts)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the optional features.  <a href="#a3bc65ca4e31d96c9936a07b655d49091"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB.html#a6d68d177e823d1c7abd17c85735d549b">tune_compressor</a> (<a class="el" href="classkyotocabinet_1_1Compressor.html">Compressor</a> *comp)</td></tr>
@@ -110,6 +112,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report a message for debugging with variable number of arguments.  <a href="#a278aeb661ca426a6a048ce1b0046c9bd"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB.html#a5407fd33ce1a3d2578cc7f9becd133bb">report_binary</a> (const char *file, int32_t line, const char *func, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1Logger.html#a8b132bbfe38dd885513c2b5e8079c960">Logger::Kind</a> kind, const char *name, const char *buf, size_t size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Report the content of a binary buffer for debugging.  <a href="#a5407fd33ce1a3d2578cc7f9becd133bb"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB.html#ae5dc2af9de971cf636f33b354aa11929">trigger_meta</a> (<a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74">MetaTrigger::Kind</a> kind, const char *message)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Trigger a meta database operation.  <a href="#ae5dc2af9de971cf636f33b354aa11929"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB.html#a84bef858b72f0348c88659080267e451">tune_type</a> (int8_t type)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the database type.  <a href="#a84bef858b72f0348c88659080267e451"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint8_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DirDB.html#a512c05ef64273c673271343924b641ed">libver</a> ()</td></tr>
@@ -784,6 +788,33 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; DirDB, B
 
 </div>
 </div>
+<a class="anchor" id="a920b71be06faa384b92ef60a9009cc4c"></a><!-- doxytag: member="kyotocabinet::DirDB::tune_meta_trigger" ref="a920b71be06faa384b92ef60a9009cc4c" args="(MetaTrigger *trigger)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::DirDB::tune_meta_trigger </td>
+          <td>(</td>
+          <td class="paramtype">MetaTrigger *&nbsp;</td>
+          <td class="paramname"> <em>trigger</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set the internal meta operation trigger. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>trigger</em>&nbsp;</td><td>the trigger object. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a3bc65ca4e31d96c9936a07b655d49091"></a><!-- doxytag: member="kyotocabinet::DirDB::tune_options" ref="a3bc65ca4e31d96c9936a07b655d49091" args="(int8_t opts)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1097,6 +1128,42 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; DirDB, B
 
 </div>
 </div>
+<a class="anchor" id="ae5dc2af9de971cf636f33b354aa11929"></a><!-- doxytag: member="kyotocabinet::DirDB::trigger_meta" ref="ae5dc2af9de971cf636f33b354aa11929" args="(MetaTrigger::Kind kind, const char *message)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::DirDB::trigger_meta </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74">MetaTrigger::Kind</a>&nbsp;</td>
+          <td class="paramname"> <em>kind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>message</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Trigger a meta database operation. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>kind</em>&nbsp;</td><td>the kind of the event. <a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74aba95e02b8d3a3a629b23fbc8b8876930" title="opening">MetaTrigger::OPEN</a> for opening, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74a9268399a1c52eb1b1c44418f528dadf1" title="closing">MetaTrigger::CLOSE</a> for closing, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74a4a53cf981a346b515fb6c6407c9f35be" title="clearing">MetaTrigger::CLEAR</a> for clearing, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74a1cd1473419913853794c7062dc24fcb7" title="iteration">MetaTrigger::ITERATE</a> for iteration, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74a6eb9ba3e6a6790bc7e7fe805ef11bd71" title="synchronization">MetaTrigger::SYNCHRONIZE</a> for synchronization, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74a4c9183a4ad83ff732018941b800d7179" title="beginning transaction">MetaTrigger::BEGINTRAN</a> for beginning transaction, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74a96c4d9b511e7285ce109dc69de1d8681" title="committing transaction">MetaTrigger::COMMITTRAN</a> for committing transaction, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74ae57d6836e8d81951ff982294c866e858" title="aborting transaction">MetaTrigger::ABORTTRAN</a> for aborting transaction, and <a class="el" href="classkyotocabinet_1_1BasicDB_1_1MetaTrigger.html#a2f09321f0d989733609843ee94b3db74acde750007f5dc86727b311fafeee6843" title="miscellaneous operation">MetaTrigger::MISC</a> for miscellaneous operations. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>message</em>&nbsp;</td><td>the supplement message. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="a84bef858b72f0348c88659080267e451"></a><!-- doxytag: member="kyotocabinet::DirDB::tune_type" ref="a84bef858b72f0348c88659080267e451" args="(int8_t type)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1305,7 +1372,7 @@ class&nbsp;</td><td class="memItemRight" valign="bottom"><b>PlantDB&lt; DirDB, B
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Nov 10 12:49:50 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Nov 22 03:48:43 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

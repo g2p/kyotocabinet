@@ -1,3 +1,13 @@
+2010-11-17  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcdb.h (BasicDB::MetaTrigger): new class.
+
+	* kcdb.h (BasicDB::tune_trigger): new function.
+
+	* kcpolydb.h (PolyDB::StreamMetaTrigger): new class.
+
+	- Release: 1.2.25
+
 2010-11-10  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcstashdb.h, kcstashdb.o: new files.
