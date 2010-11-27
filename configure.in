@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.25)
+AC_INIT(kyotocabinet, 1.2.26)
 
 # Package information
 MYLIBVER=6
-MYLIBREV=8
+MYLIBREV=9
 MYFORMATVER=5
 
 # Targets
@@ -82,8 +82,10 @@ AC_ARG_ENABLE(devel,
   AC_HELP_STRING([--enable-devel], [build for development]))
 if test "$enable_devel" = "yes"
 then
-  MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -O2 -fno-inline -pipe"
-  MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O2 -fno-inline -pipe"
+  MYCFLAGS="-Wall -Wextra -Wno-unused-parameter"
+  MYCFLAGS="$MYCFLAGS -ansi -pedantic -fPIC -fsigned-char -O2 -fno-inline -pipe"
+  MYCXXFLAGS="-Wall -Wextra -Wno-unused-parameter -Wnon-virtual-dtor"
+  MYCXXFLAGS="$MYCXXFLAGS -fPIC -fsigned-char -g -O2 -fno-inline -pipe"
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
   MYRUNPATH="$MYRUNPATH:."
   enables="$enables (devel)"

@@ -173,7 +173,8 @@ const char* visitfull(const char* kbuf, size_t ksiz,
   switch (arg->rnd ? myrand(7) : arg->cnt % 7) {
     case 0: {
       rv = arg->rbuf;
-      *sp = arg->rnd ? myrand(sizeof(arg->rbuf)) : sizeof(arg->rbuf) / (arg->cnt % 5 + 1);
+      *sp = arg->rnd ? (size_t)myrand(sizeof(arg->rbuf)) :
+        sizeof(arg->rbuf) / (arg->cnt % 5 + 1);
       break;
     }
     case 1: {

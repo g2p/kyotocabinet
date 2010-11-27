@@ -1257,7 +1257,7 @@ inline void vstrprintf(std::string* dest, const char* format, va_list ap) {
           } else {
             tsiz = std::snprintf(tbuf, sizeof(tbuf), cbuf, va_arg(ap, double));
           }
-          if (tsiz < 0 || tsiz > sizeof(tbuf)) {
+          if (tsiz > sizeof(tbuf)) {
             tbuf[sizeof(tbuf)-1] = '*';
             tsiz = sizeof(tbuf);
           }

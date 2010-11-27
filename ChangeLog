@@ -1,3 +1,11 @@
+2010-11-28  Mikio Hirabayashi  <info@fallabs.com>
+
+	* ktutil.h (vstrprintf): solved a compilation warning.
+
+	* kcdbext.h (MapReduce::~MapReduce): modified as a virtual function.
+
+	- Release: 1.2.26
+
 2010-11-17  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcdb.h (BasicDB::MetaTrigger): new class.
