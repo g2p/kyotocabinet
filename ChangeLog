@@ -1,3 +1,11 @@
+2010-11-30  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcfile.cc (File::write, File::read): warnings on 32-bit environment were cleared.
+
+	* kcfile.cc (File::write_file, File::make_directory): modified for Win32 virus checkers.
+
+	- Release: 1.2.27
+
 2010-11-28  Mikio Hirabayashi  <info@fallabs.com>
 
 	* ktutil.h (vstrprintf): solved a compilation warning.

@@ -646,7 +646,7 @@ bool File::close() {
  */
 bool File::write(int64_t off, const void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   if (core->tran && !walwrite(core, off, size, core->trbase)) return false;
@@ -701,7 +701,7 @@ bool File::write(int64_t off, const void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   if (core->tran && !walwrite(core, off, size, core->trbase)) return false;
@@ -764,7 +764,7 @@ bool File::write(int64_t off, const void* buf, size_t size) {
  */
 bool File::write_fast(int64_t off, const void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   if (core->tran && !walwrite(core, off, size, core->trbase)) return false;
   int64_t end = off + size;
@@ -785,7 +785,7 @@ bool File::write_fast(int64_t off, const void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   if (core->tran && !walwrite(core, off, size, core->trbase)) return false;
   int64_t end = off + size;
@@ -814,7 +814,7 @@ bool File::write_fast(int64_t off, const void* buf, size_t size) {
  */
 bool File::append(const void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(buf && size <= MEMMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   core->alock.lock();
@@ -874,7 +874,7 @@ bool File::append(const void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(buf && size <= MEMMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   core->alock.lock();
@@ -944,7 +944,7 @@ bool File::append(const void* buf, size_t size) {
  */
 bool File::read(int64_t off, void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   int64_t end = off + size;
@@ -983,7 +983,7 @@ bool File::read(int64_t off, void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   if (size < 1) return true;
   FileCore* core = (FileCore*)opq_;
   int64_t end = off + size;
@@ -1032,7 +1032,7 @@ bool File::read(int64_t off, void* buf, size_t size) {
  */
 bool File::read_fast(int64_t off, void* buf, size_t size) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   int64_t end = off + size;
   if (end <= core->msiz) {
@@ -1064,7 +1064,7 @@ bool File::read_fast(int64_t off, void* buf, size_t size) {
   }
   return true;
 #else
-  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   int64_t end = off + size;
   if (end <= core->msiz) {
@@ -1454,7 +1454,7 @@ bool File::end_transaction(bool commit) {
  * Write a WAL message of transaction explicitly.
  */
 bool File::write_transaction(int64_t off, size_t size) {
-  _assert_(off >= 0 && off <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && size <= MEMMAXSIZ);
   FileCore* core = (FileCore*)opq_;
   return walwrite(core, off, size, 0);
 }
@@ -1553,9 +1553,16 @@ bool File::write_file(const std::string& path, const char* buf, int64_t size) {
   ::DWORD amode = GENERIC_WRITE;
   ::DWORD smode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
   ::DWORD cmode = CREATE_ALWAYS;
-  ::HANDLE fh = ::CreateFile(path.c_str(), amode, smode, NULL, cmode,
-                             FILE_ATTRIBUTE_NORMAL, NULL);
-  if (!fh || fh == INVALID_HANDLE_VALUE) return false;
+  double wsec = 1.0 / CLOCKTICK;
+  ::HANDLE fh = INVALID_HANDLE_VALUE;
+  for (int32_t i = 0; i < 10; i++) {
+    fh = ::CreateFile(path.c_str(), amode, smode, NULL, cmode, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (fh && fh != INVALID_HANDLE_VALUE) break;
+    if (::GetLastError() != ERROR_ACCESS_DENIED) return false;
+    if (wsec > 1.0) wsec = 1.0;
+    Thread::sleep(wsec);
+    wsec *= 2;
+  }
   bool err = false;
   const char* rp = buf;
   while (!err && size > 0) {
@@ -1791,7 +1798,15 @@ bool File::read_directory(const std::string& path, std::vector<std::string>* str
 bool File::make_directory(const std::string& path) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
-  return ::CreateDirectory(path.c_str(), NULL);
+  double wsec = 1.0 / CLOCKTICK;
+  for (int32_t i = 0; i < 10; i++) {
+    if (::CreateDirectory(path.c_str(), NULL)) return true;
+    if (::GetLastError() != ERROR_ACCESS_DENIED) return false;
+    if (wsec > 1.0) wsec = 1.0;
+    Thread::sleep(wsec);
+    wsec *= 2;
+  }
+  return false;
 #else
   _assert_(true);
   return ::mkdir(path.c_str(), DIRPERM) == 0;
@@ -2083,7 +2098,7 @@ static std::string walpath(const std::string& path) {
  */
 static bool walwrite(FileCore *core, int64_t off, size_t size, int64_t base) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
-  _assert_(core && off >= 0 && off <= FILEMAXSIZ && (int64_t)size <= FILEMAXSIZ && base >= 0);
+  _assert_(core && off >= 0 && off <= FILEMAXSIZ && size <= MEMMAXSIZ && base >= 0);
   bool err = false;
   if (off < base) {
     int64_t diff = base - off;
@@ -2148,7 +2163,7 @@ static bool walwrite(FileCore *core, int64_t off, size_t size, int64_t base) {
   core->alock.unlock();
   return !err;
 #else
-  _assert_(core && off >= 0 && off <= FILEMAXSIZ && (int64_t)size <= FILEMAXSIZ && base >= 0);
+  _assert_(core && off >= 0 && off <= FILEMAXSIZ && size <= MEMMAXSIZ && base >= 0);
   bool err = false;
   if (off < base) {
     int64_t diff = base - off;
@@ -2518,7 +2533,7 @@ static bool walapply(FileCore* core) {
  */
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
 static bool mywrite(::HANDLE fh, int64_t off, const void* buf, size_t size) {
-  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   while (true) {
     int64_t wb = win_pwrite(fh, buf, size, off);
     if (wb >= (int64_t)size) {
@@ -2537,7 +2552,7 @@ static bool mywrite(::HANDLE fh, int64_t off, const void* buf, size_t size) {
 }
 #else
 static bool mywrite(int32_t fd, int64_t off, const void* buf, size_t size) {
-  _assert_(fd >= 0 && off >= 0 && off <= FILEMAXSIZ && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(fd >= 0 && off >= 0 && off <= FILEMAXSIZ && buf && size <= MEMMAXSIZ);
   while (true) {
     ssize_t wb = ::pwrite(fd, buf, size, off);
     if (wb >= (ssize_t)size) {
@@ -2562,7 +2577,7 @@ static bool mywrite(int32_t fd, int64_t off, const void* buf, size_t size) {
  */
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
 static size_t myread(::HANDLE fh, void* buf, size_t size) {
-  _assert_(buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(buf && size <= MEMMAXSIZ);
   while (true) {
     int64_t rb = win_read(fh, buf, size);
     if (rb >= (int64_t)size) {
@@ -2580,7 +2595,7 @@ static size_t myread(::HANDLE fh, void* buf, size_t size) {
 }
 #else
 static size_t myread(int32_t fd, void* buf, size_t size) {
-  _assert_(fd >= 0 && buf && (int64_t)size <= FILEMAXSIZ);
+  _assert_(fd >= 0 && buf && size <= MEMMAXSIZ);
   while (true) {
     ssize_t rb = ::read(fd, buf, size);
     if (rb >= (ssize_t)size) {
@@ -2604,7 +2619,7 @@ static size_t myread(int32_t fd, void* buf, size_t size) {
  * Emulate the pwrite call
  */
 static int64_t win_pwrite(::HANDLE fh, const void* buf, size_t count, int64_t offset) {
-  _assert_(buf && (int64_t)count <= FILEMAXSIZ && offset >= 0 && offset <= FILEMAXSIZ);
+  _assert_(buf && count <= MEMMAXSIZ && offset >= 0 && offset <= FILEMAXSIZ);
   ::DWORD wb;
   ::LARGE_INTEGER li;
   li.QuadPart = offset;
@@ -2623,7 +2638,7 @@ static int64_t win_pwrite(::HANDLE fh, const void* buf, size_t count, int64_t of
  * Emulate the pread call
  */
 static int64_t win_pread(::HANDLE fh, void* buf, size_t count, int64_t offset) {
-  _assert_(buf && (int64_t)count <= FILEMAXSIZ && offset >= 0 && offset <= FILEMAXSIZ);
+  _assert_(buf && count <= MEMMAXSIZ && offset >= 0 && offset <= FILEMAXSIZ);
   ::DWORD rb;
   ::LARGE_INTEGER li;
   li.QuadPart = offset;
@@ -2642,7 +2657,7 @@ static int64_t win_pread(::HANDLE fh, void* buf, size_t count, int64_t offset) {
  * Emulate the write call
  */
 static int64_t win_write(::HANDLE fh, const void* buf, size_t count) {
-  _assert_(buf && (int64_t)count <= FILEMAXSIZ);
+  _assert_(buf && count <= MEMMAXSIZ);
   ::DWORD wb;
   if (!::WriteFile(fh, buf, count, &wb, NULL)) return -1;
   return wb;
@@ -2655,7 +2670,7 @@ static int64_t win_write(::HANDLE fh, const void* buf, size_t count) {
  * Emulate the read call
  */
 static int64_t win_read(::HANDLE fh, void* buf, size_t count) {
-  _assert_(buf && (int64_t)count <= FILEMAXSIZ);
+  _assert_(buf && count <= MEMMAXSIZ);
   ::DWORD rb;
   if (!::ReadFile(fh, buf, count, &rb, NULL)) return -1;
   return rb;
