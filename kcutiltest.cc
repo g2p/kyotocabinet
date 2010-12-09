@@ -2224,21 +2224,23 @@ static int32_t procmisc(int64_t rnum) {
     ebuf = kc::memdup((char*)ubuf, usiz);
     ebuf[usiz] = '\0';
     obuf = kc::strdup(ebuf);
-    switch (myrand(14)) {
+    switch (myrand(16)) {
       case 0: kc::atoi(obuf); break;
       case 1: kc::atoix(obuf); break;
       case 2: kc::atoih(obuf); break;
-      case 3: kc::atof(obuf); break;
-      case 4: kc::strtoupper(obuf); break;
-      case 5: kc::strtolower(obuf); break;
-      case 6: kc::strtrim(obuf); break;
-      case 7: kc::strsqzspc(obuf); break;
-      case 8: kc::strnrmspc(obuf); break;
-      case 9: kc::stricmp(obuf, ebuf); break;
-      case 10: kc::strfwm(obuf, ebuf); break;
-      case 11: kc::strifwm(obuf, ebuf); break;
-      case 12: kc::strbwm(obuf, ebuf); break;
-      case 13: kc::stribwm(obuf, ebuf); break;
+      case 3: kc::atoin((char*)ubuf, usiz); break;
+      case 4: kc::atof(obuf); break;
+      case 5: kc::atofn((char*)ubuf, usiz); break;
+      case 6: kc::strtoupper(obuf); break;
+      case 7: kc::strtolower(obuf); break;
+      case 8: kc::strtrim(obuf); break;
+      case 9: kc::strsqzspc(obuf); break;
+      case 10: kc::strnrmspc(obuf); break;
+      case 11: kc::stricmp(obuf, ebuf); break;
+      case 12: kc::strfwm(obuf, ebuf); break;
+      case 13: kc::strifwm(obuf, ebuf); break;
+      case 14: kc::strbwm(obuf, ebuf); break;
+      case 15: kc::stribwm(obuf, ebuf); break;
     }
     delete[] obuf;
     delete[] ebuf;

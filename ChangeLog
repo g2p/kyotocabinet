@@ -1,3 +1,9 @@
+2010-12-10  Mikio Hirabayashi  <info@fallabs.com>
+
+	* ktutil.h (atoin, atofn): new functions.
+
+	- Release: 1.2.28
+
 2010-11-30  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcfile.cc (File::write, File::read): warnings on 32-bit environment were cleared.

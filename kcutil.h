@@ -101,11 +101,27 @@ int64_t atoih(const char* str);
 
 
 /**
+ * Convert a decimal byte array to an integer.
+ * @param str the decimal byte array.
+ * @return the integer.  If the string does not contain numeric expression, 0 is returned.
+ */
+int64_t atoin(const char* ptr, size_t size);
+
+
+/**
  * Convert a decimal string to a real number.
  * @param str the decimal string.
  * @return the real number.  If the string does not contain numeric expression, 0.0 is returned.
  */
 double atof(const char* str);
+
+
+/**
+ * Convert a decimal byte array to a real number.
+ * @param str the decimal byte array.
+ * @return the real number.  If the string does not contain numeric expression, 0.0 is returned.
+ */
+double atofn(const char* ptr, size_t size);
 
 
 /**
@@ -727,6 +743,37 @@ inline int64_t atoih(const char* str) {
 
 
 /**
+ * Convert a decimal byte array to an integer.
+ */
+inline int64_t atoin(const char* ptr, size_t size) {
+  _assert_(ptr && size <= MEMMAXSIZ);
+  while (size > 0 && *ptr >= '\0' && *ptr <= ' ') {
+    ptr++;
+    size--;
+  }
+  int32_t sign = 1;
+  int64_t num = 0;
+  if (size > 0) {
+    if (*ptr == '-') {
+      ptr++;
+      size--;
+      sign = -1;
+    } else if (*ptr == '+') {
+      ptr++;
+      size--;
+    }
+  }
+  while (size > 0) {
+    if (*ptr < '0' || *ptr > '9') break;
+    num = num * 10 + *ptr - '0';
+    ptr++;
+    size--;
+  }
+  return num * sign;
+}
+
+
+/**
  * Convert a decimal string to a real number.
  */
 inline double atof(const char* str) {
@@ -772,6 +819,66 @@ inline double atof(const char* str) {
   }
   return num * sign;
 }
+
+
+/**
+ * Convert a decimal byte array to a real number.
+ */
+inline double atofn(const char* ptr, size_t size) {
+  _assert_(ptr && size <= MEMMAXSIZ);
+  while (size > 0 && *ptr >= '\0' && *ptr <= ' ') {
+    ptr++;
+    size--;
+  }
+  int32_t sign = 1;
+  if (size > 0) {
+    if (*ptr == '-') {
+      ptr++;
+      size--;
+      sign = -1;
+    } else if (*ptr == '+') {
+      ptr++;
+      size--;
+    }
+  }
+  if (size > 2) {
+    if ((ptr[0] == 'i' || ptr[0] == 'I') && (ptr[1] == 'n' || ptr[1] == 'N') &&
+        (ptr[2] == 'f' || ptr[2] == 'F')) return HUGE_VAL * sign;
+    if ((ptr[0] == 'n' || ptr[0] == 'N') && (ptr[1] == 'a' || ptr[1] == 'A') &&
+        (ptr[2] == 'n' || ptr[2] == 'N')) return nan();
+  }
+  long double num = 0;
+  int32_t col = 0;
+  while (size > 0) {
+    if (*ptr < '0' || *ptr > '9') break;
+    num = num * 10 + *ptr - '0';
+    ptr++;
+    size--;
+    if (num > 0) col++;
+  }
+  if (size > 0 && *ptr == '.') {
+    ptr++;
+    size--;
+    long double fract = 0.0;
+    long double base = 10;
+    while (col < 16 && size > 0) {
+      if (*ptr < '0' || *ptr > '9') break;
+      fract += (*ptr - '0') / base;
+      ptr++;
+      size--;
+      col++;
+      base *= 10;
+    }
+    num += fract;
+  }
+  if (size > 0 && (*ptr == 'e' || *ptr == 'E')) {
+    ptr++;
+    size--;
+    num *= std::pow((long double)10, (long double)atoin(ptr, size));
+  }
+  return num * sign;
+}
+
 
 
 /**

@@ -23,7 +23,7 @@
 <h1 id="headline">Fundamental Specifications of Kyoto Cabinet Version 1</h1>
 
 <div class="note">Copyright (C) 2009-2010 FAL Labs</div>
-<div class="note">Last Update: Mon, 22 Nov 2010 03:13:12 +0900</div>
+<div class="note">Last Update: Thu, 09 Dec 2010 21:50:02 +0900</div>
 
 <hr />
 
@@ -54,7 +54,7 @@
 
 <p>Kyoto Cabinet runs very fast.  For example, elapsed time to store one million records is 0.9 seconds for the hash database, and 1.1 seconds for the B+ tree database.  Moreover, the size of database is very small.  For example, overhead for a record is 16 bytes for the hash database, and 4 bytes for the B+ tree database.  Furthermore, scalability of Kyoto Cabinet is great.  The database size can be up to 8EB (9.22e18 bytes).</p>
 
-<p>Kyoto Cabinet is written in the C++ language, and provided as API of C++, C, Java, Python, Ruby, Perl, and Lua.  Kyoto Cabinet is available on platforms which have API conforming to C++03 with the TR1 library extensions.  Kyoto Cabinet is a free software licensed under the GNU General Public License.</p>
+<p>Kyoto Cabinet is written in the C++ language, and provided as API of C++, C, Java, Python, Ruby, Perl, and Lua.  Kyoto Cabinet is available on platforms which have API conforming to C++03 with the TR1 library extensions.  Kyoto Cabinet is a free software licensed under the GNU General Public License.  On the other hand, a commercial license is also provided.  If you use Kyoto Cabinet within a proprietary software, the commercial license is required.</p>
 
 <hr />
 
@@ -705,7 +705,7 @@ accept(kbuf, ksiz, &amp;setter, true);
 
 <p>The C language binding is also provided as a wrapper of the polymorphic database API.  Include the header file `<code>kclangc.h</code>' and use the pointer to `<code>KCDB</code>' as a database object.</p>
 
-<p>Please see the <a href="api/">the API documents</a> for detail.  Writing your own sample application is the best way to learn this library.  <a href="command.html">The specifications of command line utilities</a> is also useful.</p>
+<p>Please see the <a href="api/">the API documents</a> for details.  Writing your own sample application is the best way to learn this library.  <a href="command.html">The specifications of command line utilities</a> is also useful.</p>
 
 <hr />
 
@@ -1022,13 +1022,27 @@ db.open("casket.kct#zcomp=arc#zkey=foobarbaz", ...);
 
 <h2 id="license">License</h2>
 
+<p>To use Kyoto Cabinet, you can choose either GNU GPL or a commercial license.  If you choose GPL, the source code of application programs have to be licensed under a license compatible with GPL.  If you choose the commercial license, you will be exempted from such duty imposed by GPL.</p>
+
+<h3 id="license_gpl">GNU General Public License</h3>
+
 <p>Kyoto Cabinet is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p>
 
 <p>Kyoto Cabinet is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</p>
 
 <p>You should have received a copy of the GNU General Public License along with this program.  If not, see `<code>http://www.gnu.org/licenses/</code>'.</p>
 
-<p>Kyoto Cabinet was written and is maintained by FAL Labs.  You can contact the author by e-mail to `<code>info@fallabs.com</code>'.</p>
+<h3 id="license_commercial">Commercial License</h3>
+
+<p>If you use Kyoto Cabinet within a proprietary software, a commercial license is required.</p>
+
+<p>The commercial license allows you to utilize Kyoto Cabinet by including it in your applications for purpose of developing and producing your applications and to utilize Kyoto Cabinet in order to transfer, sale, rent, lease, distribute or sublicense your applications to any third parties.</p>
+
+<p>See <a href="http://fallabs.com/license/">the license guide</a> for details.</p>
+
+<h3 id="license_author">Author</h3>
+
+<p>Kyoto Cabinet was written and is maintained by <a href="http://fallabs.com/">FAL Labs</a>.  You can contact the author by e-mail to `<code>info@fallabs.com</code>'.</p>
 
 <hr />
 
