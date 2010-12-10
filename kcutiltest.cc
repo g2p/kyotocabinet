@@ -73,11 +73,11 @@ int main(int argc, char** argv) {
     usage();
   }
   if (rv != 0) {
-    iprintf("FAILED: KCRNDSEED=%u PID=%ld", g_randseed, (long)kc::getpid());
+    oprintf("FAILED: KCRNDSEED=%u PID=%ld", g_randseed, (long)kc::getpid());
     for (int32_t i = 0; i < argc; i++) {
-      iprintf(" %s", argv[i]);
+      oprintf(" %s", argv[i]);
     }
-    iprintf("\n\n");
+    oprintf("\n\n");
   }
   return rv;
 }
@@ -115,13 +115,13 @@ static void errprint(int32_t line, const char* format, ...) {
 
 // print error message of file
 static void fileerrprint(kc::File* file, int32_t line, const char* func) {
-  iprintf("%s: %d: %s: %s: %s\n", g_progname, line, func, file->path().c_str(), file->error());
+  oprintf("%s: %d: %s: %s: %s\n", g_progname, line, func, file->path().c_str(), file->error());
 }
 
 
 // print members of file
 static void filemetaprint(kc::File* file) {
-  iprintf("size: %lld\n", (long long)file->size());
+  oprintf("size: %lld\n", (long long)file->size());
 }
 
 
@@ -328,11 +328,11 @@ static int32_t runmisc(int argc, char** argv) {
 
 // perform mutex command
 static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
-  iprintf("<Mutex Test>\n  seed=%u  rnum=%lld  thnum=%d  iv=%.3f\n\n",
+  oprintf("<Mutex Test>\n  seed=%u  rnum=%lld  thnum=%d  iv=%.3f\n\n",
           g_randseed, (long long)rnum, thnum, iv);
   bool err = false;
   kc::Mutex mutex;
-  iprintf("mutex:\n");
+  oprintf("mutex:\n");
   double stime = kc::time();
   class ThreadMutex : public kc::Thread {
   public:
@@ -353,8 +353,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         mutex_->unlock();
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -379,9 +379,9 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   double etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   kc::SlottedMutex<LOCKSLOTNUM> smutex;
-  iprintf("slotted mutex:\n");
+  oprintf("slotted mutex:\n");
   stime = kc::time();
   class ThreadSlottedMutex : public kc::Thread {
   public:
@@ -404,8 +404,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         smutex_->unlock(idx);
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -430,9 +430,9 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   kc::SpinLock spinlock;
-  iprintf("spin lock:\n");
+  oprintf("spin lock:\n");
   stime = kc::time();
   class ThreadSpinLock : public kc::Thread {
   public:
@@ -453,8 +453,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         spinlock_->unlock();
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -479,9 +479,9 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   kc::SlottedSpinLock<LOCKSLOTNUM> sspinlock;
-  iprintf("slotted spin lock:\n");
+  oprintf("slotted spin lock:\n");
   stime = kc::time();
   class ThreadSlottedSpinLock : public kc::Thread {
   public:
@@ -504,8 +504,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         sspinlock_->unlock(idx);
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -530,9 +530,9 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   kc::RWLock rwlock;
-  iprintf("reader-writer lock writer:\n");
+  oprintf("reader-writer lock writer:\n");
   stime = kc::time();
   class ThreadRWLockWriter : public kc::Thread {
   public:
@@ -553,8 +553,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         rwlock_->unlock();
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -579,8 +579,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("reader-writer lock reader:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("reader-writer lock reader:\n");
   stime = kc::time();
   class ThreadRWLockReader : public kc::Thread {
   public:
@@ -601,8 +601,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         rwlock_->unlock();
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -627,9 +627,9 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   kc::SlottedRWLock<LOCKSLOTNUM> srwlock;
-  iprintf("slotted reader-writer lock writer:\n");
+  oprintf("slotted reader-writer lock writer:\n");
   stime = kc::time();
   class ThreadSlottedRWLockWriter : public kc::Thread {
   public:
@@ -652,8 +652,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         srwlock_->unlock(idx);
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -678,8 +678,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("slotted reader-writer lock reader:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("slotted reader-writer lock reader:\n");
   stime = kc::time();
   class ThreadSlottedRWLockReader : public kc::Thread {
   public:
@@ -702,8 +702,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         srwlock_->unlock(idx);
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -728,9 +728,9 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   kc::SpinRWLock spinrwlock;
-  iprintf("spin reader-writer lock writer:\n");
+  oprintf("spin reader-writer lock writer:\n");
   stime = kc::time();
   class ThreadSpinRWLockWriter : public kc::Thread {
   public:
@@ -752,8 +752,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         spinrwlock_->unlock();
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -778,8 +778,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("spin reader-writer lock reader:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("spin reader-writer lock reader:\n");
   stime = kc::time();
   class ThreadSpinRWLockReader : public kc::Thread {
   public:
@@ -801,8 +801,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         spinrwlock_->unlock();
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -827,8 +827,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("spin reader-writer lock wicked:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("spin reader-writer lock wicked:\n");
   stime = kc::time();
   class ThreadSpinRWLockWicked : public kc::Thread {
   public:
@@ -870,8 +870,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         spinrwlock_->unlock();
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -896,9 +896,9 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   kc::SlottedSpinRWLock<LOCKSLOTNUM> ssrwlock;
-  iprintf("slotted spin reader-writer lock writer:\n");
+  oprintf("slotted spin reader-writer lock writer:\n");
   stime = kc::time();
   class ThreadSlottedSpinRWLockWriter : public kc::Thread {
   public:
@@ -921,8 +921,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         ssrwlock_->unlock(idx);
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -947,8 +947,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("slotted spin reader-writer lock reader:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("slotted spin reader-writer lock reader:\n");
   stime = kc::time();
   class ThreadSlottedSpinRWLockReader : public kc::Thread {
   public:
@@ -971,8 +971,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
         ssrwlock_->unlock(idx);
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -997,8 +997,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("atomic increment:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("atomic increment:\n");
   stime = kc::time();
   kc::AtomicInt64 anum;
   anum = rnum * thnum;
@@ -1026,8 +1026,8 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
           if (anum_->cas(num, num + 1)) break;
         }
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -1056,15 +1056,15 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
     err = true;
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("%s\n\n", err ? "error" : "ok");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
 }
 
 
 // perform para command
 static int32_t procpara(int64_t rnum, int32_t thnum, double iv) {
-  iprintf("<Parallel Test>\n  seed=%u  rnum=%lld  thnum=%d  iv=%.3f\n\n",
+  oprintf("<Parallel Test>\n  seed=%u  rnum=%lld  thnum=%d  iv=%.3f\n\n",
           g_randseed, (long long)rnum, thnum, iv);
   bool err = false;
   double stime = kc::time();
@@ -1104,12 +1104,12 @@ static int32_t procpara(int64_t rnum, int32_t thnum, double iv) {
       kc::Thread::yield();
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
-  iprintf("count: %lld\n", queue.count());
-  iprintf("done: %lld\n", queue.done_count());
+  oprintf("count: %lld\n", queue.count());
+  oprintf("done: %lld\n", queue.done_count());
   queue.finish();
   if (queue.count() != 0) {
     errprint(__LINE__, "TaskQueue::count");
@@ -1120,21 +1120,21 @@ static int32_t procpara(int64_t rnum, int32_t thnum, double iv) {
     err = true;
   }
   double etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   int64_t musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
-  iprintf("%s\n\n", err ? "error" : "ok");
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  oprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
 }
 
 
 // perform file command
 static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd, int64_t msiz) {
-  iprintf("<File Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  rnd=%d  msiz=%lld\n\n",
+  oprintf("<File Test>\n  seed=%u  path=%s  rnum=%lld  thnum=%d  rnd=%d  msiz=%lld\n\n",
           g_randseed, path, (long long)rnum, thnum, rnd, (long long)msiz);
   bool err = false;
   kc::File file;
-  iprintf("opening the file:\n");
+  oprintf("opening the file:\n");
   double stime = kc::time();
   if (!file.open(path, kc::File::OWRITER | kc::File::OCREATE | kc::File::OTRUNCATE, msiz)) {
     fileerrprint(&file, __LINE__, "File::open");
@@ -1142,8 +1142,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   }
   double etime = kc::time();
   filemetaprint(&file);
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("writing:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("writing:\n");
   class ThreadWrite : public kc::Thread {
   public:
     void setparams(int32_t id, kc::File* file, int64_t rnum, int32_t thnum, bool rnd) {
@@ -1180,8 +1180,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
           }
         }
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -1210,8 +1210,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   }
   etime = kc::time();
   filemetaprint(&file);
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("reading:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("reading:\n");
   stime = kc::time();
   class ThreadRead : public kc::Thread {
   public:
@@ -1239,8 +1239,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
           err_ = true;
         }
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -1269,7 +1269,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   }
   etime = kc::time();
   filemetaprint(&file);
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   if (rnd) {
     int64_t off = rnum * thnum * FILEIOUNIT;
     char rbuf[RECBUFSIZ];
@@ -1279,7 +1279,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
       err = true;
     }
   }
-  iprintf("fast writing:\n");
+  oprintf("fast writing:\n");
   stime = kc::time();
   class ThreadWriteFast : public kc::Thread {
   public:
@@ -1307,8 +1307,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
           err_ = true;
         }
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -1337,8 +1337,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   }
   etime = kc::time();
   filemetaprint(&file);
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("fast reading:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("fast reading:\n");
   stime = kc::time();
   class ThreadReadFast : public kc::Thread {
   public:
@@ -1365,8 +1365,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
           err_ = true;
         }
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -1395,8 +1395,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   }
   etime = kc::time();
   filemetaprint(&file);
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("committing transaction:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("committing transaction:\n");
   stime = kc::time();
   int64_t qsiz = file.size() / 4;
   if (!file.begin_transaction(rnd ? myrand(100) == 0 : false, qsiz)) {
@@ -1451,8 +1451,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
           }
         }
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -1486,8 +1486,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   }
   etime = kc::time();
   filemetaprint(&file);
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("aborting transaction:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("aborting transaction:\n");
   stime = kc::time();
   qsiz = file.size() / 4;
   if (!file.begin_transaction(rnd ? myrand(100) == 0 : false, qsiz)) {
@@ -1554,8 +1554,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
           }
         }
         if (id_ < 1 && rnum_ > 250 && i % (rnum_ / 250) == 0) {
-          iputchar('.');
-          if (i == rnum_ || i % (rnum_ / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+          oputchar('.');
+          if (i == rnum_ || i % (rnum_ / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
         }
       }
     }
@@ -1608,16 +1608,16 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   }
   etime = kc::time();
   filemetaprint(&file);
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("closing the file:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("closing the file:\n");
   stime = kc::time();
   if (!file.close()) {
     fileerrprint(&file, __LINE__, "File::close");
     err = true;
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("testing file utility functions:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("testing file utility functions:\n");
   stime = kc::time();
   std::string ostr = "_";
   for (int32_t i = 0; i < 100; i++) {
@@ -1660,8 +1660,8 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
     err = true;
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("testing directory utility functions:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("testing directory utility functions:\n");
   stime = kc::time();
   std::vector<std::string> files;
   if (!kc::File::read_directory(kc::File::CDIRSTR, &files)) {
@@ -1715,36 +1715,36 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
     err = true;
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("%s\n\n", err ? "error" : "ok");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
 }
 
 
 // perform thmap command
 static int32_t procthmap(int64_t rnum, bool rnd, int64_t bnum) {
-  iprintf("<Memory-saving Hash Map Test>\n  seed=%u  rnum=%lld  rnd=%d  bnum=%lld\n\n",
+  oprintf("<Memory-saving Hash Map Test>\n  seed=%u  rnum=%lld  rnd=%d  bnum=%lld\n\n",
           g_randseed, (long long)rnum, rnd, (long long)bnum);
   bool err = false;
   if (bnum < 0) bnum = 0;
   kc::TinyHashMap map(bnum);
-  iprintf("setting records:\n");
+  oprintf("setting records:\n");
   double stime = kc::time();
   for (int64_t i = 1; i <= rnum; i++) {
     char kbuf[RECBUFSIZ];
     size_t ksiz = std::sprintf(kbuf, "%08lld", (long long)(rnd ? myrand(rnum) + 1 : i));
     map.set(kbuf, ksiz, kbuf, ksiz);
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
   double etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld\n", (long long)map.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld\n", (long long)map.count());
   int64_t musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
-  iprintf("getting records:\n");
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  oprintf("getting records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
     char kbuf[RECBUFSIZ];
@@ -1756,32 +1756,32 @@ static int32_t procthmap(int64_t rnum, bool rnd, int64_t bnum) {
       err = true;
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld\n", (long long)map.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld\n", (long long)map.count());
   musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
-  iprintf("appending records:\n");
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  oprintf("appending records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
     char kbuf[RECBUFSIZ];
     size_t ksiz = std::sprintf(kbuf, "%08lld", (long long)(rnd ? myrand(rnum) + 1 : i));
     map.append(kbuf, ksiz, kbuf, ksiz);
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld\n", (long long)map.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld\n", (long long)map.count());
   musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
-  iprintf("traversing records:\n");
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  oprintf("traversing records:\n");
   stime = kc::time();
   int64_t cnt = 0;
   kc::TinyHashMap::Iterator it(&map);
@@ -1791,21 +1791,21 @@ static int32_t procthmap(int64_t rnum, bool rnd, int64_t bnum) {
     cnt++;
     it.step();
     if (rnum > 250 && cnt % (rnum / 250) == 0) {
-      iputchar('.');
-      if (cnt == rnum || cnt % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)cnt);
+      oputchar('.');
+      if (cnt == rnum || cnt % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)cnt);
     }
   }
-  if (rnd) iprintf(" (end)\n");
+  if (rnd) oprintf(" (end)\n");
   if (cnt != (int64_t)map.count()) {
     errprint(__LINE__, "TinyHashMap::count");
     err = true;
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld\n", (long long)map.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld\n", (long long)map.count());
   musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
-  iprintf("sorting records:\n");
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  oprintf("sorting records:\n");
   stime = kc::time();
   cnt = 0;
   kc::TinyHashMap::Sorter sorter(&map);
@@ -1813,21 +1813,21 @@ static int32_t procthmap(int64_t rnum, bool rnd, int64_t bnum) {
     cnt++;
     sorter.step();
     if (rnum > 250 && cnt % (rnum / 250) == 0) {
-      iputchar('.');
-      if (cnt == rnum || cnt % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)cnt);
+      oputchar('.');
+      if (cnt == rnum || cnt % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)cnt);
     }
   }
-  if (rnd) iprintf(" (end)\n");
+  if (rnd) oprintf(" (end)\n");
   if (cnt != (int64_t)map.count()) {
     errprint(__LINE__, "TinyHashMap::count");
     err = true;
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld\n", (long long)map.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld\n", (long long)map.count());
   musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
-  iprintf("removing records:\n");
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  oprintf("removing records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
     char kbuf[RECBUFSIZ];
@@ -1837,17 +1837,17 @@ static int32_t procthmap(int64_t rnum, bool rnd, int64_t bnum) {
       err = true;
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld\n", (long long)map.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld\n", (long long)map.count());
   musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
   if (rnd) {
-    iprintf("wicked testing:\n");
+    oprintf("wicked testing:\n");
     stime = kc::time();
     char lbuf[RECBUFSIZL];
     std::memset(lbuf, '*', sizeof(lbuf));
@@ -1883,46 +1883,46 @@ static int32_t procthmap(int64_t rnum, bool rnd, int64_t bnum) {
       }
       if (myrand(rnum * 2 + 1) == 0) map.clear();
       if (rnum > 250 && i % (rnum / 250) == 0) {
-        iputchar('.');
-        if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+        oputchar('.');
+        if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
       }
     }
     etime = kc::time();
-    iprintf("time: %.3f\n", etime - stime);
-    iprintf("count: %lld\n", (long long)map.count());
+    oprintf("time: %.3f\n", etime - stime);
+    oprintf("count: %lld\n", (long long)map.count());
     musage = memusage();
-    if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+    if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
   }
-  iprintf("%s\n\n", err ? "error" : "ok");
+  oprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
 }
 
 
 // perform lhmap command
 static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
-  iprintf("<Doubly-linked Hash Map Test>\n  seed=%u  rnum=%lld  rnd=%d  bnum=%lld\n\n",
+  oprintf("<Doubly-linked Hash Map Test>\n  seed=%u  rnum=%lld  rnd=%d  bnum=%lld\n\n",
           g_randseed, (long long)rnum, rnd, (long long)bnum);
   bool err = false;
   if (bnum < 0) bnum = 0;
   typedef kc::LinkedHashMap<std::string, std::string> Map;
   Map map(bnum);
-  iprintf("setting records:\n");
+  oprintf("setting records:\n");
   double stime = kc::time();
   for (int64_t i = 1; i <= rnum; i++) {
     char kbuf[RECBUFSIZ];
     std::sprintf(kbuf, "%08lld", (long long)(rnd ? myrand(rnum) + 1 : i));
     map.set(kbuf, kbuf, Map::MCURRENT);
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
   double etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld\n", (long long)map.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld\n", (long long)map.count());
   int64_t musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
-  iprintf("getting records:\n");
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  oprintf("getting records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
     char kbuf[RECBUFSIZ];
@@ -1939,16 +1939,16 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
       err = true;
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld\n", (long long)map.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld\n", (long long)map.count());
   musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
-  iprintf("traversing records:\n");
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  oprintf("traversing records:\n");
   stime = kc::time();
   int64_t cnt = 0;
   for (Map::Iterator it = map.begin(); !err && it != map.end(); it++) {
@@ -1958,22 +1958,22 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
       err = true;
     }
     if (rnum > 250 && cnt % (rnum / 250) == 0) {
-      iputchar('.');
-      if (cnt == rnum || cnt % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)cnt);
+      oputchar('.');
+      if (cnt == rnum || cnt % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)cnt);
     }
   }
-  if (rnd) iprintf(" (end)\n");
+  if (rnd) oprintf(" (end)\n");
   if (cnt != (int64_t)map.count()) {
     errprint(__LINE__, "LinkedHashMap::count");
     err = true;
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld\n", (long long)map.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld\n", (long long)map.count());
   musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
   Map paramap(bnum + 31);
-  iprintf("migrating records:\n");
+  oprintf("migrating records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
     char kbuf[RECBUFSIZ];
@@ -1990,16 +1990,16 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
       err = true;
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld,%lld\n", (long long)map.count(), (long long)paramap.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld,%lld\n", (long long)map.count(), (long long)paramap.count());
   musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
-  iprintf("removing records:\n");
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  oprintf("removing records:\n");
   stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
     char kbuf[RECBUFSIZ];
@@ -2009,17 +2009,17 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
       err = true;
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
   etime = kc::time();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("count: %lld,%lld\n", (long long)map.count(), (long long)paramap.count());
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("count: %lld,%lld\n", (long long)map.count(), (long long)paramap.count());
   musage = memusage();
-  if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+  if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
   if (rnd) {
-    iprintf("wicked testing:\n");
+    oprintf("wicked testing:\n");
     stime = kc::time();
     for (int64_t i = 1; !err && i <= rnum; i++) {
       char kbuf[RECBUFSIZ];
@@ -2057,8 +2057,8 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
       }
       if (myrand(rnum * 2 + 1) == 0) ptr->clear();
       if (rnum > 250 && i % (rnum / 250) == 0) {
-        iputchar('.');
-        if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+        oputchar('.');
+        if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
       }
     }
     cnt = 0;
@@ -2069,11 +2069,11 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
         err = true;
       }
       if (rnum > 250 && cnt % (rnum / 250) == 0) {
-        iputchar('.');
-        if (cnt == rnum || cnt % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)cnt);
+        oputchar('.');
+        if (cnt == rnum || cnt % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)cnt);
       }
     }
-    if (rnd) iprintf(" (end)\n");
+    if (rnd) oprintf(" (end)\n");
     if (cnt != (int64_t)map.count()) {
       errprint(__LINE__, "LinkedHashMap::count");
       err = true;
@@ -2088,29 +2088,29 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
         err = true;
       }
       if (rnum > 250 && cnt % (rnum / 250) == 0) {
-        iputchar('.');
-        if (cnt == rnum || cnt % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)cnt);
+        oputchar('.');
+        if (cnt == rnum || cnt % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)cnt);
       }
     }
-    if (rnd) iprintf(" (end)\n");
+    if (rnd) oprintf(" (end)\n");
     if (cnt != (int64_t)map.count()) {
       errprint(__LINE__, "LinkedHashMap::count");
       err = true;
     }
     etime = kc::time();
-    iprintf("time: %.3f\n", etime - stime);
-    iprintf("count: %lld\n", (long long)map.count());
+    oprintf("time: %.3f\n", etime - stime);
+    oprintf("count: %lld\n", (long long)map.count());
     musage = memusage();
-    if (musage > 0) iprintf("memory: %lld\n", (long long)(musage - g_memusage));
+    if (musage > 0) oprintf("memory: %lld\n", (long long)(musage - g_memusage));
   }
-  iprintf("%s\n\n", err ? "error" : "ok");
+  oprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
 }
 
 
 // perform misc command
 static int32_t procmisc(int64_t rnum) {
-  iprintf("<Miscellaneous Test>\n  seed=%u  rnum=%lld\n\n", g_randseed, (long long)rnum);
+  oprintf("<Miscellaneous Test>\n  seed=%u  rnum=%lld\n\n", g_randseed, (long long)rnum);
   bool err = false;
   double stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
@@ -2291,12 +2291,12 @@ static int32_t procmisc(int64_t rnum) {
     kc::Regex::match(ustr, ".(\x80).");
     kc::Regex::replace(ustr, ".(\x80).", "[$0$1$2$&]");
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08lld)\n", (long long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08lld)\n", (long long)i);
     }
   }
-  iprintf("time: %.3f\n", kc::time() - stime);
-  iprintf("%s\n\n", err ? "error" : "ok");
+  oprintf("time: %.3f\n", kc::time() - stime);
+  oprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
 }
 

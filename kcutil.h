@@ -102,7 +102,8 @@ int64_t atoih(const char* str);
 
 /**
  * Convert a decimal byte array to an integer.
- * @param str the decimal byte array.
+ * @param ptr the decimal byte array.
+ * @param size the size of the decimal byte array.
  * @return the integer.  If the string does not contain numeric expression, 0 is returned.
  */
 int64_t atoin(const char* ptr, size_t size);
@@ -118,7 +119,8 @@ double atof(const char* str);
 
 /**
  * Convert a decimal byte array to a real number.
- * @param str the decimal byte array.
+ * @param ptr the decimal byte array.
+ * @param size the size of the decimal byte array.
  * @return the real number.  If the string does not contain numeric expression, 0.0 is returned.
  */
 double atofn(const char* ptr, size_t size);
@@ -286,7 +288,6 @@ bool chkinf(double num);
  * @param dest the destination string.
  * @param format the printf-like format string.  The conversion character `%' can be used with
  * such flag characters as `s', `d', `o', `u', `x', `X', `c', `e', `E', `f', `g', `G', and `%'.
- * `S' treats the pointer to a std::string object.
  * @param ap used according to the format string.
  */
 void vstrprintf(std::string* dest, const char* format, va_list ap);
@@ -297,7 +298,6 @@ void vstrprintf(std::string* dest, const char* format, va_list ap);
  * @param dest the destination string.
  * @param format the printf-like format string.  The conversion character `%' can be used with
  * such flag characters as `s', `d', `o', `u', `x', `X', `c', `e', `E', `f', `g', `G', and `%'.
- * `S' treats the pointer to a std::string object.
  * @param ... used according to the format string.
  */
 void strprintf(std::string* dest, const char* format, ...);
@@ -307,7 +307,6 @@ void strprintf(std::string* dest, const char* format, ...);
  * Generate a formatted string.
  * @param format the printf-like format string.  The conversion character `%' can be used with
  * such flag characters as `s', `d', `o', `u', `x', `X', `c', `e', `E', `f', `g', `G', and `%'.
- * `S' treats the pointer to a std::string object.
  * @param ... used according to the format string.
  * @return the result string.
  */
@@ -1316,15 +1315,6 @@ inline void vstrprintf(std::string* dest, const char* format, va_list ap) {
           const char* tmp = va_arg(ap, const char*);
           if (tmp) {
             dest->append(tmp);
-          } else {
-            dest->append("(null)");
-          }
-          break;
-        }
-        case 'S': {
-          const std::string* tmp = va_arg(ap, const std::string*);
-          if (tmp) {
-            dest->append(*tmp);
           } else {
             dest->append("(null)");
           }

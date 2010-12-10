@@ -147,8 +147,12 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a decimal string with a metric prefix to an integer.  <a href="#a012be7793124f2f8c272e592c5514412"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a9d9165134c70c771e930046d01dd43a1">atoih</a> (const char *str)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a hexadecimal string to an integer.  <a href="#a9d9165134c70c771e930046d01dd43a1"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#aead94fb6d1810928d1247960ad5d1e53">atoin</a> (const char *ptr, size_t size)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a decimal byte array to an integer.  <a href="#aead94fb6d1810928d1247960ad5d1e53"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ab7eee3ce1842a348a434caebc2487c5a">atof</a> (const char *str)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a decimal string to a real number.  <a href="#ab7eee3ce1842a348a434caebc2487c5a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a0261b5d7c8081775729bdcbb31242540">atofn</a> (const char *ptr, size_t size)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Convert a decimal byte array to a real number.  <a href="#a0261b5d7c8081775729bdcbb31242540"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint16_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a04b7fe7ba51ef5ea76b95edab3c3862e">hton16</a> (uint16_t num)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Normalize a 16-bit number in the native order into the network byte order.  <a href="#a04b7fe7ba51ef5ea76b95edab3c3862e"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">uint32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a921daaea526494202f3322922412c537">hton32</a> (uint32_t num)</td></tr>
@@ -483,6 +487,43 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 
 </div>
 </div>
+<a class="anchor" id="aead94fb6d1810928d1247960ad5d1e53"></a><!-- doxytag: member="kyotocabinet::atoin" ref="aead94fb6d1810928d1247960ad5d1e53" args="(const char *ptr, size_t size)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kyotocabinet::atoin </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>size</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Convert a decimal byte array to an integer. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>ptr</em>&nbsp;</td><td>the decimal byte array. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the decimal byte array. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the integer. If the string does not contain numeric expression, 0 is returned. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ab7eee3ce1842a348a434caebc2487c5a"></a><!-- doxytag: member="kyotocabinet::atof" ref="ab7eee3ce1842a348a434caebc2487c5a" args="(const char *str)" -->
 <div class="memitem">
 <div class="memproto">
@@ -503,6 +544,43 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>str</em>&nbsp;</td><td>the decimal string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the real number. If the string does not contain numeric expression, 0.0 is returned. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a0261b5d7c8081775729bdcbb31242540"></a><!-- doxytag: member="kyotocabinet::atofn" ref="a0261b5d7c8081775729bdcbb31242540" args="(const char *ptr, size_t size)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double kyotocabinet::atofn </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>size</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Convert a decimal byte array to a real number. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>ptr</em>&nbsp;</td><td>the decimal byte array. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>size</em>&nbsp;</td><td>the size of the decimal byte array. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1116,7 +1194,7 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the destination string. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. The conversion character `' can be used with such flag characters as `s', `d', `o', `u', `x', `X', `c', `e', `E', `f', `g', `G', and `'. `S' treats the pointer to a std::string object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. The conversion character `' can be used with such flag characters as `s', `d', `o', `u', `x', `X', `c', `e', `E', `f', `g', `G', and `'. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>ap</em>&nbsp;</td><td>used according to the format string. </td></tr>
   </table>
   </dd>
@@ -1159,7 +1237,7 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the destination string. </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. The conversion character `' can be used with such flag characters as `s', `d', `o', `u', `x', `X', `c', `e', `E', `f', `g', `G', and `'. `S' treats the pointer to a std::string object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. The conversion character `' can be used with such flag characters as `s', `d', `o', `u', `x', `X', `c', `e', `E', `f', `g', `G', and `'. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>...</em>&nbsp;</td><td>used according to the format string. </td></tr>
   </table>
   </dd>
@@ -1196,7 +1274,7 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <p>Generate a formatted string on memory.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. The conversion character `' can be used with such flag characters as `s', `d', `o', `u', `x', `X', `c', `e', `E', `f', `g', `G', and `'. `S' treats the pointer to a std::string object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>format</em>&nbsp;</td><td>the printf-like format string. The conversion character `' can be used with such flag characters as `s', `d', `o', `u', `x', `X', `c', `e', `E', `f', `g', `G', and `'. </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>...</em>&nbsp;</td><td>used according to the format string. </td></tr>
   </table>
   </dd>
@@ -2536,7 +2614,7 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Tue Nov 30 01:42:46 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sat Dec 11 01:50:27 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

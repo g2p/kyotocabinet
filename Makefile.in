@@ -12,6 +12,7 @@ SHELL = @SHELL@
 
 # Package information
 PACKAGE = @PACKAGE_NAME@
+PACKAGE_TARNAME = @PACKAGE_TARNAME@
 VERSION = @PACKAGE_VERSION@
 PACKAGEDIR = $(PACKAGE)-$(VERSION)
 PACKAGETGZ = $(PACKAGE)-$(VERSION).tar.gz
@@ -38,6 +39,7 @@ BINDIR = @bindir@
 LIBEXECDIR = @libexecdir@
 DATADIR = @datadir@/$(PACKAGE)
 MAN1DIR = @mandir@/man1
+DOCDIR = @docdir@
 PCDIR = @libdir@/pkgconfig
 DESTDIR =
 
@@ -117,10 +119,10 @@ install :
 	cp -Rf $(LIBRARYFILES) $(DESTDIR)$(LIBDIR)
 	mkdir -p $(DESTDIR)$(BINDIR)
 	cp -Rf $(COMMANDFILES) $(DESTDIR)$(BINDIR)
-	mkdir -p $(DESTDIR)$(DATADIR)
-	cp -Rf $(DOCUMENTFILES) $(DESTDIR)$(DATADIR)
 	mkdir -p $(DESTDIR)$(MAN1DIR)
 	cd man && cp -Rf $(MAN1FILES) $(DESTDIR)$(MAN1DIR)
+	mkdir -p $(DESTDIR)$(DOCDIR)
+	cp -Rf $(DOCUMENTFILES) $(DESTDIR)$(DOCDIR)
 	mkdir -p $(DESTDIR)$(PCDIR)
 	cp -Rf $(PCFILES) $(DESTDIR)$(PCDIR)
 	-[ "$$UID" = 0 ] && PATH=/sbin:/usr/sbin:$(PATH) ldconfig 2>/dev/null || true
@@ -140,7 +142,7 @@ uninstall :
 	-cd $(DESTDIR)$(LIBDIR) && rm -f $(LIBRARYFILES)
 	-cd $(DESTDIR)$(BINDIR) && rm -f $(COMMANDFILES)
 	-cd $(DESTDIR)$(MAN1DIR) && rm -f $(MAN1FILES)
-	-rm -rf $(DESTDIR)$(DATADIR)
+	-cd $(DESTDIR)$(DOCDIR) && rm -rf $(DOCUMENTFILES) && rmdir $(DOCDIR)
 	-cd $(DESTDIR)$(PCDIR) && rm -f $(PCFILES)
 	-[ "$$UID" = 0 ] && PATH=/sbin:/usr/sbin:$(PATH) ldconfig 2>/dev/null || true
 

@@ -711,16 +711,16 @@ check-forever :
 
 
 binpkg :
-	-rd kyotocabinet /S /Q > NUL: 2>&1
-	md kyotocabinet
-	md kyotocabinet\include
-	copy *.h kyotocabinet\include
-	del kyotocabinet\include\myconf.h
-	del kyotocabinet\include\cmdcommon.h
-	md kyotocabinet\lib
-	copy *.lib kyotocabinet\lib
-	md kyotocabinet\bin
-	copy *.exe kyotocabinet\bin
+	-rd kcwin32 /S /Q > NUL: 2>&1
+	md kcwin32
+	md kcwin32\include
+	copy *.h kcwin32\include
+	del kcwin32\include\myconf.h
+	del kcwin32\include\cmdcommon.h
+	md kcwin32\lib
+	copy *.lib kcwin32\lib
+	md kcwin32\bin
+	copy *.exe kcwin32\bin
 
 
 

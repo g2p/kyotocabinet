@@ -1,3 +1,13 @@
+2010-12-11  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kccommon.h (modfl): new function for portability to cygwin.
+
+	* kcthread.cc (Mutex::lock_try): cygwin was added to work around cases.
+
+	* cmdcommon.h (oprintf): new function instead of "iprintf".
+
+	- Release: 1.2.29
+
 2010-12-10  Mikio Hirabayashi  <info@fallabs.com>
 
 	* ktutil.h (atoin, atofn): new functions.

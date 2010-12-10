@@ -685,39 +685,39 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
     status["tree_level"] = "";
     if (db.status(&status)) {
       uint32_t type = kc::atoi(status["realtype"].c_str());
-      iprintf("type: %s (type=0x%02X) (%s)\n",
+      oprintf("type: %s (type=0x%02X) (%s)\n",
               status["type"].c_str(), type, kc::BasicDB::typestring(type));
       uint32_t chksum = kc::atoi(status["chksum"].c_str());
-      iprintf("format version: %s (libver=%s.%s) (chksum=0x%02X)\n", status["fmtver"].c_str(),
+      oprintf("format version: %s (libver=%s.%s) (chksum=0x%02X)\n", status["fmtver"].c_str(),
               status["libver"].c_str(), status["librev"].c_str(), chksum);
-      iprintf("path: %s\n", status["path"].c_str());
+      oprintf("path: %s\n", status["path"].c_str());
       int32_t flags = kc::atoi(status["flags"].c_str());
-      iprintf("status flags:");
-      if (flags & kc::ForestDB::FOPEN) iprintf(" open");
-      if (flags & kc::ForestDB::FFATAL) iprintf(" fatal");
-      iprintf(" (flags=%d)", flags);
-      if (kc::atoi(status["recovered"].c_str()) > 0) iprintf(" (recovered)");
-      if (kc::atoi(status["reorganized"].c_str()) > 0) iprintf(" (reorganized)");
-      if (kc::atoi(status["trimmed"].c_str()) > 0) iprintf(" (trimmed)");
-      iprintf("\n", flags);
+      oprintf("status flags:");
+      if (flags & kc::ForestDB::FOPEN) oprintf(" open");
+      if (flags & kc::ForestDB::FFATAL) oprintf(" fatal");
+      oprintf(" (flags=%d)", flags);
+      if (kc::atoi(status["recovered"].c_str()) > 0) oprintf(" (recovered)");
+      if (kc::atoi(status["reorganized"].c_str()) > 0) oprintf(" (reorganized)");
+      if (kc::atoi(status["trimmed"].c_str()) > 0) oprintf(" (trimmed)");
+      oprintf("\n", flags);
       int32_t opts = kc::atoi(status["opts"].c_str());
-      iprintf("options:");
-      if (opts & kc::ForestDB::TSMALL) iprintf(" small");
-      if (opts & kc::ForestDB::TLINEAR) iprintf(" linear");
-      if (opts & kc::ForestDB::TCOMPRESS) iprintf(" compress");
-      iprintf(" (opts=%d)\n", opts);
-      iprintf("comparator: %s\n", status["rcomp"].c_str());
+      oprintf("options:");
+      if (opts & kc::ForestDB::TSMALL) oprintf(" small");
+      if (opts & kc::ForestDB::TLINEAR) oprintf(" linear");
+      if (opts & kc::ForestDB::TCOMPRESS) oprintf(" compress");
+      oprintf(" (opts=%d)\n", opts);
+      oprintf("comparator: %s\n", status["rcomp"].c_str());
       if (status["opaque"].size() >= 16) {
         const char* opaque = status["opaque"].c_str();
-        iprintf("opaque:");
+        oprintf("opaque:");
         if (std::count(opaque, opaque + 16, 0) != 16) {
           for (int32_t i = 0; i < 16; i++) {
-            iprintf(" %02X", ((unsigned char*)opaque)[i]);
+            oprintf(" %02X", ((unsigned char*)opaque)[i]);
           }
         } else {
-          iprintf(" 0");
+          oprintf(" 0");
         }
-        iprintf("\n");
+        oprintf("\n");
       }
       int64_t bnum = kc::atoi(status["bnum"].c_str());
       int64_t count = kc::atoi(status["count"].c_str());
@@ -731,8 +731,8 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
         load = (double)pnum / bnum;
         if (!(opts & kc::ForestDB::TLINEAR)) load = std::log(load + 1) / std::log(2.0);
       }
-      iprintf("buckets: %lld (load=%.2f)\n", (long long)bnum, load);
-      iprintf("pages: %lld (leaf=%lld) (inner=%lld) (level=%d) (psiz=%d)\n",
+      oprintf("buckets: %lld (load=%.2f)\n", (long long)bnum, load);
+      oprintf("pages: %lld (leaf=%lld) (inner=%lld) (level=%d) (psiz=%d)\n",
               (long long)pnum, (long long)lcnt, (long long)icnt, tlevel, psiz);
       int64_t pccap = kc::atoi(status["pccap"].c_str());
       int64_t cusage = kc::atoi(status["cusage"].c_str());
@@ -740,14 +740,14 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
       int64_t culsiz = kc::atoi(status["cusage_lsiz"].c_str());
       int64_t cuicnt = kc::atoi(status["cusage_icnt"].c_str());
       int64_t cuisiz = kc::atoi(status["cusage_isiz"].c_str());
-      iprintf("cache: %lld (cap=%lld) (ratio=%.2f) (leaf=%lld:%lld) (inner=%lld:%lld)\n",
+      oprintf("cache: %lld (cap=%lld) (ratio=%.2f) (leaf=%lld:%lld) (inner=%lld:%lld)\n",
               (long long)cusage, (long long)pccap, (double)cusage / pccap,
               (long long)culsiz, (long long)culcnt, (long long)cuisiz, (long long)cuicnt);
       std::string cntstr = unitnumstr(count);
-      iprintf("count: %lld (%S)\n", count, &cntstr);
+      oprintf("count: %lld (%s)\n", count, cntstr.c_str());
       int64_t size = kc::atoi(status["size"].c_str());
       std::string sizestr = unitnumstrbyte(size);
-      iprintf("size: %lld (%S)\n", size, &sizestr);
+      oprintf("size: %lld (%s)\n", size, sizestr.c_str());
     } else {
       dberrprint(&db, "DB::status failed");
       err = true;
@@ -755,13 +755,13 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
   } else {
     uint8_t flags = db.flags();
     if (flags != 0) {
-      iprintf("status:");
-      if (flags & kc::ForestDB::FOPEN) iprintf(" open");
-      if (flags & kc::ForestDB::FFATAL) iprintf(" fatal");
-      iprintf("\n");
+      oprintf("status:");
+      if (flags & kc::ForestDB::FOPEN) oprintf(" open");
+      if (flags & kc::ForestDB::FFATAL) oprintf(" fatal");
+      oprintf("\n");
     }
-    iprintf("count: %lld\n", (long long)db.count());
-    iprintf("size: %lld\n", (long long)db.size());
+    oprintf("count: %lld\n", (long long)db.count());
+    oprintf("size: %lld\n", (long long)db.size());
   }
   if (!db.close()) {
     dberrprint(&db, "DB::close failed");
@@ -816,7 +816,7 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
         dberrprint(&db, "DB::increment failed");
         err = true;
       } else {
-        iprintf("%lld\n", (long long)onum);
+        oprintf("%lld\n", (long long)onum);
       }
       break;
     }
@@ -826,7 +826,7 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
         dberrprint(&db, "DB::increment_double failed");
         err = true;
       } else {
-        iprintf("%f\n", onum);
+        oprintf("%f\n", onum);
       }
       break;
     }
@@ -874,7 +874,7 @@ static int32_t procget(const char* path, const char* kbuf, size_t ksiz,
   char* vbuf = db.get(kbuf, ksiz, &vsiz);
   if (vbuf) {
     printdata(vbuf, vsiz, px);
-    if (!pz) iprintf("\n");
+    if (!pz) oprintf("\n");
     delete[] vbuf;
   } else {
     dberrprint(&db, "DB::get failed");
@@ -906,10 +906,10 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
                            const char* vbuf, size_t vsiz, size_t* sp) {
       printdata(kbuf, ksiz, px_);
       if (pv_) {
-        iprintf("\t");
+        oprintf("\t");
         printdata(vbuf, vsiz, px_);
       }
-      iprintf("\n");
+      oprintf("\n");
       return NOP;
     }
     bool pv_;
@@ -1052,10 +1052,10 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
         break;
       }
     }
-    iputchar('.');
-    if (cnt % 50 == 0) iprintf(" (%d)\n", cnt);
+    oputchar('.');
+    if (cnt % 50 == 0) oprintf(" (%lld)\n", (long long)cnt);
   }
-  if (cnt % 50 > 0) iprintf(" (%d)\n", cnt);
+  if (cnt % 50 > 0) oprintf(" (%lld)\n", (long long)cnt);
   if (!db.close()) {
     dberrprint(&db, "DB::close failed");
     err = true;
@@ -1078,12 +1078,12 @@ static int32_t proccopy(const char* path, const char* file, int32_t oflags) {
     dberrprint(&db, "DB::copy failed");
     err = true;
   }
-  iprintf(" (end)\n");
+  oprintf(" (end)\n");
   if (!db.close()) {
     dberrprint(&db, "DB::close failed");
     err = true;
   }
-  if (!err) iprintf("%lld blocks were copied successfully\n", (long long)checker.count());
+  if (!err) oprintf("%lld blocks were copied successfully\n", (long long)checker.count());
   return err ? 1 : 0;
 }
 
@@ -1103,8 +1103,8 @@ static int32_t procdump(const char* path, const char* file, int32_t oflags) {
       dberrprint(&db, "DB::dump_snapshot");
       err = true;
     }
-    iprintf(" (end)\n");
-    if (!err) iprintf("%lld records were dumped successfully\n", (long long)checker.count());
+    oprintf(" (end)\n");
+    if (!err) oprintf("%lld records were dumped successfully\n", (long long)checker.count());
   } else {
     if (!db.dump_snapshot(&std::cout)) {
       dberrprint(&db, "DB::dump_snapshot");
@@ -1134,16 +1134,16 @@ static int32_t procload(const char* path, const char* file, int32_t oflags) {
       dberrprint(&db, "DB::load_snapshot");
       err = true;
     }
-    iprintf(" (end)\n");
-    if (!err) iprintf("%lld records were loaded successfully\n", (long long)checker.count());
+    oprintf(" (end)\n");
+    if (!err) oprintf("%lld records were loaded successfully\n", (long long)checker.count());
   } else {
     DotChecker checker(&std::cout, -1000);
     if (!db.load_snapshot(&std::cin)) {
       dberrprint(&db, "DB::load_snapshot");
       err = true;
     }
-    iprintf(" (end)\n");
-    if (!err) iprintf("%lld records were loaded successfully\n", (long long)checker.count());
+    oprintf(" (end)\n");
+    if (!err) oprintf("%lld records were loaded successfully\n", (long long)checker.count());
   }
   if (!db.close()) {
     dberrprint(&db, "DB::close failed");
@@ -1189,8 +1189,8 @@ static int32_t proccheck(const char* path, int32_t oflags) {
       }
       delete[] kbuf;
       if (cnt % 1000 == 0) {
-        iputchar('.');
-        if (cnt % 50000 == 0) iprintf(" (%lld)\n", (long long)cnt);
+        oputchar('.');
+        if (cnt % 50000 == 0) oprintf(" (%lld)\n", (long long)cnt);
       }
     } else {
       if (db.error() != kc::BasicDB::Error::NOREC) {
@@ -1204,7 +1204,7 @@ static int32_t proccheck(const char* path, int32_t oflags) {
       err = true;
     }
   }
-  iprintf(" (end)\n");
+  oprintf(" (end)\n");
   if (db.count() != cnt) {
     dberrprint(&db, "DB::count failed");
     err = true;
@@ -1222,7 +1222,7 @@ static int32_t proccheck(const char* path, int32_t oflags) {
     dberrprint(&db, "DB::close failed");
     err = true;
   }
-  if (!err) iprintf("%lld records were checked successfully\n", (long long)cnt);
+  if (!err) oprintf("%lld records were checked successfully\n", (long long)cnt);
   return err ? 1 : 0;
 }
 

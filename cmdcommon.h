@@ -69,8 +69,8 @@ uint64_t g_rnd_w = 88675123;
 void mysrand(int64_t seed);
 int64_t myrand(int64_t range);
 int64_t memusage();
-void iprintf(const char* format, ...);
-void iputchar(char c);
+void oprintf(const char* format, ...);
+void oputchar(char c);
 void eprintf(const char* format, ...);
 void printversion();
 void printdata(const char* buf, int32_t size, bool px);
@@ -95,15 +95,15 @@ private:
     if (freq_ < 0) {
       cnt_++;
       if (cnt_ % -freq_ == 0) {
-        iputchar('.');
-        if (cnt_ % (-freq_ * 50) == 0) iprintf(" (%lld)\n", (long long)cnt_);
+        oputchar('.');
+        if (cnt_ % (-freq_ * 50) == 0) oprintf(" (%lld)\n", (long long)cnt_);
       }
     } else {
       if (curcnt > cnt_) {
         cnt_ = curcnt;
         if (cnt_ % freq_ == 0) {
-          iputchar('.');
-          if (cnt_ % (freq_ * 50) == 0) iprintf(" (%lld)\n", (long long)cnt_);
+          oputchar('.');
+          if (cnt_ % (freq_ * 50) == 0) oprintf(" (%lld)\n", (long long)cnt_);
         }
       }
     }
@@ -144,7 +144,7 @@ inline int64_t memusage() {
 
 
 // print formatted information string and flush the buffer
-inline void iprintf(const char* format, ...) {
+inline void oprintf(const char* format, ...) {
   std::string msg;
   va_list ap;
   va_start(ap, format);
@@ -156,7 +156,7 @@ inline void iprintf(const char* format, ...) {
 
 
 // print a character and flush the buffer
-inline void iputchar(char c) {
+inline void oputchar(char c) {
   std::cout << c;
   std::cout.flush();
 }
@@ -176,7 +176,7 @@ inline void eprintf(const char* format, ...) {
 
 // print the versin information
 inline void printversion() {
-  iprintf("Kyoto Cabinet %s (%d.%d:%d) on %s\n",
+  oprintf("Kyoto Cabinet %s (%d.%d:%d) on %s\n",
           kc::VERSION, kc::LIBVER, kc::LIBREV, kc::FMTVER, kc::SYSNAME);
 }
 
@@ -307,9 +307,9 @@ inline void printdb(kc::BasicDB* db, bool px) {
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       printdata(kbuf, ksiz, px_);
-      iputchar('\t');
+      oputchar('\t');
       printdata(vbuf, vsiz, px_);
-      iputchar('\n');
+      oputchar('\n');
       return NOP;
     }
     bool px_;

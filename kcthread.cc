@@ -375,7 +375,7 @@ bool Mutex::lock_try() {
  * Try to get the lock.
  */
 bool Mutex::lock_try(double sec) {
-#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || defined(_SYS_MACOSX_)
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || defined(_SYS_CYGWIN_) || defined(_SYS_MACOSX_)
   _assert_(sec >= 0.0);
   if (lock_try()) return true;
   double end = time() + sec;

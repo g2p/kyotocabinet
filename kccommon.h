@@ -70,6 +70,15 @@ extern "C" {
 #define snprintf  _snprintf
 #endif
 
+#if defined(__CYGWIN__)
+inline long double modfl(long double val, long double* iptr) {
+  double integ;
+  double fract = std::modf(val, &integ);
+  *iptr = integ;
+  return fract;
+}
+#endif
+
 namespace std {
 using ::modfl;
 using ::snprintf;

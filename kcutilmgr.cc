@@ -647,23 +647,23 @@ static int32_t prochash(const char* file, int32_t mode) {
   switch (mode) {
     default: {
       uint64_t hash = kc::hashmurmur(ostr.data(), ostr.size());
-      iprintf("%016llx\n", (unsigned long long)hash);
+      oprintf("%016llx\n", (unsigned long long)hash);
       break;
     }
     case 1: {
       uint64_t hash = kc::hashfnv(ostr.data(), ostr.size());
-      iprintf("%016llx\n", (unsigned long long)hash);
+      oprintf("%016llx\n", (unsigned long long)hash);
       break;
     }
     case 2: {
       char name[kc::NUMBUFSIZ];
       uint32_t hash = kc::hashpath(ostr.data(), ostr.size(), name);
-      iprintf("%s\t%08lx\n", name, (unsigned long)hash);
+      oprintf("%s\t%08lx\n", name, (unsigned long)hash);
       break;
     }
     case 3: {
       uint32_t hash = kc::ZLIB::calculate_crc(ostr.data(), ostr.size());
-      iprintf("%08x\n", (unsigned)hash);
+      oprintf("%08x\n", (unsigned)hash);
       break;
     }
   }
@@ -725,32 +725,32 @@ static int32_t procregex(const char* file, const char* pattern, const char* alt,
 static int32_t procconf(int32_t mode) {
   switch (mode) {
     case 'v': {
-      iprintf("%s\n", kc::VERSION);
+      oprintf("%s\n", kc::VERSION);
       break;
     }
     case 'i': {
-      iprintf("%s\n", _KC_APPINC);
+      oprintf("%s\n", _KC_APPINC);
       break;
     }
     case 'l': {
-      iprintf("%s\n", _KC_APPLIBS);
+      oprintf("%s\n", _KC_APPLIBS);
       break;
     }
     case 'p': {
-      iprintf("%s\n", _KC_BINDIR);
+      oprintf("%s\n", _KC_BINDIR);
       break;
     }
     default: {
-      iprintf("VERSION: %s\n", kc::VERSION);
-      iprintf("LIBVER: %d\n", kc::LIBVER);
-      iprintf("LIBREV: %d\n", kc::LIBREV);
-      iprintf("FMTVER: %d\n", kc::FMTVER);
-      iprintf("SYSNAME: %s\n", kc::SYSNAME);
-      iprintf("BIGEND: %d\n", kc::BIGEND);
-      iprintf("CLOCKTICK: %d\n", kc::CLOCKTICK);
-      iprintf("PAGESIZE: %d\n", kc::PAGESIZE);
-      iprintf("FEATURES: %s\n", kc::FEATURES);
-      iprintf("TYPES: void*=%d short=%d int=%d long=%d long_long=%d size_t=%d"
+      oprintf("VERSION: %s\n", kc::VERSION);
+      oprintf("LIBVER: %d\n", kc::LIBVER);
+      oprintf("LIBREV: %d\n", kc::LIBREV);
+      oprintf("FMTVER: %d\n", kc::FMTVER);
+      oprintf("SYSNAME: %s\n", kc::SYSNAME);
+      oprintf("BIGEND: %d\n", kc::BIGEND);
+      oprintf("CLOCKTICK: %d\n", kc::CLOCKTICK);
+      oprintf("PAGESIZE: %d\n", kc::PAGESIZE);
+      oprintf("FEATURES: %s\n", kc::FEATURES);
+      oprintf("TYPES: void*=%d short=%d int=%d long=%d long_long=%d size_t=%d"
               " float=%d double=%d long_double=%d\n",
               (int)sizeof(void*), (int)sizeof(short), (int)sizeof(int), (int)sizeof(long),
               (int)sizeof(long long), (int)sizeof(size_t),
@@ -758,17 +758,17 @@ static int32_t procconf(int32_t mode) {
       std::map<std::string, std::string> info;
       kc::getsysinfo(&info);
       if (info["mem_total"].size() > 0)
-        iprintf("MEMORY: total=%s free=%s cached=%s\n",
+        oprintf("MEMORY: total=%s free=%s cached=%s\n",
                 info["mem_total"].c_str(), info["mem_free"].c_str(),
                 info["mem_cached"].c_str());
       if (std::strcmp(_KC_PREFIX, "*")) {
-        iprintf("prefix: %s\n", _KC_PREFIX);
-        iprintf("includedir: %s\n", _KC_INCLUDEDIR);
-        iprintf("libdir: %s\n", _KC_LIBDIR);
-        iprintf("bindir: %s\n", _KC_BINDIR);
-        iprintf("libexecdir: %s\n", _KC_LIBEXECDIR);
-        iprintf("appinc: %s\n", _KC_APPINC);
-        iprintf("applibs: %s\n", _KC_APPLIBS);
+        oprintf("prefix: %s\n", _KC_PREFIX);
+        oprintf("includedir: %s\n", _KC_INCLUDEDIR);
+        oprintf("libdir: %s\n", _KC_LIBDIR);
+        oprintf("bindir: %s\n", _KC_BINDIR);
+        oprintf("libexecdir: %s\n", _KC_LIBEXECDIR);
+        oprintf("appinc: %s\n", _KC_APPINC);
+        oprintf("applibs: %s\n", _KC_APPLIBS);
       }
       break;
     }
