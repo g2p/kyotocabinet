@@ -237,17 +237,6 @@ public:
     _assert_(true);
   }
   /**
-   * Constructor.
-   * @param db the internal database object.  Its possession is transferred inside and the
-   * object is deleted automatically.
-   */
-  explicit PolyDB(BasicDB* db) :
-    type_(TYPEMISC), db_(db), error_(),
-    stdlogstrm_(NULL), stdlogger_(NULL), logger_(NULL), logkinds_(0),
-    stdmtrgstrm_(NULL), stdmtrigger_(NULL), mtrigger_(NULL), zcomp_(NULL) {
-    _assert_(db);
-  }
-  /**
    * Destructor.
    * @note If the database is not closed, it is closed implicitly.
    */
@@ -259,6 +248,22 @@ public:
     delete stdmtrgstrm_;
     delete stdlogger_;
     delete stdlogstrm_;
+  }
+  /**
+   * Set the internal database object.
+   * @param db the internal database object.  Its possession is transferred inside and the
+   * object is deleted automatically.
+   * @return true on success, or false on failure.
+   */
+  bool set_internal_db(BasicDB* db) {
+    _assert_(db);
+    if (type_ != TYPEVOID) {
+      set_error(_KCCODELINE_, Error::INVALID, "already opened");
+      return false;
+    }
+    type_ = TYPEMISC;
+    db_ = db;
+    return true;
   }
   /**
    * Accept a visitor to a record.
@@ -389,7 +394,11 @@ public:
    */
   bool open(const std::string& path = ":", uint32_t mode = OWRITER | OCREATE) {
     _assert_(true);
-    if (type_ == TYPEMISC) return db_->open(path, mode);
+    if (type_ == TYPEMISC) {
+      if (logger_) db_->tune_logger(logger_, logkinds_);
+      if (mtrigger_) db_->tune_meta_trigger(mtrigger_);
+      return db_->open(path, mode);
+    }
     if (type_ != TYPEVOID) {
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;

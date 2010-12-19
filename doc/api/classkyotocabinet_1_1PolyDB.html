@@ -57,10 +57,10 @@
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a6253152550236615fb8fae626c363b0c">PolyDB</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Default constructor.  <a href="#a6253152550236615fb8fae626c363b0c"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a2672d32d308edb9324778d5c75825984">PolyDB</a> (<a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> *db)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Constructor.  <a href="#a2672d32d308edb9324778d5c75825984"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a71db50ac29a36eb707d5328883b2eb79">~PolyDB</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a71db50ac29a36eb707d5328883b2eb79"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a0372c6f0b25c5e75c0720291f5eb5882">set_internal_db</a> (<a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> *db)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the internal database object.  <a href="#a0372c6f0b25c5e75c0720291f5eb5882"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#abfadd89cc0469d9abfc180b1f7f06f8d">accept</a> (const char *kbuf, size_t ksiz, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to a record.  <a href="#abfadd89cc0469d9abfc180b1f7f06f8d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a27be5998494e81a5fa4be24e6047f4de">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
@@ -163,32 +163,6 @@
 
 </div>
 </div>
-<a class="anchor" id="a2672d32d308edb9324778d5c75825984"></a><!-- doxytag: member="kyotocabinet::PolyDB::PolyDB" ref="a2672d32d308edb9324778d5c75825984" args="(BasicDB *db)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">kyotocabinet::PolyDB::PolyDB </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> *&nbsp;</td>
-          <td class="paramname"> <em>db</em></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td><code> [explicit]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>Constructor. </p>
-<dl><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>db</em>&nbsp;</td><td>the internal database object. Its possession is transferred inside and the object is deleted automatically. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="a71db50ac29a36eb707d5328883b2eb79"></a><!-- doxytag: member="kyotocabinet::PolyDB::~PolyDB" ref="a71db50ac29a36eb707d5328883b2eb79" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -210,6 +184,33 @@
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a0372c6f0b25c5e75c0720291f5eb5882"></a><!-- doxytag: member="kyotocabinet::PolyDB::set_internal_db" ref="a0372c6f0b25c5e75c0720291f5eb5882" args="(BasicDB *db)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::PolyDB::set_internal_db </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB.html">BasicDB</a> *&nbsp;</td>
+          <td class="paramname"> <em>db</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Set the internal database object. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>db</em>&nbsp;</td><td>the internal database object. Its possession is transferred inside and the object is deleted automatically. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="abfadd89cc0469d9abfc180b1f7f06f8d"></a><!-- doxytag: member="kyotocabinet::PolyDB::accept" ref="abfadd89cc0469d9abfc180b1f7f06f8d" args="(const char *kbuf, size_t ksiz, Visitor *visitor, bool writable=true)" -->
 <div class="memitem">
 <div class="memproto">
@@ -999,7 +1000,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sat Dec 11 01:50:27 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Dec 19 12:53:11 2010 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

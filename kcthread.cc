@@ -529,7 +529,7 @@ void SpinLock::unlock() {
 RWLock::RWLock() : opq_(NULL) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
-  SpinRWLock* rwlock = new SpinRWLock();
+  SpinRWLock* rwlock = new SpinRWLock;
   opq_ = (void*)rwlock;
 #else
   _assert_(true);

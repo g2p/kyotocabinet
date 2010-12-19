@@ -1,3 +1,9 @@
+2010-12-19  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcpolydb.h (PolyDB::set_internal_db): new function.
+
+	- Release: 1.2.30
+
 2010-12-11  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kccommon.h (modfl): new function for portability to cygwin.

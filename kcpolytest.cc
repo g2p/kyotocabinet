@@ -2234,7 +2234,7 @@ static int32_t procmisc(const char* path) {
   oprintf("<Miscellaneous Test>\n  seed=%u  path=%s\n\n", g_randseed, path);
   bool err = false;
   oprintf("opening the database:\n");
-  kc::BasicDB* db = new kc::PolyDB();
+  kc::BasicDB* db = new kc::PolyDB;
   db->open(path, kc::BasicDB::OWRITER | kc::BasicDB::OCREATE | kc::BasicDB::OTRUNCATE);
   oprintf("setting records:\n");
   int64_t rnum = 10000;
@@ -2384,13 +2384,14 @@ static int32_t procmisc(const char* path) {
     delete curs[i];
   }
   oprintf("re-opening the database object with a external database:\n");
-  db = new kc::PolyDB(new kc::PolyDB);
-  if (!db->open(path, kc::BasicDB::OREADER)) {
-    dberrprint(db, __LINE__, "DB::open");
+  pdb = new kc::PolyDB;
+  pdb->set_internal_db(new kc::PolyDB);
+  if (!pdb->open(path, kc::PolyDB::OREADER)) {
+    dberrprint(pdb, __LINE__, "DB::open");
     err = true;
   }
   oprintf("deleting the database object:\n");
-  delete db;
+  delete pdb;
   oprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
 }

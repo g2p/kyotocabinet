@@ -1096,7 +1096,7 @@ static int32_t procpara(int64_t rnum, int32_t thnum, double iv) {
   queue.setparams(thnum, iv);
   queue.start(thnum);
   for (int64_t i = 1; i <= rnum; i++) {
-    kc::TaskQueue::Task* task = new kc::TaskQueue::Task();
+    kc::TaskQueue::Task* task = new kc::TaskQueue::Task;
     queue.add_task(task);
     if (iv > 0) {
       kc::Thread::sleep(iv);
