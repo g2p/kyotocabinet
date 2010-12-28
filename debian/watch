@@ -1,2 +1,2 @@
 version=3
-http://sf.net/kyotocabinet/kyotocabinet-([\d\.-]+)\.tar\.gz
+http://fallabs.com/kyotocabinet/pkg/kyotocabinet-([\d\.-]+)\.tar\.gz
