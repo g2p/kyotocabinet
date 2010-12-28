@@ -1,14 +1,13 @@
-From a8e577c80ed4ea3cf28c5c55e2389d0c6b1b42e7 Mon Sep 17 00:00:00 2001
 From: Pierre Habouzit <madcoder@debian.org>
 Date: Mon, 3 Nov 2008 15:32:28 +0100
-Subject: [PATCH 2/4] Avoid LDENV to avoid rpaths.
+Subject: [PATCH] Avoid LDENV to avoid rpaths.
 
 Signed-off-by: Pierre Habouzit <madcoder@debian.org>
 ---
- Makefile.in  |   33 ++++++++++++++++-----------------
- configure    |   19 ++++++++++---------
- configure.in |   19 ++++++++++---------
- 3 files changed, 36 insertions(+), 35 deletions(-)
+ Makefile.in  |   37 ++++++++++++++++++-------------------
+ configure    |   15 +++++++--------
+ configure.in |   15 +++++++--------
+ 3 files changed, 32 insertions(+), 35 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
 index 1bf1946..3d927fd 100644
@@ -181,3 +180,4 @@ index 4b1ffa3..68b2bd5 100644
  export PATH CPATH LIBRARY_PATH LD_LIBRARY_PATH PKG_CONFIG_PATH
  
  
+-- 
