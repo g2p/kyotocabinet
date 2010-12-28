@@ -39,8 +39,7 @@ refresh-patches: check-tarball
 
 override_dh_auto_configure: check-tarball
 	dh_auto_configure -- \
-	    $(if $(findstring $(DEB_BUILD_ARCH),s390),--disable-pthread) \
-	    --enable-devel --enable-off64 --enable-swab \
+	    --enable-devel --enable-lzo --enable-lzma \
 	    \
 	    CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 
