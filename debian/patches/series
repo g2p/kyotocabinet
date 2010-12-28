@@ -1,6 +1,2 @@
 0001-pkg-config.pc.in-move-LIBS-in-the-Libs.private-secti.patch
 0002-Avoid-LDENV-to-avoid-rpaths.patch
-0003-Readd-alias-symbols-for-tcmpoolput-APIS.patch
-0004-Cherry-pick-alignment-fixes-from-1.4.38.patch
-0005-Pick-patch-from-upstream-to-fix-unaligned-accesses-o.patch
-0006-disable-UBC-feature-on-hppa-since-it-causes-test-sui.patch
