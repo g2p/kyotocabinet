@@ -10,18 +10,15 @@ Signed-off-by: Pierre Habouzit <madcoder@debian.org>
  kyotocabinet.pc.in |    3 ++-
  1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/kyotocabinet.pc.in b/kyotocabinet.pc.in
-index e12d606..61d3f04 100644
---- a/kyotocabinet.pc.in
-+++ b/kyotocabinet.pc.in
-@@ -10,5 +10,6 @@ datadir=@datadir@
+Index: kyoto-cabinet/kyotocabinet.pc.in
+===================================================================
+--- kyoto-cabinet.orig/kyotocabinet.pc.in	2010-12-28 12:04:28.627619926 +0100
++++ kyoto-cabinet/kyotocabinet.pc.in	2010-12-28 12:15:58.660296627 +0100
+@@ -10,5 +10,6 @@
  Name: Kyoto Cabinet
- Description: a modern implementation of DBM
+ Description: a straightforward implementation of DBM
  Version: @PACKAGE_VERSION@
 -Libs: -L${libdir} -lkyotocabinet @LIBS@
 +Libs: -L${libdir} -lkyotocabinet
  Cflags: -I${includedir}
 +Libs.private: @LIBS@
--- 
-1.6.5.2.342.g27b86
-
