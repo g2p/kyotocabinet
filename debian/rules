@@ -51,7 +51,7 @@ override_dh_shlibdeps:
 
 clean:
 	dh $@
-	! test -e Makefile || $(MAKE) distclean
+	! test -e Makefile || $(MAKE) CCACHE_DIR="$$(mktemp -u --suffix=fake-ccache)" distclean
 	rm -f build-*-stamp
 
 override_dh_strip:
