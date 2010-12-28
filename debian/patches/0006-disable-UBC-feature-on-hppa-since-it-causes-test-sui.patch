@@ -1,0 +1,28 @@
+From ea46002b1c2c910e290f582f89e0d8d32d766488 Mon Sep 17 00:00:00 2001
+From: Pierre Habouzit <madcoder@debian.org>
+Date: Thu, 12 Nov 2009 12:54:47 +0100
+Subject: [PATCH 6/6] disable UBC feature on hppa since it causes test suite failures.
+
+Signed-off-by: Pierre Habouzit <madcoder@debian.org>
+---
+ myconf.h |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/myconf.h b/myconf.h
+index 114f2a9..dee9462 100644
+--- a/myconf.h
++++ b/myconf.h
+@@ -153,7 +153,9 @@
+ #define TCITOHLL(TC_num)  (TC_num)
+ #endif
+ 
+-#if defined(_SYS_LINUX_) || defined(_SYS_FREEBSD_) || defined(_SYS_NETBSD_) || \
++#if defined(__hppa__)
++#define TCUBCACHE      0
++#elif defined(_SYS_LINUX_) || defined(_SYS_FREEBSD_) || defined(_SYS_NETBSD_) || \
+   defined(_SYS_MACOSX_) || defined(_SYS_SUNOS_)
+ #define TCUBCACHE      1
+ #else
+-- 
+1.6.5.2.372.gc0502
+
