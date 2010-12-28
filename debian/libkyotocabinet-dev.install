@@ -3,5 +3,3 @@ debian/tmp/usr/lib/libkyotocabinet.a
 debian/tmp/usr/lib/libkyotocabinet.so
 debian/tmp/usr/lib/pkgconfig/kyotocabinet.pc
 debian/tmp/usr/lib/pkgconfig/kyotocabinet.pc
-debian/tmp/usr/share/man/man3/tc*
-debian/tmp/usr/share/man/man3/kyotocabinet.3
