@@ -5,7 +5,8 @@ Build-Depends:
  autotools-dev,
  chrpath,
  debhelper (>= 7.0.50),
- libbz2-dev,
+ liblzma-dev,
+ liblzo2-dev,
  zlib1g-dev
 Standards-Version: 3.8.4
 Section: libs
