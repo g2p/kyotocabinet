@@ -1,3 +1,4 @@
 0001-pkg-config.pc.in-move-LIBS-in-the-Libs.private-secti.patch
 0002-Avoid-LDENV-to-avoid-rpaths.patch
 0003-Don-t-drop-a-shared-ccache.patch
+0004-Link-as-needed-to-avoid-creating-unnecessary-depende.patch

@@ -1,0 +1,36 @@
+From: Gabriel de Perthuis <g2p.code+debian@gmail.com>
+Date: Tue, 28 Dec 2010 15:55:35 +0100
+Subject: [PATCH] Link as-needed to avoid creating unnecessary dependencies.
+
+---
+ configure    |    2 +-
+ configure.in |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure b/configure
+index 5195926..659eb50 100755
+--- a/configure
++++ b/configure
+@@ -2102,7 +2102,7 @@ MYCXXFLAGS="-Wall -fPIC -fsigned-char -O2"
+ MYCPPFLAGS="-I. -I\$(INCLUDEDIR) -I/usr/local/include"
+ MYCPPFLAGS="$MYCPPFLAGS -DNDEBUG -D_GNU_SOURCE=1"
+ MYCPPFLAGS="$MYCPPFLAGS -D_FILE_OFFSET_BITS=64 -D_REENTRANT -D__EXTENSIONS__"
+-MYLDFLAGS="-L. -L\$(LIBDIR) -L/usr/local/lib"
++MYLDFLAGS="-L. -L\$(LIBDIR) -L/usr/local/lib -Wl,--as-needed"
+ MYCMDLDFLAGS=""
+ MYRUNPATH="\$(LIBDIR)"
+ MYLDLIBPATHENV="LD_LIBRARY_PATH"
+diff --git a/configure.in b/configure.in
+index 5333f79..0013fe1 100644
+--- a/configure.in
++++ b/configure.in
+@@ -40,7 +40,7 @@ MYCXXFLAGS="-Wall -fPIC -fsigned-char -O2"
+ MYCPPFLAGS="-I. -I\$(INCLUDEDIR) -I/usr/local/include"
+ MYCPPFLAGS="$MYCPPFLAGS -DNDEBUG -D_GNU_SOURCE=1"
+ MYCPPFLAGS="$MYCPPFLAGS -D_FILE_OFFSET_BITS=64 -D_REENTRANT -D__EXTENSIONS__"
+-MYLDFLAGS="-L. -L\$(LIBDIR) -L/usr/local/lib"
++MYLDFLAGS="-L. -L\$(LIBDIR) -L/usr/local/lib -Wl,--as-needed"
+ MYCMDLDFLAGS=""
+ MYRUNPATH="\$(LIBDIR)"
+ MYLDLIBPATHENV="LD_LIBRARY_PATH"
+-- 
