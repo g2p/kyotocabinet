@@ -1,0 +1,50 @@
+From: Gabriel de Perthuis <g2p.code+debian@gmail.com>
+Date: Tue, 28 Dec 2010 13:13:40 +0100
+Subject: [PATCH] Don't drop a shared ccache.
+
+---
+ Makefile.in  |    2 +-
+ configure    |    2 +-
+ configure.in |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 3d927fd..73aa666 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -158,7 +158,7 @@ distclean : clean
+ 	cd example && $(MAKE) clean
+ 	rm -rf Makefile kyotocabinet.pc \
+ 	  config.cache config.log config.status config.tmp autom4te.cache
+-	which ccache >/dev/null 2>&1 && ccache -C >/dev/null 2>&1
++	#which ccache >/dev/null 2>&1 && ccache -C >/dev/null 2>&1
+ 
+ 
+ check :
+diff --git a/configure b/configure
+index 254ed21..5195926 100755
+--- a/configure
++++ b/configure
+@@ -3365,7 +3365,7 @@ fi
+   then
+     CC="ccache $CC"
+     CXX="ccache $CXX"
+-    ccache -C >config.tmp 2>&1
++    #ccache -C >config.tmp 2>&1
+   fi
+ fi
+ 
+diff --git a/configure.in b/configure.in
+index 68b2bd5..5333f79 100644
+--- a/configure.in
++++ b/configure.in
+@@ -185,7 +185,7 @@ then
+   then
+     CC="ccache $CC"
+     CXX="ccache $CXX"
+-    ccache -C >config.tmp 2>&1
++    #ccache -C >config.tmp 2>&1
+   fi
+ fi
+ 
+-- 
