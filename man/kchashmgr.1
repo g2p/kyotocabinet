@@ -1,9 +1,10 @@
-.TH "KCHASHMGR" 1 "2010-12-19" "Man Page" "Kyoto Cabinet"
+.TH "KCHASHMGR" 1 "2011-01-02" "Man Page" "Kyoto Cabinet"
 
 .SH NAME
 kchashmgr \- command line interface to manage the file hash database
 
 .SH DESCRIPTION
+.PP
 The command `\fBkchashmgr\fR' is a utility for test and debugging of the file hash database and its applications.  `\fIpath\fR' specifies the path of a database file.  `\fIkey\fR' specifies the key of a record.  `\fIvalue\fR' specifies the value of a record.  `\fIfile\fR' specifies the input/output file.
 .PP
 .RS
@@ -66,6 +67,21 @@ Loads records from a snapshot file.
 \fBkchashmgr defrag \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB\fR
 .RS
 Performs defragmentation.
+.RE
+.br
+\fBkchashmgr setbulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIkey\fB \fIvalue\fB ...\fR
+.RS
+Store records at once.
+.RE
+.br
+\fBkchashmgr removebulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-sx\fR]\fB \fIpath\fB \fIkey\fB ...\fR
+.RS
+Remove records at once.
+.RE
+.br
+\fBkchashmgr getbulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-sx\fR]\fB \fR[\fB\-px\fR]\fB \fIpath\fB \fIkey\fB ...\fR
+.RS
+Retrieve records at once.
 .RE
 .br
 \fBkchashmgr check \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB\fR

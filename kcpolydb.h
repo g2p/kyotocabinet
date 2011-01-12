@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Polymorphic database
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -283,6 +283,25 @@ public:
       return false;
     }
     return db_->accept(kbuf, ksiz, visitor, writable);
+  }
+  /**
+   * Accept a visitor to multiple records at once.
+   * @param keys specifies a string vector of the keys.
+   * @param visitor a visitor object.
+   * @param writable true for writable operation, or false for read-only operation.
+   * @return true on success, or false on failure.
+   * @note The operations for specified records are performed atomically and other threads
+   * accessing the same records are blocked.  To avoid deadlock, any database operation must not
+   * be performed in this function.
+   */
+  bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
+                   bool writable = true) {
+    _assert_(visitor);
+    if (type_ == TYPEVOID) {
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
+      return false;
+    }
+    return db_->accept_bulk(keys, visitor, writable);
   }
   /**
    * Iterate to accept a visitor for each record.

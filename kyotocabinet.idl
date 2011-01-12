@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * IDL for bindings of scripting languages
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -133,6 +133,7 @@ module kyotocabinet {
     boolean open(in string path, in long mode);
     boolean close();
     boolean accept(in string key, inout Visitor visitor, in boolean writable);
+    boolean accept_bulk(in List keys, inout Visitor visitor, in boolean writable);
     boolean iterate(inout Visitor visitor, in boolean writable);
     boolean set(in string key, in string value);
     boolean add(in string key, in string value);
@@ -143,6 +144,9 @@ module kyotocabinet {
     boolean cas(in string key, in string oval, in string nval);
     boolean remove(in string key);
     string get(in string key);
+    long long set_bulk(in Map recs);
+    long long remove_bulk(in List keys);
+    Map get_bulk(in List keys);
     boolean clear();
     boolean synchronize(in boolean hard, inout FileProcessor proc);
     boolean copy(in string dest);

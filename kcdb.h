@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Database interface
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -104,7 +104,7 @@ public:
      * @param writable true for writable operation, or false for read-only operation.
      * @param step true to move the cursor to the next record, or false for no move.
      * @return true on success, or false on failure.
-     * @note the operation for each record is performed atomically and other threads accessing
+     * @note The operation for each record is performed atomically and other threads accessing
      * the same record are blocked.  To avoid deadlock, any database operation must not be
      * performed in this function.
      */
@@ -1087,6 +1087,18 @@ public:
    */
   virtual bool close() = 0;
   /**
+   * Accept a visitor to multiple records at once.
+   * @param keys specifies a string vector of the keys.
+   * @param visitor a visitor object.
+   * @param writable true for writable operation, or false for read-only operation.
+   * @return true on success, or false on failure.
+   * @note The operations for specified records are performed atomically and other threads
+   * accessing the same records are blocked.  To avoid deadlock, any database operation must not
+   * be performed in this function.
+   */
+  virtual bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
+                           bool writable = true) = 0;
+  /**
    * Iterate to accept a visitor for each record.
    * @param visitor a visitor object.
    * @param writable true for writable operation, or false for read-only operation.
@@ -1797,6 +1809,138 @@ public:
       return -1;
     }
     return vsiz;
+  }
+  /**
+   * Store records at once.
+   * @param recs the records to store.
+   * @param atomic true to perform all operations atomically, or false for non-atomic operations.
+   * @return the number of stored records, or -1 on failure.
+   */
+  int64_t set_bulk(const std::map<std::string, std::string>& recs, bool atomic = true) {
+    _assert_(true);
+    if (atomic) {
+      std::vector<std::string> keys;
+      keys.reserve(recs.size());
+      std::map<std::string, std::string>::const_iterator rit = recs.begin();
+      std::map<std::string, std::string>::const_iterator ritend = recs.end();
+      while (rit != ritend) {
+        keys.push_back(rit->first);
+        rit++;
+      }
+      class VisitorImpl : public Visitor {
+      public:
+        explicit VisitorImpl(const std::map<std::string, std::string>& recs) : recs_(recs) {}
+      private:
+        const char* visit_full(const char* kbuf, size_t ksiz,
+                               const char* vbuf, size_t vsiz, size_t* sp) {
+          std::map<std::string, std::string>::const_iterator rit =
+            recs_.find(std::string(kbuf, ksiz));
+          if (rit == recs_.end()) return NOP;
+          *sp = rit->second.size();
+          return rit->second.data();
+        }
+        const char* visit_empty(const char* kbuf, size_t ksiz, size_t* sp) {
+          std::map<std::string, std::string>::const_iterator rit =
+            recs_.find(std::string(kbuf, ksiz));
+          if (rit == recs_.end()) return NOP;
+          *sp = rit->second.size();
+          return rit->second.data();
+        }
+        const std::map<std::string, std::string>& recs_;
+      };
+      VisitorImpl visitor(recs);
+      if (!accept_bulk(keys, &visitor, true)) return -1;
+      return keys.size();
+    }
+    std::map<std::string, std::string>::const_iterator rit = recs.begin();
+    std::map<std::string, std::string>::const_iterator ritend = recs.end();
+    while (rit != ritend) {
+      if (!set(rit->first.data(), rit->first.size(), rit->second.data(), rit->second.size()))
+        return -1;
+      rit++;
+    }
+    return recs.size();
+  }
+  /**
+   * Remove records at once.
+   * @param keys the keys of the records to remove.
+   * @param atomic true to perform all operations atomically, or false for non-atomic operations.
+   * @return the number of removed records, or -1 on failure.
+   */
+  int64_t remove_bulk(const std::vector<std::string>& keys, bool atomic = true) {
+    _assert_(true);
+    if (atomic) {
+      class VisitorImpl : public Visitor {
+      public:
+        explicit VisitorImpl() : cnt_(0) {}
+        int64_t cnt() const {
+          return cnt_;
+        }
+      private:
+        const char* visit_full(const char* kbuf, size_t ksiz,
+                               const char* vbuf, size_t vsiz, size_t* sp) {
+          cnt_++;
+          return REMOVE;
+        }
+        int64_t cnt_;
+      };
+      VisitorImpl visitor;
+      if (!accept_bulk(keys, &visitor, true)) return -1;
+      return visitor.cnt();
+    }
+    int64_t cnt = 0;
+    std::vector<std::string>::const_iterator kit = keys.begin();
+    std::vector<std::string>::const_iterator kitend = keys.end();
+    while (kit != kitend) {
+      if (remove(kit->data(), kit->size())) {
+        cnt++;
+      } else if (error() != Error::NOREC) {
+        return -1;
+      }
+      kit++;
+    }
+    return cnt;
+  }
+  /**
+   * Retrieve records at once.
+   * @param keys the keys of the records to retrieve.
+   * @param recs a string map to contain the retrieved records.
+   * @param atomic true to perform all operations atomically, or false for non-atomic operations.
+   * @return the number of retrieved records, or -1 on failure.
+   */
+  int64_t get_bulk(const std::vector<std::string>& keys,
+                   std::map<std::string, std::string>* recs, bool atomic = true) {
+    _assert_(recs);
+    if (atomic) {
+      class VisitorImpl : public Visitor {
+      public:
+        explicit VisitorImpl(std::map<std::string, std::string>* recs) : recs_(recs) {}
+      private:
+        const char* visit_full(const char* kbuf, size_t ksiz,
+                               const char* vbuf, size_t vsiz, size_t* sp) {
+          (*recs_)[std::string(kbuf, ksiz)] = std::string(vbuf, vsiz);
+          return NOP;
+        }
+        std::map<std::string, std::string>* recs_;
+      };
+      VisitorImpl visitor(recs);
+      if (!accept_bulk(keys, &visitor, false)) return -1;
+      return recs->size();
+    }
+    std::vector<std::string>::const_iterator kit = keys.begin();
+    std::vector<std::string>::const_iterator kitend = keys.end();
+    while (kit != kitend) {
+      size_t vsiz;
+      const char* vbuf = get(kit->data(), kit->size(), &vsiz);
+      if (vbuf) {
+        (*recs)[*kit] = std::string(vbuf, vsiz);
+        delete[] vbuf;
+      } else if (error() != Error::NOREC) {
+        return -1;
+      }
+      kit++;
+    }
+    return recs->size();
   }
   /**
    * Dump records into a data stream.

@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Cache hash database
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -424,6 +424,71 @@ public:
     slot->lock.lock();
     accept_impl(slot, hash, kbuf, ksiz, visitor, comp_, false);
     slot->lock.unlock();
+    return true;
+  }
+  /**
+   * Accept a visitor to multiple records at once.
+   * @param keys specifies a string vector of the keys.
+   * @param visitor a visitor object.
+   * @param writable true for writable operation, or false for read-only operation.
+   * @return true on success, or false on failure.
+   * @note The operations for specified records are performed atomically and other threads
+   * accessing the same records are blocked.  To avoid deadlock, any database operation must not
+   * be performed in this function.
+   */
+  bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
+                   bool writable = true) {
+    _assert_(visitor);
+    size_t knum = keys.size();
+    if (knum < 1) return true;
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
+      return false;
+    }
+    if (writable && !(omode_ & OWRITER)) {
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+      return false;
+    }
+    struct RecordKey {
+      const char* kbuf;
+      size_t ksiz;
+      uint64_t hash;
+      int32_t sidx;
+    };
+    RecordKey* rkeys = new RecordKey[knum];
+    std::set<int32_t> sidxs;
+    for (size_t i = 0; i < knum; i++) {
+      const std::string& key = keys[i];
+      RecordKey* rkey = rkeys + i;
+      rkey->kbuf = key.data();
+      rkey->ksiz = key.size();
+      if (rkey->ksiz > CDBKSIZMAX) rkey->ksiz = CDBKSIZMAX;
+      rkey->hash = hash_record(rkey->kbuf, rkey->ksiz);
+      rkey->sidx = rkey->hash % CDBSLOTNUM;
+      sidxs.insert(rkey->sidx);
+      rkey->hash /= CDBSLOTNUM;
+    }
+    std::set<int32_t>::iterator sit = sidxs.begin();
+    std::set<int32_t>::iterator sitend = sidxs.end();
+    while (sit != sitend) {
+      Slot* slot = slots_ + *sit;
+      slot->lock.lock();
+      sit++;
+    }
+    for (size_t i = 0; i < knum; i++) {
+      RecordKey* rkey = rkeys + i;
+      Slot* slot = slots_ + rkey->sidx;
+      accept_impl(slot, rkey->hash, rkey->kbuf, rkey->ksiz, visitor, comp_, false);
+    }
+    sit = sidxs.begin();
+    sitend = sidxs.end();
+    while (sit != sitend) {
+      Slot* slot = slots_ + *sit;
+      slot->lock.unlock();
+      sit++;
+    }
+    delete[] rkeys;
     return true;
   }
   /**

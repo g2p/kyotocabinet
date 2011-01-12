@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * The command line utility of the file tree database
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -37,6 +37,9 @@ static int32_t runcopy(int argc, char** argv);
 static int32_t rundump(int argc, char** argv);
 static int32_t runload(int argc, char** argv);
 static int32_t rundefrag(int argc, char** argv);
+static int32_t runsetbulk(int argc, char** argv);
+static int32_t runremovebulk(int argc, char** argv);
+static int32_t rungetbulk(int argc, char** argv);
 static int32_t runcheck(int argc, char** argv);
 static int32_t proccreate(const char* path, int32_t oflags, int32_t apow, int32_t fpow,
                           int32_t opts, int64_t bnum, int32_t psiz, kc::Comparator* rcomp);
@@ -54,6 +57,12 @@ static int32_t proccopy(const char* path, const char* file, int32_t oflags);
 static int32_t procdump(const char* path, const char* file, int32_t oflags);
 static int32_t procload(const char* path, const char* file, int32_t oflags);
 static int32_t procdefrag(const char* path, int32_t oflags);
+static int32_t procsetbulk(const char* path, int32_t oflags,
+                           const std::map<std::string, std::string>& recs);
+static int32_t procremovebulk(const char* path, int32_t oflags,
+                              const std::vector<std::string>& keys);
+static int32_t procgetbulk(const char* path, int32_t oflags,
+                           const std::vector<std::string>& keys, bool px);
 static int32_t proccheck(const char* path, int32_t oflags);
 
 
@@ -87,6 +96,12 @@ int main(int argc, char** argv) {
     rv = runload(argc, argv);
   } else if (!std::strcmp(argv[1], "defrag")) {
     rv = rundefrag(argc, argv);
+  } else if (!std::strcmp(argv[1], "setbulk")) {
+    rv = runsetbulk(argc, argv);
+  } else if (!std::strcmp(argv[1], "removebulk")) {
+    rv = runremovebulk(argc, argv);
+  } else if (!std::strcmp(argv[1], "getbulk")) {
+    rv = rungetbulk(argc, argv);
   } else if (!std::strcmp(argv[1], "check")) {
     rv = runcheck(argc, argv);
   } else if (!std::strcmp(argv[1], "version") || !std::strcmp(argv[1], "--version")) {
@@ -119,6 +134,9 @@ static void usage() {
   eprintf("  %s dump [-onl|-otl|-onr] path [file]\n", g_progname);
   eprintf("  %s load [-otr] [-onl|-otl|-onr] path [file]\n", g_progname);
   eprintf("  %s defrag [-onl|-otl|-onr] path\n", g_progname);
+  eprintf("  %s setbulk [-onl|-otl|-onr] [-sx] path key value ...\n", g_progname);
+  eprintf("  %s removebulk [-onl|-otl|-onr] [-sx] path key ...\n", g_progname);
+  eprintf("  %s getbulk [-onl|-otl|-onr] [-sx] [-px] path key ...\n", g_progname);
   eprintf("  %s check [-onl|-otl|-onr] path\n", g_progname);
   eprintf("\n");
   std::exit(1);
@@ -657,6 +675,160 @@ static int32_t rundefrag(int argc, char** argv) {
   }
   if (!path) usage();
   int32_t rv = procdefrag(path, oflags);
+  return rv;
+}
+
+
+// parse arguments of setbulk command
+static int32_t runsetbulk(int argc, char** argv) {
+  bool argbrk = false;
+  const char* path = NULL;
+  std::map<std::string, std::string> recs;
+  int32_t oflags = 0;
+  bool sx = false;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
+        oflags |= kc::TreeDB::ONOLOCK;
+      } else if (!std::strcmp(argv[i], "-otl")) {
+        oflags |= kc::TreeDB::OTRYLOCK;
+      } else if (!std::strcmp(argv[i], "-onr")) {
+        oflags |= kc::TreeDB::ONOREPAIR;
+      } else if (!std::strcmp(argv[i], "-sx")) {
+        sx = true;
+      } else {
+        usage();
+      }
+    } else if (!path) {
+      argbrk = true;
+      path = argv[i];
+    } else {
+      const char* kstr = argv[i];
+      if (++i >= argc) usage();
+      const char* vstr = argv[i];
+      char* kbuf;
+      size_t ksiz;
+      char* vbuf;
+      size_t vsiz;
+      if (sx) {
+        kbuf = kc::hexdecode(kstr, &ksiz);
+        kstr = kbuf;
+        vbuf = kc::hexdecode(vstr, &vsiz);
+        vstr = vbuf;
+      } else {
+        ksiz = std::strlen(kstr);
+        kbuf = NULL;
+        vsiz = std::strlen(vstr);
+        vbuf = NULL;
+      }
+      std::string key(kstr, ksiz);
+      std::string value(vstr, vsiz);
+      recs[key] = value;
+      delete[] kbuf;
+      delete[] vbuf;
+    }
+  }
+  if (!path) usage();
+  int32_t rv = procsetbulk(path, oflags, recs);
+  return rv;
+}
+
+
+// parse arguments of removebulk command
+static int32_t runremovebulk(int argc, char** argv) {
+  bool argbrk = false;
+  const char* path = NULL;
+  std::vector<std::string> keys;
+  int32_t oflags = 0;
+  bool sx = false;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
+        oflags |= kc::TreeDB::ONOLOCK;
+      } else if (!std::strcmp(argv[i], "-otl")) {
+        oflags |= kc::TreeDB::OTRYLOCK;
+      } else if (!std::strcmp(argv[i], "-onr")) {
+        oflags |= kc::TreeDB::ONOREPAIR;
+      } else if (!std::strcmp(argv[i], "-sx")) {
+        sx = true;
+      } else {
+        usage();
+      }
+    } else if (!path) {
+      argbrk = true;
+      path = argv[i];
+    } else {
+      const char* kstr = argv[i];
+      char* kbuf;
+      size_t ksiz;
+      if (sx) {
+        kbuf = kc::hexdecode(kstr, &ksiz);
+        kstr = kbuf;
+      } else {
+        ksiz = std::strlen(kstr);
+        kbuf = NULL;
+      }
+      std::string key(kstr, ksiz);
+      keys.push_back(key);
+      delete[] kbuf;
+    }
+  }
+  if (!path) usage();
+  int32_t rv = procremovebulk(path, oflags, keys);
+  return rv;
+}
+
+
+// parse arguments of getbulk command
+static int32_t rungetbulk(int argc, char** argv) {
+  bool argbrk = false;
+  const char* path = NULL;
+  std::vector<std::string> keys;
+  int32_t oflags = 0;
+  bool sx = false;
+  bool px = false;
+  for (int32_t i = 2; i < argc; i++) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!std::strcmp(argv[i], "--")) {
+        argbrk = true;
+      } else if (!std::strcmp(argv[i], "-onl")) {
+        oflags |= kc::TreeDB::ONOLOCK;
+      } else if (!std::strcmp(argv[i], "-otl")) {
+        oflags |= kc::TreeDB::OTRYLOCK;
+      } else if (!std::strcmp(argv[i], "-onr")) {
+        oflags |= kc::TreeDB::ONOREPAIR;
+      } else if (!std::strcmp(argv[i], "-sx")) {
+        sx = true;
+      } else if (!std::strcmp(argv[i], "-px")) {
+        px = true;
+      } else {
+        usage();
+      }
+    } else if (!path) {
+      argbrk = true;
+      path = argv[i];
+    } else {
+      const char* kstr = argv[i];
+      char* kbuf;
+      size_t ksiz;
+      if (sx) {
+        kbuf = kc::hexdecode(kstr, &ksiz);
+        kstr = kbuf;
+      } else {
+        ksiz = std::strlen(kstr);
+        kbuf = NULL;
+      }
+      std::string key(kstr, ksiz);
+      keys.push_back(key);
+      delete[] kbuf;
+    }
+  }
+  if (!path) usage();
+  int32_t rv = procgetbulk(path, oflags, keys, px);
   return rv;
 }
 
@@ -1230,6 +1402,83 @@ static int32_t procdefrag(const char* path, int32_t oflags) {
   bool err = false;
   if (!db.defrag(0)) {
     dberrprint(&db, "DB::defrag failed");
+    err = true;
+  }
+  if (!db.close()) {
+    dberrprint(&db, "DB::close failed");
+    err = true;
+  }
+  return err ? 1 : 0;
+}
+
+
+// perform setbulk command
+static int32_t procsetbulk(const char* path, int32_t oflags,
+                           const std::map<std::string, std::string>& recs) {
+  kc::TreeDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
+  if (!db.open(path, kc::TreeDB::OWRITER | oflags)) {
+    dberrprint(&db, "DB::open failed");
+    return 1;
+  }
+  bool err = false;
+  if (db.set_bulk(recs) != (int64_t)recs.size()) {
+    dberrprint(&db, "DB::set_bulk failed");
+    err = true;
+  }
+  if (!db.close()) {
+    dberrprint(&db, "DB::close failed");
+    err = true;
+  }
+  return err ? 1 : 0;
+}
+
+
+// perform removebulk command
+static int32_t procremovebulk(const char* path, int32_t oflags,
+                              const std::vector<std::string>& keys) {
+  kc::TreeDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
+  if (!db.open(path, kc::TreeDB::OWRITER | oflags)) {
+    dberrprint(&db, "DB::open failed");
+    return 1;
+  }
+  bool err = false;
+  if (db.remove_bulk(keys) < 0) {
+    dberrprint(&db, "DB::remove_bulk failed");
+    err = true;
+  }
+  if (!db.close()) {
+    dberrprint(&db, "DB::close failed");
+    err = true;
+  }
+  return err ? 1 : 0;
+}
+
+
+// perform getbulk command
+static int32_t procgetbulk(const char* path, int32_t oflags,
+                           const std::vector<std::string>& keys, bool px) {
+  kc::TreeDB db;
+  db.tune_logger(stdlogger(g_progname, &std::cerr));
+  if (!db.open(path, kc::TreeDB::OREADER | oflags)) {
+    dberrprint(&db, "DB::open failed");
+    return 1;
+  }
+  bool err = false;
+  std::map<std::string, std::string> recs;
+  if (db.get_bulk(keys, &recs) >= 0) {
+    std::map<std::string, std::string>::iterator it = recs.begin();
+    std::map<std::string, std::string>::iterator itend = recs.end();
+    while (it != itend) {
+      printdata(it->first.data(), it->first.size(), px);
+      oprintf("\t");
+      printdata(it->second.data(), it->second.size(), px);
+      oprintf("\n");
+      it++;
+    }
+  } else {
+    dberrprint(&db, "DB::get_bulk failed");
     err = true;
   }
   if (!db.close()) {

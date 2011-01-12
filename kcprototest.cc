@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * The test cases of the prototype database
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -1714,6 +1714,51 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
               }
             }
           } while (myrand(100) == 0);
+          if (myrand(100) == 0) {
+            int32_t jnum = myrand(10);
+            switch (myrand(4)) {
+              case 0: {
+                std::map<std::string, std::string> recs;
+                for (int32_t j = 0; j < jnum; j++) {
+                  char jbuf[RECBUFSIZ];
+                  size_t jsiz = std::sprintf(jbuf, "%lld", (long long)(myrand(range) + 1));
+                  recs[std::string(jbuf, jsiz)] = std::string(kbuf, ksiz);
+                }
+                if (db_->set_bulk(recs, myrand(4)) != (int64_t)recs.size()) {
+                  dberrprint(db_, __LINE__, "DB::set_bulk");
+                  err_ = true;
+                }
+                break;
+              }
+              case 1: {
+                std::vector<std::string> keys;
+                for (int32_t j = 0; j < jnum; j++) {
+                  char jbuf[RECBUFSIZ];
+                  size_t jsiz = std::sprintf(jbuf, "%lld", (long long)(myrand(range) + 1));
+                  keys.push_back(std::string(jbuf, jsiz));
+                }
+                if (db_->remove_bulk(keys, myrand(4)) < 0) {
+                  dberrprint(db_, __LINE__, "DB::remove_bulk");
+                  err_ = true;
+                }
+                break;
+              }
+              default: {
+                std::vector<std::string> keys;
+                for (int32_t j = 0; j < jnum; j++) {
+                  char jbuf[RECBUFSIZ];
+                  size_t jsiz = std::sprintf(jbuf, "%lld", (long long)(myrand(range) + 1));
+                  keys.push_back(std::string(jbuf, jsiz));
+                }
+                std::map<std::string, std::string> recs;
+                if (db_->get_bulk(keys, &recs, myrand(4)) < 0) {
+                  dberrprint(db_, __LINE__, "DB::get_bulk");
+                  err_ = true;
+                }
+                break;
+              }
+            }
+          }
           if (i == rnum_ / 2) {
             if (myrand(thnum_ * 4) == 0) {
               if (!db_->clear()) {

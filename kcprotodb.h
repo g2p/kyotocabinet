@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Prototype database
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -149,8 +149,8 @@ public:
       const std::string& key = it_->first;
       const std::string& value = it_->second;
       size_t vsiz;
-      const char* vbuf = visitor->visit_full(key.c_str(), key.size(),
-                                             value.c_str(), value.size(), &vsiz);
+      const char* vbuf = visitor->visit_full(key.data(), key.size(),
+                                             value.data(), value.size(), &vsiz);
       if (vbuf == Visitor::REMOVE) {
         if (db_->tran_) {
           TranLog log(key, value);
@@ -226,7 +226,7 @@ public:
      */
     bool jump(const std::string& key) {
       _assert_(true);
-      return jump(key.c_str(), key.size());
+      return jump(key.data(), key.size());
     }
     /**
      * Jump the cursor to the last record for backward scan.
@@ -298,7 +298,7 @@ public:
      */
     bool jump_back(const std::string& key) {
       _assert_(true);
-      return jump_back(key.c_str(), key.size());
+      return jump_back(key.data(), key.size());
     }
     /**
      * Step the cursor to the next record.
@@ -428,7 +428,7 @@ public:
       } else {
         const std::string& value = it->second;
         size_t vsiz;
-        const char* vbuf = visitor->visit_full(kbuf, ksiz, value.c_str(), value.size(), &vsiz);
+        const char* vbuf = visitor->visit_full(kbuf, ksiz, value.data(), value.size(), &vsiz);
         if (vbuf == Visitor::REMOVE) {
           if (tran_) {
             TranLog log(key, value);
@@ -474,12 +474,85 @@ public:
       } else {
         const std::string& value = it->second;
         size_t vsiz;
-        const char* vbuf = visitor->visit_full(kbuf, ksiz, value.c_str(), value.size(), &vsiz);
+        const char* vbuf = visitor->visit_full(kbuf, ksiz, value.data(), value.size(), &vsiz);
         if (vbuf != Visitor::NOP && vbuf != Visitor::REMOVE) {
           set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
           return false;
         }
       }
+    }
+    return true;
+  }
+  /**
+   * Accept a visitor to multiple records at once.
+   * @param keys specifies a string vector of the keys.
+   * @param visitor a visitor object.
+   * @param writable true for writable operation, or false for read-only operation.
+   * @return true on success, or false on failure.
+   * @note The operations for specified records are performed atomically and other threads
+   * accessing the same records are blocked.  To avoid deadlock, any database operation must not
+   * be performed in this function.
+   */
+  bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
+                   bool writable = true) {
+    _assert_(visitor);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ == 0) {
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
+      return false;
+    }
+    if (!(omode_ & OWRITER)) {
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+      return false;
+    }
+    std::vector<std::string>::const_iterator kit = keys.begin();
+    std::vector<std::string>::const_iterator kitend = keys.end();
+    while (kit != kitend) {
+      const std::string& key = *kit;
+      typename STRMAP::iterator it = recs_.find(key);
+      if (it == recs_.end()) {
+        size_t vsiz;
+        const char* vbuf = visitor->visit_empty(key.data(), key.size(), &vsiz);
+        if (vbuf != Visitor::NOP && vbuf != Visitor::REMOVE) {
+          if (tran_) {
+            TranLog log(key);
+            trlogs_.push_back(log);
+          }
+          size_ += key.size() + vsiz;
+          recs_[key] = std::string(vbuf, vsiz);
+        }
+      } else {
+        const std::string& value = it->second;
+        size_t vsiz;
+        const char* vbuf = visitor->visit_full(key.data(), key.size(),
+                                               value.data(), value.size(), &vsiz);
+        if (vbuf == Visitor::REMOVE) {
+          if (tran_) {
+            TranLog log(key, value);
+            trlogs_.push_back(log);
+          }
+          size_ -= key.size() + value.size();
+          if (!curs_.empty()) {
+            typename CursorList::const_iterator cit = curs_.begin();
+            typename CursorList::const_iterator citend = curs_.end();
+            while (cit != citend) {
+              Cursor* cur = *cit;
+              if (cur->it_ == it) cur->it_++;
+              cit++;
+            }
+          }
+          recs_.erase(it);
+        } else if (vbuf != Visitor::NOP) {
+          if (tran_) {
+            TranLog log(key, value);
+            trlogs_.push_back(log);
+          }
+          size_ -= value.size();
+          size_ += vsiz;
+          it->second = std::string(vbuf, vsiz);
+        }
+      }
+      kit++;
     }
     return true;
   }
@@ -515,8 +588,8 @@ public:
       const std::string& key = it->first;
       const std::string& value = it->second;
       size_t vsiz;
-      const char* vbuf = visitor->visit_full(key.c_str(), key.size(),
-                                             value.c_str(), value.size(), &vsiz);
+      const char* vbuf = visitor->visit_full(key.data(), key.size(),
+                                             value.data(), value.size(), &vsiz);
       if (vbuf == Visitor::REMOVE) {
         size_ -= key.size() + value.size();
         recs_.erase(it++);

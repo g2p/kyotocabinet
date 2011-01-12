@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Plant database
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -1046,6 +1046,80 @@ public:
       mlock_.lock_writer();
       if (!fix_auto_synchronization()) err = true;
       mlock_.unlock();
+    }
+    return !err;
+  }
+  /**
+   * Accept a visitor to multiple records at once.
+   * @param keys specifies a string vector of the keys.
+   * @param visitor a visitor object.
+   * @param writable true for writable operation, or false for read-only operation.
+   * @return true on success, or false on failure.
+   * @note The operations for specified records are performed atomically and other threads
+   * accessing the same records are blocked.  To avoid deadlock, any database operation must not
+   * be performed in this function.
+   */
+  bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
+                   bool writable = true) {
+    _assert_(visitor);
+    ScopedSpinRWLock lock(&mlock_, true);
+    if (omode_ == 0) {
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
+      return false;
+    }
+    if (writable && !writer_) {
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+      return false;
+    }
+    bool err = false;
+    std::vector<std::string>::const_iterator kit = keys.begin();
+    std::vector<std::string>::const_iterator kitend = keys.end();
+    while (!err && kit != kitend) {
+      const char* kbuf = kit->data();
+      size_t ksiz = kit->size();
+      char lstack[PDBRECBUFSIZ];
+      size_t lsiz = sizeof(Link) + ksiz;
+      char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
+      Link* link = (Link*)lbuf;
+      link->child = 0;
+      link->ksiz = ksiz;
+      std::memcpy(lbuf + sizeof(*link), kbuf, ksiz);
+      int64_t hist[PDBLEVELMAX];
+      int32_t hnum = 0;
+      LeafNode* node = search_tree(link, true, hist, &hnum);
+      if (!node) {
+        set_error(_KCCODELINE_, Error::BROKEN, "search failed");
+        if (lbuf != lstack) delete[] lbuf;
+        err = true;
+        break;
+      }
+      char rstack[PDBRECBUFSIZ];
+      size_t rsiz = sizeof(Record) + ksiz;
+      char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
+      Record* rec = (Record*)rbuf;
+      rec->ksiz = ksiz;
+      rec->vsiz = 0;
+      std::memcpy(rbuf + sizeof(*rec), kbuf, ksiz);
+      bool reorg = accept_impl(node, rec, visitor);
+      bool atran = autotran_ && node->dirty;
+      bool async = autosync_ && !autotran_ && node->dirty;
+      if (atran && !reorg && !tran_ && !fix_auto_transaction_leaf(node)) err = true;
+      if (reorg) {
+        if (!reorganize_tree(node, hist, hnum)) err = true;
+        if (atran && !tran_ && !fix_auto_transaction_tree()) err = true;
+      } else if (cusage_ > pccap_) {
+        int32_t idx = node->id % PDBSLOTNUM;
+        LeafSlot* lslot = lslots_ + idx;
+        if (!clean_leaf_cache_part(lslot)) err = true;
+        if (!flush_leaf_cache_part(lslot)) err = true;
+        InnerSlot* islot = islots_ + idx;
+        if (islot->warm->count() > lslot->warm->count() + lslot->hot->count() + 1 &&
+            !flush_inner_cache_part(islot)) err = true;
+      }
+      if (rbuf != rstack) delete[] rbuf;
+      if (lbuf != lstack) delete[] lbuf;
+      if (async && !fix_auto_synchronization()) err = true;
+      kit++;
     }
     return !err;
   }

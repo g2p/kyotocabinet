@@ -57,6 +57,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a864e098a51c2b7bc5ade6922c97016ac"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1StashDB.html#a173f5b8e362e6f4a48dfc60019d3f5fa">accept</a> (const char *kbuf, size_t ksiz, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to a record.  <a href="#a173f5b8e362e6f4a48dfc60019d3f5fa"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1StashDB.html#a5825d5ffc7dd873582fb4d9e581044a2">accept_bulk</a> (const std::vector&lt; std::string &gt; &amp;keys, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to multiple records at once.  <a href="#a5825d5ffc7dd873582fb4d9e581044a2"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1StashDB.html#ae9858542f7b15dce4daeec8df9027549">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#ae9858542f7b15dce4daeec8df9027549"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1Error.html">Error</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1StashDB.html#a356e98971096a653bb1c5d1b3475e8f8">error</a> () const </td></tr>
@@ -202,6 +204,53 @@
 <dl class="note"><dt><b>Note:</b></dt><dd>The operation for each record is performed atomically and other threads accessing the same record are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a5ae32216900a642c5182e7ee67677467">kyotocabinet::DB</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a5825d5ffc7dd873582fb4d9e581044a2"></a><!-- doxytag: member="kyotocabinet::StashDB::accept_bulk" ref="a5825d5ffc7dd873582fb4d9e581044a2" args="(const std::vector&lt; std::string &gt; &amp;keys, Visitor *visitor, bool writable=true)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::StashDB::accept_bulk </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; std::string &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>keys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *&nbsp;</td>
+          <td class="paramname"> <em>visitor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>writable</em> = <code>true</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Accept a visitor to multiple records at once. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>keys</em>&nbsp;</td><td>specifies a string vector of the keys. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>visitor</em>&nbsp;</td><td>a visitor object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>writable</em>&nbsp;</td><td>true for writable operation, or false for read-only operation. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operations for specified records are performed atomically and other threads accessing the same records are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
+
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a0213c08b8dce9401ca5f5b1bc19aa4a6">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -1033,7 +1082,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Dec 19 12:53:11 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Jan 3 13:02:28 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

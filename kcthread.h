@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Threading devices
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -215,7 +215,7 @@ public:
    */
   void unlock_all() {
     _assert_(true);
-    for (int32_t i = SLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].unlock();
     }
   }
@@ -340,7 +340,7 @@ public:
    */
   void unlock_all() {
     _assert_(true);
-    for (int32_t i = SLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].unlock();
     }
   }
@@ -496,7 +496,7 @@ public:
    */
   void unlock_all() {
     _assert_(true);
-    for (int32_t i = SLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].unlock();
     }
   }
@@ -661,7 +661,7 @@ public:
    */
   void unlock_all() {
     _assert_(true);
-    for (int32_t i = SLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       locks_[i].unlock();
     }
   }

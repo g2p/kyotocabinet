@@ -22,8 +22,8 @@
 
 <h1 id="headline">Specificatoins of Command Line Utilities of Kyoto Cabinet</h1>
 
-<div class="note">Copyright (C) 2009-2010 FAL Labs</div>
-<div class="note">Last Update: Sun, 19 Dec 2010 12:28:06 +0900</div>
+<div class="note">Copyright (C) 2009-2011 FAL Labs</div>
+<div class="note">Last Update: Sun, 02 Jan 2011 22:21:53 +0900</div>
 
 <hr />
 
@@ -341,6 +341,12 @@
 <dd>Loads records from a snapshot file.</dd>
 <dt><code>kchashmgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Performs defragmentation.</dd>
+<dt><code>kchashmgr setbulk [-onl|-otl|-onr] <var>path</var> <var>key</var> <var>value</var> ...</code></dt>
+<dd>Store records at once.</dd>
+<dt><code>kchashmgr removebulk [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Remove records at once.</dd>
+<dt><code>kchashmgr getbulk [-onl|-otl|-onr] [-sx] [-px] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Retrieve records at once.</dd>
 <dt><code>kchashmgr check [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Checks consistency.</dd>
 </dl>
@@ -455,6 +461,12 @@
 <dd>Loads records from a snapshot file.</dd>
 <dt><code>kctreemgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Performs defragmentation.</dd>
+<dt><code>kctreemgr setbulk [-onl|-otl|-onr] <var>path</var> <var>key</var> <var>value</var> ...</code></dt>
+<dd>Store records at once.</dd>
+<dt><code>kctreemgr removebulk [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Remove records at once.</dd>
+<dt><code>kctreemgr getbulk [-onl|-otl|-onr] [-sx] [-px] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Retrieve records at once.</dd>
 <dt><code>kctreemgr check [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Checks consistency.</dd>
 </dl>
@@ -562,6 +574,12 @@
 <dd>Loads records from a snapshot file.</dd>
 <dt><code>kcdirmgr defrag [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Performs defragmentation.</dd>
+<dt><code>kcdirmgr setbulk [-onl|-otl|-onr] <var>path</var> <var>key</var> <var>value</var> ...</code></dt>
+<dd>Store records at once.</dd>
+<dt><code>kcdirmgr removebulk [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Remove records at once.</dd>
+<dt><code>kcdirmgr getbulk [-onl|-otl|-onr] [-sx] [-px] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Retrieve records at once.</dd>
 <dt><code>kcdirmgr check [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Checks consistency.</dd>
 </dl>
@@ -663,6 +681,12 @@
 <dd>Dumps records into a snapshot file.</dd>
 <dt><code>kcforestmgr load [-otr] [-onl|-otl|-onr] <var>path</var> [<var>file</var>]</code></dt>
 <dd>Loads records from a snapshot file.</dd>
+<dt><code>kcforestmgr setbulk [-onl|-otl|-onr] <var>path</var> <var>key</var> <var>value</var> ...</code></dt>
+<dd>Store records at once.</dd>
+<dt><code>kcforestmgr removebulk [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Remove records at once.</dd>
+<dt><code>kcforestmgr getbulk [-onl|-otl|-onr] [-sx] [-px] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Retrieve records at once.</dd>
 <dt><code>kcforestmgr check [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Checks consistency.</dd>
 </dl>
@@ -775,6 +799,12 @@
 <dd>Loads records from a snapshot file.</dd>
 <dt><code>kcpolymgr merge [-onl|-otl|-onr] [-add|-app|-rep] <var>path</var> <var>src</var>...</code></dt>
 <dd>Merge records from other databases.</dd>
+<dt><code>kcpolymgr setbulk [-onl|-otl|-onr] <var>path</var> <var>key</var> <var>value</var> ...</code></dt>
+<dd>Store records at once.</dd>
+<dt><code>kcpolymgr removebulk [-onl|-otl|-onr] [-sx] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Remove records at once.</dd>
+<dt><code>kcpolymgr getbulk [-onl|-otl|-onr] [-sx] [-px] <var>path</var> <var>key</var> ...</code></dt>
+<dd>Retrieve records at once.</dd>
 <dt><code>kcpolymgr check [-onl|-otl|-onr] <var>path</var></code></dt>
 <dd>Checks consistency.</dd>
 </dl>
