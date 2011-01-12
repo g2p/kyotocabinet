@@ -1,3 +1,33 @@
+kyotocabinet (1.2.31-1~1.gbp99c11c) UNRELEASED; urgency=low
+
+  ** SNAPSHOT build @99c11c4f9ddb3133f362bd1ef55cbd2a501f09c6 **
+
+  [ Gabriel de Perthuis ]
+  * Imported Upstream version 1.2.30
+  * Kyoto cabinet flags for being featureful. Disable Tokyo cabinet only
+    flags.
+  * Update package metadata.
+  * Update dependencies.
+  * Remove patches that are only relevant to TC.
+  * Refresh Libs.private patch.
+  * Update the rpaths patch.
+  * Update diffstat via gbp-pq {import,rebase,export,drop}
+  * Don't drop a shared ccache (quilt patch).
+  * Start using symbol versioning (generated). There are no man pages.
+  * XXX Disable slooow tests.
+  * Doc files aren't landing in a non-fhs location anymore.
+  * Patch for linking as-needed.
+  * Remove inapplicable packaging note.
+  * Don't include debian revision in symbols.
+  * Try harder to keep ~/.ccache from harm.
+  * Update uscan watch file
+  * Remove a stray LGPL reference.
+  * Update changelog after git import-orig
+  * Imported Upstream version 1.2.31
+
+
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Wed, 12 Jan 2011 18:34:23 +0100
+
 kyotocabinet (1.2.30-1) unstable; urgency=low
 
   * Initial release, based on Pierre Habouzit's Tokyo Cabinet packaging work.
