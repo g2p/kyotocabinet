@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * File hash database
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -55,7 +55,7 @@ const int32_t HDBWIDTHLARGE = 6;         ///< large width of the record address
 const int32_t HDBWIDTHSMALL = 4;         ///< small width of the record address
 const size_t HDBRECBUFSIZ = 48;          ///< size of the record buffer
 const size_t HDBIOBUFSIZ = 1024;         ///< size of the IO buffer
-const int32_t HDBRLOCKSLOT = 64;         ///< number of slots of the record lock
+const int32_t HDBRLOCKSLOT = 256;        ///< number of slots of the record lock
 const uint8_t HDBDEFAPOW = 3;            ///< default alignment power
 const uint8_t HDBMAXAPOW = 15;           ///< maximum alignment power
 const uint8_t HDBDEFFPOW = 10;           ///< default free block pool power
@@ -530,6 +530,7 @@ public:
       mlock_.unlock();
       return false;
     }
+    bool err = false;
     uint64_t hash = hash_record(kbuf, ksiz);
     uint32_t pivot = fold_hash(hash);
     int64_t bidx = hash % bnum_;
@@ -539,9 +540,88 @@ public:
     } else {
       rlock_.lock_reader(lidx);
     }
-    bool err = false;
     if (!accept_impl(kbuf, ksiz, visitor, bidx, pivot, false)) err = true;
     rlock_.unlock(lidx);
+    if (!err && dfunit_ > 0 && frgcnt_ >= dfunit_ && mlock_.promote()) {
+      int64_t unit = frgcnt_;
+      if (unit >= dfunit_) {
+        if (unit > HDBDFRGMAX) unit = HDBDFRGMAX;
+        if (!defrag_impl(unit * HDBDFRGCEF)) err = true;
+        frgcnt_ -= unit;
+      }
+    }
+    mlock_.unlock();
+    return !err;
+  }
+  /**
+   * Accept a visitor to multiple records at once.
+   * @param keys specifies a string vector of the keys.
+   * @param visitor a visitor object.
+   * @param writable true for writable operation, or false for read-only operation.
+   * @return true on success, or false on failure.
+   * @note The operations for specified records are performed atomically and other threads
+   * accessing the same records are blocked.  To avoid deadlock, any database operation must not
+   * be performed in this function.
+   */
+  bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
+                   bool writable = true) {
+    _assert_(visitor);
+    size_t knum = keys.size();
+    if (knum < 1) return true;
+    mlock_.lock_reader();
+    if (omode_ == 0) {
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
+      mlock_.unlock();
+      return false;
+    }
+    if (writable && !writer_) {
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+      mlock_.unlock();
+      return false;
+    }
+    bool err = false;
+    struct RecordKey {
+      const char* kbuf;
+      size_t ksiz;
+      uint32_t pivot;
+      uint64_t bidx;
+    };
+    RecordKey* rkeys = new RecordKey[knum];
+    std::set<size_t> lidxs;
+    for (size_t i = 0; i < knum; i++) {
+      const std::string& key = keys[i];
+      RecordKey* rkey = rkeys + i;
+      rkey->kbuf = key.data();
+      rkey->ksiz = key.size();
+      uint64_t hash = hash_record(rkey->kbuf, rkey->ksiz);
+      rkey->pivot = fold_hash(hash);
+      rkey->bidx = hash % bnum_;
+      lidxs.insert(rkey->bidx % HDBRLOCKSLOT);
+    }
+    std::set<size_t>::iterator lit = lidxs.begin();
+    std::set<size_t>::iterator litend = lidxs.end();
+    while (lit != litend) {
+      if (writable) {
+        rlock_.lock_writer(*lit);
+      } else {
+        rlock_.lock_reader(*lit);
+      }
+      lit++;
+    }
+    for (size_t i = 0; i < knum; i++) {
+      RecordKey* rkey = rkeys + i;
+      if (!accept_impl(rkey->kbuf, rkey->ksiz, visitor, rkey->bidx, rkey->pivot, false)) {
+        err = true;
+        break;
+      }
+    }
+    lit = lidxs.begin();
+    litend = lidxs.end();
+    while (lit != litend) {
+      rlock_.unlock(*lit);
+      lit++;
+    }
+    delete[] rkeys;
     if (!err && dfunit_ > 0 && frgcnt_ >= dfunit_ && mlock_.promote()) {
       int64_t unit = frgcnt_;
       if (unit >= dfunit_) {

@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Directory hash database
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -42,7 +42,7 @@ const char DDBCHKSUMSEED[] = "__kyotocabinet__";  ///< seed of the module checks
 const char DDBMAGICEOF[] = "_EOF_";      ///< magic data for the end of file
 const int64_t DDBMETABUFSIZ = 128;       ///< size of the meta data buffer
 const uint8_t DDBRECMAGIC = 0xcc;        ///< magic data for record
-const int32_t DDBRLOCKSLOT = 64;         ///< number of slots of the record lock
+const int32_t DDBRLOCKSLOT = 256;        ///< number of slots of the record lock
 const int32_t DDBRECUNITSIZ = 32;        ///< unit size of a record
 const size_t DDBOPAQUESIZ = 16;          ///< size of the opaque buffer
 const char* DDBWALPATHEXT = "wal";       ///< extension of the WAL directory
@@ -414,14 +414,13 @@ public:
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
-      mlock_.unlock();
       return false;
     }
     if (writable && !writer_) {
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
-      mlock_.unlock();
       return false;
     }
+    bool err = false;
     char name[NUMBUFSIZ];
     size_t lidx = hashpath(kbuf, ksiz, name) % DDBRLOCKSLOT;
     if (writable) {
@@ -429,9 +428,73 @@ public:
     } else {
       rlock_.lock_reader(lidx);
     }
-    bool err = false;
     if (!accept_impl(kbuf, ksiz, visitor, name)) err = true;
     rlock_.unlock(lidx);
+    return !err;
+  }
+  /**
+   * Accept a visitor to multiple records at once.
+   * @param keys specifies a string vector of the keys.
+   * @param visitor a visitor object.
+   * @param writable true for writable operation, or false for read-only operation.
+   * @return true on success, or false on failure.
+   * @note The operations for specified records are performed atomically and other threads
+   * accessing the same records are blocked.  To avoid deadlock, any database operation must not
+   * be performed in this function.
+   */
+  bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
+                   bool writable = true) {
+    _assert_(visitor);
+    size_t knum = keys.size();
+    if (knum < 1) return true;
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
+      return false;
+    }
+    if (writable && !writer_) {
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+      return false;
+    }
+    bool err = false;
+    struct RecordKey {
+      const char* kbuf;
+      size_t ksiz;
+      char name[NUMBUFSIZ];
+    };
+    RecordKey* rkeys = new RecordKey[knum];
+    std::set<size_t> lidxs;
+    for (size_t i = 0; i < knum; i++) {
+      const std::string& key = keys[i];
+      RecordKey* rkey = rkeys + i;
+      rkey->kbuf = key.data();
+      rkey->ksiz = key.size();
+      lidxs.insert(hashpath(rkey->kbuf, rkey->ksiz, rkey->name) % DDBRLOCKSLOT);
+    }
+    std::set<size_t>::iterator lit = lidxs.begin();
+    std::set<size_t>::iterator litend = lidxs.end();
+    while (lit != litend) {
+      if (writable) {
+        rlock_.lock_writer(*lit);
+      } else {
+        rlock_.lock_reader(*lit);
+      }
+      lit++;
+    }
+    for (size_t i = 0; i < knum; i++) {
+      RecordKey* rkey = rkeys + i;
+      if (!accept_impl(rkey->kbuf, rkey->ksiz, visitor, rkey->name)) {
+        err = true;
+        break;
+      }
+    }
+    lit = lidxs.begin();
+    litend = lidxs.end();
+    while (lit != litend) {
+      rlock_.unlock(*lit);
+      lit++;
+    }
+    delete[] rkeys;
     return !err;
   }
   /**

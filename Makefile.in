@@ -314,6 +314,9 @@ check-hash :
 	$(RUNENV) $(RUNCMD) ./kchashmgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kchashmgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kchashmgr defrag -onl casket
+	$(RUNENV) $(RUNCMD) ./kchashmgr setbulk casket aa aaa bb bbb cc ccc dd ddd
+	$(RUNENV) $(RUNCMD) ./kchashmgr removebulk casket aa bb zz
+	$(RUNENV) $(RUNCMD) ./kchashmgr getbulk casket aa bb cc dd
 	$(RUNENV) $(RUNCMD) ./kchashmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kchashmgr inform -st casket
 	$(RUNENV) $(RUNCMD) ./kchashmgr create -otr -otl -onr -apow 1 -fpow 3 \
@@ -408,6 +411,9 @@ check-tree :
 	$(RUNENV) $(RUNCMD) ./kctreemgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr load -otr casket check.out
 	$(RUNENV) $(RUNCMD) ./kctreemgr defrag -onl casket
+	$(RUNENV) $(RUNCMD) ./kctreemgr setbulk casket aa aaa bb bbb cc ccc dd ddd
+	$(RUNENV) $(RUNCMD) ./kctreemgr removebulk casket aa bb zz
+	$(RUNENV) $(RUNCMD) ./kctreemgr getbulk casket aa bb cc dd
 	$(RUNENV) $(RUNCMD) ./kctreemgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kctreemgr inform -st casket
 	$(RUNENV) $(RUNCMD) ./kctreemgr create -otr -otl -onr -apow 1 -fpow 3 \
@@ -507,6 +513,9 @@ check-dir :
 	$(RUNENV) $(RUNCMD) ./kcdirmgr copy casket casket-para
 	$(RUNENV) $(RUNCMD) ./kcdirmgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kcdirmgr load -otr casket check.out
+	$(RUNENV) $(RUNCMD) ./kcdirmgr setbulk casket aa aaa bb bbb cc ccc dd ddd
+	$(RUNENV) $(RUNCMD) ./kcdirmgr removebulk casket aa bb zz
+	$(RUNENV) $(RUNCMD) ./kcdirmgr getbulk casket aa bb cc dd
 	$(RUNENV) $(RUNCMD) ./kcdirmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kcdirmgr inform -st casket
 	$(RUNENV) $(RUNCMD) ./kcdirmgr create -otr -otl -onr -tc casket
@@ -585,6 +594,9 @@ check-forest :
 	$(RUNENV) $(RUNCMD) ./kcforestmgr copy casket casket-para
 	$(RUNENV) $(RUNCMD) ./kcforestmgr dump casket check.out
 	$(RUNENV) $(RUNCMD) ./kcforestmgr load -otr casket check.out
+	$(RUNENV) $(RUNCMD) ./kcforestmgr setbulk casket aa aaa bb bbb cc ccc dd ddd
+	$(RUNENV) $(RUNCMD) ./kcforestmgr removebulk casket aa bb zz
+	$(RUNENV) $(RUNCMD) ./kcforestmgr getbulk casket aa bb cc dd
 	$(RUNENV) $(RUNCMD) ./kcforestmgr check -onr casket
 	$(RUNENV) $(RUNCMD) ./kcforestmgr inform -st casket
 	$(RUNENV) $(RUNCMD) ./kcforestmgr create -otr -otl -onr \
@@ -684,6 +696,9 @@ check-poly :
 	$(RUNENV) $(RUNCMD) ./kcpolymgr get "casket.kch" ryu
 	$(RUNENV) $(RUNCMD) ./kcpolymgr import casket.kch lab/numbers.tsv
 	$(RUNENV) $(RUNCMD) ./kcpolymgr list -pv -px "casket.kch#mode=r" > check.out
+	$(RUNENV) $(RUNCMD) ./kcpolymgr setbulk casket.kch aa aaa bb bbb cc ccc dd ddd
+	$(RUNENV) $(RUNCMD) ./kcpolymgr removebulk casket.kch aa bb zz
+	$(RUNENV) $(RUNCMD) ./kcpolymgr getbulk casket.kch aa bb cc dd
 	$(RUNENV) $(RUNCMD) ./kcpolymgr check -onr casket.kch
 	$(RUNENV) $(RUNCMD) ./kcpolymgr inform -st casket.kch
 	$(RUNENV) $(RUNCMD) ./kcpolymgr create -otr -otl -onr \

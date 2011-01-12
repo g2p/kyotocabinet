@@ -1,3 +1,15 @@
+2010-12-30  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcdb.h (BasicDB::accept_bulk): new function.
+
+	* kcdb.h (BasicDB::set_bulk, BasicDB::remove_bulk, BasicDB::get_bulk): new functions.
+
+	* kcthread.h (SlottedMutex::unlock_all): the order became forward.
+
+	* kcpolymgr.cc (procsetbulk, procremovebulk, procgetbulk): new functions.
+
+	- Release: 1.2.31
+
 2010-12-19  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcpolydb.h (PolyDB::set_internal_db): new function.

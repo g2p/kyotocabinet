@@ -1,4 +1,4 @@
-.TH "KCFORESTMGR" 1 "2010-12-19" "Man Page" "Kyoto Cabinet"
+.TH "KCFORESTMGR" 1 "2011-01-02" "Man Page" "Kyoto Cabinet"
 
 .SH NAME
 kcforestmgr \- command line interface to manage the directory tree database
@@ -62,6 +62,21 @@ Dumps records into a snapshot file.
 \fBkcforestmgr load \fR[\fB\-otr\fR]\fB \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fR[\fB\fIfile\fB\fR]\fB\fR
 .RS
 Loads records from a snapshot file.
+.RE
+.br
+\fBkcforestmgr setbulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIkey\fB \fIvalue\fB ...\fR
+.RS
+Store records at once.
+.RE
+.br
+\fBkcforestmgr removebulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-sx\fR]\fB \fIpath\fB \fIkey\fB ...\fR
+.RS
+Remove records at once.
+.RE
+.br
+\fBkcforestmgr getbulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-sx\fR]\fB \fR[\fB\-px\fR]\fB \fIpath\fB \fIkey\fB ...\fR
+.RS
+Retrieve records at once.
 .RE
 .br
 \fBkcforestmgr check \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB\fR

@@ -1,6 +1,6 @@
 /*************************************************************************************************
  * Stash database
- *                                                               Copyright (C) 2009-2010 FAL Labs
+ *                                                               Copyright (C) 2009-2011 FAL Labs
  * This file is part of Kyoto Cabinet.
  * This program is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version
@@ -34,7 +34,7 @@ namespace kyotocabinet {                 // common namespace
  * Constants for implementation.
  */
 namespace {
-const int32_t SDBRLOCKSLOT = 64;         ///< number of slots of the record lock
+const int32_t SDBRLOCKSLOT = 256;        ///< number of slots of the record lock
 const size_t SDBDEFBNUM = 1048583LL;     ///< default bucket number
 const size_t SDBOPAQUESIZ = 16;          ///< size of the opaque buffer
 }
@@ -362,6 +362,68 @@ public:
     }
     accept_impl(kbuf, ksiz, visitor, bidx);
     rlock_.unlock(lidx);
+    return true;
+  }
+  /**
+   * Accept a visitor to multiple records at once.
+   * @param keys specifies a string vector of the keys.
+   * @param visitor a visitor object.
+   * @param writable true for writable operation, or false for read-only operation.
+   * @return true on success, or false on failure.
+   * @note The operations for specified records are performed atomically and other threads
+   * accessing the same records are blocked.  To avoid deadlock, any database operation must not
+   * be performed in this function.
+   */
+  bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
+                   bool writable = true) {
+    _assert_(visitor);
+    size_t knum = keys.size();
+    if (knum < 1) return true;
+    ScopedSpinRWLock lock(&mlock_, false);
+    if (omode_ == 0) {
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
+      return false;
+    }
+    if (writable && !(omode_ & OWRITER)) {
+      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+      return false;
+    }
+    struct RecordKey {
+      const char* kbuf;
+      size_t ksiz;
+      size_t bidx;
+    };
+    RecordKey* rkeys = new RecordKey[knum];
+    std::set<size_t> lidxs;
+    for (size_t i = 0; i < knum; i++) {
+      const std::string& key = keys[i];
+      RecordKey* rkey = rkeys + i;
+      rkey->kbuf = key.data();
+      rkey->ksiz = key.size();
+      rkey->bidx = hash_record(rkey->kbuf, rkey->ksiz) % bnum_;
+      lidxs.insert(rkey->bidx % SDBRLOCKSLOT);
+    }
+    std::set<size_t>::iterator lit = lidxs.begin();
+    std::set<size_t>::iterator litend = lidxs.end();
+    while (lit != litend) {
+      if (writable) {
+        rlock_.lock_writer(*lit);
+      } else {
+        rlock_.lock_reader(*lit);
+      }
+      lit++;
+    }
+    for (size_t i = 0; i < knum; i++) {
+      RecordKey* rkey = rkeys + i;
+      accept_impl(rkey->kbuf, rkey->ksiz, visitor, rkey->bidx);
+    }
+    lit = lidxs.begin();
+    litend = lidxs.end();
+    while (lit != litend) {
+      rlock_.unlock(*lit);
+      lit++;
+    }
+    delete[] rkeys;
     return true;
   }
   /**

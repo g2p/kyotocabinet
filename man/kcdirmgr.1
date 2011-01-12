@@ -1,4 +1,4 @@
-.TH "KCDIRMGR" 1 "2010-12-19" "Man Page" "Kyoto Cabinet"
+.TH "KCDIRMGR" 1 "2011-01-02" "Man Page" "Kyoto Cabinet"
 
 .SH NAME
 kcdirmgr \- command line interface to manage the directory hash database
@@ -67,6 +67,21 @@ Loads records from a snapshot file.
 \fBkcdirmgr defrag \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB\fR
 .RS
 Performs defragmentation.
+.RE
+.br
+\fBkcdirmgr setbulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIkey\fB \fIvalue\fB ...\fR
+.RS
+Store records at once.
+.RE
+.br
+\fBkcdirmgr removebulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-sx\fR]\fB \fIpath\fB \fIkey\fB ...\fR
+.RS
+Remove records at once.
+.RE
+.br
+\fBkcdirmgr getbulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-sx\fR]\fB \fR[\fB\-px\fR]\fB \fIpath\fB \fIkey\fB ...\fR
+.RS
+Retrieve records at once.
 .RE
 .br
 \fBkcdirmgr check \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB\fR

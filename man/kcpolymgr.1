@@ -1,4 +1,4 @@
-.TH "KCPOLYMGR" 1 "2010-12-19" "Man Page" "Kyoto Cabinet"
+.TH "KCPOLYMGR" 1 "2011-01-02" "Man Page" "Kyoto Cabinet"
 
 .SH NAME
 kcpolymgr \- command line interface to manage the polymorphic database
@@ -67,6 +67,21 @@ Loads records from a snapshot file.
 \fBkcpolymgr merge \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-add\fR|\fB\-app\fR|\fB\-rep\fR]\fB \fIpath\fB \fIsrc\fB...\fR
 .RS
 Merge records from other databases.
+.RE
+.br
+\fBkcpolymgr setbulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB \fIkey\fB \fIvalue\fB ...\fR
+.RS
+Store records at once.
+.RE
+.br
+\fBkcpolymgr removebulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-sx\fR]\fB \fIpath\fB \fIkey\fB ...\fR
+.RS
+Remove records at once.
+.RE
+.br
+\fBkcpolymgr getbulk \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-sx\fR]\fB \fR[\fB\-px\fR]\fB \fIpath\fB \fIkey\fB ...\fR
+.RS
+Retrieve records at once.
 .RE
 .br
 \fBkcpolymgr check \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fIpath\fB\fR

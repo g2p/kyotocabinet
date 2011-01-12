@@ -96,6 +96,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Open a database file.  <a href="#a6f8ee2f3bde5f5389119fe43696f9bdc"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a8863ffedb9604742305ece7ccdb23c2a">close</a> ()=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#a8863ffedb9604742305ece7ccdb23c2a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a0213c08b8dce9401ca5f5b1bc19aa4a6">accept_bulk</a> (const std::vector&lt; std::string &gt; &amp;keys, <a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Accept a visitor to multiple records at once.  <a href="#a0213c08b8dce9401ca5f5b1bc19aa4a6"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a809c175a7a69deaa56ed6b9cef9fa973">iterate</a> (<a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *visitor, bool writable=true, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#a809c175a7a69deaa56ed6b9cef9fa973"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#acf7a2e70f3c1e72be5241f0d611f3d70">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)=0</td></tr>
@@ -152,6 +154,12 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#aaeb3e8ab339c7d4bdbdfcb6bc0592a12"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#abad0525bdccdcab5b587846a69ff0fe3">get</a> (const char *kbuf, size_t ksiz, char *vbuf, size_t max)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#abad0525bdccdcab5b587846a69ff0fe3"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a0a76b8f56d3abd00b511a77ea32fc7f2">set_bulk</a> (const std::map&lt; std::string, std::string &gt; &amp;recs, bool atomic=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Store records at once.  <a href="#a0a76b8f56d3abd00b511a77ea32fc7f2"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#aa6662986e037fedc913b7aab42133dfa">remove_bulk</a> (const std::vector&lt; std::string &gt; &amp;keys, bool atomic=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove records at once.  <a href="#aa6662986e037fedc913b7aab42133dfa"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#ae713d1703e4af21c3470517108b795c9">get_bulk</a> (const std::vector&lt; std::string &gt; &amp;keys, std::map&lt; std::string, std::string &gt; *recs, bool atomic=true)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve records at once.  <a href="#ae713d1703e4af21c3470517108b795c9"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a15e2b3b12551cd055ec652250780147d">dump_snapshot</a> (std::ostream *dest, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Dump records into a data stream.  <a href="#a15e2b3b12551cd055ec652250780147d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a39186bb54797a65ca3b642b157a4b7f0">dump_snapshot</a> (const std::string &amp;dest, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
@@ -434,6 +442,53 @@
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
 
 <p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#abd976dad39a19f3e9f688d8dd0a63bc0">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a0ed5fcf37852b77268d7b7267d20bf8b">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a825183c1c8810d538b9ce9a5ce789ffb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a6661d84682336411eac6b38baf16c64d">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#acf5dd748aed15bb2866e8f12c6e2b3f8">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a367504a44c75f05fb14647ec692255d5">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a9a27006d8710bd736a66cef46c6d5783">kyotocabinet::StashDB</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a0213c08b8dce9401ca5f5b1bc19aa4a6"></a><!-- doxytag: member="kyotocabinet::BasicDB::accept_bulk" ref="a0213c08b8dce9401ca5f5b1bc19aa4a6" args="(const std::vector&lt; std::string &gt; &amp;keys, Visitor *visitor, bool writable=true)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool kyotocabinet::BasicDB::accept_bulk </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; std::string &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>keys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1DB_1_1Visitor.html">Visitor</a> *&nbsp;</td>
+          <td class="paramname"> <em>visitor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>writable</em> = <code>true</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Accept a visitor to multiple records at once. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>keys</em>&nbsp;</td><td>specifies a string vector of the keys. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>visitor</em>&nbsp;</td><td>a visitor object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>writable</em>&nbsp;</td><td>true for writable operation, or false for read-only operation. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operations for specified records are performed atomically and other threads accessing the same records are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
+
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a524e00481d160fb989caf82be2db13fc">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a00dc2fd5844aa1995e5f36340646e3b8">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#ac067c3b22db707ca934c8aab489faeba">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a6f6065674099e65c6243fdd1ffbc518b">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a4e8d71d898db9a8a55f1f3752c1c2598">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a53abd5ea363406ebe9aa3bc1f3219e35">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a5825d5ffc7dd873582fb4d9e581044a2">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -1518,6 +1573,124 @@
 
 </div>
 </div>
+<a class="anchor" id="a0a76b8f56d3abd00b511a77ea32fc7f2"></a><!-- doxytag: member="kyotocabinet::BasicDB::set_bulk" ref="a0a76b8f56d3abd00b511a77ea32fc7f2" args="(const std::map&lt; std::string, std::string &gt; &amp;recs, bool atomic=true)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kyotocabinet::BasicDB::set_bulk </td>
+          <td>(</td>
+          <td class="paramtype">const std::map&lt; std::string, std::string &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>recs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>atomic</em> = <code>true</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Store records at once. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>recs</em>&nbsp;</td><td>the records to store. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>atomic</em>&nbsp;</td><td>true to perform all operations atomically, or false for non-atomic operations. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the number of stored records, or -1 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aa6662986e037fedc913b7aab42133dfa"></a><!-- doxytag: member="kyotocabinet::BasicDB::remove_bulk" ref="aa6662986e037fedc913b7aab42133dfa" args="(const std::vector&lt; std::string &gt; &amp;keys, bool atomic=true)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kyotocabinet::BasicDB::remove_bulk </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; std::string &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>keys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>atomic</em> = <code>true</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Remove records at once. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>keys</em>&nbsp;</td><td>the keys of the records to remove. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>atomic</em>&nbsp;</td><td>true to perform all operations atomically, or false for non-atomic operations. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the number of removed records, or -1 on failure. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ae713d1703e4af21c3470517108b795c9"></a><!-- doxytag: member="kyotocabinet::BasicDB::get_bulk" ref="ae713d1703e4af21c3470517108b795c9" args="(const std::vector&lt; std::string &gt; &amp;keys, std::map&lt; std::string, std::string &gt; *recs, bool atomic=true)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t kyotocabinet::BasicDB::get_bulk </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; std::string &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>keys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::map&lt; std::string, std::string &gt; *&nbsp;</td>
+          <td class="paramname"> <em>recs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>atomic</em> = <code>true</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Retrieve records at once. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>keys</em>&nbsp;</td><td>the keys of the records to retrieve. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>recs</em>&nbsp;</td><td>a string map to contain the retrieved records. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>atomic</em>&nbsp;</td><td>true to perform all operations atomically, or false for non-atomic operations. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>the number of retrieved records, or -1 on failure. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a15e2b3b12551cd055ec652250780147d"></a><!-- doxytag: member="kyotocabinet::BasicDB::dump_snapshot" ref="a15e2b3b12551cd055ec652250780147d" args="(std::ostream *dest, ProgressChecker *checker=NULL)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1814,7 +1987,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Dec 19 12:53:11 2010 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Jan 3 13:02:28 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>
