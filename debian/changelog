@@ -1,3 +1,10 @@
+kyotocabinet (1.2.34-1~1.gbp3ef932) UNRELEASED; urgency=low
+
+  * Imported Upstream version 1.2.34
+
+
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Thu, 13 Jan 2011 11:38:29 +0100
+
 kyotocabinet (1.2.33-1~1.gbp6742f5) UNRELEASED; urgency=low
 
   * Imported Upstream version 1.2.33
