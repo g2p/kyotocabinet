@@ -1,3 +1,9 @@
+2011-01-09  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcplantdb.h (PlantDB::accept, PlantDB::accept_bulk): behavior of async was modified.
+
+	- Release: 1.2.34
+
 2011-01-05  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcfile.cc (File::open): handling the WAL file was modified.

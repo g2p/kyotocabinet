@@ -890,7 +890,7 @@ db.open(...);
 <p>In order to choose suitable database types for your application, it is important to clarify the requirement specification.  If it does not require persistency of records, on-memory databases are suggested.  There are the prototype hash database (ProtoHashDB), the prototype tree database (ProtoTreeDB), the stash database (StashDB), the cache hash database (CacheDB), and the cache tree database (GrassDB).  If the order of keys is important for your application logic, the cache tree database is suitable.  If not, the stash database is suitable.  The memory usage of the cache tree database is smaller than the others.  The cache hash database can delete old records implicitly and keep the memory usage constant.  The prototype databases have few cases to flourish.</p>
 
 <ul>
-<li>time efficiency: StashDB &gt; CacheDB &gt; ProtoHashDB &gt; ProtoTreeDB &gt; GrassDB</li>
+<li>time efficiency: CacheDB &gt; StashDB &gt; ProtoHashDB &gt; ProtoTreeDB &gt; GrassDB</li>
 <li>space efficiency: GrassDB &gt; StashDB &gt; CacheDB &gt; ProtoHashDB &gt; ProtoTreeDB</li>
 </ul>
 

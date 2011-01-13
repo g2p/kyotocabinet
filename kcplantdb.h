@@ -537,8 +537,8 @@ public:
             }
           }
         }
-        bool atran = db_->autotran_ && node->dirty;
-        bool async = db_->autosync_ && !db_->autotran_ && node->dirty;
+        bool atran = db_->autotran_ && !db_->tran_ && node->dirty;
+        bool async = db_->autosync_ && !db_->autotran_ && !db_->tran_ && node->dirty;
         node->lock.unlock();
         if (hit && step) {
           clear_position();
@@ -548,7 +548,7 @@ public:
           bool flush = db_->cusage_ > db_->pccap_;
           if (link || flush || async) {
             int64_t id = node->id;
-            if (atran && !link && !db_->tran_ && !db_->fix_auto_transaction_leaf(node))
+            if (atran && !link && !db_->fix_auto_transaction_leaf(node))
               err = true;
             if (!db_->mlock_.promote()) {
               db_->mlock_.unlock();
@@ -697,12 +697,12 @@ public:
             set_position(node->next);
           }
         }
-        bool atran = db_->autotran_ && node->dirty;
-        bool async = db_->autosync_ && !db_->autotran_ && node->dirty;
-        if (atran && !reorg && !db_->tran_ && !db_->fix_auto_transaction_leaf(node)) err = true;
+        bool atran = db_->autotran_ && !db_->tran_ && node->dirty;
+        bool async = db_->autosync_ && !db_->autotran_ && !db_->tran_ && node->dirty;
+        if (atran && !reorg && !db_->fix_auto_transaction_leaf(node)) err = true;
         if (reorg) {
           if (!db_->reorganize_tree(node, hist, hnum)) err = true;
-          if (atran && !db_->tran_ && !db_->fix_auto_transaction_tree()) err = true;
+          if (atran && !db_->fix_auto_transaction_tree()) err = true;
         } else if (db_->cusage_ > db_->pccap_) {
           int32_t idx = node->id % PDBSLOTNUM;
           LeafSlot* lslot = db_->lslots_ + idx;
@@ -995,15 +995,15 @@ public:
       node->lock.lock_reader();
     }
     bool reorg = accept_impl(node, rec, visitor);
-    bool atran = autotran_ && node->dirty;
-    bool async = autosync_ && !autotran_ && node->dirty;
+    bool atran = autotran_ && !tran_ && node->dirty;
+    bool async = autosync_ && !autotran_ && !tran_ && node->dirty;
     node->lock.unlock();
     bool flush = false;
     bool err = false;
-    if (atran && !reorg && !tran_ && !fix_auto_transaction_leaf(node)) err = true;
+    if (atran && !reorg && !fix_auto_transaction_leaf(node)) err = true;
     if (reorg && mlock_.promote()) {
       if (!reorganize_tree(node, hist, hnum)) err = true;
-      if (atran && !tran_ && !fix_auto_transaction_tree()) err = true;
+      if (atran && !fix_auto_transaction_tree()) err = true;
       reorg = false;
     } else if (cusage_ > pccap_) {
       int32_t idx = node->id % PDBSLOTNUM;
@@ -1101,12 +1101,12 @@ public:
       rec->vsiz = 0;
       std::memcpy(rbuf + sizeof(*rec), kbuf, ksiz);
       bool reorg = accept_impl(node, rec, visitor);
-      bool atran = autotran_ && node->dirty;
-      bool async = autosync_ && !autotran_ && node->dirty;
-      if (atran && !reorg && !tran_ && !fix_auto_transaction_leaf(node)) err = true;
+      bool atran = autotran_ && !tran_ && node->dirty;
+      bool async = autosync_ && !autotran_ && !tran_ && node->dirty;
+      if (atran && !reorg && !fix_auto_transaction_leaf(node)) err = true;
       if (reorg) {
         if (!reorganize_tree(node, hist, hnum)) err = true;
-        if (atran && !tran_ && !fix_auto_transaction_tree()) err = true;
+        if (atran && !fix_auto_transaction_tree()) err = true;
       } else if (cusage_ > pccap_) {
         int32_t idx = node->id % PDBSLOTNUM;
         LeafSlot* lslot = lslots_ + idx;
