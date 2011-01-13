@@ -202,7 +202,8 @@ public:
    * @param vsiz the size of the value region.
    * @param emitter the emitter object.
    * @return true on success, or false on failure.
-   * @note To avoid deadlock, any database operation must not be performed in this function.
+   * @note To avoid deadlock, any explicit database operation must not be performed in this
+   * function.
    */
   virtual bool map(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz,
                    MapEmitter* emitter) = 0;

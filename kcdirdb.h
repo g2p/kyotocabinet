@@ -102,8 +102,8 @@ public:
      * @param step true to move the cursor to the next record, or false for no move.
      * @return true on success, or false on failure.
      * @note The operation for each record is performed atomically and other threads accessing
-     * the same record are blocked.  To avoid deadlock, any database operation must not be
-     * performed in this function.
+     * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+     * be performed in this function.
      */
     bool accept(Visitor* visitor, bool writable = true, bool step = false) {
       _assert_(visitor);
@@ -406,8 +406,8 @@ public:
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
    * @note The operation for each record is performed atomically and other threads accessing the
-   * same record are blocked.  To avoid deadlock, any database operation must not be performed in
-   * this function.
+   * same record are blocked.  To avoid deadlock, any explicit database operation must not be
+   * performed in this function.
    */
   bool accept(const char* kbuf, size_t ksiz, Visitor* visitor, bool writable = true) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && visitor);
@@ -439,8 +439,8 @@ public:
    * @param writable true for writable operation, or false for read-only operation.
    * @return true on success, or false on failure.
    * @note The operations for specified records are performed atomically and other threads
-   * accessing the same records are blocked.  To avoid deadlock, any database operation must not
-   * be performed in this function.
+   * accessing the same records are blocked.  To avoid deadlock, any explicit database operation
+   * must not be performed in this function.
    */
   bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
                    bool writable = true) {
@@ -504,7 +504,7 @@ public:
    * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
    * @note The whole iteration is performed atomically and other threads are blocked.  To avoid
-   * deadlock, any database operation must not be performed in this function.
+   * deadlock, any explicit database operation must not be performed in this function.
    */
   bool iterate(Visitor *visitor, bool writable = true, ProgressChecker* checker = NULL) {
     _assert_(visitor);
@@ -1350,7 +1350,7 @@ protected:
   }
   /**
    * Check whether the database was reorganized or not.
-   * @return true if recovered, or false if not.
+   * @return true if reorganized, or false if not.
    */
   bool reorganized() {
     _assert_(true);

@@ -1059,6 +1059,10 @@ bool File::read_fast(int64_t off, void* buf, size_t size) {
       seterrmsg(core, "win_pread failed");
       return false;
     } else if (size > 0) {
+      if (end > core->lsiz) {
+        seterrmsg(core, "out of bounds");
+        return false;
+      }
       Thread::yield();
     }
   }
@@ -1093,6 +1097,10 @@ bool File::read_fast(int64_t off, void* buf, size_t size) {
         return false;
       }
     } else if (size > 0) {
+      if (end > core->lsiz) {
+        seterrmsg(core, "out of bounds");
+        return false;
+      }
       Thread::yield();
     }
   }

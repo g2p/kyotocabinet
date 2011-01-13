@@ -1,3 +1,11 @@
+2011-01-03  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcfile.cc (File::read_fast): error check was added.
+
+	* kclangc.cc (kcdbacceptbulk, kcdbsetbulk, kcdbremovebulk, kcdbgetbulk): new functions.
+
+	- Release: 1.2.32
+
 2010-12-30  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcdb.h (BasicDB::accept_bulk): new function.

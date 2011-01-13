@@ -51,6 +51,23 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
                          int32_t tran, int32_t oflags);
 
 
+const char* myfull(const char* kbuf, size_t ksiz,
+                   const char* vbuf, size_t vsiz, size_t* sp, void* opq) {
+
+  fwrite(kbuf, 1, ksiz, stdout);
+  putchar('\t');
+  fwrite(vbuf, 1, vsiz, stdout);
+  putchar('\n');
+
+  return KCVISNOP;
+}
+
+void setval(KCSTR* str, const char* val) {
+  str->buf = (char*)val;
+  str->size = strlen(val);
+}
+
+
 /* main routine */
 int main(int argc, char **argv) {
   int32_t i, rv;
