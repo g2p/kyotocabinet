@@ -44,7 +44,7 @@ override_dh_auto_configure: check-tarball
 	    CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 override_dh_auto_test:
-	#$(if $(findstring $(DEB_BUILD_ARCH),armel)$(findstring nocheck,$(DEB_BUILD_OPTIONS)),,$(MAKE) check)
+	$(if $(findstring $(DEB_BUILD_ARCH),armel)$(findstring nocheck,$(DEB_BUILD_OPTIONS)),,$(MAKE) check)
 
 override_dh_shlibdeps:
 	dh_shlibdeps -L$(libpkg) -ldebian/$(libpkg)/usr/lib
