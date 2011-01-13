@@ -7,7 +7,7 @@ DEB_BUILD_ARCH ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 
 srcpkg = $(shell dpkg-parsechangelog | sed -ne 's/Source: *//p')
 srcver = $(shell dpkg-parsechangelog | sed -ne 's/Version: *\(.*:\)\?\(.*\)-.*$$/\2/p')
-libpkg = $(shell  sed -ne 's/Package: *\(.*\)-dbg/\1/p' debian/control)
+libpkg = $(shell  sed -ne 's/Package: *\(.*\)-dev/\1/p' debian/control)
 
 #{{{ generic rules
 
@@ -55,5 +55,5 @@ clean:
 	rm -f build-*-stamp
 
 override_dh_strip:
-	dh_strip --dbg-package=libkyotocabinet-dbg
+	dh_strip --dbg-package=kyotocabinet-dbg
 

@@ -22,7 +22,7 @@ Description: Kyoto Cabinet database libraries [runtime]
  This is the runtime package for programs that use the Kyoto Cabinet database
  library.
 
-Package: libkyotocabinet-dbg
+Package: kyotocabinet-dbg
 Section: debug
 Architecture: any
 Depends: libkyotocabinet8 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
@@ -31,7 +31,7 @@ Description: Kyoto Cabinet database libraries [runtime]
  It provideas a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
  .
- These are the debugging symbols for the Kyoto Cabinet database library.
+ These are the debugging symbols for the library and its utilities.
 
 Package: libkyotocabinet-dev
 Section: libdevel
