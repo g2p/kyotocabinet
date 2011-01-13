@@ -16,9 +16,8 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Kyoto Cabinet Database Libraries [runtime]
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
- It features hash database and B+ tree database and is developed as the
- successor of QDBM, for the purpose of the following three points: higher
- processing speed, smaller size of a database file, and simpler API.
+ It provideas a hash database and a B+ tree database and is developed as a
+ sibling of Tokyo Cabinet, focusing on parallelism and portability.
  .
  This is the runtime package for programs that use the Kyoto Cabinet database
  library.
@@ -29,11 +28,10 @@ Architecture: any
 Depends: libkyotocabinet8 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Kyoto Cabinet Database Libraries [runtime]
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
- It features hash database and B+ tree database and is developed as the
- successor of QDBM, for the purpose of the following three points: higher
- processing speed, smaller size of a database file, and simpler API.
+ It provideas a hash database and a B+ tree database and is developed as a
+ sibling of Tokyo Cabinet, focusing on parallelism and portability.
  .
- This is the debugging symbols for the Kyoto Cabinet database library.
+ These are the debugging symbols for the Kyoto Cabinet database library.
 
 Package: libkyotocabinet-dev
 Section: libdevel
@@ -49,7 +47,8 @@ Section: doc
 Priority: optional
 Depends: ${misc:Depends}
 Description: Kyoto Cabinet Database Documentation
- Documentation for all of the API's and utilities provided by Kyoto Cabinet.
+ This package contains the documentation for all the APIs and utilities
+ provided by Kyoto Cabinet.
 
 Package: kyotocabinet-bin
 Architecture: any
@@ -58,8 +57,7 @@ Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Kyoto Cabinet Database Utilities
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
- It features hash database and B+ tree database and is developed as the
- successor of QDBM, for the purpose of the following three points: higher
- processing speed, smaller size of a database file, and simpler API.
+ It provideas a hash database and a B+ tree database and is developed as a
+ sibling of Tokyo Cabinet, focusing on parallelism and portability.
  .
  This is the Kyoto Cabinet database utilities package.
