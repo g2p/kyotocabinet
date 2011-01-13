@@ -26,7 +26,7 @@ Package: kyotocabinet-dbg
 Section: debug
 Architecture: any
 Depends: libkyotocabinet8 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Kyoto Cabinet database libraries [runtime]
+Description: Kyoto Cabinet database libraries [debugging]
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
  It provideas a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
