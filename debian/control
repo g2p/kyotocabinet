@@ -50,7 +50,7 @@ Description: Kyoto Cabinet Database Documentation
  This package contains the documentation for all the APIs and utilities
  provided by Kyoto Cabinet.
 
-Package: kyotocabinet-bin
+Package: kyotocabinet-utils
 Architecture: any
 Section: utils
 Priority: optional
