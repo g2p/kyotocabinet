@@ -918,6 +918,8 @@ check-segv :
 	$(RUNENV) ./lab/segvtest hash -oat "" 10
 	$(RUNENV) ./lab/segvtest hash -oat "100" 1
 	$(RUNENV) ./lab/segvtest hash -tran "" 10
+	$(RUNENV) ./lab/segvtest hash -wicked "" 10
+	$(RUNENV) ./lab/segvtest hash -wicked -oat "" 10
 	$(RUNENV) ./lab/segvtest tree "0.5" 100
 	$(RUNENV) ./lab/segvtest tree "" 10
 	$(RUNENV) ./lab/segvtest tree "100" 1
@@ -925,16 +927,22 @@ check-segv :
 	$(RUNENV) ./lab/segvtest tree -oat "" 10
 	$(RUNENV) ./lab/segvtest tree -oat "100" 1
 	$(RUNENV) ./lab/segvtest tree -tran "" 10
+	$(RUNENV) ./lab/segvtest tree -wicked "" 10
+	$(RUNENV) ./lab/segvtest tree -wicked -oat "" 10
 	$(RUNENV) ./lab/segvtest dir -oat "" 10
 	$(RUNENV) ./lab/segvtest dir -oat "0.5" 100
 	$(RUNENV) ./lab/segvtest dir -oat "" 10
 	$(RUNENV) ./lab/segvtest dir -oat "100" 1
 	$(RUNENV) ./lab/segvtest dir -tran "" 10
+	$(RUNENV) ./lab/segvtest dir -wicked "" 10
+	$(RUNENV) ./lab/segvtest dir -wicked -oat "" 10
 	$(RUNENV) ./lab/segvtest forest "" 10
 	$(RUNENV) ./lab/segvtest forest -oat "0.5" 100
 	$(RUNENV) ./lab/segvtest forest -oat "" 10
 	$(RUNENV) ./lab/segvtest forest -oat "100" 1
 	$(RUNENV) ./lab/segvtest forest -tran "" 10
+	$(RUNENV) ./lab/segvtest forest -wicked "" 10
+	$(RUNENV) ./lab/segvtest forest -wicked -oat "" 10
 
 
 check-forever :

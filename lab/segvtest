@@ -8,7 +8,8 @@
 
 # set variables
 testcmd="kchashtest"
-testopts="-th 4 -rnd"
+testsubcmd="order"
+testopts="-th 4"
 mgrcmd="kchashmgr"
 PATH="$PATH:."
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib:."
@@ -38,6 +39,14 @@ kcf|forest)
   mgrcmd="kcforestmgr"
   ;;
 esac
+if [ "$2" = "-wicked" ]
+then
+  testsubcmd="wicked"
+  testopts="-th 4 -it 10"
+  shift
+else
+  testopts="$testopts -rnd"
+fi
 if [ "$2" = "-oat" ]
 then
   testopts="$testopts -oat"
@@ -61,7 +70,7 @@ export LD_PRELOAD SEGFAULT_SIGNALS SEGFAULT_OUTPUT_NAME
 # set the cleanup handler
 rm -f stop.log
 trap "touch stop.log" TERM INT
-trap "killall $testcmd ; rm -f stop.log" EXIT
+trap "killall $testcmd >/dev/null 2>&1; rm -f stop.log" EXIT
 
 
 # infinite loop
@@ -80,8 +89,8 @@ do
   fi
   printf '\n==== iteration: %d (%.1f sec.)\n\n' "$cnt" "$sleepsec"
   rm -rf casket* "$testcmd.log"
-  echo "$testcmd" order $testopts casket 10000000
-  "$testcmd" order $testopts casket 10000000 & \
+  echo "$testcmd" "$testsubcmd" $testopts casket 10000000
+  "$testcmd" "$testsubcmd" $testopts casket 10000000 & \
     ( sleep "$sleepsec" ; killall -SEGV "$testcmd" )
   cp -rf casket casket-back 2>/dev/null
   cp -rf casket.wal casket-back.wal 2>/dev/null

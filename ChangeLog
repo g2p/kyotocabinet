@@ -1,3 +1,13 @@
+2011-01-05  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcfile.cc (File::open): handling the WAL file was modified.
+
+	* kchashdb.h (HashDB::clear): handling the open flag was added.
+
+	* kcplantdb.h (PlantDB::clear): handling the recovery flag was modified.
+
+	- Release: 1.2.33
+
 2011-01-03  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcfile.cc (File::read_fast): error check was added.
