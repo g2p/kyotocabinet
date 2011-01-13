@@ -486,7 +486,7 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The operations for specified records are performed atomically and other threads accessing the same records are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operations for specified records are performed atomically and other threads accessing the same records are blocked. To avoid deadlock, any explicit database operation must not be performed in this function. </dd></dl>
 
 <p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a524e00481d160fb989caf82be2db13fc">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a00dc2fd5844aa1995e5f36340646e3b8">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#ac067c3b22db707ca934c8aab489faeba">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a6f6065674099e65c6243fdd1ffbc518b">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a4e8d71d898db9a8a55f1f3752c1c2598">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a53abd5ea363406ebe9aa3bc1f3219e35">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a5825d5ffc7dd873582fb4d9e581044a2">kyotocabinet::StashDB</a>.</p>
 
@@ -533,7 +533,7 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. To avoid deadlock, any explicit database operation must not be performed in this function. </dd></dl>
 
 <p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a668ed0f22f9b9538ffcde8466fc2f5ec">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a6687ee72cae51c608a622a6db973d39d">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a38780730815dfcf830c348c889477587">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#abd20793d6349fdc38a6cb5c7d85af8de">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a27be5998494e81a5fa4be24e6047f4de">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#abefeb7da685d9c99a7dbc8c88a7b2f49">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#ae9858542f7b15dce4daeec8df9027549">kyotocabinet::StashDB</a>.</p>
 
@@ -1987,7 +1987,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Jan 3 13:02:28 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Tue Jan 4 16:38:09 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

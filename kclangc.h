@@ -48,6 +48,24 @@ typedef union {
 
 
 /**
+ * Binary string of byte array.
+ */
+typedef struct {
+  char* buf;                             /**< pointer to the data region */
+  size_t size;                           /**< size of the data region */
+} KCSTR;
+
+
+/**
+ * Key-Value record.
+ */
+typedef struct {
+  KCSTR key;                             /**< key string */
+  KCSTR value;                           /**< value string */
+} KCREC;
+
+
+/**
  * Error codes.
  */
 enum {
@@ -361,11 +379,30 @@ const char* kcdbemsg(KCDB* db);
  * @param opq an opaque pointer to be given to the call back functions.
  * @param writable true for writable operation, or false for read-only operation.
  * @return true on success, or false on failure.
- * @note the operation for each record is performed atomically and other threads accessing the
- * same record are blocked.
+ * @note The operation for each record is performed atomically and other threads accessing the
+ * same record are blocked.  To avoid deadlock, any explicit database operation must not be
+ * performed in this function.
  */
 int32_t kcdbaccept(KCDB* db, const char* kbuf, size_t ksiz,
                    KCVISITFULL fullproc, KCVISITEMPTY emptyproc, void* opq, int32_t writable);
+
+/**
+ * Accept a visitor to multiple records at once.
+ * @param db a database object.
+ * @param keys specifies an array of binary strings of the keys.
+ * @param knum specifies the number of the keys.
+ * @param fullproc a call back function to visit a record.
+ * @param emptyproc a call back function to visit an empty record space.
+ * @param opq an opaque pointer to be given to the call back functions.
+ * @param writable true for writable operation, or false for read-only operation.
+ * @return true on success, or false on failure.
+ * @note The operations for specified records are performed atomically and other threads
+ * accessing the same records are blocked.  To avoid deadlock, any explicit database operation
+ * must not be performed in this function.
+ */
+int32_t kcdbacceptbulk(KCDB* db, const KCSTR* keys, size_t knum,
+                       KCVISITFULL fullproc, KCVISITEMPTY emptyproc,
+                       void* opq, int32_t writable);
 
 
 /**
@@ -375,7 +412,7 @@ int32_t kcdbaccept(KCDB* db, const char* kbuf, size_t ksiz,
  * @param opq an opaque pointer to be given to the call back function.
  * @param writable true for writable operation, or false for read-only operation.
  * @return true on success, or false on failure.
- * @note the whole iteration is performed atomically and other threads are blocked.
+ * @note The whole iteration is performed atomically and other threads are blocked.
  */
 int32_t kcdbiterate(KCDB* db, KCVISITFULL fullproc, void* opq, int32_t writable);
 
@@ -514,6 +551,42 @@ int32_t kcdbgetbuf(KCDB* db, const char* kbuf, size_t ksiz, char* vbuf, size_t m
 
 
 /**
+ * Store records at once.
+ * @param db a database object.
+ * @param recs the records to store.
+ * @param rnum specifies the number of the records.
+ * @param atomic true to perform all operations atomically, or false for non-atomic operations.
+ * @return the number of stored records, or -1 on failure.
+ */
+int64_t kcdbsetbulk(KCDB* db, const KCREC* recs, size_t rnum, int32_t atomic);
+
+
+/**
+ * Remove records at once.
+ * @param db a database object.
+ * @param keys the keys of the records to remove.
+ * @param knum specifies the number of the keys.
+ * @param atomic true to perform all operations atomically, or false for non-atomic operations.
+ * @return the number of removed records, or -1 on failure.
+ */
+int64_t kcdbremovebulk(KCDB* db, const KCSTR* keys, size_t knum, int32_t atomic);
+
+
+/**
+ * Retrieve records at once.
+ * @param db a database object.
+ * @param keys the keys of the records to retrieve.
+ * @param knum specifies the number of the keys.
+ * @param recs an array to contain the result.  Its size must be sufficient.
+ * @param atomic true to perform all operations atomically, or false for non-atomic operations.
+ * @return the number of retrieved records, or -1 on failure.
+ * @note The regions of the key and the value of each element of the result should be released
+ * with the kcfree function when it is no longer in use.
+ */
+int64_t kcdbgetbulk(KCDB* db, const KCSTR* keys, size_t knum, KCREC* recs, int32_t atomic);
+
+
+/**
  * Remove all records.
  * @param db a database object.
  * @return true on success, or false on failure.
@@ -637,7 +710,7 @@ char* kcdbstatus(KCDB* db);
  * @note The region of each element of the result should be released with the kcfree function
  * when it is no longer in use.
  */
-int64_t kcdbmatchprefix(KCDB* db, const char* prefix, char** strary, int64_t max);
+int64_t kcdbmatchprefix(KCDB* db, const char* prefix, char** strary, size_t max);
 
 
 /**
@@ -650,7 +723,7 @@ int64_t kcdbmatchprefix(KCDB* db, const char* prefix, char** strary, int64_t max
  * @note The region of each element of the result should be released with the kcfree function
  * when it is no longer in use.
  */
-int64_t kcdbmatchregex(KCDB* db, const char* regex, char** strary, int64_t max);
+int64_t kcdbmatchregex(KCDB* db, const char* regex, char** strary, size_t max);
 
 
 /**
@@ -691,6 +764,9 @@ void kccurdel(KCCUR* cur);
  * @param writable true for writable operation, or false for read-only operation.
  * @param step true to move the cursor to the next record, or false for no move.
  * @return true on success, or false on failure.
+ * @note The operation for each record is performed atomically and other threads accessing
+ * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+ * be performed in this function.
  */
 int32_t kccuraccept(KCCUR* cur, KCVISITFULL fullproc, void* opq,
                     int32_t writable, int32_t step);

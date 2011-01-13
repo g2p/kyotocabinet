@@ -207,7 +207,7 @@ template&lt;class STRMAP , uint8_t DBTYPE&gt; </div>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The operation for each record is performed atomically and other threads accessing the same record are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operation for each record is performed atomically and other threads accessing the same record are blocked. To avoid deadlock, any explicit database operation must not be performed in this function. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a5ae32216900a642c5182e7ee67677467">kyotocabinet::DB</a>.</p>
 
@@ -256,7 +256,7 @@ template&lt;class STRMAP , uint8_t DBTYPE&gt; </div>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The operations for specified records are performed atomically and other threads accessing the same records are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operations for specified records are performed atomically and other threads accessing the same records are blocked. To avoid deadlock, any explicit database operation must not be performed in this function. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a0213c08b8dce9401ca5f5b1bc19aa4a6">kyotocabinet::BasicDB</a>.</p>
 
@@ -305,7 +305,7 @@ template&lt;class STRMAP , uint8_t DBTYPE&gt; </div>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
-<dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. To avoid deadlock, any database operation must not be performed in this function. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The whole iteration is performed atomically and other threads are blocked. To avoid deadlock, any explicit database operation must not be performed in this function. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#a809c175a7a69deaa56ed6b9cef9fa973">kyotocabinet::BasicDB</a>.</p>
 
@@ -1109,7 +1109,7 @@ template&lt;class STRMAP , uint8_t DBTYPE&gt; </div>
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Mon Jan 3 13:02:28 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Tue Jan 4 16:38:10 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>
