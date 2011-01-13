@@ -1,3 +1,10 @@
+kyotocabinet (1.2.32-1~1.gbp6387b6) UNRELEASED; urgency=low
+
+  * Imported Upstream version 1.2.32
+
+
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Thu, 13 Jan 2011 11:28:41 +0100
+
 kyotocabinet (1.2.31-1~1.gbp99c11c) UNRELEASED; urgency=low
 
   ** SNAPSHOT build @99c11c4f9ddb3133f362bd1ef55cbd2a501f09c6 **
@@ -24,6 +31,7 @@ kyotocabinet (1.2.31-1~1.gbp99c11c) UNRELEASED; urgency=low
   * Remove a stray LGPL reference.
   * Update changelog after git import-orig
   * Imported Upstream version 1.2.31
+  * Update soname: LIBVER is 8 since 1.2.31. Rerun dpkg-gensymbols.
 
 
  -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Wed, 12 Jan 2011 18:34:23 +0100
