@@ -3,7 +3,6 @@ Priority: extra
 Maintainer: Gabriel de Perthuis <g2p.code+debian@gmail.com>
 Build-Depends:
  autotools-dev,
- chrpath,
  debhelper (>= 7.0.50),
  liblzma-dev,
  liblzo2-dev,
@@ -63,4 +62,4 @@ Description: Kyoto Cabinet Database Utilities
  successor of QDBM, for the purpose of the following three points: higher
  processing speed, smaller size of a database file, and simpler API.
  .
- This is the Kyoto Cabinet Database utilities package.
+ This is the Kyoto Cabinet database utilities package.
