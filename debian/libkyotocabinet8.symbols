@@ -575,6 +575,7 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZN12kyotocabinet7BasicDB11MetaTriggerD0Ev@Base 1.2.31
  _ZN12kyotocabinet7BasicDB11MetaTriggerD1Ev@Base 1.2.31
  _ZN12kyotocabinet7BasicDB11MetaTriggerD2Ev@Base 1.2.31
+ _ZN12kyotocabinet7BasicDB11remove_bulkERKSt6vectorISsSaISsEEb@Base 1.2.32
  _ZN12kyotocabinet7BasicDB13FileProcessorC2Ev@Base 1.2.31
  _ZN12kyotocabinet7BasicDB13FileProcessorD0Ev@Base 1.2.31
  _ZN12kyotocabinet7BasicDB13FileProcessorD1Ev@Base 1.2.31
@@ -624,6 +625,8 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZN12kyotocabinet7BasicDB6removeERKSs@Base 1.2.31
  _ZN12kyotocabinet7BasicDB7replaceEPKcmS2_m@Base 1.2.31
  _ZN12kyotocabinet7BasicDB7replaceERKSsS2_@Base 1.2.31
+ _ZN12kyotocabinet7BasicDB8get_bulkERKSt6vectorISsSaISsEEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEb@Base 1.2.32
+ _ZN12kyotocabinet7BasicDB8set_bulkERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEb@Base 1.2.32
  _ZN12kyotocabinet7BasicDB9incrementEPKcml@Base 1.2.31
  _ZN12kyotocabinet7BasicDB9incrementERKSsl@Base 1.2.31
  _ZN12kyotocabinet7BasicDBC2Ev@Base 1.2.31
@@ -1762,6 +1765,7 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZNKSt23_Rb_tree_const_iteratorIN12kyotocabinet6HashDB9FreeBlockEEneERKS3_@Base 1.2.31
  _ZNKSt23_Rb_tree_const_iteratorIN12kyotocabinet6HashDB9FreeBlockEEptEv@Base 1.2.31
  _ZNKSt23_Rb_tree_const_iteratorISt4pairIKSsSsEEeqERKS3_@Base 1.2.31
+ _ZNKSt23_Rb_tree_const_iteratorISt4pairIKSsSsEEneERKS3_@Base 1.2.32
  _ZNKSt23_Rb_tree_const_iteratorISt4pairIKSsSsEEptEv@Base 1.2.31
  _ZNKSt23_Rb_tree_const_iteratorIiEdeEv@Base 1.2.31
  _ZNKSt23_Rb_tree_const_iteratorIiEneERKS0_@Base 1.2.31
@@ -1770,6 +1774,7 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZNKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE3endEv@Base 1.2.31
  _ZNKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE4findERS3_@Base 1.2.31
  _ZNKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE4sizeEv@Base 1.2.31
+ _ZNKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE5beginEv@Base 1.2.32
  _ZNKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE5countERS3_@Base 1.2.31
  _ZNKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE8key_compEv@Base 1.2.31
  _ZNKSt3setIN12kyotocabinet6HashDB9FreeBlockESt4lessIS2_ESaIS2_EE3endEv@Base 1.2.31
@@ -1879,6 +1884,7 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZNKSt6vectorISsSaISsEE4sizeEv@Base 1.2.31
  _ZNKSt6vectorISsSaISsEE5beginEv@Base 1.2.31
  _ZNKSt6vectorISsSaISsEE5emptyEv@Base 1.2.31
+ _ZNKSt6vectorISsSaISsEE8capacityEv@Base 1.2.32
  _ZNKSt6vectorISsSaISsEE8max_sizeEv@Base 1.2.31
  _ZNKSt6vectorISsSaISsEEixEm@Base 1.2.31
  _ZNKSt8_Rb_treeIN12kyotocabinet6HashDB9FreeBlockES2_St9_IdentityIS2_ESt4lessIS2_ESaIS2_EE13get_allocatorEv@Base 1.2.31
@@ -1892,6 +1898,7 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZNKSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE3endEv@Base 1.2.31
  _ZNKSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE4findERS1_@Base 1.2.31
  _ZNKSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE4sizeEv@Base 1.2.31
+ _ZNKSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE5beginEv@Base 1.2.32
  _ZNKSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE6_M_endEv@Base 1.2.31
  _ZNKSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE8_M_beginEv@Base 1.2.31
  _ZNKSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE8key_compEv@Base 1.2.31
@@ -2324,6 +2331,7 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZNSt23_Rb_tree_const_iteratorISt4pairIKSsSsEEC1EPKSt13_Rb_tree_nodeIS2_E@Base 1.2.31
  _ZNSt23_Rb_tree_const_iteratorISt4pairIKSsSsEEC1ERKSt17_Rb_tree_iteratorIS2_E@Base 1.2.31
  _ZNSt23_Rb_tree_const_iteratorISt4pairIKSsSsEEmmEv@Base 1.2.31
+ _ZNSt23_Rb_tree_const_iteratorISt4pairIKSsSsEEppEi@Base 1.2.32
  _ZNSt23_Rb_tree_const_iteratorISt4pairIKSsSsEEppEv@Base 1.2.31
  _ZNSt23_Rb_tree_const_iteratorIiEC1EPKSt13_Rb_tree_nodeIiE@Base 1.2.31
  _ZNSt23_Rb_tree_const_iteratorIiEC1ERKSt17_Rb_tree_iteratorIiE@Base 1.2.31
@@ -2617,10 +2625,12 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZNSt6vectorIPN12kyotocabinet7PlantDBINS0_7CacheDBELh33EE6RecordESaIS5_EED1Ev@Base 1.2.31
  _ZNSt6vectorISsSaISsEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPSsS1_EERKSs@Base 1.2.31
  _ZNSt6vectorISsSaISsEE15_M_erase_at_endEPSs@Base 1.2.31
+ _ZNSt6vectorISsSaISsEE20_M_allocate_and_copyIPSsEES3_mT_S4_@Base 1.2.32
  _ZNSt6vectorISsSaISsEE3endEv@Base 1.2.31
  _ZNSt6vectorISsSaISsEE4backEv@Base 1.2.31
  _ZNSt6vectorISsSaISsEE5beginEv@Base 1.2.31
  _ZNSt6vectorISsSaISsEE5clearEv@Base 1.2.31
+ _ZNSt6vectorISsSaISsEE7reserveEm@Base 1.2.32
  _ZNSt6vectorISsSaISsEE8pop_backEv@Base 1.2.31
  _ZNSt6vectorISsSaISsEE9push_backERKSs@Base 1.2.31
  _ZNSt6vectorISsSaISsEEC1Ev@Base 1.2.31
@@ -3039,7 +3049,9 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZTIZ10kcdbacceptE11VisitorImpl@Base 1.2.31
  _ZTIZ11kccuracceptE11VisitorImpl@Base 1.2.31
  _ZTIZ11kcdbiterateE11VisitorImpl@Base 1.2.31
+ _ZTIZ14kcdbacceptbulkE11VisitorImpl@Base 1.2.32
  _ZTIZ8kcdbsyncE17FileProcessorImpl@Base 1.2.31
+ _ZTIZN12kyotocabinet7BasicDB11remove_bulkERKSt6vectorISsSaISsEEbE11VisitorImpl@Base 1.2.32
  _ZTIZN12kyotocabinet7BasicDB13dump_snapshotEPSoPNS0_15ProgressCheckerEE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB16increment_doubleEPKcmdE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB3addEPKcmS2_mE11VisitorImpl@Base 1.2.31
@@ -3057,6 +3069,8 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZTIZN12kyotocabinet7BasicDB6appendEPKcmS2_mE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB6removeEPKcmE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB7replaceEPKcmS2_mE11VisitorImpl@Base 1.2.31
+ _ZTIZN12kyotocabinet7BasicDB8get_bulkERKSt6vectorISsSaISsEEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbE11VisitorImpl@Base 1.2.32
+ _ZTIZN12kyotocabinet7BasicDB8set_bulkERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbE11VisitorImpl@Base 1.2.32
  _ZTIZN12kyotocabinet7BasicDB9incrementEPKcmlE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7PlantDBINS_5DirDBELh65EE11synchronizeEbPNS_7BasicDB13FileProcessorEPNS3_15ProgressCheckerEE7Wrapper@Base 1.2.31
  _ZTIZN12kyotocabinet7PlantDBINS_5DirDBELh65EE12recalc_countEvE11VisitorImpl@Base 1.2.31
@@ -3125,7 +3139,9 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZTSZ10kcdbacceptE11VisitorImpl@Base 1.2.31
  _ZTSZ11kccuracceptE11VisitorImpl@Base 1.2.31
  _ZTSZ11kcdbiterateE11VisitorImpl@Base 1.2.31
+ _ZTSZ14kcdbacceptbulkE11VisitorImpl@Base 1.2.32
  _ZTSZ8kcdbsyncE17FileProcessorImpl@Base 1.2.31
+ _ZTSZN12kyotocabinet7BasicDB11remove_bulkERKSt6vectorISsSaISsEEbE11VisitorImpl@Base 1.2.32
  _ZTSZN12kyotocabinet7BasicDB13dump_snapshotEPSoPNS0_15ProgressCheckerEE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB16increment_doubleEPKcmdE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB3addEPKcmS2_mE11VisitorImpl@Base 1.2.31
@@ -3143,6 +3159,8 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZTSZN12kyotocabinet7BasicDB6appendEPKcmS2_mE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB6removeEPKcmE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB7replaceEPKcmS2_mE11VisitorImpl@Base 1.2.31
+ _ZTSZN12kyotocabinet7BasicDB8get_bulkERKSt6vectorISsSaISsEEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbE11VisitorImpl@Base 1.2.32
+ _ZTSZN12kyotocabinet7BasicDB8set_bulkERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbE11VisitorImpl@Base 1.2.32
  _ZTSZN12kyotocabinet7BasicDB9incrementEPKcmlE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7PlantDBINS_5DirDBELh65EE11synchronizeEbPNS_7BasicDB13FileProcessorEPNS3_15ProgressCheckerEE7Wrapper@Base 1.2.31
  _ZTSZN12kyotocabinet7PlantDBINS_5DirDBELh65EE12recalc_countEvE11VisitorImpl@Base 1.2.31
@@ -3211,7 +3229,9 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZTVZ10kcdbacceptE11VisitorImpl@Base 1.2.31
  _ZTVZ11kccuracceptE11VisitorImpl@Base 1.2.31
  _ZTVZ11kcdbiterateE11VisitorImpl@Base 1.2.31
+ _ZTVZ14kcdbacceptbulkE11VisitorImpl@Base 1.2.32
  _ZTVZ8kcdbsyncE17FileProcessorImpl@Base 1.2.31
+ _ZTVZN12kyotocabinet7BasicDB11remove_bulkERKSt6vectorISsSaISsEEbE11VisitorImpl@Base 1.2.32
  _ZTVZN12kyotocabinet7BasicDB13dump_snapshotEPSoPNS0_15ProgressCheckerEE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB16increment_doubleEPKcmdE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB3addEPKcmS2_mE11VisitorImpl@Base 1.2.31
@@ -3229,6 +3249,8 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZTVZN12kyotocabinet7BasicDB6appendEPKcmS2_mE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB6removeEPKcmE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB7replaceEPKcmS2_mE11VisitorImpl@Base 1.2.31
+ _ZTVZN12kyotocabinet7BasicDB8get_bulkERKSt6vectorISsSaISsEEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbE11VisitorImpl@Base 1.2.32
+ _ZTVZN12kyotocabinet7BasicDB8set_bulkERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbE11VisitorImpl@Base 1.2.32
  _ZTVZN12kyotocabinet7BasicDB9incrementEPKcmlE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7PlantDBINS_5DirDBELh65EE11synchronizeEbPNS_7BasicDB13FileProcessorEPNS3_15ProgressCheckerEE7Wrapper@Base 1.2.31
  _ZTVZN12kyotocabinet7PlantDBINS_5DirDBELh65EE12recalc_countEvE11VisitorImpl@Base 1.2.31
@@ -3251,11 +3273,19 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZZ11kcdbiterateEN11VisitorImplD0Ev@Base 1.2.31
  _ZZ11kcdbiterateEN11VisitorImplD1Ev@Base 1.2.31
  _ZZ11kcdbiterateEN11VisitorImplD2Ev@Base 1.2.31
+ _ZZ14kcdbacceptbulkEN11VisitorImplD0Ev@Base 1.2.32
+ _ZZ14kcdbacceptbulkEN11VisitorImplD1Ev@Base 1.2.32
+ _ZZ14kcdbacceptbulkEN11VisitorImplD2Ev@Base 1.2.32
  _ZZ8kcdbsyncEN17FileProcessorImplD0Ev@Base 1.2.31
  _ZZ8kcdbsyncEN17FileProcessorImplD1Ev@Base 1.2.31
  _ZZ8kcdbsyncEN17FileProcessorImplD2Ev@Base 1.2.31
  _ZZN12kyotocabinet11nearbyprimeEmE4tnum@Base 1.2.31
  _ZZN12kyotocabinet11nearbyprimeEmE5table@Base 1.2.31
+ _ZZN12kyotocabinet7BasicDB11remove_bulkERKSt6vectorISsSaISsEEbEN11VisitorImpl10visit_fullEPKcmS8_mPm@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB11remove_bulkERKSt6vectorISsSaISsEEbEN11VisitorImplC1Ev@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB11remove_bulkERKSt6vectorISsSaISsEEbEN11VisitorImplD0Ev@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB11remove_bulkERKSt6vectorISsSaISsEEbEN11VisitorImplD1Ev@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB11remove_bulkERKSt6vectorISsSaISsEEbENK11VisitorImpl3cntEv@Base 1.2.32
  _ZZN12kyotocabinet7BasicDB13dump_snapshotEPSoPNS0_15ProgressCheckerEEN11VisitorImpl10visit_fullEPKcmS6_mPm@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB13dump_snapshotEPSoPNS0_15ProgressCheckerEEN11VisitorImplC1ES1_@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB13dump_snapshotEPSoPNS0_15ProgressCheckerEEN11VisitorImplD0Ev@Base 1.2.31
@@ -3344,6 +3374,15 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZZN12kyotocabinet7BasicDB7replaceEPKcmS2_mEN11VisitorImplD0Ev@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB7replaceEPKcmS2_mEN11VisitorImplD1Ev@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB7replaceEPKcmS2_mENK11VisitorImpl2okEv@Base 1.2.31
+ _ZZN12kyotocabinet7BasicDB8get_bulkERKSt6vectorISsSaISsEEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbEN11VisitorImpl10visit_fullEPKcmSH_mPm@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB8get_bulkERKSt6vectorISsSaISsEEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbEN11VisitorImplC1ESE_@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB8get_bulkERKSt6vectorISsSaISsEEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbEN11VisitorImplD0Ev@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB8get_bulkERKSt6vectorISsSaISsEEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbEN11VisitorImplD1Ev@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB8set_bulkERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbEN11VisitorImpl10visit_fullEPKcmSD_mPm@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB8set_bulkERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbEN11VisitorImpl11visit_emptyEPKcmPm@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB8set_bulkERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbEN11VisitorImplC1ESA_@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB8set_bulkERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbEN11VisitorImplD0Ev@Base 1.2.32
+ _ZZN12kyotocabinet7BasicDB8set_bulkERKSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEbEN11VisitorImplD1Ev@Base 1.2.32
  _ZZN12kyotocabinet7BasicDB9incrementEPKcmlEN11VisitorImpl10visit_fullES2_mS2_mPm@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB9incrementEPKcmlEN11VisitorImpl11visit_emptyES2_mPm@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB9incrementEPKcmlEN11VisitorImpl3numEv@Base 1.2.31
@@ -3431,6 +3470,7 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  kccurstep@Base 1.2.31
  kccurstepback@Base 1.2.31
  kcdbaccept@Base 1.2.31
+ kcdbacceptbulk@Base 1.2.32
  kcdbadd@Base 1.2.31
  kcdbappend@Base 1.2.31
  kcdbbegintran@Base 1.2.31
@@ -3448,6 +3488,7 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  kcdbendtran@Base 1.2.31
  kcdbget@Base 1.2.31
  kcdbgetbuf@Base 1.2.31
+ kcdbgetbulk@Base 1.2.32
  kcdbincrdouble@Base 1.2.31
  kcdbincrint@Base 1.2.31
  kcdbiterate@Base 1.2.31
@@ -3459,8 +3500,10 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  kcdbopen@Base 1.2.31
  kcdbpath@Base 1.2.31
  kcdbremove@Base 1.2.31
+ kcdbremovebulk@Base 1.2.32
  kcdbreplace@Base 1.2.31
  kcdbset@Base 1.2.31
+ kcdbsetbulk@Base 1.2.32
  kcdbsize@Base 1.2.31
  kcdbstatus@Base 1.2.31
  kcdbsync@Base 1.2.31
