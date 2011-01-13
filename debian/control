@@ -14,7 +14,7 @@ Package: libkyotocabinet8
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Kyoto Cabinet Database Libraries [runtime]
+Description: Kyoto Cabinet database libraries [runtime]
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
  It provideas a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
@@ -26,7 +26,7 @@ Package: libkyotocabinet-dbg
 Section: debug
 Architecture: any
 Depends: libkyotocabinet8 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Kyoto Cabinet Database Libraries [runtime]
+Description: Kyoto Cabinet database libraries [runtime]
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
  It provideas a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
@@ -37,7 +37,7 @@ Package: libkyotocabinet-dev
 Section: libdevel
 Architecture: any
 Depends: libkyotocabinet8 (= ${binary:Version}), ${misc:Depends}
-Description: Kyoto Cabinet Database Libraries [development]
+Description: Kyoto Cabinet database libraries [development]
  This is the development package which contains headers and static libraries
  for the Kyoto Cabinet database library.
 
@@ -46,7 +46,7 @@ Architecture: all
 Section: doc
 Priority: optional
 Depends: ${misc:Depends}
-Description: Kyoto Cabinet Database Documentation
+Description: Kyoto Cabinet database documentation
  This package contains the documentation for all the APIs and utilities
  provided by Kyoto Cabinet.
 
@@ -55,7 +55,7 @@ Architecture: any
 Section: utils
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Kyoto Cabinet Database Utilities
+Description: Kyoto Cabinet database utilities
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
  It provideas a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
