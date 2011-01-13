@@ -7,7 +7,7 @@ Build-Depends:
  liblzma-dev,
  liblzo2-dev,
  zlib1g-dev
-Standards-Version: 3.8.4
+Standards-Version: 3.9.1
 Section: libs
 
 Package: libkyotocabinet8
