@@ -137,9 +137,15 @@ public:
         db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      if (writable && !(db_->writer_)) {
-        db_->set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
-        return false;
+      if (writable) {
+        if (!db_->writer_) {
+          db_->set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+          return false;
+        }
+        if (!(db_->flags_ & FOPEN) && !db_->autotran_ && !db_->tran_ &&
+            !db_->set_flag(FOPEN, true)) {
+          return false;
+        }
       }
       if (off_ < 1) {
         db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
@@ -525,10 +531,16 @@ public:
       mlock_.unlock();
       return false;
     }
-    if (writable && !writer_) {
-      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
-      mlock_.unlock();
-      return false;
+    if (writable) {
+      if (!writer_) {
+        set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+        mlock_.unlock();
+        return false;
+      }
+      if (!(flags_ & FOPEN) && !autotran_ && !tran_ && !set_flag(FOPEN, true)) {
+        mlock_.unlock();
+        return false;
+      }
     }
     bool err = false;
     uint64_t hash = hash_record(kbuf, ksiz);
@@ -574,10 +586,16 @@ public:
       mlock_.unlock();
       return false;
     }
-    if (writable && !writer_) {
-      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
-      mlock_.unlock();
-      return false;
+    if (writable) {
+      if (!writer_) {
+        set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+        mlock_.unlock();
+        return false;
+      }
+      if (!(flags_ & FOPEN) && !autotran_ && !tran_ && !set_flag(FOPEN, true)) {
+        mlock_.unlock();
+        return false;
+      }
     }
     bool err = false;
     struct RecordKey {
@@ -649,9 +667,15 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
       return false;
     }
-    if (writable && !writer_) {
-      set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
-      return false;
+    if (writable) {
+      if (!writer_) {
+        set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
+        return false;
+      }
+      if (!(flags_ & FOPEN) && !autotran_ && !tran_ && !set_flag(FOPEN, true)) {
+        mlock_.unlock();
+        return false;
+      }
     }
     bool err = false;
     if (!iterate_impl(visitor, checker)) err = true;
@@ -2290,9 +2314,8 @@ private:
     std::memcpy(head + HDBMOFFOPTS, &opts_, sizeof(opts_));
     uint64_t num = hton64(bnum_);
     std::memcpy(head + HDBMOFFBNUM, &num, sizeof(num));
-    uint8_t flags = flags_;
-    if (!flagopen_) flags &= ~FOPEN;
-    std::memcpy(head + HDBMOFFFLAGS, &flags, sizeof(flags));
+    if (!flagopen_) flags_ &= ~FOPEN;
+    std::memcpy(head + HDBMOFFFLAGS, &flags_, sizeof(flags_));
     num = hton64(count_);
     std::memcpy(head + HDBMOFFCOUNT, &num, sizeof(num));
     num = hton64(lsiz_);

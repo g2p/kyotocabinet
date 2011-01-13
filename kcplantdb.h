@@ -1314,15 +1314,7 @@ public:
       db_.close();
       return false;
     }
-    if (db_.recovered()) {
-      if (!writer_) {
-        if (!db_.close()) return false;
-        mode &= ~OREADER;
-        mode |= OWRITER;
-        if (!db_.open(path, mode)) return false;
-      }
-      if (!recalc_count()) return false;
-    } else if (db_.reorganized()) {
+    if (db_.reorganized()) {
       if (!writer_) {
         if (!db_.close()) return false;
         mode &= ~OREADER;
@@ -1330,6 +1322,14 @@ public:
         if (!db_.open(path, mode)) return false;
       }
       if (!reorganize_file(mode)) return false;
+    } else if (db_.recovered()) {
+      if (!writer_) {
+        if (!db_.close()) return false;
+        mode &= ~OREADER;
+        mode |= OWRITER;
+        if (!db_.open(path, mode)) return false;
+      }
+      if (!recalc_count()) return false;
     }
     if (writer_ && db_.count() < 1) {
       root_ = 0;
