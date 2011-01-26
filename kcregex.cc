@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "kcregex.h"
 #include "myconf.h"
+#include "kcregex.h"
 
 #if _KC_PXREGEX
 extern "C" {

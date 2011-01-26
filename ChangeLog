@@ -1,3 +1,11 @@
+2011-01-11  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcutil.cc: the order of header inclusion was modified.
+
+	* kcthread.cc (SpinRWLock): space efficiency was improved.
+
+	- Release: 1.2.35
+
 2011-01-09  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcplantdb.h (PlantDB::accept, PlantDB::accept_bulk): behavior of async was modified.

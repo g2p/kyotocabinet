@@ -31,7 +31,7 @@ namespace kyotocabinet {                 // common namespace
  * Constants for implementation.
  */
 namespace {
-const char DBSSMAGICDATA[] = "KCSS\n";   ///< magic data of the file
+const char DBSSMAGICDATA[] = "KCSS\n";   ///< magic data of the snapshot file
 const size_t DBIOBUFSIZ = 8192;          ///< size of the IO buffer
 }
 

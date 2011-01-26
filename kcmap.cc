@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "kcmap.h"
 #include "myconf.h"
+#include "kcmap.h"
 
 namespace kyotocabinet {                 // common namespace
 

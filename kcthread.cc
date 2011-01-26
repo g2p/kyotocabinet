@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "kcthread.h"
 #include "myconf.h"
+#include "kcthread.h"
 
 namespace kyotocabinet {                 // common namespace
 
@@ -649,16 +649,13 @@ void RWLock::unlock() {
 struct SpinRWLockCore {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   LONG sem;                              ///< semaphore
-  int32_t wc;                            ///< count of writers
-  int32_t rc;                            ///< count of readers
+  uint32_t cnt;                          ///< count of threads
 #elif _KC_GCCATOMIC
   int32_t sem;                           ///< semaphore
-  int32_t wc;                            ///< count of writers
-  int32_t rc;                            ///< count of readers
+  uint32_t cnt;                          ///< count of threads
 #else
   ::pthread_spinlock_t sem;              ///< semaphore
-  int32_t wc;                            ///< count of writers
-  int32_t rc;                            ///< count of readers
+  uint32_t cnt;                          ///< count of threads
 #endif
 };
 
@@ -685,16 +682,14 @@ SpinRWLock::SpinRWLock() : opq_(NULL) {
   _assert_(true);
   SpinRWLockCore* core = new SpinRWLockCore;
   core->sem = 0;
-  core->wc = 0;
-  core->rc = 0;
+  core->cnt = 0;
   opq_ = (void*)core;
 #else
   _assert_(true);
   SpinRWLockCore* core = new SpinRWLockCore;
   if (::pthread_spin_init(&core->sem, PTHREAD_PROCESS_PRIVATE) != 0)
     throw std::runtime_error("pthread_spin_init");
-  core->wc = 0;
-  core->rc = 0;
+  core->cnt = 0;
   opq_ = (void*)core;
 #endif
 }
@@ -724,12 +719,12 @@ void SpinRWLock::lock_writer() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
-  while (core->wc > 0 || core->rc > 0) {
+  while (core->cnt > 0) {
     spinrwlockunlock(core);
     Thread::yield();
     spinrwlocklock(core);
   }
-  core->wc++;
+  core->cnt = INT32_MAX;
   spinrwlockunlock(core);
 }
 
@@ -741,10 +736,11 @@ bool SpinRWLock::lock_writer_try() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
-  if (core->wc > 0 || core->rc > 0) {
+  if (core->cnt > 0) {
     spinrwlockunlock(core);
     return false;
   }
+  core->cnt = INT32_MAX;
   spinrwlockunlock(core);
   return true;
 }
@@ -757,12 +753,12 @@ void SpinRWLock::lock_reader() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
-  while (core->wc > 0) {
+  while (core->cnt >= INT32_MAX) {
     spinrwlockunlock(core);
     Thread::yield();
     spinrwlocklock(core);
   }
-  core->rc++;
+  core->cnt++;
   spinrwlockunlock(core);
 }
 
@@ -774,11 +770,11 @@ bool SpinRWLock::lock_reader_try() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
-  if (core->wc > 0) {
+  if (core->cnt >= INT32_MAX) {
     spinrwlockunlock(core);
     return false;
   }
-  core->rc++;
+  core->cnt++;
   spinrwlockunlock(core);
   return true;
 }
@@ -791,10 +787,10 @@ void SpinRWLock::unlock() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
-  if (core->wc > 0) {
-    core->wc--;
+  if (core->cnt >= INT32_MAX) {
+    core->cnt = 0;
   } else {
-    core->rc--;
+    core->cnt--;
   }
   spinrwlockunlock(core);
 }
@@ -807,12 +803,11 @@ bool SpinRWLock::promote() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
-  if (core->rc > 1) {
+  if (core->cnt > 1) {
     spinrwlockunlock(core);
     return false;
   }
-  core->rc--;
-  core->wc++;
+  core->cnt = INT32_MAX;
   spinrwlockunlock(core);
   return true;
 }
@@ -825,8 +820,7 @@ void SpinRWLock::demote() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
-  core->wc--;
-  core->rc++;
+  core->cnt = 1;
   spinrwlockunlock(core);
 }
 

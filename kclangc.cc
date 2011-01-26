@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "kcpolydb.h"
 #include "myconf.h"
+#include "kcpolydb.h"
 #include "kclangc.h"
 
 using namespace kyotocabinet;
