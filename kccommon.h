@@ -110,6 +110,31 @@ using tr1::unordered_set;
 #undef CLOCKTICK
 #undef PAGESIZE
 
+#undef SUCCESS
+#undef NOIMPL
+#undef INVALID
+#undef NOREPOS
+#undef NOPERM
+#undef BROKEN
+#undef DUPREC
+#undef NOREC
+#undef LOGIC
+#undef SYSTEM
+#undef MISC
+
+#undef DEBUG
+#undef INFO
+#undef WARN
+#undef ERROR
+#undef OPEN
+#undef CLOSE
+#undef CLEAR
+#undef ITERATE
+#undef SYNCHRONIZE
+#undef BEGINTRAN
+#undef COMMITTRAN
+#undef ABORTTRAN
+
 #if defined(_KCUYIELD)
 #if defined(_MSC_VER)
 #include <windows.h>

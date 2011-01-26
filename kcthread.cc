@@ -20,6 +20,15 @@ namespace kyotocabinet {                 // common namespace
 
 
 /**
+ * Constants for implementation.
+ */
+namespace {
+const uint32_t LOCKBUSYLOOP = 4;         ///< threshold of busy loop and sleep for locking
+const size_t LOCKSEMNUM = 256;           ///< number of semaphores for locking
+}
+
+
+/**
  * Thread internal.
  */
 struct ThreadCore {
@@ -182,6 +191,24 @@ void Thread::yield() {
   ::sched_yield();
 #endif
 }
+
+
+/**
+ * Chill the processor by suspending execution for a quick moment.
+ */
+void Thread::chill() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  ::Sleep(21);
+#else
+  _assert_(true);
+  struct ::timespec req;
+  req.tv_sec = 0;
+  req.tv_nsec = 21 * 1000 * 1000;
+  ::nanosleep(&req, NULL);
+#endif
+}
+
 
 
 /**
@@ -380,9 +407,15 @@ bool Mutex::lock_try(double sec) {
   if (lock_try()) return true;
   double end = time() + sec;
   Thread::yield();
+  uint32_t wcnt = 0;
   while (!lock_try()) {
     if (time() > end) return false;
-    Thread::yield();
+    if (wcnt >= LOCKBUSYLOOP) {
+      Thread::chill();
+    } else {
+      Thread::yield();
+      wcnt++;
+    }
   }
   return true;
 #else
@@ -428,6 +461,161 @@ void Mutex::unlock() {
 
 
 /**
+ * SlottedMutex internal.
+ */
+struct SlottedMutexCore {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  ::CRITICAL_SECTION* mutexes;           ///< primitives
+  size_t slotnum;                        ///< number of slots
+#else
+  ::pthread_mutex_t* mutexes;            ///< primitives
+  size_t slotnum;                        ///< number of slots
+#endif
+};
+
+
+/**
+ * Constructor.
+ */
+SlottedMutex::SlottedMutex(size_t slotnum) : opq_(NULL) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedMutexCore* core = new SlottedMutexCore;
+  ::CRITICAL_SECTION* mutexes = new ::CRITICAL_SECTION[slotnum];
+  for (size_t i = 0; i < slotnum; i++) {
+    ::InitializeCriticalSection(mutexes + i);
+  }
+  core->mutexes = mutexes;
+  core->slotnum = slotnum;
+  opq_ = (void*)core;
+#else
+  _assert_(true);
+  SlottedMutexCore* core = new SlottedMutexCore;
+  ::pthread_mutex_t* mutexes = new ::pthread_mutex_t[slotnum];
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_mutex_init(mutexes + i, NULL) != 0)
+      throw std::runtime_error("pthread_mutex_init");
+  }
+  core->mutexes = mutexes;
+  core->slotnum = slotnum;
+  opq_ = (void*)core;
+#endif
+}
+
+
+/**
+ * Destructor.
+ */
+SlottedMutex::~SlottedMutex() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  ::CRITICAL_SECTION* mutexes = core->mutexes;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    ::DeleteCriticalSection(mutexes + i);
+  }
+  delete[] mutexes;
+  delete core;
+#else
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  ::pthread_mutex_t* mutexes = core->mutexes;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    ::pthread_mutex_destroy(mutexes + i);
+  }
+  delete[] mutexes;
+  delete core;
+#endif
+}
+
+
+/**
+ * Get the lock of a slot.
+ */
+void SlottedMutex::lock(size_t idx) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  ::EnterCriticalSection(core->mutexes + idx);
+#else
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  if (::pthread_mutex_lock(core->mutexes + idx) != 0)
+    throw std::runtime_error("pthread_mutex_lock");
+#endif
+}
+
+
+/**
+ * Release the lock of a slot.
+ */
+void SlottedMutex::unlock(size_t idx) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  ::LeaveCriticalSection(core->mutexes + idx);
+#else
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  if (::pthread_mutex_unlock(core->mutexes + idx) != 0)
+    throw std::runtime_error("pthread_mutex_unlock");
+#endif
+}
+
+
+/**
+ * Get the locks of all slots.
+ */
+void SlottedMutex::lock_all() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  ::CRITICAL_SECTION* mutexes = core->mutexes;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    ::EnterCriticalSection(core->mutexes + i);
+  }
+#else
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  ::pthread_mutex_t* mutexes = core->mutexes;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_mutex_lock(mutexes + i) != 0)
+      throw std::runtime_error("pthread_mutex_lock");
+  }
+#endif
+}
+
+
+/**
+ * Release the locks of all slots.
+ */
+void SlottedMutex::unlock_all() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  ::CRITICAL_SECTION* mutexes = core->mutexes;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    ::LeaveCriticalSection(mutexes + i);
+  }
+#else
+  _assert_(true);
+  SlottedMutexCore* core = (SlottedMutexCore*)opq_;
+  ::pthread_mutex_t* mutexes = core->mutexes;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_mutex_unlock(mutexes + i) != 0)
+      throw std::runtime_error("pthread_mutex_unlock");
+  }
+#endif
+}
+
+
+/**
  * Default constructor.
  */
 SpinLock::SpinLock() : opq_(NULL) {
@@ -468,13 +656,25 @@ SpinLock::~SpinLock() {
 void SpinLock::lock() {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
+  uint32_t wcnt = 0;
   while (::InterlockedCompareExchange((LONG*)&opq_, 1, 0) != 0) {
-    ::Sleep(0);
+    if (wcnt >= LOCKBUSYLOOP) {
+      Thread::chill();
+    } else {
+      Thread::yield();
+      wcnt++;
+    }
   }
 #elif _KC_GCCATOMIC
   _assert_(true);
+  uint32_t wcnt = 0;
   while (!__sync_bool_compare_and_swap(&opq_, 0, 1)) {
-    ::sched_yield();
+    if (wcnt >= LOCKBUSYLOOP) {
+      Thread::chill();
+    } else {
+      Thread::yield();
+      wcnt++;
+    }
   }
 #else
   _assert_(true);
@@ -519,6 +719,220 @@ void SpinLock::unlock() {
   _assert_(true);
   ::pthread_spinlock_t* spin = (::pthread_spinlock_t*)opq_;
   if (::pthread_spin_unlock(spin) != 0) throw std::runtime_error("pthread_spin_unlock");
+#endif
+}
+
+
+/**
+ * SlottedSpinLock internal.
+ */
+struct SlottedSpinLockCore {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || _KC_GCCATOMIC
+  intptr_t* locks;                       ///< primitives
+  size_t slotnum;                        ///< number of slots
+#else
+  ::pthread_spinlock_t* spins;           ///< primitives
+  size_t slotnum;                        ///< number of slots
+#endif
+};
+
+
+/**
+ * Constructor.
+ */
+SlottedSpinLock::SlottedSpinLock(size_t slotnum) : opq_(NULL) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || _KC_GCCATOMIC
+  _assert_(true);
+  SlottedSpinLockCore* core = new SlottedSpinLockCore;
+  intptr_t* locks = new intptr_t[slotnum];
+  for (size_t i = 0; i < slotnum; i++) {
+    locks[i] = 0;
+  }
+  core->locks = locks;
+  core->slotnum = slotnum;
+  opq_ = (void*)core;
+#else
+  _assert_(true);
+  SlottedSpinLockCore* core = new SlottedSpinLockCore;
+  ::pthread_spinlock_t* spins = new ::pthread_spinlock_t[slotnum];
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_spin_init(spins + i, PTHREAD_PROCESS_PRIVATE) != 0)
+      throw std::runtime_error("pthread_spin_init");
+  }
+  core->spins = spins;
+  core->slotnum = slotnum;
+  opq_ = (void*)core;
+#endif
+}
+
+
+/**
+ * Destructor.
+ */
+SlottedSpinLock::~SlottedSpinLock() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || _KC_GCCATOMIC
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  delete[] core->locks;
+  delete core;
+#else
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  ::pthread_spinlock_t* spins = core->spins;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    ::pthread_spin_destroy(spins + i);
+  }
+  delete[] spins;
+  delete core;
+#endif
+}
+
+
+/**
+ * Get the lock of a slot.
+ */
+void SlottedSpinLock::lock(size_t idx) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  intptr_t* lock = core->locks + idx;
+  uint32_t wcnt = 0;
+  while (::InterlockedCompareExchange((LONG*)lock, 1, 0) != 0) {
+    if (wcnt >= LOCKBUSYLOOP) {
+      Thread::chill();
+    } else {
+      Thread::yield();
+      wcnt++;
+    }
+  }
+#elif _KC_GCCATOMIC
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  intptr_t* lock = core->locks + idx;
+  uint32_t wcnt = 0;
+  while (!__sync_bool_compare_and_swap(lock, 0, 1)) {
+    if (wcnt >= LOCKBUSYLOOP) {
+      Thread::chill();
+    } else {
+      Thread::yield();
+      wcnt++;
+    }
+  }
+#else
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  if (::pthread_spin_lock(core->spins + idx) != 0)
+    throw std::runtime_error("pthread_spin_lock");
+#endif
+}
+
+
+/**
+ * Release the lock of a slot.
+ */
+void SlottedSpinLock::unlock(size_t idx) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  intptr_t* lock = core->locks + idx;
+  ::InterlockedExchange((LONG*)lock, 0);
+#elif _KC_GCCATOMIC
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  intptr_t* lock = core->locks + idx;
+  (void)__sync_lock_test_and_set(lock, 0);
+#else
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  if (::pthread_spin_unlock(core->spins + idx) != 0)
+    throw std::runtime_error("pthread_spin_unlock");
+#endif
+}
+
+
+/**
+ * Get the locks of all slots.
+ */
+void SlottedSpinLock::lock_all() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  intptr_t* locks = core->locks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    intptr_t* lock = locks + i;
+    uint32_t wcnt = 0;
+    while (::InterlockedCompareExchange((LONG*)lock, 1, 0) != 0) {
+      if (wcnt >= LOCKBUSYLOOP) {
+        Thread::chill();
+      } else {
+        Thread::yield();
+        wcnt++;
+      }
+    }
+  }
+#elif _KC_GCCATOMIC
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  intptr_t* locks = core->locks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    intptr_t* lock = locks + i;
+    uint32_t wcnt = 0;
+    while (!__sync_bool_compare_and_swap(lock, 0, 1)) {
+      if (wcnt >= LOCKBUSYLOOP) {
+        Thread::chill();
+      } else {
+        Thread::yield();
+        wcnt++;
+      }
+    }
+  }
+#else
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  ::pthread_spinlock_t* spins = core->spins;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_spin_lock(spins + i) != 0)
+      throw std::runtime_error("pthread_spin_lock");
+  }
+#endif
+}
+
+
+/**
+ * Release the locks of all slots.
+ */
+void SlottedSpinLock::unlock_all() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  intptr_t* locks = core->locks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    intptr_t* lock = locks + i;
+    ::InterlockedExchange((LONG*)lock, 0);
+  }
+#elif _KC_GCCATOMIC
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  intptr_t* locks = core->locks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    intptr_t* lock = locks + i;
+    (void)__sync_lock_test_and_set(lock, 0);
+  }
+#else
+  _assert_(true);
+  SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
+  ::pthread_spinlock_t* spins = core->spins;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_spin_unlock(spins + i) != 0)
+      throw std::runtime_error("pthread_spin_unlock");
+  }
 #endif
 }
 
@@ -644,6 +1058,193 @@ void RWLock::unlock() {
 
 
 /**
+ * SlottedRWLock internal.
+ */
+struct SlottedRWLockCore {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  RWLock* rwlocks;                       ///< primitives
+  size_t slotnum;                        ///< number of slots
+#else
+  ::pthread_rwlock_t* rwlocks;           ///< primitives
+  size_t slotnum;                        ///< number of slots
+#endif
+};
+
+
+/**
+ * Constructor.
+ */
+SlottedRWLock::SlottedRWLock(size_t slotnum) : opq_(NULL) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedRWLockCore* core = new SlottedRWLockCore;
+  RWLock* rwlocks = new RWLock[slotnum];
+  core->rwlocks = rwlocks;
+  core->slotnum = slotnum;
+  opq_ = (void*)core;
+#else
+  _assert_(true);
+  SlottedRWLockCore* core = new SlottedRWLockCore;
+  ::pthread_rwlock_t* rwlocks = new ::pthread_rwlock_t[slotnum];
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_rwlock_init(rwlocks + i, NULL) != 0)
+      throw std::runtime_error("pthread_rwlock_init");
+  }
+  core->rwlocks = rwlocks;
+  core->slotnum = slotnum;
+  opq_ = (void*)core;
+#endif
+}
+
+
+/**
+ * Destructor.
+ */
+SlottedRWLock::~SlottedRWLock() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  delete[] core->rwlocks;
+  delete core;
+#else
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  ::pthread_rwlock_t* rwlocks = core->rwlocks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    ::pthread_rwlock_destroy(rwlocks + i);
+  }
+  delete[] rwlocks;
+  delete core;
+#endif
+}
+
+
+/**
+ * Get the writer lock of a slot.
+ */
+void SlottedRWLock::lock_writer(size_t idx) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  core->rwlocks[idx].lock_writer();
+#else
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  if (::pthread_rwlock_wrlock(core->rwlocks + idx) != 0)
+    throw std::runtime_error("pthread_rwlock_wrlock");
+#endif
+}
+
+
+/**
+ * Get the reader lock of a slot.
+ */
+void SlottedRWLock::lock_reader(size_t idx) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  core->rwlocks[idx].lock_reader();
+#else
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  if (::pthread_rwlock_rdlock(core->rwlocks + idx) != 0)
+    throw std::runtime_error("pthread_rwlock_rdlock");
+#endif
+}
+
+
+/**
+ * Release the lock of a slot.
+ */
+void SlottedRWLock::unlock(size_t idx) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  core->rwlocks[idx].unlock();
+#else
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  if (::pthread_rwlock_unlock(core->rwlocks + idx) != 0)
+    throw std::runtime_error("pthread_rwlock_unlock");
+#endif
+}
+
+
+/**
+ * Get the writer locks of all slots.
+ */
+void SlottedRWLock::lock_writer_all() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  RWLock* rwlocks = core->rwlocks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    rwlocks[i].lock_writer();
+  }
+#else
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  ::pthread_rwlock_t* rwlocks = core->rwlocks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_rwlock_wrlock(rwlocks + i) != 0)
+      throw std::runtime_error("pthread_rwlock_wrlock");
+  }
+#endif
+}
+
+
+/**
+ * Get the reader locks of all slots.
+ */
+void SlottedRWLock::lock_reader_all() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  RWLock* rwlocks = core->rwlocks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    rwlocks[i].lock_reader();
+  }
+#else
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  ::pthread_rwlock_t* rwlocks = core->rwlocks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_rwlock_rdlock(rwlocks + i) != 0)
+      throw std::runtime_error("pthread_rwlock_rdlock");
+  }
+#endif
+}
+
+
+/**
+ * Release the locks of all slots.
+ */
+void SlottedRWLock::unlock_all() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  RWLock* rwlocks = core->rwlocks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    rwlocks[i].unlock();
+  }
+#else
+  _assert_(true);
+  SlottedRWLockCore* core = (SlottedRWLockCore*)opq_;
+  ::pthread_rwlock_t* rwlocks = core->rwlocks;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    if (::pthread_rwlock_unlock(rwlocks + i) != 0)
+      throw std::runtime_error("pthread_rwlock_unlock");
+  }
+#endif
+}
+
+
+/**
  * SpinRWLock internal.
  */
 struct SpinRWLockCore {
@@ -719,9 +1320,15 @@ void SpinRWLock::lock_writer() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
+  uint32_t wcnt = 0;
   while (core->cnt > 0) {
     spinrwlockunlock(core);
-    Thread::yield();
+    if (wcnt >= LOCKBUSYLOOP) {
+      Thread::chill();
+    } else {
+      Thread::yield();
+      wcnt++;
+    }
     spinrwlocklock(core);
   }
   core->cnt = INT32_MAX;
@@ -753,9 +1360,15 @@ void SpinRWLock::lock_reader() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
+  uint32_t wcnt = 0;
   while (core->cnt >= INT32_MAX) {
     spinrwlockunlock(core);
-    Thread::yield();
+    if (wcnt >= LOCKBUSYLOOP) {
+      Thread::chill();
+    } else {
+      Thread::yield();
+      wcnt++;
+    }
     spinrwlocklock(core);
   }
   core->cnt++;
@@ -864,6 +1477,290 @@ static void spinrwlockunlock(SpinRWLockCore* core) {
 
 
 /**
+ * SlottedRWLock internal.
+ */
+struct SlottedSpinRWLockCore {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  LONG sems[LOCKSEMNUM];                 ///< semaphores
+#elif _KC_GCCATOMIC
+  int32_t sems[LOCKSEMNUM];              ///< semaphores
+#else
+  ::pthread_spinlock_t sems[LOCKSEMNUM]; ///< semaphores
+#endif
+  uint32_t* cnts;                        ///< counts of threads
+  size_t slotnum;                        ///< number of slots
+};
+
+
+/**
+ * Lock the semephore of SlottedSpinRWLock.
+ * @param core the internal fields.
+ * @param idx the index of the semaphoe.
+ */
+static void slottedspinrwlocklock(SlottedSpinRWLockCore* core, size_t idx);
+
+
+/**
+ * Unlock the semephore of SlottedSpinRWLock.
+ * @param core the internal fields.
+ * @param idx the index of the semaphoe.
+ */
+static void slottedspinrwlockunlock(SlottedSpinRWLockCore* core, size_t idx);
+
+
+/**
+ * Constructor.
+ */
+SlottedSpinRWLock::SlottedSpinRWLock(size_t slotnum) : opq_(NULL) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  SlottedSpinRWLockCore* core = new SlottedSpinRWLockCore;
+  LONG* sems = core->sems;
+  uint32_t* cnts = new uint32_t[slotnum];
+  for (size_t i = 0; i < LOCKSEMNUM; i++) {
+    sems[i] = 0;
+  }
+  for (size_t i = 0; i < slotnum; i++) {
+    cnts[i] = 0;
+  }
+  core->cnts = cnts;
+  core->slotnum = slotnum;
+  opq_ = (void*)core;
+#elif _KC_GCCATOMIC
+  SlottedSpinRWLockCore* core = new SlottedSpinRWLockCore;
+  int32_t* sems = core->sems;
+  uint32_t* cnts = new uint32_t[slotnum];
+  for (size_t i = 0; i < LOCKSEMNUM; i++) {
+    sems[i] = 0;
+  }
+  for (size_t i = 0; i < slotnum; i++) {
+    cnts[i] = 0;
+  }
+  core->cnts = cnts;
+  core->slotnum = slotnum;
+  opq_ = (void*)core;
+#else
+  _assert_(true);
+  SlottedSpinRWLockCore* core = new SlottedSpinRWLockCore;
+  ::pthread_spinlock_t* sems = core->sems;
+  uint32_t* cnts = new uint32_t[slotnum];
+  for (size_t i = 0; i < LOCKSEMNUM; i++) {
+    if (::pthread_spin_init(sems + i, PTHREAD_PROCESS_PRIVATE) != 0)
+      throw std::runtime_error("pthread_spin_init");
+  }
+  for (size_t i = 0; i < slotnum; i++) {
+    cnts[i] = 0;
+  }
+  core->cnts = cnts;
+  core->slotnum = slotnum;
+  opq_ = (void*)core;
+#endif
+}
+
+
+/**
+ * Destructor.
+ */
+SlottedSpinRWLock::~SlottedSpinRWLock() {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || _KC_GCCATOMIC
+  _assert_(true);
+  SlottedSpinRWLockCore* core = (SlottedSpinRWLockCore*)opq_;
+  delete[] core->cnts;
+  delete core;
+#else
+  _assert_(true);
+  SlottedSpinRWLockCore* core = (SlottedSpinRWLockCore*)opq_;
+  ::pthread_spinlock_t* sems = core->sems;
+  for (size_t i = 0; i < LOCKSEMNUM; i++) {
+    ::pthread_spin_destroy(sems + i);
+  }
+  delete[] core->cnts;
+  delete core;
+#endif
+}
+
+
+/**
+ * Get the writer lock of a slot.
+ */
+void SlottedSpinRWLock::lock_writer(size_t idx) {
+  _assert_(true);
+  SlottedSpinRWLockCore* core = (SlottedSpinRWLockCore*)opq_;
+  size_t semidx = idx % LOCKSEMNUM;
+  slottedspinrwlocklock(core, semidx);
+  uint32_t wcnt = 0;
+  while (core->cnts[idx] > 0) {
+    slottedspinrwlockunlock(core, semidx);
+    if (wcnt >= LOCKBUSYLOOP) {
+      Thread::chill();
+    } else {
+      Thread::yield();
+      wcnt++;
+    }
+    slottedspinrwlocklock(core, semidx);
+  }
+  core->cnts[idx] = INT32_MAX;
+  slottedspinrwlockunlock(core, semidx);
+}
+
+
+/**
+ * Get the reader lock of a slot.
+ */
+void SlottedSpinRWLock::lock_reader(size_t idx) {
+  _assert_(true);
+  SlottedSpinRWLockCore* core = (SlottedSpinRWLockCore*)opq_;
+  size_t semidx = idx % LOCKSEMNUM;
+  slottedspinrwlocklock(core, semidx);
+  uint32_t wcnt = 0;
+  while (core->cnts[idx] >= INT32_MAX) {
+    slottedspinrwlockunlock(core, semidx);
+    if (wcnt >= LOCKBUSYLOOP) {
+      Thread::chill();
+    } else {
+      Thread::yield();
+      wcnt++;
+    }
+    slottedspinrwlocklock(core, semidx);
+  }
+  core->cnts[idx]++;
+  slottedspinrwlockunlock(core, semidx);
+}
+
+
+/**
+ * Release the lock of a slot.
+ */
+void SlottedSpinRWLock::unlock(size_t idx) {
+  _assert_(true);
+  SlottedSpinRWLockCore* core = (SlottedSpinRWLockCore*)opq_;
+  size_t semidx = idx % LOCKSEMNUM;
+  slottedspinrwlocklock(core, semidx);
+  if (core->cnts[idx] >= INT32_MAX) {
+    core->cnts[idx] = 0;
+  } else {
+    core->cnts[idx]--;
+  }
+  slottedspinrwlockunlock(core, semidx);
+}
+
+
+/**
+ * Get the writer locks of all slots.
+ */
+void SlottedSpinRWLock::lock_writer_all() {
+  _assert_(true);
+  SlottedSpinRWLockCore* core = (SlottedSpinRWLockCore*)opq_;
+  uint32_t* cnts = core->cnts;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    size_t semidx = i % LOCKSEMNUM;
+    slottedspinrwlocklock(core, semidx);
+    uint32_t wcnt = 0;
+    while (cnts[i] > 0) {
+      slottedspinrwlockunlock(core, semidx);
+      if (wcnt >= LOCKBUSYLOOP) {
+        Thread::chill();
+      } else {
+        Thread::yield();
+        wcnt++;
+      }
+      slottedspinrwlocklock(core, semidx);
+    }
+    cnts[i] = INT32_MAX;
+    slottedspinrwlockunlock(core, semidx);
+  }
+}
+
+
+/**
+ * Get the reader locks of all slots.
+ */
+void SlottedSpinRWLock::lock_reader_all() {
+  _assert_(true);
+  SlottedSpinRWLockCore* core = (SlottedSpinRWLockCore*)opq_;
+  uint32_t* cnts = core->cnts;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    size_t semidx = i % LOCKSEMNUM;
+    slottedspinrwlocklock(core, semidx);
+    uint32_t wcnt = 0;
+    while (cnts[i] >= INT32_MAX) {
+      slottedspinrwlockunlock(core, semidx);
+      if (wcnt >= LOCKBUSYLOOP) {
+        Thread::chill();
+      } else {
+        Thread::yield();
+        wcnt++;
+      }
+      slottedspinrwlocklock(core, semidx);
+    }
+    cnts[i]++;
+    slottedspinrwlockunlock(core, semidx);
+  }
+}
+
+
+/**
+ * Release the locks of all slots.
+ */
+void SlottedSpinRWLock::unlock_all() {
+  _assert_(true);
+  SlottedSpinRWLockCore* core = (SlottedSpinRWLockCore*)opq_;
+  uint32_t* cnts = core->cnts;
+  size_t slotnum = core->slotnum;
+  for (size_t i = 0; i < slotnum; i++) {
+    size_t semidx = i % LOCKSEMNUM;
+    slottedspinrwlocklock(core, semidx);
+    if (cnts[i] >= INT32_MAX) {
+      cnts[i] = 0;
+    } else {
+      cnts[i]--;
+    }
+    slottedspinrwlockunlock(core, semidx);
+  }
+}
+
+
+/**
+ * Lock the semephore of SlottedSpinRWLock.
+ */
+static void slottedspinrwlocklock(SlottedSpinRWLockCore* core, size_t idx) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(core);
+  while (::InterlockedCompareExchange(core->sems + idx, 1, 0) != 0) {
+    ::Sleep(0);
+  }
+#elif _KC_GCCATOMIC
+  _assert_(core);
+  while (!__sync_bool_compare_and_swap(core->sems + idx, 0, 1)) {
+    ::sched_yield();
+  }
+#else
+  _assert_(core);
+  if (::pthread_spin_lock(core->sems + idx) != 0) throw std::runtime_error("pthread_spin_lock");
+#endif
+}
+
+
+/**
+ * Unlock the semephore of SlottedSpinRWLock.
+ */
+static void slottedspinrwlockunlock(SlottedSpinRWLockCore* core, size_t idx) {
+#if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
+  _assert_(core);
+  ::InterlockedExchange(core->sems + idx, 0);
+#elif _KC_GCCATOMIC
+  _assert_(core);
+  (void)__sync_lock_test_and_set(core->sems + idx, 0);
+#else
+  _assert_(core);
+  if (::pthread_spin_unlock(core->sems + idx) != 0)
+    throw std::runtime_error("pthread_spin_unlock");
+#endif
+}
+
+
+/**
  * Default constructor.
  */
 CondVar::CondVar() : opq_(NULL) {
@@ -881,7 +1778,8 @@ CondVar::CondVar() : opq_(NULL) {
 #else
   _assert_(true);
   CondVarCore* core = new CondVarCore;
-  if (::pthread_cond_init(&core->cond, NULL) != 0) throw std::runtime_error("pthread_cond_init");
+  if (::pthread_cond_init(&core->cond, NULL) != 0)
+    throw std::runtime_error("pthread_cond_init");
   opq_ = (void*)core;
 #endif
 }
@@ -996,7 +1894,8 @@ bool CondVar::wait(Mutex* mutex, double sec) {
   }
   int32_t ecode = ::pthread_cond_timedwait(&core->cond, mymutex, &ts);
   if (ecode == 0) return true;
-  if (ecode != ETIMEDOUT && ecode != EINTR) throw std::runtime_error("pthread_cond_timedwait");
+  if (ecode != ETIMEDOUT && ecode != EINTR)
+    throw std::runtime_error("pthread_cond_timedwait");
   return false;
 #endif
 }
@@ -1056,7 +1955,8 @@ TSDKey::TSDKey() : opq_(NULL) {
 #else
   _assert_(true);
   ::pthread_key_t* key = new ::pthread_key_t;
-  if (::pthread_key_create(key, NULL) != 0) throw std::runtime_error("pthread_key_create");
+  if (::pthread_key_create(key, NULL) != 0)
+    throw std::runtime_error("pthread_key_create");
   opq_ = (void*)key;
 #endif
 }
@@ -1074,7 +1974,8 @@ TSDKey::TSDKey(void (*dstr)(void*)) : opq_(NULL) {
 #else
   _assert_(true);
   ::pthread_key_t* key = new ::pthread_key_t;
-  if (::pthread_key_create(key, dstr) != 0) throw std::runtime_error("pthread_key_create");
+  if (::pthread_key_create(key, dstr) != 0)
+    throw std::runtime_error("pthread_key_create");
   opq_ = (void*)key;
 #endif
 }
@@ -1108,7 +2009,8 @@ void TSDKey::set(void* ptr) {
 #else
   _assert_(true);
   ::pthread_key_t* key = (::pthread_key_t*)opq_;
-  if (::pthread_setspecific(*key, ptr) != 0) throw std::runtime_error("pthread_setspecific");
+  if (::pthread_setspecific(*key, ptr) != 0)
+    throw std::runtime_error("pthread_setspecific");
 #endif
 }
 

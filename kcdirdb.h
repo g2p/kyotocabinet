@@ -42,7 +42,7 @@ const char DDBCHKSUMSEED[] = "__kyotocabinet__";  ///< seed of the module checks
 const char DDBMAGICEOF[] = "_EOF_";      ///< magic data for the end of file
 const int64_t DDBMETABUFSIZ = 128;       ///< size of the meta data buffer
 const uint8_t DDBRECMAGIC = 0xcc;        ///< magic data for record
-const int32_t DDBRLOCKSLOT = 256;        ///< number of slots of the record lock
+const int32_t DDBRLOCKSLOT = 8192;       ///< number of slots of the record lock
 const int32_t DDBRECUNITSIZ = 32;        ///< unit size of a record
 const size_t DDBOPAQUESIZ = 16;          ///< size of the opaque buffer
 const char* DDBWALPATHEXT = "wal";       ///< extension of the WAL directory
@@ -373,7 +373,7 @@ public:
    * Default constructor.
    */
   explicit DirDB() :
-    mlock_(), rlock_(), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
+    mlock_(), rlock_(DDBRLOCKSLOT), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
     omode_(0), writer_(false), autotran_(false), autosync_(false), recov_(false), reorg_(false),
     file_(), curs_(), path_(""),
     libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEDIR),
@@ -2156,7 +2156,7 @@ private:
   /** The method lock. */
   SpinRWLock mlock_;
   /** The record locks. */
-  SlottedSpinRWLock<DDBRLOCKSLOT> rlock_;
+  SlottedSpinRWLock rlock_;
   /** The last happened error. */
   TSD<Error> error_;
   /** The internal logger. */

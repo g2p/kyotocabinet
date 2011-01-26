@@ -176,9 +176,9 @@ void getsysinfo(std::map<std::string, std::string>* strmap) {
                                       rbuf.ru_stime.tv_sec + rbuf.ru_stime.tv_usec / 1000000.0);
     if (rbuf.ru_maxrss > 0) {
       int64_t size = rbuf.ru_maxrss * 1024LL;
-      (*strmap)["mem_rss"] = strprintf("%lld", (long long)size);
-      (*strmap)["mem_size"] = strprintf("%lld", (long long)size);
       (*strmap)["mem_peak"] = strprintf("%lld", (long long)size);
+      (*strmap)["mem_size"] = strprintf("%lld", (long long)size);
+      (*strmap)["mem_rss"] = strprintf("%lld", (long long)size);
     }
   }
   std::ifstream ifs;
@@ -194,15 +194,15 @@ void getsysinfo(std::map<std::string, std::string>* strmap) {
           idx++;
         }
         const std::string& value = line.substr(idx);
-        if (name == "VmSize") {
-          int64_t size = atoix(value.c_str());
-          if (size > 0) (*strmap)["mem_rss"] = strprintf("%lld", (long long)size);
-        } else if (name == "VmRSS") {
-          int64_t size = atoix(value.c_str());
-          if (size > 0) (*strmap)["mem_size"] = strprintf("%lld", (long long)size);
-        } else if (name == "VmPeak") {
+        if (name == "VmPeak") {
           int64_t size = atoix(value.c_str());
           if (size > 0) (*strmap)["mem_peak"] = strprintf("%lld", (long long)size);
+        } else if (name == "VmSize") {
+          int64_t size = atoix(value.c_str());
+          if (size > 0) (*strmap)["mem_size"] = strprintf("%lld", (long long)size);
+        } else if (name == "VmRSS") {
+          int64_t size = atoix(value.c_str());
+          if (size > 0) (*strmap)["mem_rss"] = strprintf("%lld", (long long)size);
         }
       }
     }
@@ -245,9 +245,9 @@ void getsysinfo(std::map<std::string, std::string>* strmap) {
                                       rbuf.ru_stime.tv_sec + rbuf.ru_stime.tv_usec / 1000000.0);
     if (rbuf.ru_maxrss > 0) {
       int64_t size = rbuf.ru_maxrss;
-      (*strmap)["mem_rss"] = strprintf("%lld", (long long)size);
-      (*strmap)["mem_size"] = strprintf("%lld", (long long)size);
       (*strmap)["mem_peak"] = strprintf("%lld", (long long)size);
+      (*strmap)["mem_size"] = strprintf("%lld", (long long)size);
+      (*strmap)["mem_rss"] = strprintf("%lld", (long long)size);
     }
   }
 #elif defined(_SYS_FREEBSD_) || defined(_SYS_SUNOS_)
@@ -261,9 +261,9 @@ void getsysinfo(std::map<std::string, std::string>* strmap) {
                                       rbuf.ru_stime.tv_sec + rbuf.ru_stime.tv_usec / 1000000.0);
     if (rbuf.ru_maxrss > 0) {
       int64_t size = rbuf.ru_maxrss * 1024LL;
-      (*strmap)["mem_rss"] = strprintf("%lld", (long long)size);
-      (*strmap)["mem_size"] = strprintf("%lld", (long long)size);
       (*strmap)["mem_peak"] = strprintf("%lld", (long long)size);
+      (*strmap)["mem_size"] = strprintf("%lld", (long long)size);
+      (*strmap)["mem_rss"] = strprintf("%lld", (long long)size);
     }
   }
 #elif defined(_SYS_MSVC_) || defined(_SYS_MINGW_)

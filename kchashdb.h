@@ -55,7 +55,7 @@ const int32_t HDBWIDTHLARGE = 6;         ///< large width of the record address
 const int32_t HDBWIDTHSMALL = 4;         ///< small width of the record address
 const size_t HDBRECBUFSIZ = 48;          ///< size of the record buffer
 const size_t HDBIOBUFSIZ = 1024;         ///< size of the IO buffer
-const int32_t HDBRLOCKSLOT = 256;        ///< number of slots of the record lock
+const int32_t HDBRLOCKSLOT = 4096;       ///< number of slots of the record lock
 const uint8_t HDBDEFAPOW = 3;            ///< default alignment power
 const uint8_t HDBMAXAPOW = 15;           ///< maximum alignment power
 const uint8_t HDBDEFFPOW = 10;           ///< default free block pool power
@@ -482,7 +482,7 @@ public:
    * Default constructor.
    */
   explicit HashDB() :
-    mlock_(), rlock_(), flock_(), atlock_(), error_(),
+    mlock_(), rlock_(HDBRLOCKSLOT), flock_(), atlock_(), error_(),
     logger_(NULL), logkinds_(0), mtrigger_(NULL),
     omode_(0), writer_(false), autotran_(false), autosync_(false), reorg_(false), trim_(false),
     file_(), fbp_(), curs_(), path_(""),
@@ -3489,7 +3489,7 @@ private:
   /** The method lock. */
   SpinRWLock mlock_;
   /** The record locks. */
-  SlottedSpinRWLock<HDBRLOCKSLOT> rlock_;
+  SlottedSpinRWLock rlock_;
   /** The file lock. */
   SpinLock flock_;
   /** The auto transaction lock. */

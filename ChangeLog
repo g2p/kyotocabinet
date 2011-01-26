@@ -1,3 +1,15 @@
+2011-01-21  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcutil.cc (getsysinfo): a bug related to memory stats was fixed.
+
+	* kcthread.cc (Thread::chill): new function.
+
+	* kcthread.cc (ScopedMutex, ScopedSpinLock): refactored using primitives.
+
+	* kcthread.cc (ScopedRWLock, ScopedSpinRWLock): refactored using primitives.
+
+	- Release: 1.2.36
+
 2011-01-11  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcutil.cc: the order of header inclusion was modified.
