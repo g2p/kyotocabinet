@@ -1,3 +1,21 @@
+kyotocabinet (1.2.35-1) UNRELEASED; urgency=low
+
+  * Imported Upstream version 1.2.35
+
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Wed, 26 Jan 2011 10:55:13 +0100
+
+kyotocabinet (1.2.35-1~1.gbpe90edf) UNRELEASED; urgency=low
+
+  * chrpath isn't used for the build
+  * Update descriptions. Contrast with Tokyo Cabinet.
+  * Name misc utilities package kyotocabinet-utils.
+  * Tweak descriptions
+  * Update standards to 3.9.1; no changes.
+  * Name the debug package kyotocabinet-dbg.
+  * Correct another description
+
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Wed, 26 Jan 2011 10:55:13 +0100
+
 kyotocabinet (1.2.34-1) unstable; urgency=low
 
   * Imported Upstream version 1.2.34
