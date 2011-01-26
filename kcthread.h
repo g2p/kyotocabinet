@@ -60,6 +60,10 @@ public:
    */
   static void yield();
   /**
+   * Chill the processor by suspending execution for a quick moment.
+   */
+  static void chill();
+  /**
    * Suspend execution of the current thread.
    * @param sec the interval of the suspension in seconds.
    * @return true on success, or false on failure.
@@ -168,60 +172,39 @@ private:
 
 /**
  * Slotted mutex device.
- * @param SLOTNUM the number of slots.
  */
-template <int32_t SLOTNUM>
 class SlottedMutex {
 public:
   /**
    * Constructor.
+   * @param slotnum the number of slots.
    */
-  explicit SlottedMutex() : locks_() {
-    _assert_(true);
-  }
+  explicit SlottedMutex(size_t slotnum);
   /**
    * Destructor.
    */
-  ~SlottedMutex() {
-    _assert_(true);
-  }
+  ~SlottedMutex();
   /**
    * Get the lock of a slot.
    * @param idx the index of a slot.
    */
-  void lock(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].lock();
-  }
+  void lock(size_t idx);
   /**
    * Release the lock of a slot.
    * @param idx the index of a slot.
    */
-  void unlock(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].unlock();
-  }
+  void unlock(size_t idx);
   /**
    * Get the locks of all slots.
    */
-  void lock_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].lock();
-    }
-  }
+  void lock_all();
   /**
    * Release the locks of all slots.
    */
-  void unlock_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].unlock();
-    }
-  }
+  void unlock_all();
 private:
-  /** The inner devices. */
-  Mutex locks_[SLOTNUM];
+  /** Opaque pointer. */
+  void* opq_;
 };
 
 
@@ -293,60 +276,39 @@ private:
 
 /**
  * Slotted spin lock devices.
- * @param SLOTNUM the number of slots.
  */
-template <int32_t SLOTNUM>
 class SlottedSpinLock {
 public:
   /**
    * Constructor.
+   * @param slotnum the number of slots.
    */
-  explicit SlottedSpinLock() : locks_() {
-    _assert_(true);
-  }
+  explicit SlottedSpinLock(size_t slotnum);
   /**
    * Destructor.
    */
-  ~SlottedSpinLock() {
-    _assert_(true);
-  }
+  ~SlottedSpinLock();
   /**
    * Get the lock of a slot.
    * @param idx the index of a slot.
    */
-  void lock(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].lock();
-  }
+  void lock(size_t idx);
   /**
    * Release the lock of a slot.
    * @param idx the index of a slot.
    */
-  void unlock(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].unlock();
-  }
+  void unlock(size_t idx);
   /**
    * Get the locks of all slots.
    */
-  void lock_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].lock();
-    }
-  }
+  void lock_all();
   /**
    * Release the locks of all slots.
    */
-  void unlock_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].unlock();
-    }
-  }
+  void unlock_all();
 private:
-  /** The inner devices. */
-  SpinLock locks_[SLOTNUM];
+  /** Opaque pointer. */
+  void* opq_;
 };
 
 
@@ -432,77 +394,48 @@ private:
 
 /**
  * Slotted reader-writer lock devices.
- * @param SLOTNUM the number of slots.
  */
-template <int32_t SLOTNUM>
 class SlottedRWLock {
 public:
   /**
    * Constructor.
+   * @param slotnum the number of slots.
    */
-  explicit SlottedRWLock() : locks_() {
-    _assert_(true);
-  }
+  explicit SlottedRWLock(size_t slotnum);
   /**
    * Destructor.
    */
-  ~SlottedRWLock() {
-    _assert_(true);
-  }
+  ~SlottedRWLock();
   /**
    * Get the writer lock of a slot.
    * @param idx the index of a slot.
    */
-  void lock_writer(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].lock_writer();
-  }
+  void lock_writer(size_t idx);
   /**
    * Get the reader lock of a slot.
    * @param idx the index of a slot.
    */
-  void lock_reader(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].lock_reader();
-  }
+  void lock_reader(size_t idx);
   /**
    * Release the lock of a slot.
    * @param idx the index of a slot.
    */
-  void unlock(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].unlock();
-  }
+  void unlock(size_t idx);
   /**
    * Get the writer locks of all slots.
    */
-  void lock_writer_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].lock_writer();
-    }
-  }
+  void lock_writer_all();
   /**
    * Get the reader locks of all slots.
    */
-  void lock_reader_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].lock_reader();
-    }
-  }
+  void lock_reader_all();
   /**
    * Release the locks of all slots.
    */
-  void unlock_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].unlock();
-    }
-  }
+  void unlock_all();
 private:
-  /** The inner devices. */
-  RWLock locks_[SLOTNUM];
+  /** Opaque pointer. */
+  void* opq_;
 };
 
 
@@ -597,77 +530,48 @@ private:
 
 /**
  * Slotted lightweight reader-writer lock devices.
- * @param SLOTNUM the number of slots.
  */
-template <int32_t SLOTNUM>
 class SlottedSpinRWLock {
 public:
   /**
    * Constructor.
+   * @param slotnum the number of slots.
    */
-  explicit SlottedSpinRWLock() : locks_() {
-    _assert_(true);
-  }
+  explicit SlottedSpinRWLock(size_t slotnum);
   /**
    * Destructor.
    */
-  ~SlottedSpinRWLock() {
-    _assert_(true);
-  }
+  ~SlottedSpinRWLock();
   /**
    * Get the writer lock of a slot.
    * @param idx the index of a slot.
    */
-  void lock_writer(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].lock_writer();
-  }
+  void lock_writer(size_t idx);
   /**
    * Get the reader lock of a slot.
    * @param idx the index of a slot.
    */
-  void lock_reader(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].lock_reader();
-  }
+  void lock_reader(size_t idx);
   /**
    * Release the lock of a slot.
    * @param idx the index of a slot.
    */
-  void unlock(int32_t idx) {
-    _assert_(idx >= 0);
-    locks_[idx].unlock();
-  }
+  void unlock(size_t idx);
   /**
    * Get the writer locks of all slots.
    */
-  void lock_writer_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].lock_writer();
-    }
-  }
+  void lock_writer_all();
   /**
    * Get the reader locks of all slots.
    */
-  void lock_reader_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].lock_reader();
-    }
-  }
+  void lock_reader_all();
   /**
    * Release the locks of all slots.
    */
-  void unlock_all() {
-    _assert_(true);
-    for (int32_t i = 0; i < SLOTNUM; i++) {
-      locks_[i].unlock();
-    }
-  }
+  void unlock_all();
 private:
-  /** The inner devices. */
-  SpinRWLock locks_[SLOTNUM];
+  /** Opaque pointer. */
+  void* opq_;
 };
 
 

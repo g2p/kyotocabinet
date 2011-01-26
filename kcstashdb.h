@@ -34,7 +34,7 @@ namespace kyotocabinet {                 // common namespace
  * Constants for implementation.
  */
 namespace {
-const int32_t SDBRLOCKSLOT = 256;        ///< number of slots of the record lock
+const int32_t SDBRLOCKSLOT = 1024;       ///< number of slots of the record lock
 const size_t SDBDEFBNUM = 1048583LL;     ///< default bucket number
 const size_t SDBOPAQUESIZ = 16;          ///< size of the opaque buffer
 }
@@ -308,7 +308,8 @@ public:
    * Default constructor.
    */
   explicit StashDB() :
-    mlock_(), rlock_(), flock_(), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
+    mlock_(), rlock_(SDBRLOCKSLOT), flock_(), error_(),
+    logger_(NULL), logkinds_(0), mtrigger_(NULL),
     omode_(0), curs_(), path_(""), bnum_(SDBDEFBNUM), opaque_(),
     count_(0), size_(0), buckets_(NULL),
     tran_(false), trlogs_(), trcount_(0), trsize_(0) {
@@ -801,7 +802,7 @@ public:
       (*strmap)["bnum_used"] = strprintf("%lld", (long long)cnt);
     }
     (*strmap)["count"] = strprintf("%lld", (long long)count_);
-    (*strmap)["size"] = strprintf("%lld", (long long)size_);
+    (*strmap)["size"] = strprintf("%lld", (long long)size_impl());
     return true;
   }
   /**
@@ -1265,7 +1266,7 @@ private:
   /** The method lock. */
   SpinRWLock mlock_;
   /** The record locks. */
-  SlottedSpinRWLock<SDBRLOCKSLOT> rlock_;
+  SlottedSpinRWLock rlock_;
   /** The file lock. */
   SpinLock flock_;
   /** The last happened error. */
