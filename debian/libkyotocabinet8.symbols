@@ -49,6 +49,14 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZN12kyotocabinet11setstdiobinEv@Base 1.2.31
  _ZN12kyotocabinet11writefixnumEPvmm@Base 1.2.31
  _ZN12kyotocabinet11writevarnumEPvm@Base 1.2.31
+ _ZN12kyotocabinet12SlottedMutex10unlock_allEv@Base 1.2.36
+ _ZN12kyotocabinet12SlottedMutex4lockEm@Base 1.2.36
+ _ZN12kyotocabinet12SlottedMutex6unlockEm@Base 1.2.36
+ _ZN12kyotocabinet12SlottedMutex8lock_allEv@Base 1.2.36
+ _ZN12kyotocabinet12SlottedMutexC1Em@Base 1.2.36
+ _ZN12kyotocabinet12SlottedMutexC2Em@Base 1.2.36
+ _ZN12kyotocabinet12SlottedMutexD1Ev@Base 1.2.36
+ _ZN12kyotocabinet12SlottedMutexD2Ev@Base 1.2.36
  _ZN12kyotocabinet12lzo_init_varE@Base 1.2.31
  _ZN12kyotocabinet13DirStreamCoreC1Ev@Base 1.2.31
  _ZN12kyotocabinet13DirStreamCoreD1Ev@Base 1.2.31
@@ -167,6 +175,16 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZN12kyotocabinet13LinkedHashMapIlPNS_7PlantDBINS_7CacheDBELh33EE9InnerNodeENSt3tr14hashIlEESt8equal_toIlEE8IteratorppEi@Base 1.2.31
  _ZN12kyotocabinet13LinkedHashMapIlPNS_7PlantDBINS_7CacheDBELh33EE9InnerNodeENSt3tr14hashIlEESt8equal_toIlEEC1Em@Base 1.2.31
  _ZN12kyotocabinet13LinkedHashMapIlPNS_7PlantDBINS_7CacheDBELh33EE9InnerNodeENSt3tr14hashIlEESt8equal_toIlEED1Ev@Base 1.2.31
+ _ZN12kyotocabinet13SlottedRWLock10unlock_allEv@Base 1.2.36
+ _ZN12kyotocabinet13SlottedRWLock11lock_readerEm@Base 1.2.36
+ _ZN12kyotocabinet13SlottedRWLock11lock_writerEm@Base 1.2.36
+ _ZN12kyotocabinet13SlottedRWLock15lock_reader_allEv@Base 1.2.36
+ _ZN12kyotocabinet13SlottedRWLock15lock_writer_allEv@Base 1.2.36
+ _ZN12kyotocabinet13SlottedRWLock6unlockEm@Base 1.2.36
+ _ZN12kyotocabinet13SlottedRWLockC1Em@Base 1.2.36
+ _ZN12kyotocabinet13SlottedRWLockC2Em@Base 1.2.36
+ _ZN12kyotocabinet13SlottedRWLockD1Ev@Base 1.2.36
+ _ZN12kyotocabinet13SlottedRWLockD2Ev@Base 1.2.36
  _ZN12kyotocabinet13lzo_init_funcEv@Base 1.2.31
  _ZN12kyotocabinet14LZMACompressorILNS_4LZMA4ModeE0EE10decompressEPKvmPm@Base 1.2.31
  _ZN12kyotocabinet14LZMACompressorILNS_4LZMA4ModeE0EE8compressEPKvmPm@Base 1.2.31
@@ -200,6 +218,14 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZN12kyotocabinet14ZLIBCompressorILNS_4ZLIB4ModeE2EEC1Ev@Base 1.2.31
  _ZN12kyotocabinet14ZLIBCompressorILNS_4ZLIB4ModeE2EED0Ev@Base 1.2.31
  _ZN12kyotocabinet14ZLIBCompressorILNS_4ZLIB4ModeE2EED1Ev@Base 1.2.31
+ _ZN12kyotocabinet15SlottedSpinLock10unlock_allEv@Base 1.2.36
+ _ZN12kyotocabinet15SlottedSpinLock4lockEm@Base 1.2.36
+ _ZN12kyotocabinet15SlottedSpinLock6unlockEm@Base 1.2.36
+ _ZN12kyotocabinet15SlottedSpinLock8lock_allEv@Base 1.2.36
+ _ZN12kyotocabinet15SlottedSpinLockC1Em@Base 1.2.36
+ _ZN12kyotocabinet15SlottedSpinLockC2Em@Base 1.2.36
+ _ZN12kyotocabinet15SlottedSpinLockD1Ev@Base 1.2.36
+ _ZN12kyotocabinet15SlottedSpinLockD2Ev@Base 1.2.36
  _ZN12kyotocabinet16ScopedSpinRWLockC1EPNS_10SpinRWLockEb@Base 1.2.31
  _ZN12kyotocabinet16ScopedSpinRWLockD1Ev@Base 1.2.31
  _ZN12kyotocabinet17ArcfourCompressor10decompressEPKvmPm@Base 1.2.31
@@ -218,13 +244,16 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZN12kyotocabinet17LexicalComparatorC1Ev@Base 1.2.31
  _ZN12kyotocabinet17LexicalComparatorD0Ev@Base 1.2.31
  _ZN12kyotocabinet17LexicalComparatorD1Ev@Base 1.2.31
- _ZN12kyotocabinet17SlottedSpinRWLockILi256EE10unlock_allEv@Base 1.2.31
- _ZN12kyotocabinet17SlottedSpinRWLockILi256EE11lock_readerEi@Base 1.2.31
- _ZN12kyotocabinet17SlottedSpinRWLockILi256EE11lock_writerEi@Base 1.2.31
- _ZN12kyotocabinet17SlottedSpinRWLockILi256EE15lock_reader_allEv@Base 1.2.31
- _ZN12kyotocabinet17SlottedSpinRWLockILi256EE6unlockEi@Base 1.2.31
- _ZN12kyotocabinet17SlottedSpinRWLockILi256EEC1Ev@Base 1.2.31
- _ZN12kyotocabinet17SlottedSpinRWLockILi256EED1Ev@Base 1.2.31
+ _ZN12kyotocabinet17SlottedSpinRWLock10unlock_allEv@Base 1.2.36
+ _ZN12kyotocabinet17SlottedSpinRWLock11lock_readerEm@Base 1.2.36
+ _ZN12kyotocabinet17SlottedSpinRWLock11lock_writerEm@Base 1.2.36
+ _ZN12kyotocabinet17SlottedSpinRWLock15lock_reader_allEv@Base 1.2.36
+ _ZN12kyotocabinet17SlottedSpinRWLock15lock_writer_allEv@Base 1.2.36
+ _ZN12kyotocabinet17SlottedSpinRWLock6unlockEm@Base 1.2.36
+ _ZN12kyotocabinet17SlottedSpinRWLockC1Em@Base 1.2.36
+ _ZN12kyotocabinet17SlottedSpinRWLockC2Em@Base 1.2.36
+ _ZN12kyotocabinet17SlottedSpinRWLockD1Ev@Base 1.2.36
+ _ZN12kyotocabinet17SlottedSpinRWLockD2Ev@Base 1.2.36
  _ZN12kyotocabinet2DB6CursorC2Ev@Base 1.2.31
  _ZN12kyotocabinet2DB6CursorD0Ev@Base 1.2.31
  _ZN12kyotocabinet2DB6CursorD1Ev@Base 1.2.31
@@ -554,6 +583,7 @@ libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
  _ZN12kyotocabinet6Thread4exitEv@Base 1.2.31
  _ZN12kyotocabinet6Thread4hashEv@Base 1.2.31
  _ZN12kyotocabinet6Thread4joinEv@Base 1.2.31
+ _ZN12kyotocabinet6Thread5chillEv@Base 1.2.36
  _ZN12kyotocabinet6Thread5sleepEd@Base 1.2.31
  _ZN12kyotocabinet6Thread5startEv@Base 1.2.31
  _ZN12kyotocabinet6Thread5yieldEv@Base 1.2.31
