@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "kcpolydb.h"
 #include "myconf.h"
+#include "kcpolydb.h"
 
 namespace kyotocabinet {                 // common namespace
 

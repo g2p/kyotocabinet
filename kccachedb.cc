@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "kccachedb.h"
 #include "myconf.h"
+#include "kccachedb.h"
 
 namespace kyotocabinet {                 // common namespace
 
