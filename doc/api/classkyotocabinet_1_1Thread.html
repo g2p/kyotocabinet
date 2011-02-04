@@ -55,6 +55,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Terminate the running thread.  <a href="#a9aba70b9f5075fe2ab121c8c35e141ce"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1Thread.html#ad457f16aaa83d5dad249533790f28e2c">yield</a> ()</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Yield the processor from the current thread.  <a href="#ad457f16aaa83d5dad249533790f28e2c"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1Thread.html#a17a04f40b3432b03b6ffbe123a9a732a">chill</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Chill the processor by suspending execution for a quick moment.  <a href="#a17a04f40b3432b03b6ffbe123a9a732a"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1Thread.html#a65e09bd823274fcd6f999108b9ffadf0">sleep</a> (double sec)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Suspend execution of the current thread.  <a href="#a65e09bd823274fcd6f999108b9ffadf0"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1Thread.html#a32e3671a4355e060cc2bd1b02e3bcf0d">hash</a> ()</td></tr>
@@ -216,6 +218,25 @@
 
 </div>
 </div>
+<a class="anchor" id="a17a04f40b3432b03b6ffbe123a9a732a"></a><!-- doxytag: member="kyotocabinet::Thread::chill" ref="a17a04f40b3432b03b6ffbe123a9a732a" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void kyotocabinet::Thread::chill </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Chill the processor by suspending execution for a quick moment. </p>
+
+</div>
+</div>
 <a class="anchor" id="a65e09bd823274fcd6f999108b9ffadf0"></a><!-- doxytag: member="kyotocabinet::Thread::sleep" ref="a65e09bd823274fcd6f999108b9ffadf0" args="(double sec)" -->
 <div class="memitem">
 <div class="memproto">
@@ -264,7 +285,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jan 23 00:17:34 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Jan 27 16:49:35 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

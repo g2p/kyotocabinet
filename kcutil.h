@@ -335,6 +335,38 @@ size_t strsplit(const std::string& str, const std::string& delims,
 
 
 /**
+ * Serialize a string vector object into a string object.
+ * @param src the source object.
+ * @param dest the destination object.
+ */
+void strvecdump(const std::vector<std::string>& src, std::string* dest);
+
+
+/**
+ * Deserialize a string object into a string vector object.
+ * @param src the destination object.
+ * @param dest the source object.
+ */
+void strvecload(const std::string& src, std::vector<std::string>* dest);
+
+
+/**
+ * Serialize a string vector object into a string object.
+ * @param src the source object.
+ * @param dest the destination object.
+ */
+void strmapdump(const std::map<std::string, std::string>& src, std::string* dest);
+
+
+/**
+ * Deserialize a string object into a string map object.
+ * @param src the destination object.
+ * @param dest the source object.
+ */
+void strmapload(const std::string& src, std::map<std::string, std::string>* dest);
+
+
+/**
  * Encode a serial object by hexadecimal encoding.
  * @param buf the pointer to the region.
  * @param size the size of the region.
@@ -1449,6 +1481,102 @@ inline size_t strsplit(const std::string& str, const std::string& delims,
   std::string col(pv, it);
   elems->push_back(col);
   return elems->size();
+}
+
+
+/**
+ * Serialize a string vector object into a string object.
+ */
+inline void strvecdump(const std::vector<std::string>& src, std::string* dest) {
+  _assert_(dest);
+  std::vector<std::string>::const_iterator it = src.begin();
+  std::vector<std::string>::const_iterator itend = src.end();
+  size_t dsiz = 1;
+  while (it != itend) {
+    dsiz += 2 + it->size();
+    it++;
+  }
+  dest->reserve(dest->size() + dsiz);
+  it = src.begin();
+  while (it != itend) {
+    char nbuf[NUMBUFSIZ];
+    size_t nsiz = writevarnum(nbuf, it->size());
+    dest->append(nbuf, nsiz);
+    dest->append(it->data(), it->size());
+    it++;
+  }
+}
+
+
+/**
+ * Deserialize a string object into a string vector object.
+ */
+inline void strvecload(const std::string& src, std::vector<std::string>* dest) {
+  _assert_(dest);
+  const char* rp = src.data();
+  size_t size = src.size();
+  while (size > 0) {
+    uint64_t vsiz;
+    size_t step = readvarnum(rp, size, &vsiz);
+    rp += step;
+    size -= step;
+    if (vsiz > size) break;
+    dest->push_back(std::string(rp, vsiz));
+    rp += vsiz;
+    size -= vsiz;
+  }
+}
+
+
+/**
+ * Serialize a string vector object into a string object.
+ */
+inline void strmapdump(const std::map<std::string, std::string>& src, std::string* dest) {
+  _assert_(dest);
+  std::map<std::string, std::string>::const_iterator it = src.begin();
+  std::map<std::string, std::string>::const_iterator itend = src.end();
+  size_t dsiz = 1;
+  while (it != itend) {
+    dsiz += 4 + it->first.size() + it->second.size();
+    it++;
+  }
+  dest->reserve(dest->size() + dsiz);
+  it = src.begin();
+  while (it != itend) {
+    char nbuf[NUMBUFSIZ*2];
+    size_t nsiz = writevarnum(nbuf, it->first.size());
+    nsiz += writevarnum(nbuf + nsiz, it->second.size());
+    dest->append(nbuf, nsiz);
+    dest->append(it->first.data(), it->first.size());
+    dest->append(it->second.data(), it->second.size());
+    it++;
+  }
+}
+
+
+/**
+ * Deserialize a string object into a string map object.
+ */
+inline void strmapload(const std::string& src, std::map<std::string, std::string>* dest) {
+  _assert_(dest);
+  const char* rp = src.data();
+  int64_t size = src.size();
+  while (size > 1) {
+    uint64_t ksiz;
+    size_t step = readvarnum(rp, size, &ksiz);
+    rp += step;
+    size -= step;
+    if (size < 1) break;
+    uint64_t vsiz;
+    step = readvarnum(rp, size, &vsiz);
+    rp += step;
+    size -= step;
+    int64_t rsiz = ksiz + vsiz;
+    if (rsiz > size) break;
+    (*dest)[std::string(rp, ksiz)] = std::string(rp + ksiz, vsiz);
+    rp += rsiz;
+    size -= rsiz;
+  }
 }
 
 

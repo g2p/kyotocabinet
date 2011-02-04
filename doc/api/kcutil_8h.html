@@ -104,6 +104,14 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Split a string with a delimiter.  <a href="#a295fcdb0ba9274e2d986a66e1eb189b8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">size_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ae70c36738b29ac18f88920ea07b621c9">kyotocabinet::strsplit</a> (const std::string &amp;str, const std::string &amp;delims, std::vector&lt; std::string &gt; *elems)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Split a string with delimiters.  <a href="#ae70c36738b29ac18f88920ea07b621c9"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a945e797f7eda244019740095ccf3df2d">kyotocabinet::strvecdump</a> (const std::vector&lt; std::string &gt; &amp;src, std::string *dest)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Serialize a string vector object into a string object.  <a href="#a945e797f7eda244019740095ccf3df2d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ac58f113471487721bdf2fb76fa2ce7f1">kyotocabinet::strvecload</a> (const std::string &amp;src, std::vector&lt; std::string &gt; *dest)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Deserialize a string object into a string vector object.  <a href="#ac58f113471487721bdf2fb76fa2ce7f1"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#aaaf9bacf37d9adc61d0edda3dc3630f0">kyotocabinet::strmapdump</a> (const std::map&lt; std::string, std::string &gt; &amp;src, std::string *dest)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Serialize a string vector object into a string object.  <a href="#aaaf9bacf37d9adc61d0edda3dc3630f0"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#aaecfcb324c7875146d608b842c34d2be">kyotocabinet::strmapload</a> (const std::string &amp;src, std::map&lt; std::string, std::string &gt; *dest)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Deserialize a string object into a string map object.  <a href="#aaecfcb324c7875146d608b842c34d2be"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ab8be5cf3c65a54efdee6823b8877298b">kyotocabinet::hexencode</a> (const void *buf, size_t size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Encode a serial object by hexadecimal encoding.  <a href="#ab8be5cf3c65a54efdee6823b8877298b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ac456e8436103c1ae54ff34e683228af3">kyotocabinet::hexdecode</a> (const char *str, size_t *sp)</td></tr>
@@ -195,7 +203,7 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p>utility functions </p>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jan 23 00:17:34 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Jan 27 16:49:35 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

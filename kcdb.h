@@ -339,6 +339,10 @@ public:
    * @param ksiz the size of the key region.
    * @param num the additional number.
    * @return the result value, or INT64_MIN on failure.
+   * @note If no record corresponds to the key, a new record is created with the initial value
+   * set by the additional value.  The value is serialized as an 8-byte binary integer in
+   * big-endian order, not a decimal string.  If existing value is not 8-byte, this function
+   * fails.
    */
   virtual int64_t increment(const char* kbuf, size_t ksiz, int64_t num) = 0;
   /**
@@ -352,6 +356,10 @@ public:
    * @param ksiz the size of the key region.
    * @param num the additional number.
    * @return the result value, or Not-a-number on failure.
+   * @note If no record corresponds to the key, a new record is created with the initial value
+   * set by the additional value.  The value is serialized as an 16-byte binary fixed-point
+   * number in big-endian order, not a decimal string.  If existing value is not 16-byte, this
+   * function fails.
    */
   virtual double increment_double(const char* kbuf, size_t ksiz, double num) = 0;
   /**
@@ -1447,6 +1455,10 @@ public:
    * @param ksiz the size of the key region.
    * @param num the additional number.
    * @return the result value, or INT64_MIN on failure.
+   * @note If no record corresponds to the key, a new record is created with the initial value
+   * set by the additional value.  The value is serialized as an 8-byte binary integer in
+   * big-endian order, not a decimal string.  If existing value is not 8-byte, this function
+   * fails.
    */
   int64_t increment(const char* kbuf, size_t ksiz, int64_t num) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ);
@@ -1506,6 +1518,10 @@ public:
    * @param ksiz the size of the key region.
    * @param num the additional number.
    * @return the result value, or Not-a-number on failure.
+   * @note If no record corresponds to the key, a new record is created with the initial value
+   * set by the additional value.  The value is serialized as an 16-byte binary fixed-point
+   * number in big-endian order, not a decimal string.  If existing value is not 16-byte, this
+   * function fails.
    */
   double increment_double(const char* kbuf, size_t ksiz, double num) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ);

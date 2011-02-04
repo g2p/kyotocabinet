@@ -1167,6 +1167,7 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the result value, or INT64_MIN on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, a new record is created with the initial value set by the additional value. The value is serialized as an 8-byte binary integer in big-endian order, not a decimal string. If existing value is not 8-byte, this function fails. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a20021c698bbcbd1fb4d4c80ca19174e0">kyotocabinet::DB</a>.</p>
 
@@ -1245,6 +1246,7 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the result value, or Not-a-number on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>If no record corresponds to the key, a new record is created with the initial value set by the additional value. The value is serialized as an 16-byte binary fixed-point number in big-endian order, not a decimal string. If existing value is not 16-byte, this function fails. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a846ea56c3f2e81382f6341e48318b423">kyotocabinet::DB</a>.</p>
 
@@ -1987,7 +1989,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jan 23 00:17:34 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Jan 27 16:49:35 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

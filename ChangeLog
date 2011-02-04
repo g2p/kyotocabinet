@@ -1,3 +1,9 @@
+2011-01-25  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcutil.h (strvecdump, strvecload, strmapdump, strmapload): new functions.
+
+	- Release: 1.2.37
+
 2011-01-21  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcutil.cc (getsysinfo): a bug related to memory stats was fixed.
