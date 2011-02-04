@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<title>Kyoto Cabinet: kyotocabinet::SlottedSpinLock&lt; SLOTNUM &gt; Class Template Reference</title>
+<title>Kyoto Cabinet: kyotocabinet::SlottedSpinLock Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css"/>
 </head>
@@ -29,7 +29,7 @@
   </div>
 </div>
 <div class="contents">
-<h1>kyotocabinet::SlottedSpinLock&lt; SLOTNUM &gt; Class Template Reference</h1><!-- doxytag: class="kyotocabinet::SlottedSpinLock" -->
+<h1>kyotocabinet::SlottedSpinLock Class Reference</h1><!-- doxytag: class="kyotocabinet::SlottedSpinLock" -->
 <p>Slotted spin lock devices.  
 <a href="#_details">More...</a></p>
 
@@ -38,41 +38,31 @@
 <p><a href="classkyotocabinet_1_1SlottedSpinLock-members.html">List of all members.</a></p>
 <table border="0" cellpadding="0" cellspacing="0">
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#ac029f65913f45915065ef93f10fc822e">SlottedSpinLock</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Constructor.  <a href="#ac029f65913f45915065ef93f10fc822e"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#ae463d9610295e59b20f1ca5f25a28479">~SlottedSpinLock</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#ae463d9610295e59b20f1ca5f25a28479"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#ae7f5a600b0c85ba4bdd5161e4318fc64">lock</a> (int32_t idx)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the lock of a slot.  <a href="#ae7f5a600b0c85ba4bdd5161e4318fc64"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#a693db6c6e3f6e83f479c0206752a7b49">unlock</a> (int32_t idx)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release the lock of a slot.  <a href="#a693db6c6e3f6e83f479c0206752a7b49"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#a55382a590ac4f7b5eceb9ee68033ab2e">lock_all</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the locks of all slots.  <a href="#a55382a590ac4f7b5eceb9ee68033ab2e"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#a7bfa7bab346c274919afce1686b18ee8">unlock_all</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release the locks of all slots.  <a href="#a7bfa7bab346c274919afce1686b18ee8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#ad4156a04310e33b731b277fa72d45df7">SlottedSpinLock</a> (size_t slotnum)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Constructor.  <a href="#ad4156a04310e33b731b277fa72d45df7"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#a5e698fdc29b0a4e17e4625a578a00fd5">~SlottedSpinLock</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a5e698fdc29b0a4e17e4625a578a00fd5"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#acc13cadda0afb4e1cbba4b13dc015c6a">lock</a> (size_t idx)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the lock of a slot.  <a href="#acc13cadda0afb4e1cbba4b13dc015c6a"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#a62aa49e24124f2fa3fa397001e5a6193">unlock</a> (size_t idx)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release the lock of a slot.  <a href="#a62aa49e24124f2fa3fa397001e5a6193"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#a296c34b628c4c6d43603d620d53b8f78">lock_all</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the locks of all slots.  <a href="#a296c34b628c4c6d43603d620d53b8f78"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html#a33943a61b8288cca50a3aef83c569d84">unlock_all</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release the locks of all slots.  <a href="#a33943a61b8288cca50a3aef83c569d84"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
-<h3>template&lt;int32_t SLOTNUM&gt;<br/>
- class kyotocabinet::SlottedSpinLock&lt; SLOTNUM &gt;</h3>
-
 <p>Slotted spin lock devices. </p>
-<dl><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>SLOTNUM</em>&nbsp;</td><td>the number of slots. </td></tr>
-  </table>
-  </dd>
-</dl>
 <hr/><h2>Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="ac029f65913f45915065ef93f10fc822e"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::SlottedSpinLock" ref="ac029f65913f45915065ef93f10fc822e" args="()" -->
+<a class="anchor" id="ad4156a04310e33b731b277fa72d45df7"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::SlottedSpinLock" ref="ad4156a04310e33b731b277fa72d45df7" args="(size_t slotnum)" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html">kyotocabinet::SlottedSpinLock</a>&lt; SLOTNUM &gt;::<a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html">SlottedSpinLock</a> </td>
+          <td class="memname">kyotocabinet::SlottedSpinLock::SlottedSpinLock </td>
           <td>(</td>
-          <td class="paramname"></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>slotnum</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td><code> [explicit]</code></td>
         </tr>
@@ -81,17 +71,21 @@ template&lt;int32_t SLOTNUM&gt; </div>
 <div class="memdoc">
 
 <p>Constructor. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>slotnum</em>&nbsp;</td><td>the number of slots. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a class="anchor" id="ae463d9610295e59b20f1ca5f25a28479"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::~SlottedSpinLock" ref="ae463d9610295e59b20f1ca5f25a28479" args="()" -->
+<a class="anchor" id="a5e698fdc29b0a4e17e4625a578a00fd5"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::~SlottedSpinLock" ref="a5e698fdc29b0a4e17e4625a578a00fd5" args="()" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html">kyotocabinet::SlottedSpinLock</a>&lt; SLOTNUM &gt;::~<a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html">SlottedSpinLock</a> </td>
+          <td class="memname">kyotocabinet::SlottedSpinLock::~SlottedSpinLock </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -106,16 +100,14 @@ template&lt;int32_t SLOTNUM&gt; </div>
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="ae7f5a600b0c85ba4bdd5161e4318fc64"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::lock" ref="ae7f5a600b0c85ba4bdd5161e4318fc64" args="(int32_t idx)" -->
+<a class="anchor" id="acc13cadda0afb4e1cbba4b13dc015c6a"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::lock" ref="acc13cadda0afb4e1cbba4b13dc015c6a" args="(size_t idx)" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html">kyotocabinet::SlottedSpinLock</a>&lt; SLOTNUM &gt;::lock </td>
+          <td class="memname">void kyotocabinet::SlottedSpinLock::lock </td>
           <td>(</td>
-          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramtype">size_t&nbsp;</td>
           <td class="paramname"> <em>idx</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -134,16 +126,14 @@ template&lt;int32_t SLOTNUM&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a693db6c6e3f6e83f479c0206752a7b49"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::unlock" ref="a693db6c6e3f6e83f479c0206752a7b49" args="(int32_t idx)" -->
+<a class="anchor" id="a62aa49e24124f2fa3fa397001e5a6193"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::unlock" ref="a62aa49e24124f2fa3fa397001e5a6193" args="(size_t idx)" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html">kyotocabinet::SlottedSpinLock</a>&lt; SLOTNUM &gt;::unlock </td>
+          <td class="memname">void kyotocabinet::SlottedSpinLock::unlock </td>
           <td>(</td>
-          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramtype">size_t&nbsp;</td>
           <td class="paramname"> <em>idx</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -162,14 +152,12 @@ template&lt;int32_t SLOTNUM&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a55382a590ac4f7b5eceb9ee68033ab2e"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::lock_all" ref="a55382a590ac4f7b5eceb9ee68033ab2e" args="()" -->
+<a class="anchor" id="a296c34b628c4c6d43603d620d53b8f78"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::lock_all" ref="a296c34b628c4c6d43603d620d53b8f78" args="()" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html">kyotocabinet::SlottedSpinLock</a>&lt; SLOTNUM &gt;::lock_all </td>
+          <td class="memname">void kyotocabinet::SlottedSpinLock::lock_all </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -183,14 +171,12 @@ template&lt;int32_t SLOTNUM&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a7bfa7bab346c274919afce1686b18ee8"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::unlock_all" ref="a7bfa7bab346c274919afce1686b18ee8" args="()" -->
+<a class="anchor" id="a33943a61b8288cca50a3aef83c569d84"></a><!-- doxytag: member="kyotocabinet::SlottedSpinLock::unlock_all" ref="a33943a61b8288cca50a3aef83c569d84" args="()" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classkyotocabinet_1_1SlottedSpinLock.html">kyotocabinet::SlottedSpinLock</a>&lt; SLOTNUM &gt;::unlock_all </td>
+          <td class="memname">void kyotocabinet::SlottedSpinLock::unlock_all </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -205,7 +191,7 @@ template&lt;int32_t SLOTNUM&gt; </div>
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jan 23 00:17:34 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Jan 27 16:49:35 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

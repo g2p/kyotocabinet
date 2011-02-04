@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<title>Kyoto Cabinet: kyotocabinet::SlottedMutex&lt; SLOTNUM &gt; Class Template Reference</title>
+<title>Kyoto Cabinet: kyotocabinet::SlottedMutex Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css"/>
 </head>
@@ -29,7 +29,7 @@
   </div>
 </div>
 <div class="contents">
-<h1>kyotocabinet::SlottedMutex&lt; SLOTNUM &gt; Class Template Reference</h1><!-- doxytag: class="kyotocabinet::SlottedMutex" -->
+<h1>kyotocabinet::SlottedMutex Class Reference</h1><!-- doxytag: class="kyotocabinet::SlottedMutex" -->
 <p>Slotted mutex device.  
 <a href="#_details">More...</a></p>
 
@@ -38,41 +38,31 @@
 <p><a href="classkyotocabinet_1_1SlottedMutex-members.html">List of all members.</a></p>
 <table border="0" cellpadding="0" cellspacing="0">
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#a89c2a0ece42acb07281d5fb18eaef635">SlottedMutex</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Constructor.  <a href="#a89c2a0ece42acb07281d5fb18eaef635"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#af236564c56579af8b4e2ea9b13103b0f">~SlottedMutex</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#af236564c56579af8b4e2ea9b13103b0f"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#aa2988dd1b67cebfe79d157950824f1db">lock</a> (int32_t idx)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the lock of a slot.  <a href="#aa2988dd1b67cebfe79d157950824f1db"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#a0ea30517150ee1be2cfce53d16145abd">unlock</a> (int32_t idx)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release the lock of a slot.  <a href="#a0ea30517150ee1be2cfce53d16145abd"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#a573dd65cd47f0e7bdde6d2fd507c5a87">lock_all</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the locks of all slots.  <a href="#a573dd65cd47f0e7bdde6d2fd507c5a87"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#a32cbe8791659a01063882c6bbf5d23ba">unlock_all</a> ()</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release the locks of all slots.  <a href="#a32cbe8791659a01063882c6bbf5d23ba"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#a28c1d39a84bd957be857772129607d23">SlottedMutex</a> (size_t slotnum)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Constructor.  <a href="#a28c1d39a84bd957be857772129607d23"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#a1ca0887b32d8700f9cfa2a0d229620b2">~SlottedMutex</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destructor.  <a href="#a1ca0887b32d8700f9cfa2a0d229620b2"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#aa65ef540074c0eb06e3f0ec0d3c29e1b">lock</a> (size_t idx)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the lock of a slot.  <a href="#aa65ef540074c0eb06e3f0ec0d3c29e1b"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#a3c4d45614aba38ef1c926840e68d6a82">unlock</a> (size_t idx)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release the lock of a slot.  <a href="#a3c4d45614aba38ef1c926840e68d6a82"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#a26ae7fd948dd6ddd7f2d99e62858ee25">lock_all</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the locks of all slots.  <a href="#a26ae7fd948dd6ddd7f2d99e62858ee25"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html#acd06c125ba0ffad693eebc1b02b4cc1b">unlock_all</a> ()</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Release the locks of all slots.  <a href="#acd06c125ba0ffad693eebc1b02b4cc1b"></a><br/></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
-<h3>template&lt;int32_t SLOTNUM&gt;<br/>
- class kyotocabinet::SlottedMutex&lt; SLOTNUM &gt;</h3>
-
 <p>Slotted mutex device. </p>
-<dl><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>SLOTNUM</em>&nbsp;</td><td>the number of slots. </td></tr>
-  </table>
-  </dd>
-</dl>
 <hr/><h2>Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a89c2a0ece42acb07281d5fb18eaef635"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::SlottedMutex" ref="a89c2a0ece42acb07281d5fb18eaef635" args="()" -->
+<a class="anchor" id="a28c1d39a84bd957be857772129607d23"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::SlottedMutex" ref="a28c1d39a84bd957be857772129607d23" args="(size_t slotnum)" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html">kyotocabinet::SlottedMutex</a>&lt; SLOTNUM &gt;::<a class="el" href="classkyotocabinet_1_1SlottedMutex.html">SlottedMutex</a> </td>
+          <td class="memname">kyotocabinet::SlottedMutex::SlottedMutex </td>
           <td>(</td>
-          <td class="paramname"></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>slotnum</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td><code> [explicit]</code></td>
         </tr>
@@ -81,17 +71,21 @@ template&lt;int32_t SLOTNUM&gt; </div>
 <div class="memdoc">
 
 <p>Constructor. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>slotnum</em>&nbsp;</td><td>the number of slots. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a class="anchor" id="af236564c56579af8b4e2ea9b13103b0f"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::~SlottedMutex" ref="af236564c56579af8b4e2ea9b13103b0f" args="()" -->
+<a class="anchor" id="a1ca0887b32d8700f9cfa2a0d229620b2"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::~SlottedMutex" ref="a1ca0887b32d8700f9cfa2a0d229620b2" args="()" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classkyotocabinet_1_1SlottedMutex.html">kyotocabinet::SlottedMutex</a>&lt; SLOTNUM &gt;::~<a class="el" href="classkyotocabinet_1_1SlottedMutex.html">SlottedMutex</a> </td>
+          <td class="memname">kyotocabinet::SlottedMutex::~SlottedMutex </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -106,16 +100,14 @@ template&lt;int32_t SLOTNUM&gt; </div>
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="aa2988dd1b67cebfe79d157950824f1db"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::lock" ref="aa2988dd1b67cebfe79d157950824f1db" args="(int32_t idx)" -->
+<a class="anchor" id="aa65ef540074c0eb06e3f0ec0d3c29e1b"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::lock" ref="aa65ef540074c0eb06e3f0ec0d3c29e1b" args="(size_t idx)" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classkyotocabinet_1_1SlottedMutex.html">kyotocabinet::SlottedMutex</a>&lt; SLOTNUM &gt;::lock </td>
+          <td class="memname">void kyotocabinet::SlottedMutex::lock </td>
           <td>(</td>
-          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramtype">size_t&nbsp;</td>
           <td class="paramname"> <em>idx</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -134,16 +126,14 @@ template&lt;int32_t SLOTNUM&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a0ea30517150ee1be2cfce53d16145abd"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::unlock" ref="a0ea30517150ee1be2cfce53d16145abd" args="(int32_t idx)" -->
+<a class="anchor" id="a3c4d45614aba38ef1c926840e68d6a82"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::unlock" ref="a3c4d45614aba38ef1c926840e68d6a82" args="(size_t idx)" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classkyotocabinet_1_1SlottedMutex.html">kyotocabinet::SlottedMutex</a>&lt; SLOTNUM &gt;::unlock </td>
+          <td class="memname">void kyotocabinet::SlottedMutex::unlock </td>
           <td>(</td>
-          <td class="paramtype">int32_t&nbsp;</td>
+          <td class="paramtype">size_t&nbsp;</td>
           <td class="paramname"> <em>idx</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -162,14 +152,12 @@ template&lt;int32_t SLOTNUM&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a573dd65cd47f0e7bdde6d2fd507c5a87"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::lock_all" ref="a573dd65cd47f0e7bdde6d2fd507c5a87" args="()" -->
+<a class="anchor" id="a26ae7fd948dd6ddd7f2d99e62858ee25"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::lock_all" ref="a26ae7fd948dd6ddd7f2d99e62858ee25" args="()" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classkyotocabinet_1_1SlottedMutex.html">kyotocabinet::SlottedMutex</a>&lt; SLOTNUM &gt;::lock_all </td>
+          <td class="memname">void kyotocabinet::SlottedMutex::lock_all </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -183,14 +171,12 @@ template&lt;int32_t SLOTNUM&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a32cbe8791659a01063882c6bbf5d23ba"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::unlock_all" ref="a32cbe8791659a01063882c6bbf5d23ba" args="()" -->
+<a class="anchor" id="acd06c125ba0ffad693eebc1b02b4cc1b"></a><!-- doxytag: member="kyotocabinet::SlottedMutex::unlock_all" ref="acd06c125ba0ffad693eebc1b02b4cc1b" args="()" -->
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;int32_t SLOTNUM&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classkyotocabinet_1_1SlottedMutex.html">kyotocabinet::SlottedMutex</a>&lt; SLOTNUM &gt;::unlock_all </td>
+          <td class="memname">void kyotocabinet::SlottedMutex::unlock_all </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -205,7 +191,7 @@ template&lt;int32_t SLOTNUM&gt; </div>
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jan 23 00:17:34 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Jan 27 16:49:35 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

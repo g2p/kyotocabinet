@@ -201,6 +201,14 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Split a string with a delimiter.  <a href="#a295fcdb0ba9274e2d986a66e1eb189b8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">size_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ae70c36738b29ac18f88920ea07b621c9">strsplit</a> (const std::string &amp;str, const std::string &amp;delims, std::vector&lt; std::string &gt; *elems)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Split a string with delimiters.  <a href="#ae70c36738b29ac18f88920ea07b621c9"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#a945e797f7eda244019740095ccf3df2d">strvecdump</a> (const std::vector&lt; std::string &gt; &amp;src, std::string *dest)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Serialize a string vector object into a string object.  <a href="#a945e797f7eda244019740095ccf3df2d"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ac58f113471487721bdf2fb76fa2ce7f1">strvecload</a> (const std::string &amp;src, std::vector&lt; std::string &gt; *dest)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Deserialize a string object into a string vector object.  <a href="#ac58f113471487721bdf2fb76fa2ce7f1"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#aaaf9bacf37d9adc61d0edda3dc3630f0">strmapdump</a> (const std::map&lt; std::string, std::string &gt; &amp;src, std::string *dest)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Serialize a string vector object into a string object.  <a href="#aaaf9bacf37d9adc61d0edda3dc3630f0"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#aaecfcb324c7875146d608b842c34d2be">strmapload</a> (const std::string &amp;src, std::map&lt; std::string, std::string &gt; *dest)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Deserialize a string object into a string map object.  <a href="#aaecfcb324c7875146d608b842c34d2be"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ab8be5cf3c65a54efdee6823b8877298b">hexencode</a> (const void *buf, size_t size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Encode a serial object by hexadecimal encoding.  <a href="#ab8be5cf3c65a54efdee6823b8877298b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacekyotocabinet.html#ac456e8436103c1ae54ff34e683228af3">hexdecode</a> (const char *str, size_t *sp)</td></tr>
@@ -1368,6 +1376,150 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the number of result elements. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a945e797f7eda244019740095ccf3df2d"></a><!-- doxytag: member="kyotocabinet::strvecdump" ref="a945e797f7eda244019740095ccf3df2d" args="(const std::vector&lt; std::string &gt; &amp;src, std::string *dest)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::strvecdump </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; std::string &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string *&nbsp;</td>
+          <td class="paramname"> <em>dest</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Serialize a string vector object into a string object. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>src</em>&nbsp;</td><td>the source object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the destination object. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ac58f113471487721bdf2fb76fa2ce7f1"></a><!-- doxytag: member="kyotocabinet::strvecload" ref="ac58f113471487721bdf2fb76fa2ce7f1" args="(const std::string &amp;src, std::vector&lt; std::string &gt; *dest)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::strvecload </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::string &gt; *&nbsp;</td>
+          <td class="paramname"> <em>dest</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Deserialize a string object into a string vector object. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>src</em>&nbsp;</td><td>the destination object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the source object. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="aaaf9bacf37d9adc61d0edda3dc3630f0"></a><!-- doxytag: member="kyotocabinet::strmapdump" ref="aaaf9bacf37d9adc61d0edda3dc3630f0" args="(const std::map&lt; std::string, std::string &gt; &amp;src, std::string *dest)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::strmapdump </td>
+          <td>(</td>
+          <td class="paramtype">const std::map&lt; std::string, std::string &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string *&nbsp;</td>
+          <td class="paramname"> <em>dest</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Serialize a string vector object into a string object. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>src</em>&nbsp;</td><td>the source object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the destination object. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="aaecfcb324c7875146d608b842c34d2be"></a><!-- doxytag: member="kyotocabinet::strmapload" ref="aaecfcb324c7875146d608b842c34d2be" args="(const std::string &amp;src, std::map&lt; std::string, std::string &gt; *dest)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void kyotocabinet::strmapload </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>src</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::map&lt; std::string, std::string &gt; *&nbsp;</td>
+          <td class="paramname"> <em>dest</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Deserialize a string object into a string map object. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>src</em>&nbsp;</td><td>the destination object. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>dest</em>&nbsp;</td><td>the source object. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -2614,7 +2766,7 @@ std::string &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Jan 23 00:17:34 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Thu Jan 27 16:49:35 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

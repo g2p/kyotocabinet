@@ -2176,6 +2176,35 @@ static int32_t procmisc(int64_t rnum) {
     char name[kc::NUMBUFSIZ];
     hash += kc::hashpath(ubuf, usiz, name);
     hash = kc::nearbyprime(myrand(INT_MAX));
+    if (myrand(256) == 0) {
+      int32_t tnum = myrand(64);
+      std::vector<std::string> ovec;
+      std::map<std::string, std::string> omap;
+      for (int32_t j = 0; j < tnum; j++) {
+        char kbuf[RECBUFSIZ];
+        sprintf(kbuf, "%lld", (long long)myrand(rnum));
+        char vbuf[RECBUFSIZ];
+        sprintf(vbuf, "%lld", (long long)myrand(rnum));
+        ovec.push_back(vbuf);
+        omap[kbuf] = vbuf;
+      }
+      std::string vstr;
+      kc::strvecdump(ovec, &vstr);
+      std::vector<std::string> nvec;
+      kc::strvecload(vstr, &nvec);
+      if (nvec.size() != ovec.size()) {
+        errprint(__LINE__, "strvecload: %llu:%llu", nvec.size(), ovec.size());
+        err = true;
+      }
+      std::string mstr;
+      kc::strmapdump(omap, &mstr);
+      std::map<std::string, std::string> nmap;
+      kc::strmapload(mstr, &nmap);
+      if (nmap.size() != omap.size()) {
+        errprint(__LINE__, "strmapload: %llu:%llu", nvec.size(), ovec.size());
+        err = true;
+      }
+    }
     char* ebuf = kc::hexencode(ubuf, usiz);
     size_t osiz;
     char* obuf = kc::hexdecode(ebuf, &osiz);
