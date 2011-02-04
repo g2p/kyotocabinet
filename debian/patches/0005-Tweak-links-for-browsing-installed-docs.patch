@@ -1,0 +1,30 @@
+From: Gabriel de Perthuis <g2p.code+debian@gmail.com>
+Date: Fri, 4 Feb 2011 14:51:24 +0100
+Subject: [PATCH] Tweak links for browsing installed docs
+
+---
+ doc/index.html |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/doc/index.html b/doc/index.html
+index b9cb622..99c36be 100644
+--- a/doc/index.html
++++ b/doc/index.html
+@@ -75,13 +75,13 @@
+ 
+ <h2 id="documents">Documents</h2>
+ 
+-<p>The following are documents of Kyoto Cabinet.  They are contained also in the source package.</p>
++<p>The following are documents of Kyoto Cabinet.  The first three are contained also in the source package.</p>
+ 
+ <ul>
+ <li><a href="spex.html">Fundamental Specifications</a></li>
+ <li><a href="command.html">Specifications of Command Line Utilities</a></li>
+-<li><a href="kyotoproducts.pdf">Presentation</a></li>
+-<li><a href="api/">API Documents of the core library (C/C++)</a></li>
++<li><a href="api/index.html">API Documents of the core library (C/C++)</a></li>
++<li><a href="http://fallabs.com/kyotocabinet/kyotoproducts.pdf">Presentation</a></li>
+ </ul>
+ 
+ <ul>
+-- 
