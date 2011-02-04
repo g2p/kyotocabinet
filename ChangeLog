@@ -1,3 +1,13 @@
+2011-01-30  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcthread.cc: threshold of sleep locking was modified.
+
+	* kcplantdb.h (PlantDB::accept): a bug related to race condition was fixed.
+
+	* kcplantdb.h (PlantDB::save_leaf_node): locking mode was modified.
+
+	- Release: 1.2.38
+
 2011-01-25  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcutil.h (strvecdump, strvecload, strmapdump, strmapload): new functions.

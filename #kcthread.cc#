@@ -201,6 +201,10 @@ void Thread::chill() {
   _assert_(true);
   ::Sleep(21);
 #else
+
+  static int cnt = 0;
+  printf("%d\n", 
+
   _assert_(true);
   struct ::timespec req;
   req.tv_sec = 0;

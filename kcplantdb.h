@@ -1000,13 +1000,14 @@ public:
     node->lock.unlock();
     bool flush = false;
     bool err = false;
+    int64_t id = node->id;
     if (atran && !reorg && !fix_auto_transaction_leaf(node)) err = true;
     if (reorg && mlock_.promote()) {
       if (!reorganize_tree(node, hist, hnum)) err = true;
       if (atran && !fix_auto_transaction_tree()) err = true;
       reorg = false;
     } else if (cusage_ > pccap_) {
-      int32_t idx = node->id % PDBSLOTNUM;
+      int32_t idx = id % PDBSLOTNUM;
       LeafSlot* lslot = lslots_ + idx;
       if (!clean_leaf_cache_part(lslot)) err = true;
       if (mlock_.promote()) {
@@ -1025,13 +1026,10 @@ public:
       if (node) {
         if (!reorganize_tree(node, hist, hnum)) err = true;
         if (atran && !tran_ && !fix_auto_transaction_tree()) err = true;
-      } else {
-        set_error(_KCCODELINE_, Error::BROKEN, "search failed");
-        err = true;
       }
       mlock_.unlock();
     } else if (flush) {
-      int32_t idx = node->id % PDBSLOTNUM;
+      int32_t idx = id % PDBSLOTNUM;
       LeafSlot* lslot = lslots_ + idx;
       mlock_.lock_writer();
       if (!flush_leaf_cache_part(lslot)) err = true;
@@ -2289,7 +2287,7 @@ private:
    */
   bool save_leaf_node(LeafNode* node) {
     _assert_(node);
-    ScopedSpinRWLock lock(&node->lock, true);
+    ScopedSpinRWLock lock(&node->lock, false);
     if (!node->dirty) return true;
     bool err = false;
     char hbuf[NUMBUFSIZ];
