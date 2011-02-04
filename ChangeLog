@@ -1,3 +1,13 @@
+2011-02-01  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcfile.cc (File::open): checking type type was added.
+
+	* kcplantdb.h (Plantdb::reorganize_file): recovery condition was modified.
+
+	* kcpolymgr.cc (proccheck): a bug related to path handling was fixed.
+
+	- Release: 1.2.39
+
 2011-01-30  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcthread.cc: threshold of sleep locking was modified.

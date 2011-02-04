@@ -3295,7 +3295,14 @@ private:
    */
   bool reorganize_file(uint32_t mode) {
     _assert_(true);
-    if (!load_meta()) return false;
+    if (!load_meta()) {
+      if (reccomp_.comp) {
+        linkcomp_.comp = reccomp_.comp;
+      } else {
+        reccomp_.comp = &LEXICALCOMP;
+        linkcomp_.comp = &LEXICALCOMP;
+      }
+    }
     const std::string& path = db_.path();
     const std::string& npath = path + File::EXTCHR + PDBTMPPATHEXT;
     PlantDB tdb;
