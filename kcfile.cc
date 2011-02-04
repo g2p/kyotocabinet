@@ -446,6 +446,11 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
     ::close(fd);
     return false;
   }
+  if (!S_ISREG(sbuf.st_mode)) {
+    seterrmsg(core, "not a regular file");
+    ::close(fd);
+    return false;
+  }
   bool recov = false;
   if ((!(mode & OWRITER) || !(mode & OTRUNCATE)) && !(mode & ONOLOCK)) {
     const std::string& wpath = walpath(path);

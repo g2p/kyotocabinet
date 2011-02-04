@@ -1461,8 +1461,9 @@ static int32_t proccheck(const char* path, int32_t oflags) {
     dberrprint(&db, "DB::count failed");
     err = true;
   }
+  const std::string& rpath = db.path();
   kc::File::Status sbuf;
-  if (kc::File::status(path, &sbuf)) {
+  if (kc::File::status(rpath, &sbuf)) {
     if (!sbuf.isdir && db.size() != sbuf.size) {
       dberrprint(&db, "DB::size failed");
       err = true;
