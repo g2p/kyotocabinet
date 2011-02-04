@@ -1,0 +1,11 @@
+Document: kyotocabinet
+Title: Kyoto Cabinet documentation
+Author: Mikio Hirabayashi
+Abstract: This manual describes what Kyoto Cabinet is, how to configure it and
+ the API offered by it.
+Section: Programming/C
+
+Format: HTML
+Index: /usr/share/doc/kyotocabinet-doc/html/index.html
+Files: /usr/share/doc/kyotocabinet-doc/html/*.html
+       /usr/share/doc/kyotocabinet-doc/html/api/*.html
