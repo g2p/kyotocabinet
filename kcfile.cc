@@ -27,7 +27,7 @@ const int32_t FILEPERM = 00644;          ///< default permission of a new file
 const int32_t DIRPERM = 00755;           ///< default permission of a new directory
 const int32_t PATHBUFSIZ = 8192;         ///< size of the path buffer
 const int32_t IOBUFSIZ = 16384;          ///< size of the IO buffer
-const int64_t FILEMAXSIZ = INT64_MAX - INT32_MAX;  // maximum size of a file
+const int64_t FILEMAXSIZ = INT64MAX - INT32MAX;  // maximum size of a file
 const char* WALPATHEXT = "wal";          ///< extension of the WAL file
 const char WALMAGICDATA[] = "KW\n";      ///< magic data of the WAL file
 const uint8_t WALMSGMAGIC = 0xee;        ///< magic data for WAL record
@@ -308,7 +308,7 @@ bool File::open(const std::string& path, uint32_t mode, int64_t msiz) {
   if (!(mode & ONOLOCK)) {
     ::DWORD lmode = mode & OWRITER ? LOCKFILE_EXCLUSIVE_LOCK : 0;
     OVERLAPPED ol;
-    ol.Offset = INT32_MAX;
+    ol.Offset = INT32MAX;
     ol.OffsetHigh = 0;
     ol.hEvent = 0;
     if (!::LockFileEx(fh, lmode, 0, 1, 0, &ol)) {
@@ -559,7 +559,7 @@ bool File::close() {
   }
   if (!(core->omode & ONOLOCK)) {
     OVERLAPPED ol;
-    ol.Offset = INT32_MAX;
+    ol.Offset = INT32MAX;
     ol.OffsetHigh = 0;
     ol.hEvent = 0;
     if (!::UnlockFileEx(core->fh, 0, 1, 0, &ol)) {
@@ -1509,7 +1509,7 @@ bool File::recovered() const {
 char* File::read_file(const std::string& path, int64_t* sp, int64_t limit) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(sp);
-  if (limit < 0) limit = INT64_MAX;
+  if (limit < 0) limit = INT64MAX;
   ::DWORD amode = GENERIC_READ;
   ::DWORD smode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
   ::DWORD cmode = OPEN_EXISTING;
@@ -1534,7 +1534,7 @@ char* File::read_file(const std::string& path, int64_t* sp, int64_t limit) {
   return buf;
 #else
   _assert_(sp);
-  if (limit < 0) limit = INT64_MAX;
+  if (limit < 0) limit = INT64MAX;
   int32_t fd = ::open(path.c_str(), O_RDONLY, FILEPERM);
   if (fd < 0) return NULL;
   struct stat sbuf;
@@ -1707,7 +1707,7 @@ bool File::remove(const std::string& path) {
   }
   std::string tmppath;
   strprintf(&tmppath, "%s%ctmp%c%llx", path.c_str(), EXTCHR, EXTCHR,
-            ((unsigned long long)(time() * UINT16_MAX)) % UINT32_MAX);
+            ((unsigned long long)(time() * UINT16MAX)) % UINT32MAX);
   if (::MoveFileEx(path.c_str(), tmppath.c_str(), MOVEFILE_REPLACE_EXISTING)) {
     ::DeleteFile(tmppath.c_str());
     ::DWORD amode = GENERIC_READ | GENERIC_WRITE;
@@ -1741,7 +1741,7 @@ bool File::rename(const std::string& opath, const std::string& npath) {
   }
   std::string tmppath;
   strprintf(&tmppath, "%s%ctmp%c%llx", npath.c_str(), EXTCHR, EXTCHR,
-            ((unsigned long long)(time() * UINT16_MAX)) % UINT32_MAX);
+            ((unsigned long long)(time() * UINT16MAX)) % UINT32MAX);
   if (::MoveFileEx(npath.c_str(), tmppath.c_str(), MOVEFILE_REPLACE_EXISTING)) {
     if (::MoveFileEx(opath.c_str(), npath.c_str(), MOVEFILE_REPLACE_EXISTING)) {
       ::DeleteFile(tmppath.c_str());

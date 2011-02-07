@@ -68,6 +68,7 @@ const uint8_t HDBFBMAGIC = 0xdd;         ///< magic data for free block
 const int32_t HDBDFRGMAX = 512;          ///< maximum unit of auto defragmentation
 const int32_t HDBDFRGCEF = 2;            ///< coefficient of auto defragmentation
 const int64_t HDBSLVGWIDTH = 1LL << 20;  ///< checking width for record salvage
+const uint32_t HDBLOCKBUSYLOOP = 8192;   ///< threshold of busy loop and sleep for locking
 const char* HDBTMPPATHEXT = "tmpkch";    ///< extension of the temporary file
 }
 
@@ -289,7 +290,7 @@ public:
       while (off > 0) {
         rec.off = off;
         if (!db_->read_record(&rec, rbuf)) return false;
-        if (rec.psiz == UINT16_MAX) {
+        if (rec.psiz == UINT16MAX) {
           db_->set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
           db_->report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
                       (long long)db_->psiz_, (long long)rec.off, (long long)db_->file_.size());
@@ -440,7 +441,7 @@ public:
         rec->off = off_;
         if (!db_->read_record(rec, rbuf)) return false;
         skip--;
-        if (rec->psiz == UINT16_MAX) {
+        if (rec->psiz == UINT16MAX) {
           off_ += rec->rsiz;
         } else {
           if (skip < 0) return true;
@@ -919,7 +920,8 @@ public:
    */
   bool begin_transaction(bool hard = false) {
     _assert_(true);
-    for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
+    uint32_t wcnt = 0;
+    while (true) {
       mlock_.lock_writer();
       if (omode_ == 0) {
         set_error(_KCCODELINE_, Error::INVALID, "not opened");
@@ -933,8 +935,12 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wsec > 1.0) wsec = 1.0;
-      Thread::sleep(wsec);
+      if (wcnt >= HDBLOCKBUSYLOOP) {
+        Thread::chill();
+      } else {
+        Thread::yield();
+        wcnt++;
+      }
     }
     trhard_ = hard;
     if (!begin_transaction_impl()) {
@@ -1243,7 +1249,7 @@ public:
       return false;
     }
     bnum_ = bnum > 0 ? bnum : HDBDEFBNUM;
-    if (bnum_ > INT16_MAX) bnum_ = nearbyprime(bnum_);
+    if (bnum_ > INT16MAX) bnum_ = nearbyprime(bnum_);
     return true;
   }
   /**
@@ -1344,7 +1350,7 @@ public:
       if (!defrag_impl(step)) err = true;
     } else {
       dfcur_ = roff_;
-      if (!defrag_impl(INT64_MAX)) err = true;
+      if (!defrag_impl(INT64MAX)) err = true;
     }
     frgcnt_ = 0;
     return !err;
@@ -1715,7 +1721,7 @@ private:
     while (off > 0) {
       rec.off = off;
       if (!read_record(&rec, rbuf)) return false;
-      if (rec.psiz == UINT16_MAX) {
+      if (rec.psiz == UINT16MAX) {
         set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
         report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
                (long long)psiz_, (long long)rec.off, (long long)file_.size());
@@ -2022,7 +2028,7 @@ private:
     while (off > 0 && off < end) {
       rec.off = off;
       if (!read_record(&rec, rbuf)) return false;
-      if (rec.psiz == UINT16_MAX) {
+      if (rec.psiz == UINT16MAX) {
         off += rec.rsiz;
       } else {
         if (!rec.vbuf && !read_record_body(&rec)) {
@@ -2187,7 +2193,7 @@ private:
       if (step-- < 1) return true;
       rec.off = dfcur_;
       if (!read_record(&rec, rbuf)) return false;
-      if (rec.psiz == UINT16_MAX) break;
+      if (rec.psiz == UINT16MAX) break;
       delete[] rec.bbuf;
       dfcur_ += rec.rsiz;
     }
@@ -2208,7 +2214,7 @@ private:
       }
       escape_cursors(rec.off, dest);
       dfcur_ += rec.rsiz;
-      if (rec.psiz != UINT16_MAX) {
+      if (rec.psiz != UINT16MAX) {
         if (!rec.vbuf && !read_record_body(&rec)) {
           if (atran) abort_auto_transaction();
           delete[] rec.bbuf;
@@ -2501,7 +2507,7 @@ private:
             delete[] rec.bbuf;
             continue;
           }
-          if (rec.psiz != UINT16_MAX && !rec.vbuf && !read_record_body(&rec)) {
+          if (rec.psiz != UINT16MAX && !rec.vbuf && !read_record_body(&rec)) {
             delete[] rec.bbuf;
             continue;
           }
@@ -2512,7 +2518,7 @@ private:
             delete[] nrec.bbuf;
             continue;
           }
-          if (nrec.psiz != UINT16_MAX && !nrec.vbuf && !read_record_body(&nrec)) {
+          if (nrec.psiz != UINT16MAX && !nrec.vbuf && !read_record_body(&nrec)) {
             delete[] nrec.bbuf;
             continue;
           }
@@ -2522,7 +2528,7 @@ private:
         }
         if (!hit || !read_record(&rec, rbuf)) break;
       }
-      if (rec.psiz == UINT16_MAX) {
+      if (rec.psiz == UINT16MAX) {
         off += rec.rsiz;
         continue;
       }
@@ -2534,7 +2540,7 @@ private:
           if (read_record(&nrec, nbuf)) {
             if (nrec.rsiz > MEMMAXSIZ || nrec.off + (int64_t)nrec.rsiz >= end) {
               delete[] nrec.bbuf;
-            } else if (nrec.psiz != UINT16_MAX && !nrec.vbuf && !read_record_body(&nrec)) {
+            } else if (nrec.psiz != UINT16MAX && !nrec.vbuf && !read_record_body(&nrec)) {
               delete[] nrec.bbuf;
             } else {
               delete[] nrec.bbuf;
@@ -2751,7 +2757,7 @@ private:
         report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
         return false;
       }
-      rec->psiz = UINT16_MAX;
+      rec->psiz = UINT16MAX;
       rec->ksiz = 0;
       rec->vsiz = 0;
       rec->left = 0;
@@ -2927,7 +2933,7 @@ private:
    */
   bool adjust_record(Record* rec) {
     _assert_(rec);
-    if (rec->psiz > INT16_MAX || rec->psiz > rec->rsiz / 2) {
+    if (rec->psiz > (size_t)INT16MAX || rec->psiz > rec->rsiz / 2) {
       size_t nsiz = (rec->psiz >> apow_) << apow_;
       if (nsiz < rhsiz_) return true;
       rec->rsiz -= nsiz;
@@ -3010,7 +3016,7 @@ private:
     while (off > 0) {
       rec.off = off;
       if (!read_record(&rec, rbuf)) return false;
-      if (rec.psiz == UINT16_MAX) {
+      if (rec.psiz == UINT16MAX) {
         set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
         report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
                (long long)psiz_, (long long)rec.off, (long long)file_.size());
@@ -3104,7 +3110,7 @@ private:
     _assert_(res);
     if (fbpnum_ < 1) return false;
     ScopedSpinLock lock(&flock_);
-    FreeBlock fb = { INT64_MAX, rsiz };
+    FreeBlock fb = { INT64MAX, rsiz };
     FBP::const_iterator it = fbp_.upper_bound(fb);
     if (it == fbp_.end()) return false;
     res->off = it->off;
@@ -3325,7 +3331,7 @@ private:
       Record prec;
       prec.off = rec->left;
       if (!read_record(&prec, rbuf)) return false;
-      if (prec.psiz == UINT16_MAX) {
+      if (prec.psiz == UINT16MAX) {
         set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
         report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
                (long long)psiz_, (long long)prec.off, (long long)file_.size());
@@ -3339,7 +3345,7 @@ private:
         while (true) {
           prec.off = off;
           if (!read_record(&prec, rbuf)) return false;
-          if (prec.psiz == UINT16_MAX) {
+          if (prec.psiz == UINT16MAX) {
             set_error(_KCCODELINE_, Error::BROKEN, "free block in the chain");
             report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
                    (long long)psiz_, (long long)prec.off, (long long)file_.size());

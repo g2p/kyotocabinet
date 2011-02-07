@@ -403,7 +403,7 @@ static int32_t procorder(int64_t rnum, int32_t thnum, bool rnd, bool etc, bool t
   oprintf("opening the database:\n");
   double stime = kc::time();
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   if (bnum > 0) db.tune_buckets(bnum);
   if (capcnt > 0) db.cap_count(capcnt);
@@ -1408,7 +1408,7 @@ static int32_t procqueue(int64_t rnum, int32_t thnum, int32_t itnum, bool rnd,
   bool err = false;
   kc::CacheDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   if (bnum > 0) db.tune_buckets(bnum);
   if (capcnt > 0) db.cap_count(capcnt);
@@ -1606,7 +1606,7 @@ static int32_t procwicked(int64_t rnum, int32_t thnum, int32_t itnum,
   bool err = false;
   kc::CacheDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   if (bnum > 0) db.tune_buckets(bnum);
   if (capcnt > 0) db.cap_count(capcnt);
@@ -1703,7 +1703,7 @@ static int32_t procwicked(int64_t rnum, int32_t thnum, int32_t itnum,
               case 3: {
                 if (myrand(2) == 0) {
                   int64_t num = myrand(rnum_);
-                  if (db_->increment(kbuf, ksiz, num) == INT64_MIN &&
+                  if (db_->increment(kbuf, ksiz, num) == kc::INT64MIN &&
                       db_->error() != kc::BasicDB::Error::LOGIC) {
                     dberrprint(db_, __LINE__, "DB::increment");
                     err_ = true;
@@ -1917,9 +1917,9 @@ static int32_t proctran(int64_t rnum, int32_t thnum, int32_t itnum,
   kc::CacheDB db;
   kc::CacheDB paradb;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
-  paradb.tune_logger(stdlogger(g_progname, &std::cout),
-                     lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+  paradb.tune_logger(stdlogger(g_progname, &std::cout), lv ? kc::UINT32MAX :
+                     kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   if (bnum > 0) db.tune_buckets(bnum);
   if (capcnt > 0) db.cap_count(capcnt);

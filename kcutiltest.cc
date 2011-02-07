@@ -2130,7 +2130,7 @@ static int32_t procmisc(int64_t rnum) {
       err = true;
     }
     char fbuf[sizeof(num64)];
-    num64 = (uint64_t)myrand(INT32_MAX) * myrand(INT16_MAX);
+    num64 = (uint64_t)myrand(kc::INT32MAX) * myrand(kc::INT16MAX);
     kc::writefixnum(fbuf, num64, 6);
     uint64_t onum = kc::readfixnum(fbuf, 6);
     if (onum != num64) {
@@ -2175,16 +2175,16 @@ static int32_t procmisc(int64_t rnum) {
     hash += kc::hashfnv(&num16, sizeof(num16)) + kc::hashfnv(ubuf, usiz);
     char name[kc::NUMBUFSIZ];
     hash += kc::hashpath(ubuf, usiz, name);
-    hash = kc::nearbyprime(myrand(INT_MAX));
+    hash = kc::nearbyprime(myrand(kc::INT32MAX));
     if (myrand(256) == 0) {
       int32_t tnum = myrand(64);
       std::vector<std::string> ovec;
       std::map<std::string, std::string> omap;
       for (int32_t j = 0; j < tnum; j++) {
         char kbuf[RECBUFSIZ];
-        sprintf(kbuf, "%lld", (long long)myrand(rnum));
+        std::sprintf(kbuf, "%lld", (long long)myrand(rnum));
         char vbuf[RECBUFSIZ];
-        sprintf(vbuf, "%lld", (long long)myrand(rnum));
+        std::sprintf(vbuf, "%lld", (long long)myrand(rnum));
         ovec.push_back(vbuf);
         omap[kbuf] = vbuf;
       }

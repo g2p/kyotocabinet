@@ -462,7 +462,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
   oprintf("opening the database:\n");
   double stime = kc::time();
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   uint32_t omode = kc::PolyDB::OWRITER | kc::PolyDB::OCREATE | kc::PolyDB::OTRUNCATE;
   if (mode == 'r') {
     omode = kc::PolyDB::OWRITER | kc::PolyDB::OCREATE;
@@ -1467,7 +1467,7 @@ static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t 
   bool err = false;
   kc::PolyDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     if (itnum > 1) oprintf("iteration %d:\n", itcnt);
     double stime = kc::time();
@@ -1635,7 +1635,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
   bool err = false;
   kc::PolyDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     if (itnum > 1) oprintf("iteration %d:\n", itcnt);
     double stime = kc::time();
@@ -1736,7 +1736,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
               case 4: {
                 if (myrand(2) == 0) {
                   int64_t num = myrand(rnum_);
-                  if (db_->increment(kbuf, ksiz, num) == INT64_MIN &&
+                  if (db_->increment(kbuf, ksiz, num) == kc::INT64MIN &&
                       db_->error() != kc::BasicDB::Error::LOGIC) {
                     dberrprint(db_, __LINE__, "DB::increment");
                     err_ = true;
@@ -1973,9 +1973,9 @@ static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t i
   kc::PolyDB db;
   kc::PolyDB paradb;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
-  paradb.tune_logger(stdlogger(g_progname, &std::cout),
-                     lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+  paradb.tune_logger(stdlogger(g_progname, &std::cout), lv ? kc::UINT32MAX :
+                     kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     oprintf("iteration %d updating:\n", itcnt);
     double stime = kc::time();
@@ -2197,7 +2197,7 @@ static int32_t procmapred(const char* path, int64_t rnum, bool rnd, int32_t ofla
   bool err = false;
   kc::PolyDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   double stime = kc::time();
   uint32_t omode = kc::PolyDB::OWRITER | kc::PolyDB::OCREATE | kc::PolyDB::OTRUNCATE;
   if (!db.open(path, omode | oflags)) {

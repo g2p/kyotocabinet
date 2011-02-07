@@ -40,6 +40,7 @@ const size_t CDBZMAPBNUM = 32768;        ///< mininum number of buckets to use m
 const uint32_t CDBKSIZMAX = 0xfffff;     ///< maximum size of each key
 const size_t CDBRECBUFSIZ = 48;          ///< size of the record buffer
 const size_t CDBOPAQUESIZ = 16;          ///< size of the opaque buffer
+const uint32_t CDBLOCKBUSYLOOP = 8192;   ///< threshold of busy loop and sleep for locking
 }
 
 
@@ -695,7 +696,8 @@ public:
    */
   bool begin_transaction(bool hard = false) {
     _assert_(true);
-    for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
+    uint32_t wcnt = 0;
+    while (true) {
       mlock_.lock_writer();
       if (omode_ == 0) {
         set_error(_KCCODELINE_, Error::INVALID, "not opened");
@@ -709,8 +711,12 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wsec > 1.0) wsec = 1.0;
-      Thread::sleep(wsec);
+      if (wcnt >= CDBLOCKBUSYLOOP) {
+        Thread::chill();
+      } else {
+        Thread::yield();
+        wcnt++;
+      }
     }
     tran_ = true;
     trigger_meta(MetaTrigger::BEGINTRAN, "begin_transaction");

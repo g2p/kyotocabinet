@@ -16,9 +16,6 @@
 #ifndef _KCCOMMON_H                      // duplication check
 #define _KCCOMMON_H
 
-#undef __STDC_LIMIT_MACROS
-#define __STDC_LIMIT_MACROS 1            ///< enable limit macros
-
 extern "C" {
 #include <stdint.h>
 }
@@ -176,7 +173,20 @@ using tr1::unordered_set;
 /**
  * All symbols of Kyoto Cabinet.
  */
-namespace kyotocabinet {}
+namespace kyotocabinet {
+const int8_t INT8MAX = (std::numeric_limits<int8_t>::max)();       ///< maximum value of int8_t
+const int16_t INT16MAX = (std::numeric_limits<int16_t>::max)();    ///< maximum value of int16_t
+const int32_t INT32MAX = (std::numeric_limits<int32_t>::max)();    ///< maximum value of int32_t
+const int64_t INT64MAX = (std::numeric_limits<int64_t>::max)();    ///< maximum value of int64_t
+const int8_t INT8MIN = (std::numeric_limits<int8_t>::min)();       ///< minimum value of int8_t
+const int16_t INT16MIN = (std::numeric_limits<int16_t>::min)();    ///< minimum value of int16_t
+const int32_t INT32MIN = (std::numeric_limits<int32_t>::min)();    ///< minimum value of int32_t
+const int64_t INT64MIN = (std::numeric_limits<int64_t>::min)();    ///< minimum value of int64_t
+const uint8_t UINT8MAX = (std::numeric_limits<uint8_t>::max)();    ///< maximum value of uint8_t
+const uint16_t UINT16MAX = (std::numeric_limits<uint16_t>::max)(); ///< maximum value of uint16_t
+const uint32_t UINT32MAX = (std::numeric_limits<uint32_t>::max)(); ///< maximum value of uint32_t
+const uint64_t UINT64MAX = (std::numeric_limits<uint64_t>::max)(); ///< maximum value of uint64_t
+}
 
 
 #endif                                   // duplication check

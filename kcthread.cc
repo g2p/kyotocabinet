@@ -23,7 +23,7 @@ namespace kyotocabinet {                 // common namespace
  * Constants for implementation.
  */
 namespace {
-const uint32_t LOCKBUSYLOOP = 1024;      ///< threshold of busy loop and sleep for locking
+const uint32_t LOCKBUSYLOOP = 8192;      ///< threshold of busy loop and sleep for locking
 const size_t LOCKSEMNUM = 256;           ///< number of semaphores for locking
 }
 
@@ -221,7 +221,7 @@ bool Thread::sleep(double sec) {
     yield();
     return true;
   }
-  if (sec > INT32_MAX) sec = INT32_MAX;
+  if (sec > INT32MAX) sec = INT32MAX;
   ::Sleep(sec * 1000);
   return true;
 #else
@@ -230,7 +230,7 @@ bool Thread::sleep(double sec) {
     yield();
     return true;
   }
-  if (sec > INT32_MAX) sec = INT32_MAX;
+  if (sec > INT32MAX) sec = INT32MAX;
   double integ, fract;
   fract = std::modf(sec, &integ);
   struct ::timespec req, rem;
@@ -265,7 +265,7 @@ int64_t Thread::hash() {
   } else {
     num = hashmurmur(&tid, sizeof(tid));
   }
-  return num & INT64_MAX;
+  return num & INT64MAX;
 #endif
 }
 
@@ -1331,7 +1331,7 @@ void SpinRWLock::lock_writer() {
     }
     spinrwlocklock(core);
   }
-  core->cnt = INT32_MAX;
+  core->cnt = INT32MAX;
   spinrwlockunlock(core);
 }
 
@@ -1347,7 +1347,7 @@ bool SpinRWLock::lock_writer_try() {
     spinrwlockunlock(core);
     return false;
   }
-  core->cnt = INT32_MAX;
+  core->cnt = INT32MAX;
   spinrwlockunlock(core);
   return true;
 }
@@ -1361,7 +1361,7 @@ void SpinRWLock::lock_reader() {
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
   uint32_t wcnt = 0;
-  while (core->cnt >= INT32_MAX) {
+  while (core->cnt >= (uint32_t)INT32MAX) {
     spinrwlockunlock(core);
     if (wcnt >= LOCKBUSYLOOP) {
       Thread::chill();
@@ -1383,7 +1383,7 @@ bool SpinRWLock::lock_reader_try() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
-  if (core->cnt >= INT32_MAX) {
+  if (core->cnt >= (uint32_t)INT32MAX) {
     spinrwlockunlock(core);
     return false;
   }
@@ -1400,7 +1400,7 @@ void SpinRWLock::unlock() {
   _assert_(true);
   SpinRWLockCore* core = (SpinRWLockCore*)opq_;
   spinrwlocklock(core);
-  if (core->cnt >= INT32_MAX) {
+  if (core->cnt >= (uint32_t)INT32MAX) {
     core->cnt = 0;
   } else {
     core->cnt--;
@@ -1420,7 +1420,7 @@ bool SpinRWLock::promote() {
     spinrwlockunlock(core);
     return false;
   }
-  core->cnt = INT32_MAX;
+  core->cnt = INT32MAX;
   spinrwlockunlock(core);
   return true;
 }
@@ -1598,7 +1598,7 @@ void SlottedSpinRWLock::lock_writer(size_t idx) {
     }
     slottedspinrwlocklock(core, semidx);
   }
-  core->cnts[idx] = INT32_MAX;
+  core->cnts[idx] = INT32MAX;
   slottedspinrwlockunlock(core, semidx);
 }
 
@@ -1612,7 +1612,7 @@ void SlottedSpinRWLock::lock_reader(size_t idx) {
   size_t semidx = idx % LOCKSEMNUM;
   slottedspinrwlocklock(core, semidx);
   uint32_t wcnt = 0;
-  while (core->cnts[idx] >= INT32_MAX) {
+  while (core->cnts[idx] >= (uint32_t)INT32MAX) {
     slottedspinrwlockunlock(core, semidx);
     if (wcnt >= LOCKBUSYLOOP) {
       Thread::chill();
@@ -1635,7 +1635,7 @@ void SlottedSpinRWLock::unlock(size_t idx) {
   SlottedSpinRWLockCore* core = (SlottedSpinRWLockCore*)opq_;
   size_t semidx = idx % LOCKSEMNUM;
   slottedspinrwlocklock(core, semidx);
-  if (core->cnts[idx] >= INT32_MAX) {
+  if (core->cnts[idx] >= (uint32_t)INT32MAX) {
     core->cnts[idx] = 0;
   } else {
     core->cnts[idx]--;
@@ -1666,7 +1666,7 @@ void SlottedSpinRWLock::lock_writer_all() {
       }
       slottedspinrwlocklock(core, semidx);
     }
-    cnts[i] = INT32_MAX;
+    cnts[i] = INT32MAX;
     slottedspinrwlockunlock(core, semidx);
   }
 }
@@ -1684,7 +1684,7 @@ void SlottedSpinRWLock::lock_reader_all() {
     size_t semidx = i % LOCKSEMNUM;
     slottedspinrwlocklock(core, semidx);
     uint32_t wcnt = 0;
-    while (cnts[i] >= INT32_MAX) {
+    while (cnts[i] >= (uint32_t)INT32MAX) {
       slottedspinrwlockunlock(core, semidx);
       if (wcnt >= LOCKBUSYLOOP) {
         Thread::chill();
@@ -1711,7 +1711,7 @@ void SlottedSpinRWLock::unlock_all() {
   for (size_t i = 0; i < slotnum; i++) {
     size_t semidx = i % LOCKSEMNUM;
     slottedspinrwlocklock(core, semidx);
-    if (cnts[i] >= INT32_MAX) {
+    if (cnts[i] >= (uint32_t)INT32MAX) {
       cnts[i] = 0;
     } else {
       cnts[i]--;

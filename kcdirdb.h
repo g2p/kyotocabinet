@@ -45,6 +45,7 @@ const uint8_t DDBRECMAGIC = 0xcc;        ///< magic data for record
 const int32_t DDBRLOCKSLOT = 8192;       ///< number of slots of the record lock
 const int32_t DDBRECUNITSIZ = 32;        ///< unit size of a record
 const size_t DDBOPAQUESIZ = 16;          ///< size of the opaque buffer
+const uint32_t DDBLOCKBUSYLOOP = 8192;   ///< threshold of busy loop and sleep for locking
 const char* DDBWALPATHEXT = "wal";       ///< extension of the WAL directory
 const char* DDBTMPPATHEXT = "tmp";       ///< extension of the temporary directory
 }
@@ -826,7 +827,8 @@ public:
    */
   bool begin_transaction(bool hard = false) {
     _assert_(true);
-    for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
+    uint32_t wcnt = 0;
+    while (true) {
       mlock_.lock_writer();
       if (omode_ == 0) {
         set_error(_KCCODELINE_, Error::INVALID, "not opened");
@@ -840,8 +842,12 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wsec > 1.0) wsec = 1.0;
-      Thread::sleep(wsec);
+      if (wcnt >= DDBLOCKBUSYLOOP) {
+        Thread::chill();
+      } else {
+        Thread::yield();
+        wcnt++;
+      }
     }
     trhard_ = hard;
     if (!begin_transaction_impl()) {

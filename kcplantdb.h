@@ -33,28 +33,29 @@ namespace kyotocabinet {                 // common namespace
  * Constants for implementation.
  */
 namespace {
-const int32_t PDBSLOTNUM = 16;           ///< number of cache slots
-const uint8_t PDBDEFAPOW = 8;            ///< default alignment power
-const uint8_t PDBDEFFPOW = 10;           ///< default free block pool power
-const int64_t PDBDEFBNUM = 64LL << 10;   ///< default bucket number
-const int32_t PDBDEFPSIZ = 8192;         ///< default page size
-const int64_t PDBDEFPCCAP = 64LL << 20;  ///< default capacity size of the page cache
-const char PDBMETAKEY[] = "@";           ///< key of the record for meta data
-const int64_t PDBHEADSIZ = 80;           ///< size of the header
-const int64_t PDBMOFFNUMS = 8;           ///< offset of the numbers
-const char PDBLNPREFIX = 'L';            ///< prefix of leaf nodes
-const char PDBINPREFIX = 'I';            ///< prefix of inner nodes
-const size_t PDBAVGWAY = 16;             ///< average number of ways of each node
-const size_t PDBWARMRATIO = 4;           ///< ratio of the warm cache
-const size_t PDBINFLRATIO = 32;          ///< ratio of flushing inner nodes
-const size_t PDBDEFLINUM = 64;           ///< default number of items in each leaf node
-const size_t PDBDEFIINUM = 128;          ///< default number of items in each inner node
-const size_t PDBRECBUFSIZ = 64;          ///< size of the record buffer
-const int64_t PDBINIDBASE = 1LL << 48;   ///< base ID number for inner nodes
-const size_t PDBINLINKMIN = 8;           ///< minimum number of links in each inner node
-const int32_t PDBLEVELMAX = 16;          ///< maximum level of B+ tree
-const int32_t PDBATRANCNUM = 256;        ///< number of cached nodes for auto transaction
-const char* PDBTMPPATHEXT = "tmpkct";    ///< extension of the temporary file
+const int32_t PLDBSLOTNUM = 16;          ///< number of cache slots
+const uint8_t PLDBDEFAPOW = 8;           ///< default alignment power
+const uint8_t PLDBDEFFPOW = 10;          ///< default free block pool power
+const int64_t PLDBDEFBNUM = 64LL << 10;  ///< default bucket number
+const int32_t PLDBDEFPSIZ = 8192;        ///< default page size
+const int64_t PLDBDEFPCCAP = 64LL << 20; ///< default capacity size of the page cache
+const char PLDBMETAKEY[] = "@";          ///< key of the record for meta data
+const int64_t PLDBHEADSIZ = 80;          ///< size of the header
+const int64_t PLDBMOFFNUMS = 8;          ///< offset of the numbers
+const char PLDBLNPREFIX = 'L';           ///< prefix of leaf nodes
+const char PLDBINPREFIX = 'I';           ///< prefix of inner nodes
+const size_t PLDBAVGWAY = 16;            ///< average number of ways of each node
+const size_t PLDBWARMRATIO = 4;          ///< ratio of the warm cache
+const size_t PLDBINFLRATIO = 32;         ///< ratio of flushing inner nodes
+const size_t PLDBDEFLINUM = 64;          ///< default number of items in each leaf node
+const size_t PLDBDEFIINUM = 128;         ///< default number of items in each inner node
+const size_t PLDBRECBUFSIZ = 64;         ///< size of the record buffer
+const int64_t PLDBINIDBASE = 1LL << 48;  ///< base ID number for inner nodes
+const size_t PLDBINLINKMIN = 8;          ///< minimum number of links in each inner node
+const int32_t PLDBLEVELMAX = 16;         ///< maximum level of B+ tree
+const int32_t PLDBATRANCNUM = 256;       ///< number of cached nodes for auto transaction
+const uint32_t PLDBLOCKBUSYLOOP = 8192;  ///< threshold of busy loop and sleep for locking
+const char* PLDBTMPPATHEXT = "tmpkct";   ///< extension of the temporary file
 }
 
 
@@ -436,7 +437,7 @@ public:
       _assert_(visitor && hitp);
       bool err = false;
       bool hit = false;
-      char rstack[PDBRECBUFSIZ];
+      char rstack[PLDBRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -445,11 +446,11 @@ public:
       std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
       LeafNode* node = db_->load_leaf_node(lid_, false);
       if (node) {
-        char lstack[PDBRECBUFSIZ];
+        char lstack[PLDBRECBUFSIZ];
         char* lbuf = NULL;
         size_t lsiz = 0;
         Link* link = NULL;
-        int64_t hist[PDBLEVELMAX];
+        int64_t hist[PLDBLEVELMAX];
         int32_t hnum = 0;
         if (writable) {
           node->lock.lock_writer();
@@ -564,7 +565,7 @@ public:
                 err = true;
               }
             } else if (flush) {
-              int32_t idx = id % PDBSLOTNUM;
+              int32_t idx = id % PLDBSLOTNUM;
               LeafSlot* lslot = db_->lslots_ + idx;
               if (!db_->flush_leaf_cache_part(lslot)) err = true;
               InnerSlot* islot = db_->islots_ + idx;
@@ -592,14 +593,14 @@ public:
       bool err = false;
       bool reorg = false;
       *retryp = false;
-      char lstack[PDBRECBUFSIZ];
+      char lstack[PLDBRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz_;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
       link->child = 0;
       link->ksiz = ksiz_;
       std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
-      int64_t hist[PDBLEVELMAX];
+      int64_t hist[PLDBLEVELMAX];
       int32_t hnum = 0;
       LeafNode* node = db_->search_tree(link, true, hist, &hnum);
       if (!node) {
@@ -629,7 +630,7 @@ public:
           return false;
         }
       }
-      char rstack[PDBRECBUFSIZ];
+      char rstack[PLDBRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -704,7 +705,7 @@ public:
           if (!db_->reorganize_tree(node, hist, hnum)) err = true;
           if (atran && !db_->fix_auto_transaction_tree()) err = true;
         } else if (db_->cusage_ > db_->pccap_) {
-          int32_t idx = node->id % PDBSLOTNUM;
+          int32_t idx = node->id % PLDBSLOTNUM;
           LeafSlot* lslot = db_->lslots_ + idx;
           if (!db_->flush_leaf_cache_part(lslot)) err = true;
           InnerSlot* islot = db_->islots_ + idx;
@@ -737,14 +738,14 @@ public:
      */
     bool adjust_position() {
       _assert_(true);
-      char lstack[PDBRECBUFSIZ];
+      char lstack[PLDBRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz_;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
       link->child = 0;
       link->ksiz = ksiz_;
       std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
-      int64_t hist[PDBLEVELMAX];
+      int64_t hist[PLDBLEVELMAX];
       int32_t hnum = 0;
       LeafNode* node = db_->search_tree(link, true, hist, &hnum);
       if (!node) {
@@ -752,7 +753,7 @@ public:
         if (lbuf != lstack) delete[] lbuf;
         return false;
       }
-      char rstack[PDBRECBUFSIZ];
+      char rstack[PLDBRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -786,7 +787,7 @@ public:
       _assert_(hitp);
       bool err = false;
       bool hit = false;
-      char rstack[PDBRECBUFSIZ];
+      char rstack[PLDBRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -837,14 +838,14 @@ public:
      */
     bool back_position_atom() {
       _assert_(true);
-      char lstack[PDBRECBUFSIZ];
+      char lstack[PLDBRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz_;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
       link->child = 0;
       link->ksiz = ksiz_;
       std::memcpy(lbuf + sizeof(*link), kbuf_, ksiz_);
-      int64_t hist[PDBLEVELMAX];
+      int64_t hist[PLDBLEVELMAX];
       int32_t hnum = 0;
       LeafNode* node = db_->search_tree(link, true, hist, &hnum);
       if (!node) {
@@ -852,7 +853,7 @@ public:
         if (lbuf != lstack) delete[] lbuf;
         return false;
       }
-      char rstack[PDBRECBUFSIZ];
+      char rstack[PLDBRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -890,7 +891,7 @@ public:
     /** The inner database. */
     PlantDB* db_;
     /** The stack buffer for the key. */
-    char stack_[PDBRECBUFSIZ];
+    char stack_[PLDBRECBUFSIZ];
     /** The pointer to the key region. */
     char* kbuf_;
     /** The size of the key region. */
@@ -918,8 +919,8 @@ public:
    */
   explicit PlantDB() :
     mlock_(), mtrigger_(NULL), omode_(0), writer_(false), autotran_(false), autosync_(false),
-    db_(), curs_(), apow_(PDBDEFAPOW), fpow_(PDBDEFFPOW), opts_(0), bnum_(PDBDEFBNUM),
-    psiz_(PDBDEFPSIZ), pccap_(PDBDEFPCCAP),
+    db_(), curs_(), apow_(PLDBDEFAPOW), fpow_(PLDBDEFFPOW), opts_(0), bnum_(PLDBDEFBNUM),
+    psiz_(PLDBDEFPSIZ), pccap_(PLDBDEFPCCAP),
     root_(0), first_(0), last_(0), lcnt_(0), icnt_(0), count_(0), cusage_(0),
     lslots_(), islots_(), reccomp_(), linkcomp_(),
     tran_(false), trclock_(0), trlcnt_(0), trcount_(0) {
@@ -966,14 +967,14 @@ public:
       mlock_.unlock();
       return false;
     }
-    char lstack[PDBRECBUFSIZ];
+    char lstack[PLDBRECBUFSIZ];
     size_t lsiz = sizeof(Link) + ksiz;
     char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
     Link* link = (Link*)lbuf;
     link->child = 0;
     link->ksiz = ksiz;
     std::memcpy(lbuf + sizeof(*link), kbuf, ksiz);
-    int64_t hist[PDBLEVELMAX];
+    int64_t hist[PLDBLEVELMAX];
     int32_t hnum = 0;
     LeafNode* node = search_tree(link, true, hist, &hnum);
     if (!node) {
@@ -982,7 +983,7 @@ public:
       mlock_.unlock();
       return false;
     }
-    char rstack[PDBRECBUFSIZ];
+    char rstack[PLDBRECBUFSIZ];
     size_t rsiz = sizeof(Record) + ksiz;
     char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
     Record* rec = (Record*)rbuf;
@@ -1007,7 +1008,7 @@ public:
       if (atran && !fix_auto_transaction_tree()) err = true;
       reorg = false;
     } else if (cusage_ > pccap_) {
-      int32_t idx = id % PDBSLOTNUM;
+      int32_t idx = id % PLDBSLOTNUM;
       LeafSlot* lslot = lslots_ + idx;
       if (!clean_leaf_cache_part(lslot)) err = true;
       if (mlock_.promote()) {
@@ -1029,7 +1030,7 @@ public:
       }
       mlock_.unlock();
     } else if (flush) {
-      int32_t idx = id % PDBSLOTNUM;
+      int32_t idx = id % PLDBSLOTNUM;
       LeafSlot* lslot = lslots_ + idx;
       mlock_.lock_writer();
       if (!flush_leaf_cache_part(lslot)) err = true;
@@ -1075,14 +1076,14 @@ public:
     while (!err && kit != kitend) {
       const char* kbuf = kit->data();
       size_t ksiz = kit->size();
-      char lstack[PDBRECBUFSIZ];
+      char lstack[PLDBRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
       link->child = 0;
       link->ksiz = ksiz;
       std::memcpy(lbuf + sizeof(*link), kbuf, ksiz);
-      int64_t hist[PDBLEVELMAX];
+      int64_t hist[PLDBLEVELMAX];
       int32_t hnum = 0;
       LeafNode* node = search_tree(link, true, hist, &hnum);
       if (!node) {
@@ -1091,7 +1092,7 @@ public:
         err = true;
         break;
       }
-      char rstack[PDBRECBUFSIZ];
+      char rstack[PLDBRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -1106,7 +1107,7 @@ public:
         if (!reorganize_tree(node, hist, hnum)) err = true;
         if (atran && !fix_auto_transaction_tree()) err = true;
       } else if (cusage_ > pccap_) {
-        int32_t idx = node->id % PDBSLOTNUM;
+        int32_t idx = node->id % PLDBSLOTNUM;
         LeafSlot* lslot = lslots_ + idx;
         if (!clean_leaf_cache_part(lslot)) err = true;
         if (!flush_leaf_cache_part(lslot)) err = true;
@@ -1200,14 +1201,14 @@ public:
       if (reorg) {
         Record* rec = keys.front();
         char* dbuf = (char*)rec + sizeof(*rec);
-        char lstack[PDBRECBUFSIZ];
+        char lstack[PLDBRECBUFSIZ];
         size_t lsiz = sizeof(Link) + rec->ksiz;
         char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
         Link* link = (Link*)lbuf;
         link->child = 0;
         link->ksiz = rec->ksiz;
         std::memcpy(lbuf + sizeof(*link), dbuf, rec->ksiz);
-        int64_t hist[PDBLEVELMAX];
+        int64_t hist[PLDBLEVELMAX];
         int32_t hnum = 0;
         node = search_tree(link, false, hist, &hnum);
         if (node) {
@@ -1219,11 +1220,11 @@ public:
         if (lbuf != lstack) delete[] lbuf;
       }
       if (cusage_ > pccap_) {
-        for (int32_t i = 0; i < PDBSLOTNUM; i++) {
+        for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
           LeafSlot* lslot = lslots_ + i;
           if (!flush_leaf_cache_part(lslot)) err = true;
         }
-        InnerSlot* islot = islots_ + (flcnt++) % PDBSLOTNUM;
+        InnerSlot* islot = islots_ + (flcnt++) % PLDBSLOTNUM;
         if (islot->warm->count() > 2 && !flush_inner_cache_part(islot)) err = true;
       }
       kit = keys.begin();
@@ -1500,7 +1501,8 @@ public:
    */
   bool begin_transaction(bool hard = false) {
     _assert_(true);
-    for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
+    uint32_t wcnt = 0;
+    while (true) {
       mlock_.lock_writer();
       if (omode_ == 0) {
         set_error(_KCCODELINE_, Error::INVALID, "not opened");
@@ -1514,8 +1516,12 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wsec > 1.0) wsec = 1.0;
-      Thread::sleep(wsec);
+      if (wcnt >= PLDBLOCKBUSYLOOP) {
+        Thread::chill();
+      } else {
+        Thread::yield();
+        wcnt++;
+      }
     }
     if (!begin_transaction_impl(hard)) {
       mlock_.unlock();
@@ -1705,7 +1711,7 @@ public:
     if (strmap->count("tree_level") > 0) {
       Link link;
       link.ksiz = 0;
-      int64_t hist[PDBLEVELMAX];
+      int64_t hist[PLDBLEVELMAX];
       int32_t hnum = 0;
       search_tree(&link, false, hist, &hnum);
       (*strmap)["tree_level"] = strprintf("%d", hnum + 1);
@@ -1766,7 +1772,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    apow_ = apow >= 0 ? apow : PDBDEFAPOW;
+    apow_ = apow >= 0 ? apow : PLDBDEFAPOW;
     return true;
   }
   /**
@@ -1781,7 +1787,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    fpow_ = fpow >= 0 ? fpow : PDBDEFFPOW;
+    fpow_ = fpow >= 0 ? fpow : PLDBDEFFPOW;
     return true;
   }
   /**
@@ -1813,7 +1819,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    bnum_ = bnum > 0 ? bnum : PDBDEFBNUM;
+    bnum_ = bnum > 0 ? bnum : PLDBDEFBNUM;
     return true;
   }
   /**
@@ -1828,7 +1834,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    psiz_ = psiz > 0 ? psiz : PDBDEFPSIZ;
+    psiz_ = psiz > 0 ? psiz : PLDBDEFPSIZ;
     return true;
   }
   /**
@@ -1871,7 +1877,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    pccap_ = pccap > 0 ? pccap : PDBDEFPCCAP;
+    pccap_ = pccap > 0 ? pccap : PLDBDEFPCCAP;
     return true;
   }
   /**
@@ -2128,10 +2134,10 @@ private:
    */
   void create_leaf_cache() {
     _assert_(true);
-    int64_t bnum = bnum_ / PDBSLOTNUM + 1;
-    if (bnum < INT8_MAX) bnum = INT8_MAX;
+    int64_t bnum = bnum_ / PLDBSLOTNUM + 1;
+    if (bnum < INT8MAX) bnum = INT8MAX;
     bnum = nearbyprime(bnum);
-    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
       lslots_[i].hot = new LeafCache(bnum);
       lslots_[i].warm = new LeafCache(bnum);
     }
@@ -2141,7 +2147,7 @@ private:
    */
   void delete_leaf_cache() {
     _assert_(true);
-    for (int32_t i = PDBSLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = PLDBSLOTNUM - 1; i >= 0; i--) {
       LeafSlot* slot = lslots_ + i;
       delete slot->warm;
       delete slot->hot;
@@ -2155,7 +2161,7 @@ private:
   bool flush_leaf_cache(bool save) {
     _assert_(true);
     bool err = false;
-    for (int32_t i = PDBSLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = PLDBSLOTNUM - 1; i >= 0; i--) {
       LeafSlot* slot = lslots_ + i;
       typename LeafCache::Iterator it = slot->warm->begin();
       typename LeafCache::Iterator itend = slot->warm->end();
@@ -2198,7 +2204,7 @@ private:
   bool clean_leaf_cache() {
     _assert_(true);
     bool err = false;
-    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
       ScopedSpinLock lock(&slot->lock);
       typename LeafCache::Iterator it = slot->warm->begin();
@@ -2247,13 +2253,13 @@ private:
     LeafNode* node = new LeafNode;
     node->id = ++lcnt_;
     node->size = sizeof(int32_t) * 2;
-    node->recs.reserve(PDBDEFLINUM);
+    node->recs.reserve(PLDBDEFLINUM);
     node->prev = prev;
     node->next = next;
     node->hot = false;
     node->dirty = true;
     node->dead = false;
-    int32_t sidx = node->id % PDBSLOTNUM;
+    int32_t sidx = node->id % PLDBSLOTNUM;
     LeafSlot* slot = lslots_ + sidx;
     slot->warm->set(node->id, node, LeafCache::MLAST);
     cusage_ += node->size;
@@ -2276,7 +2282,7 @@ private:
       xfree(rec);
       rit++;
     }
-    int32_t sidx = node->id % PDBSLOTNUM;
+    int32_t sidx = node->id % PLDBSLOTNUM;
     LeafSlot* slot = lslots_ + sidx;
     if (node->hot) {
       slot->hot->remove(node->id);
@@ -2298,7 +2304,7 @@ private:
     if (!node->dirty) return true;
     bool err = false;
     char hbuf[NUMBUFSIZ];
-    size_t hsiz = std::sprintf(hbuf, "%c%llX", PDBLNPREFIX, (long long)node->id);
+    size_t hsiz = std::sprintf(hbuf, "%c%llX", PLDBLNPREFIX, (long long)node->id);
     if (node->dead) {
       if (!db_.remove(hbuf, hsiz) && db_.error().code() != Error::NOREC) err = true;
     } else {
@@ -2333,13 +2339,13 @@ private:
    */
   LeafNode* load_leaf_node(int64_t id, bool prom) {
     _assert_(id > 0);
-    int32_t sidx = id % PDBSLOTNUM;
+    int32_t sidx = id % PLDBSLOTNUM;
     LeafSlot* slot = lslots_ + sidx;
     ScopedSpinLock lock(&slot->lock);
     LeafNode** np = slot->hot->get(id, LeafCache::MLAST);
     if (np) return *np;
     if (prom) {
-      if (slot->hot->count() * PDBWARMRATIO > slot->warm->count() + PDBWARMRATIO) {
+      if (slot->hot->count() * PLDBWARMRATIO > slot->warm->count() + PLDBWARMRATIO) {
         slot->hot->first_value()->hot = false;
         slot->hot->migrate(slot->hot->first_key(), slot->warm, LeafCache::MLAST);
       }
@@ -2353,7 +2359,7 @@ private:
       if (np) return *np;
     }
     char hbuf[NUMBUFSIZ];
-    size_t hsiz = std::sprintf(hbuf, "%c%llX", PDBLNPREFIX, (long long)id);
+    size_t hsiz = std::sprintf(hbuf, "%c%llX", PLDBLNPREFIX, (long long)id);
     class VisitorImpl : public DB::Visitor {
     public:
       explicit VisitorImpl() : node_(NULL) {}
@@ -2551,10 +2557,10 @@ private:
    */
   void create_inner_cache() {
     _assert_(true);
-    int64_t bnum = (bnum_ / PDBAVGWAY) / PDBSLOTNUM + 1;
-    if (bnum < INT8_MAX) bnum = INT8_MAX;
+    int64_t bnum = (bnum_ / PLDBAVGWAY) / PLDBSLOTNUM + 1;
+    if (bnum < INT8MAX) bnum = INT8MAX;
     bnum = nearbyprime(bnum);
-    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
       islots_[i].warm = new InnerCache(bnum);
     }
   }
@@ -2563,7 +2569,7 @@ private:
    */
   void delete_inner_cache() {
     _assert_(true);
-    for (int32_t i = PDBSLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = PLDBSLOTNUM - 1; i >= 0; i--) {
       InnerSlot* slot = islots_ + i;
       delete slot->warm;
     }
@@ -2576,7 +2582,7 @@ private:
   bool flush_inner_cache(bool save) {
     _assert_(true);
     bool err = false;
-    for (int32_t i = PDBSLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = PLDBSLOTNUM - 1; i >= 0; i--) {
       InnerSlot* slot = islots_ + i;
       typename InnerCache::Iterator it = slot->warm->begin();
       typename InnerCache::Iterator itend = slot->warm->end();
@@ -2609,7 +2615,7 @@ private:
   bool clean_inner_cache() {
     _assert_(true);
     bool err = false;
-    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
       InnerSlot* slot = islots_ + i;
       ScopedSpinLock lock(&slot->lock);
       typename InnerCache::Iterator it = slot->warm->begin();
@@ -2630,13 +2636,13 @@ private:
   InnerNode* create_inner_node(int64_t heir) {
     _assert_(true);
     InnerNode* node = new InnerNode;
-    node->id = ++icnt_ + PDBINIDBASE;
+    node->id = ++icnt_ + PLDBINIDBASE;
     node->heir = heir;
-    node->links.reserve(PDBDEFIINUM);
+    node->links.reserve(PLDBDEFIINUM);
     node->size = sizeof(int64_t);
     node->dirty = true;
     node->dead = false;
-    int32_t sidx = node->id % PDBSLOTNUM;
+    int32_t sidx = node->id % PLDBSLOTNUM;
     InnerSlot* slot = islots_ + sidx;
     slot->warm->set(node->id, node, InnerCache::MLAST);
     cusage_ += node->size;
@@ -2659,7 +2665,7 @@ private:
       xfree(link);
       lit++;
     }
-    int32_t sidx = node->id % PDBSLOTNUM;
+    int32_t sidx = node->id % PLDBSLOTNUM;
     InnerSlot* slot = islots_ + sidx;
     slot->warm->remove(node->id);
     cusage_ -= node->size;
@@ -2677,7 +2683,7 @@ private:
     bool err = false;
     char hbuf[NUMBUFSIZ];
     size_t hsiz = std::sprintf(hbuf, "%c%llX",
-                               PDBINPREFIX, (long long)(node->id - PDBINIDBASE));
+                               PLDBINPREFIX, (long long)(node->id - PLDBINIDBASE));
     if (node->dead) {
       if (!db_.remove(hbuf, hsiz) && db_.error().code() != Error::NOREC) err = true;
     } else {
@@ -2708,13 +2714,13 @@ private:
    */
   InnerNode* load_inner_node(int64_t id) {
     _assert_(id > 0);
-    int32_t sidx = id % PDBSLOTNUM;
+    int32_t sidx = id % PLDBSLOTNUM;
     InnerSlot* slot = islots_ + sidx;
     ScopedSpinLock lock(&slot->lock);
     InnerNode** np = slot->warm->get(id, InnerCache::MLAST);
     if (np) return *np;
     char hbuf[NUMBUFSIZ];
-    size_t hsiz = std::sprintf(hbuf, "%c%llX", PDBINPREFIX, (long long)(id - PDBINIDBASE));
+    size_t hsiz = std::sprintf(hbuf, "%c%llX", PLDBINPREFIX, (long long)(id - PLDBINIDBASE));
     class VisitorImpl : public DB::Visitor {
     public:
       explicit VisitorImpl() : node_(NULL) {}
@@ -2792,7 +2798,7 @@ private:
     _assert_(link && hist && hnp);
     int64_t id = root_;
     int32_t hnum = 0;
-    while (id > PDBINIDBASE) {
+    while (id > PLDBINIDBASE) {
       InnerNode* node = load_inner_node(id);
       if (!node) {
         set_error(_KCCODELINE_, Error::BROKEN, "missing inner node");
@@ -2854,7 +2860,7 @@ private:
         add_link_inner_node(inode, child, kbuf, ksiz);
         delete[] kbuf;
         LinkArray& links = inode->links;
-        if (inode->size <= psiz_ || links.size() <= PDBINLINKMIN) break;
+        if (inode->size <= psiz_ || links.size() <= PLDBINLINKMIN) break;
         typename LinkArray::iterator litbeg = links.begin();
         typename LinkArray::iterator mid = litbeg + links.size() / 2;
         Link* link = *mid;
@@ -2976,7 +2982,7 @@ private:
       }
       node->dead = true;
       root_ = child;
-      while (child > PDBINIDBASE) {
+      while (child > PLDBINIDBASE) {
         node = load_inner_node(child);
         if (!node) {
           set_error(_KCCODELINE_, Error::BROKEN, "missing inner node");
@@ -3010,7 +3016,7 @@ private:
    */
   bool dump_meta() {
     _assert_(true);
-    char head[PDBHEADSIZ];
+    char head[PLDBHEADSIZ];
     std::memset(head, 0, sizeof(head));
     char* wp = head;
     if (reccomp_.comp == LEXICALCOMP) {
@@ -3024,7 +3030,7 @@ private:
     } else {
       *(uint8_t*)(wp++) = 0xff;
     }
-    wp = head + PDBMOFFNUMS;
+    wp = head + PLDBMOFFNUMS;
     uint64_t num = hton64(psiz_);
     std::memcpy(wp, &num, sizeof(num));
     wp += sizeof(num);
@@ -3051,7 +3057,7 @@ private:
     wp += sizeof(num);
     std::memcpy(wp, "\x0a\x42\x6f\x6f\x66\x79\x21\x0a", sizeof(num));
     wp += sizeof(num);
-    if (!db_.set(PDBMETAKEY, sizeof(PDBMETAKEY) - 1, head, sizeof(head))) return false;
+    if (!db_.set(PLDBMETAKEY, sizeof(PLDBMETAKEY) - 1, head, sizeof(head))) return false;
     trlcnt_ = lcnt_;
     trcount_ = count_;
     return true;
@@ -3062,8 +3068,8 @@ private:
    */
   bool load_meta() {
     _assert_(true);
-    char head[PDBHEADSIZ];
-    int32_t hsiz = db_.get(PDBMETAKEY, sizeof(PDBMETAKEY) - 1, head, sizeof(head));
+    char head[PLDBHEADSIZ];
+    int32_t hsiz = db_.get(PLDBMETAKEY, sizeof(PLDBMETAKEY) - 1, head, sizeof(head));
     if (hsiz < 0) return false;
     if (hsiz != sizeof(head)) {
       set_error(_KCCODELINE_, Error::BROKEN, "invalid meta data record");
@@ -3093,7 +3099,7 @@ private:
       set_error(_KCCODELINE_, Error::BROKEN, "comparator is invalid");
       return false;
     }
-    rp = head + PDBMOFFNUMS;
+    rp = head + PLDBMOFFNUMS;
     uint64_t num;
     std::memcpy(&num, rp, sizeof(num));
     psiz_ = ntoh64(num);
@@ -3130,7 +3136,7 @@ private:
   int64_t calc_leaf_cache_count() {
     _assert_(true);
     int64_t sum = 0;
-    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
       sum += slot->warm->count();
       sum += slot->hot->count();
@@ -3144,7 +3150,7 @@ private:
   int64_t calc_leaf_cache_size() {
     _assert_(true);
     int64_t sum = 0;
-    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
       typename LeafCache::Iterator it = slot->warm->begin();
       typename LeafCache::Iterator itend = slot->warm->end();
@@ -3170,7 +3176,7 @@ private:
   int64_t calc_inner_cache_count() {
     _assert_(true);
     int64_t sum = 0;
-    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
       InnerSlot* slot = islots_ + i;
       sum += slot->warm->count();
     }
@@ -3183,7 +3189,7 @@ private:
   int64_t calc_inner_cache_size() {
     _assert_(true);
     int64_t sum = 0;
-    for (int32_t i = 0; i < PDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
       InnerSlot* slot = islots_ + i;
       typename InnerCache::Iterator it = slot->warm->begin();
       typename InnerCache::Iterator itend = slot->warm->end();
@@ -3270,7 +3276,7 @@ private:
     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
-        if (ksiz < 2 || kbuf[0] != PDBLNPREFIX) return NOP;
+        if (ksiz < 2 || kbuf[0] != PLDBLNPREFIX) return NOP;
         uint64_t prev;
         size_t step = readvarnum(vbuf, vsiz, &prev);
         if (step < 1) return NOP;
@@ -3327,7 +3333,7 @@ private:
       }
     }
     const std::string& path = db_.path();
-    const std::string& npath = path + File::EXTCHR + PDBTMPPATHEXT;
+    const std::string& npath = path + File::EXTCHR + PLDBTMPPATHEXT;
     PlantDB tdb;
     tdb.tune_comparator(reccomp_.comp);
     if (!tdb.open(npath, OWRITER | OCREATE | OTRUNCATE)) {
@@ -3343,9 +3349,9 @@ private:
     char* kbuf;
     size_t ksiz;
     while (!err && (kbuf = cur->get_key(&ksiz)) != NULL) {
-      if (*kbuf == PDBLNPREFIX) {
+      if (*kbuf == PLDBLNPREFIX) {
         int64_t id = std::strtol(kbuf + 1, NULL, 16);
-        if (id > 0 && id < PDBINIDBASE) {
+        if (id > 0 && id < PLDBINIDBASE) {
           LeafNode* node = load_leaf_node(id, false);
           if (node) {
             const RecordArray& recs = node->recs;
@@ -3385,7 +3391,7 @@ private:
       }
       File::remove(npath);
     } else if (DBTYPE == TYPEFOREST) {
-      const std::string& tpath = npath + File::EXTCHR + PDBTMPPATHEXT;
+      const std::string& tpath = npath + File::EXTCHR + PLDBTMPPATHEXT;
       File::remove_recursively(tpath);
       if (File::rename(path, tpath)) {
         if (File::rename(npath, path)) {
@@ -3439,7 +3445,7 @@ private:
     _assert_(true);
     if (!clean_leaf_cache()) return false;
     if (!clean_inner_cache()) return false;
-    int32_t idx = trclock_++ % PDBSLOTNUM;
+    int32_t idx = trclock_++ % PLDBSLOTNUM;
     LeafSlot* lslot = lslots_ + idx;
     if (lslot->warm->count() + lslot->hot->count() > 1) flush_leaf_cache_part(lslot);
     InnerSlot* islot = islots_ + idx;
@@ -3485,8 +3491,8 @@ private:
     bool err = false;
     if (!clean_leaf_cache()) err = true;
     if (!clean_inner_cache()) err = true;
-    size_t cnum = PDBATRANCNUM / PDBSLOTNUM;
-    int32_t idx = trclock_++ % PDBSLOTNUM;
+    size_t cnum = PLDBATRANCNUM / PLDBSLOTNUM;
+    int32_t idx = trclock_++ % PLDBSLOTNUM;
     LeafSlot* lslot = lslots_ + idx;
     if (lslot->warm->count() + lslot->hot->count() > cnum) flush_leaf_cache_part(lslot);
     InnerSlot* islot = islots_ + idx;
@@ -3565,9 +3571,9 @@ private:
   /** The cache memory usage. */
   AtomicInt64 cusage_;
   /** The Slots of leaf nodes. */
-  LeafSlot lslots_[PDBSLOTNUM];
+  LeafSlot lslots_[PLDBSLOTNUM];
   /** The Slots of inner nodes. */
-  InnerSlot islots_[PDBSLOTNUM];
+  InnerSlot islots_[PLDBSLOTNUM];
   /** The record comparator. */
   RecordComparator reccomp_;
   /** The link comparator. */

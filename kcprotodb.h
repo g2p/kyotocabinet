@@ -34,8 +34,9 @@ namespace kyotocabinet {                 // common namespace
  * Constants for implementation.
  */
 namespace {
-const size_t PDBHASHBNUM = 1048583LL;    ///< bucket number of hash table
-const size_t PDBOPAQUESIZ = 16;          ///< size of the opaque buffer
+const size_t PRDBHASHBNUM = 1048583LL;   ///< bucket number of hash table
+const size_t PRDBOPAQUESIZ = 16;         ///< size of the opaque buffer
+const uint32_t PRDBLOCKBUSYLOOP = 8192;  ///< threshold of busy loop and sleep for locking
 }
 
 
@@ -57,7 +58,7 @@ template <class STRMAP>
 void map_tune(STRMAP* map) {}
 template <>
 void map_tune(StringHashMap* map) {
-  map->rehash(PDBHASHBNUM);
+  map->rehash(PRDBHASHBNUM);
   map->max_load_factor(FLT_MAX);
 }
 template <class ITER>
@@ -746,7 +747,8 @@ public:
    */
   bool begin_transaction(bool hard = false) {
     _assert_(true);
-    for (double wsec = 1.0 / CLOCKTICK; true; wsec *= 2) {
+    uint32_t wcnt = 0;
+    while (true) {
       mlock_.lock_writer();
       if (omode_ == 0) {
         set_error(_KCCODELINE_, Error::INVALID, "not opened");
@@ -760,8 +762,12 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wsec > 1.0) wsec = 1.0;
-      Thread::sleep(wsec);
+      if (wcnt >= PRDBLOCKBUSYLOOP) {
+        Thread::chill();
+      } else {
+        Thread::yield();
+        wcnt++;
+      }
     }
     tran_ = true;
     trsize_ = size_;
@@ -1119,7 +1125,7 @@ private:
   /** The total size of records. */
   int64_t size_;
   /** The opaque data. */
-  char opaque_[PDBOPAQUESIZ];
+  char opaque_[PRDBOPAQUESIZ];
   /** The flag whether in transaction. */
   bool tran_;
   /** The transaction logs. */
