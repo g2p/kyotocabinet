@@ -1,5 +1,16 @@
+kyotocabinet (1.2.40-1) unstable; urgency=low
+
+  * Imported Upstream version 1.2.40
+
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Mon, 07 Feb 2011 12:05:50 +0100
+
 kyotocabinet (1.2.39-1) unstable; urgency=low
 
+  * Improve descriptions
+  * Install more docs
+  * Tweak links for browsing installed docs
+  * Install upstream ChangeLog
+  * Ship idl file with docs.
   * Imported Upstream version 1.2.39
 
  -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Fri, 04 Feb 2011 12:24:58 +0100
