@@ -45,10 +45,13 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZN12kyotocabinet11ScopedMutexC1EPNS_5MutexE@Base 1.2.31
  _ZN12kyotocabinet11ScopedMutexD1Ev@Base 1.2.31
  _ZN12kyotocabinet11ZLIBRAWCOMPE@Base 1.2.31
+ _ZN12kyotocabinet11decimalfuncE@Base 1.2.40
+ _ZN12kyotocabinet11lexicalfuncE@Base 1.2.40
  _ZN12kyotocabinet11nearbyprimeEm@Base 1.2.31
  _ZN12kyotocabinet11setstdiobinEv@Base 1.2.31
  _ZN12kyotocabinet11writefixnumEPvmm@Base 1.2.31
  _ZN12kyotocabinet11writevarnumEPvm@Base 1.2.31
+ _ZN12kyotocabinet11zlibrawfuncE@Base 1.2.40
  _ZN12kyotocabinet12SlottedMutex10unlock_allEv@Base 1.2.36
  _ZN12kyotocabinet12SlottedMutex4lockEm@Base 1.2.36
  _ZN12kyotocabinet12SlottedMutex6unlockEm@Base 1.2.36
@@ -218,6 +221,8 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZN12kyotocabinet14ZLIBCompressorILNS_4ZLIB4ModeE2EEC1Ev@Base 1.2.31
  _ZN12kyotocabinet14ZLIBCompressorILNS_4ZLIB4ModeE2EED0Ev@Base 1.2.31
  _ZN12kyotocabinet14ZLIBCompressorILNS_4ZLIB4ModeE2EED1Ev@Base 1.2.31
+ _ZN12kyotocabinet15DECIMALDESCCOMPE@Base 1.2.40
+ _ZN12kyotocabinet15LEXICALDESCCOMPE@Base 1.2.40
  _ZN12kyotocabinet15SlottedSpinLock10unlock_allEv@Base 1.2.36
  _ZN12kyotocabinet15SlottedSpinLock4lockEm@Base 1.2.36
  _ZN12kyotocabinet15SlottedSpinLock6unlockEm@Base 1.2.36
@@ -226,6 +231,8 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZN12kyotocabinet15SlottedSpinLockC2Em@Base 1.2.36
  _ZN12kyotocabinet15SlottedSpinLockD1Ev@Base 1.2.36
  _ZN12kyotocabinet15SlottedSpinLockD2Ev@Base 1.2.36
+ _ZN12kyotocabinet15decimaldescfuncE@Base 1.2.40
+ _ZN12kyotocabinet15lexicaldescfuncE@Base 1.2.40
  _ZN12kyotocabinet16ScopedSpinRWLockC1EPNS_10SpinRWLockEb@Base 1.2.31
  _ZN12kyotocabinet16ScopedSpinRWLockD1Ev@Base 1.2.31
  _ZN12kyotocabinet17ArcfourCompressor10decompressEPKvmPm@Base 1.2.31
@@ -254,6 +261,14 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZN12kyotocabinet17SlottedSpinRWLockC2Em@Base 1.2.36
  _ZN12kyotocabinet17SlottedSpinRWLockD1Ev@Base 1.2.36
  _ZN12kyotocabinet17SlottedSpinRWLockD2Ev@Base 1.2.36
+ _ZN12kyotocabinet27DecimalDescendingComparator7compareEPKcmS2_m@Base 1.2.40
+ _ZN12kyotocabinet27DecimalDescendingComparatorC1Ev@Base 1.2.40
+ _ZN12kyotocabinet27DecimalDescendingComparatorD0Ev@Base 1.2.40
+ _ZN12kyotocabinet27DecimalDescendingComparatorD1Ev@Base 1.2.40
+ _ZN12kyotocabinet27LexicalDescendingComparator7compareEPKcmS2_m@Base 1.2.40
+ _ZN12kyotocabinet27LexicalDescendingComparatorC1Ev@Base 1.2.40
+ _ZN12kyotocabinet27LexicalDescendingComparatorD0Ev@Base 1.2.40
+ _ZN12kyotocabinet27LexicalDescendingComparatorD1Ev@Base 1.2.40
  _ZN12kyotocabinet2DB6CursorC2Ev@Base 1.2.31
  _ZN12kyotocabinet2DB6CursorD0Ev@Base 1.2.31
  _ZN12kyotocabinet2DB6CursorD1Ev@Base 1.2.31
@@ -3037,6 +3052,8 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZTIN12kyotocabinet17ArcfourCompressorE@Base 1.2.31
  _ZTIN12kyotocabinet17DecimalComparatorE@Base 1.2.31
  _ZTIN12kyotocabinet17LexicalComparatorE@Base 1.2.31
+ _ZTIN12kyotocabinet27DecimalDescendingComparatorE@Base 1.2.40
+ _ZTIN12kyotocabinet27LexicalDescendingComparatorE@Base 1.2.40
  _ZTIN12kyotocabinet2DB6CursorE@Base 1.2.31
  _ZTIN12kyotocabinet2DB7VisitorE@Base 1.2.31
  _ZTIN12kyotocabinet2DBE@Base 1.2.31
@@ -3127,6 +3144,8 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZTSN12kyotocabinet17ArcfourCompressorE@Base 1.2.31
  _ZTSN12kyotocabinet17DecimalComparatorE@Base 1.2.31
  _ZTSN12kyotocabinet17LexicalComparatorE@Base 1.2.31
+ _ZTSN12kyotocabinet27DecimalDescendingComparatorE@Base 1.2.40
+ _ZTSN12kyotocabinet27LexicalDescendingComparatorE@Base 1.2.40
  _ZTSN12kyotocabinet2DB6CursorE@Base 1.2.31
  _ZTSN12kyotocabinet2DB7VisitorE@Base 1.2.31
  _ZTSN12kyotocabinet2DBE@Base 1.2.31
@@ -3217,6 +3236,8 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZTVN12kyotocabinet17ArcfourCompressorE@Base 1.2.31
  _ZTVN12kyotocabinet17DecimalComparatorE@Base 1.2.31
  _ZTVN12kyotocabinet17LexicalComparatorE@Base 1.2.31
+ _ZTVN12kyotocabinet27DecimalDescendingComparatorE@Base 1.2.40
+ _ZTVN12kyotocabinet27LexicalDescendingComparatorE@Base 1.2.40
  _ZTVN12kyotocabinet2DB6CursorE@Base 1.2.31
  _ZTVN12kyotocabinet2DB7VisitorE@Base 1.2.31
  _ZTVN12kyotocabinet2DBE@Base 1.2.31
