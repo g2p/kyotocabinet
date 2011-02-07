@@ -2302,8 +2302,20 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZNSt14_List_iteratorIPN12kyotocabinet7ProtoDBISt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEELh17EE6CursorEEppEv@Base 1.2.31
  _ZNSt14_List_iteratorIPN12kyotocabinet7StashDB6CursorEEC1EPSt15_List_node_base@Base 1.2.31
  _ZNSt14_List_iteratorIPN12kyotocabinet7StashDB6CursorEEppEv@Base 1.2.31
+ _ZNSt14numeric_limitsIaE3maxEv@Base 1.2.41
+ _ZNSt14numeric_limitsIaE3minEv@Base 1.2.41
  _ZNSt14numeric_limitsIdE8infinityEv@Base 1.2.31
  _ZNSt14numeric_limitsIdE9quiet_NaNEv@Base 1.2.31
+ _ZNSt14numeric_limitsIhE3maxEv@Base 1.2.41
+ _ZNSt14numeric_limitsIiE3maxEv@Base 1.2.41
+ _ZNSt14numeric_limitsIiE3minEv@Base 1.2.41
+ _ZNSt14numeric_limitsIjE3maxEv@Base 1.2.41
+ _ZNSt14numeric_limitsIlE3maxEv@Base 1.2.41
+ _ZNSt14numeric_limitsIlE3minEv@Base 1.2.41
+ _ZNSt14numeric_limitsImE3maxEv@Base 1.2.41
+ _ZNSt14numeric_limitsIsE3maxEv@Base 1.2.41
+ _ZNSt14numeric_limitsIsE3minEv@Base 1.2.41
+ _ZNSt14numeric_limitsItE3maxEv@Base 1.2.41
  _ZNSt14priority_queueIN12kyotocabinet6PolyDB9MergeLineESt6vectorIS2_SaIS2_EESt4lessIS2_EE3popEv@Base 1.2.31
  _ZNSt14priority_queueIN12kyotocabinet6PolyDB9MergeLineESt6vectorIS2_SaIS2_EESt4lessIS2_EE4pushERKS2_@Base 1.2.31
  _ZNSt14priority_queueIN12kyotocabinet6PolyDB9MergeLineESt6vectorIS2_SaIS2_EESt4lessIS2_EEC1ERKS7_RKS5_@Base 1.2.31
