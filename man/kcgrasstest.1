@@ -9,22 +9,22 @@ The command `\fBkcgrasstest\fR' is a utility for facility test and performance t
 .PP
 .RS
 .br
-\fBkcgrasstest order \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-rnd\fR]\fB \fR[\fB\-etc\fR]\fB \fR[\fB\-tran\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-pccap \fInum\fB\fR]\fB \fR[\fB\-rcd\fR]\fB \fR[\fB\-lv\fR]\fB \fIrnum\fB\fR
+\fBkcgrasstest order \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-rnd\fR]\fB \fR[\fB\-etc\fR]\fB \fR[\fB\-tran\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-pccap \fInum\fB\fR]\fB \fR[\fB\-rcd\fR|\fB\-rcld\fR|\fB\-rcdd\fR]\fB \fR[\fB\-lv\fR]\fB \fIrnum\fB\fR
 .RS
 Performs in\-order tests.
 .RE
 .br
-\fBkcgrasstest queue \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-rnd\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-pccap \fInum\fB\fR]\fB \fR[\fB\-rcd\fR]\fB \fR[\fB\-lv\fR]\fB \fIrnum\fB\fR
+\fBkcgrasstest queue \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-rnd\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-pccap \fInum\fB\fR]\fB \fR[\fB\-rcd\fR|\fB\-rcld\fR|\fB\-rcdd\fR]\fB \fR[\fB\-lv\fR]\fB \fIrnum\fB\fR
 .RS
 Performs queuing operations.
 .RE
 .br
-\fBkcgrasstest wicked \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-pccap \fInum\fB\fR]\fB \fR[\fB\-rcd\fR]\fB \fR[\fB\-lv\fR]\fB \fIrnum\fB\fR
+\fBkcgrasstest wicked \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-pccap \fInum\fB\fR]\fB \fR[\fB\-rcd\fR|\fB\-rcld\fR|\fB\-rcdd\fR]\fB \fR[\fB\-lv\fR]\fB \fIrnum\fB\fR
 .RS
 Performs mixed operations selected at random.
 .RE
 .br
-\fBkcgrasstest tran \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-pccap \fInum\fB\fR]\fB \fR[\fB\-rcd\fR]\fB \fR[\fB\-lv\fR]\fB \fIrnum\fB\fR
+\fBkcgrasstest tran \fR[\fB\-th \fInum\fB\fR]\fB \fR[\fB\-it \fInum\fB\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-pccap \fInum\fB\fR]\fB \fR[\fB\-rcd\fR|\fB\-rcld\fR|\fB\-rcdd\fR]\fB \fR[\fB\-lv\fR]\fB \fIrnum\fB\fR
 .RS
 Performs test of transaction.
 .RE
@@ -50,6 +50,10 @@ Options feature the following.
 \fB\-pccap \fInum\fR\fR : specifies the capacity size of the page cache.
 .br
 \fB\-rcd\fR : use the decimal comparator instead of the lexical one.
+.br
+\fB\-rcld\fR : use the lexical descending comparator instead of the ascending one.
+.br
+\fB\-rcdd\fR : use the decimal descending comparator instead of the lexical one.
 .br
 \fB\-lv\fR : reports all errors.
 .br

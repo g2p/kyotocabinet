@@ -1,3 +1,15 @@
+2011-02-05  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kccompare.h (LexicalDescendingComparator, LexicalDescendingComparator): new classes.
+
+	* kccompare.h (LEXICALCOMP, DECIMALCOMP): the type was changed to pointer.
+
+	* kccompress.h (ZLIBRAWCOMP): the type was changed to pointer.
+
+	* kcplantdb.h (PlantDB::load_meta): a bug related to custom comparator was fixed.
+
+	- Release: 1.2.40
+
 2011-02-01  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kcfile.cc (File::open): checking type type was added.

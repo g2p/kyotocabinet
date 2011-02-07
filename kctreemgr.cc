@@ -120,7 +120,7 @@ static void usage() {
   eprintf("\n");
   eprintf("usage:\n");
   eprintf("  %s create [-otr] [-onl|-otl|-onr] [-apow num] [-fpow num] [-ts] [-tl] [-tc]"
-          " [-bnum num] [-psiz num] path\n", g_progname);
+          " [-bnum num] [-psiz num] [-rcd|-rcld|-rcdd] path\n", g_progname);
   eprintf("  %s inform [-onl|-otl|-onr] [-st] path\n", g_progname);
   eprintf("  %s set [-onl|-otl|-onr] [-add|-rep|-app|-inci|-incd] [-sx] path key value\n",
           g_progname);
@@ -193,7 +193,11 @@ static int32_t runcreate(int argc, char** argv) {
         if (++i >= argc) usage();
         psiz = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
-        rcomp = &kc::DECIMALCOMP;
+        rcomp = kc::DECIMALCOMP;
+      } else if (!std::strcmp(argv[i], "-rcld")) {
+        rcomp = kc::LEXICALDESCCOMP;
+      } else if (!std::strcmp(argv[i], "-rcdd")) {
+        rcomp = kc::DECIMALDESCCOMP;
       } else {
         usage();
       }

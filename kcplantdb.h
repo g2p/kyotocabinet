@@ -1344,7 +1344,7 @@ public:
       lcnt_ = 1;
       icnt_ = 0;
       count_ = 0;
-      if (!reccomp_.comp) reccomp_.comp = &LEXICALCOMP;
+      if (!reccomp_.comp) reccomp_.comp = LEXICALCOMP;
       if (!dump_meta() || !flush_leaf_cache(true) || !load_meta()) {
         delete_inner_cache();
         delete_leaf_cache();
@@ -1675,10 +1675,14 @@ public:
     (*strmap)["psiz"] = strprintf("%d", psiz_);
     (*strmap)["pccap"] = strprintf("%lld", (long long)pccap_);
     const char* compname = "external";
-    if (reccomp_.comp == &LEXICALCOMP) {
+    if (reccomp_.comp == LEXICALCOMP) {
       compname = "lexical";
-    } else if (reccomp_.comp == &DECIMALCOMP) {
+    } else if (reccomp_.comp == DECIMALCOMP) {
       compname = "decimal";
+    } else if (reccomp_.comp == LEXICALDESCCOMP) {
+      compname = "lexicaldesc";
+    } else if (reccomp_.comp == DECIMALDESCCOMP) {
+      compname = "decimaldesc";
     }
     (*strmap)["rcomp"] = compname;
     (*strmap)["root"] = strprintf("%lld", (long long)root_);
@@ -1888,6 +1892,9 @@ public:
    * Set the record comparator.
    * @param rcomp the record comparator object.
    * @return true on success, or false on failure.
+   * @note Several built-in comparators are provided.  LEXICALCOMP for the default lexical
+   * comparator.  DECIMALCOMP for the decimal comparator.  LEXICALDESCCOMP for the lexical
+   * descending comparator.  DECIMALDESCCOMP for the lexical descending comparator.
    */
   bool tune_comparator(Comparator* rcomp) {
     _assert_(rcomp);
@@ -3006,10 +3013,14 @@ private:
     char head[PDBHEADSIZ];
     std::memset(head, 0, sizeof(head));
     char* wp = head;
-    if (reccomp_.comp == &LEXICALCOMP) {
+    if (reccomp_.comp == LEXICALCOMP) {
       *(uint8_t*)(wp++) = 0x10;
-    } else if (reccomp_.comp == &DECIMALCOMP) {
+    } else if (reccomp_.comp == DECIMALCOMP) {
       *(uint8_t*)(wp++) = 0x11;
+    } else if (reccomp_.comp == LEXICALDESCCOMP) {
+      *(uint8_t*)(wp++) = 0x18;
+    } else if (reccomp_.comp == DECIMALDESCCOMP) {
+      *(uint8_t*)(wp++) = 0x19;
     } else {
       *(uint8_t*)(wp++) = 0xff;
     }
@@ -3061,12 +3072,24 @@ private:
     }
     const char* rp = head;
     if (*(uint8_t*)rp == 0x10) {
-      reccomp_.comp = &LEXICALCOMP;
-      linkcomp_.comp = &LEXICALCOMP;
+      reccomp_.comp = LEXICALCOMP;
+      linkcomp_.comp = LEXICALCOMP;
     } else if (*(uint8_t*)rp == 0x11) {
-      reccomp_.comp = &DECIMALCOMP;
-      linkcomp_.comp = &DECIMALCOMP;
-    } else if (*(uint8_t*)rp != 0xff || !reccomp_.comp) {
+      reccomp_.comp = DECIMALCOMP;
+      linkcomp_.comp = DECIMALCOMP;
+    } else if (*(uint8_t*)rp == 0x18) {
+      reccomp_.comp = LEXICALDESCCOMP;
+      linkcomp_.comp = LEXICALDESCCOMP;
+    } else if (*(uint8_t*)rp == 0x19) {
+      reccomp_.comp = DECIMALDESCCOMP;
+      linkcomp_.comp = DECIMALDESCCOMP;
+    } else if (*(uint8_t*)rp == 0xff) {
+      if (!reccomp_.comp) {
+        set_error(_KCCODELINE_, Error::INVALID, "the custom comparator is not given");
+        return false;
+      }
+      linkcomp_.comp = reccomp_.comp;
+    } else {
       set_error(_KCCODELINE_, Error::BROKEN, "comparator is invalid");
       return false;
     }
@@ -3299,8 +3322,8 @@ private:
       if (reccomp_.comp) {
         linkcomp_.comp = reccomp_.comp;
       } else {
-        reccomp_.comp = &LEXICALCOMP;
-        linkcomp_.comp = &LEXICALCOMP;
+        reccomp_.comp = LEXICALCOMP;
+        linkcomp_.comp = LEXICALCOMP;
       }
     }
     const std::string& path = db_.path();

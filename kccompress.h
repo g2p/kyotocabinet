@@ -391,9 +391,9 @@ private:
 
 
 /**
- * Prepared variable of the compressor with ZLIB raw mode.
+ * Prepared pointer of the compressor with ZLIB raw mode.
  */
-extern ZLIBCompressor<ZLIB::RAW> ZLIBRAWCOMP;
+extern ZLIBCompressor<ZLIB::RAW>* const ZLIBRAWCOMP;
 
 
 }                                        // common namespace

@@ -234,13 +234,13 @@
 <p>The command `<code>kcgrasstest</code>' is a utility for facility test and performance test of the cache tree database.  This command is used in the following format.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kcgrasstest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>rnum</var></code></dt>
+<dt><code>kcgrasstest order [-th <var>num</var>] [-rnd] [-etc] [-tran] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kcgrasstest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>rnum</var></code></dt>
+<dt><code>kcgrasstest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kcgrasstest wicked [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>rnum</var></code></dt>
+<dt><code>kcgrasstest wicked [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kcgrasstest tran [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>rnum</var></code></dt>
+<dt><code>kcgrasstest tran [-th <var>num</var>] [-it <var>num</var>] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -256,6 +256,8 @@
 <li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
 <li><code>-pccap <var>num</var></code> : specifies the capacity size of the page cache.</li>
 <li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
+<li><code>-rcld</code> : use the lexical descending comparator instead of the ascending one.</li>
+<li><code>-rcdd</code> : use the decimal descending comparator instead of the lexical one.</li>
 <li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 </ul>
@@ -386,13 +388,13 @@
 <p>The command `<code>kctreetest</code>' is a utility for facility test and performance test of the file tree database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kctreetest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kctreetest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kctreetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kctreetest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kctreetest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kctreetest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kctreetest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kctreetest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-msiz <var>num</var>] [-dfunit <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -423,6 +425,8 @@
 <li><code>-dfunit <var>num</var></code> : specifies the unit step number of auto defragmentation.</li>
 <li><code>-pccap <var>num</var></code> : specifies the capacity size of the page cache.</li>
 <li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
+<li><code>-rcld</code> : use the lexical descending comparator instead of the ascending one.</li>
+<li><code>-rcdd</code> : use the decimal descending comparator instead of the lexical one.</li>
 <li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 <li><code>-hard</code> : performs physical synchronization.</li>
@@ -437,7 +441,7 @@
 <p>The command `<code>kctreemgr</code>' is a utility for test and debugging of the file tree database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input/output file.</p>
 
 <dl class="api">
-<dt><code>kctreemgr create [-otr] [-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-rcd] <var>path</var></code></dt>
+<dt><code>kctreemgr create [-otr] [-onl|-otl|-onr] [-apow <var>num</var>] [-fpow <var>num</var>] [-ts] [-tl] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-rcd|-rcld|-rcdd] <var>path</var></code></dt>
 <dd>Creates a database file.</dd>
 <dt><code>kctreemgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
 <dd>Prints status information.</dd>
@@ -486,6 +490,8 @@
 <li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
 <li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
 <li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
+<li><code>-rcld</code> : use the lexical descending comparator instead of the ascending one.</li>
+<li><code>-rcdd</code> : use the decimal descending comparator instead of the lexical one.</li>
 <li><code>-st</code> : prints miscellaneous information.</li>
 <li><code>-add</code> : performs adding operation.</li>
 <li><code>-app</code> : performs appending operation.</li>
@@ -614,13 +620,13 @@
 <p>The command `<code>kcforesttest</code>' is a utility for facility test and performance test of the directory tree database.  This command is used in the following format.  `<var>path</var>' specifies the path of a database file.  `<var>rnum</var>' specifies the number of iterations.</p>
 
 <dl class="api">
-<dt><code>kcforesttest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcforesttest order [-th <var>num</var>] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
-<dt><code>kcforesttest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcforesttest queue [-th <var>num</var>] [-it <var>num</var>] [-rnd] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs queuing operations.</dd>
-<dt><code>kcforesttest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcforesttest wicked [-th <var>num</var>] [-it <var>num</var>] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs mixed operations selected at random.</dd>
-<dt><code>kcforesttest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd] [-lv] <var>path</var> <var>rnum</var></code></dt>
+<dt><code>kcforesttest tran [-th <var>num</var>] [-it <var>num</var>] [-hard] [-oat|-onl|-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-pccap <var>num</var>] [-rcd|-rcld|-rcdd] [-lv] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs test of transaction.</dd>
 </dl>
 
@@ -645,6 +651,8 @@
 <li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
 <li><code>-pccap <var>num</var></code> : specifies the capacity size of the page cache.</li>
 <li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
+<li><code>-rcld</code> : use the lexical descending comparator instead of the ascending one.</li>
+<li><code>-rcdd</code> : use the decimal descending comparator instead of the lexical one.</li>
 <li><code>-lv</code> : reports all errors.</li>
 <li><code>-it <var>num</var></code> : specifies the number of repetition.</li>
 <li><code>-hard</code> : performs physical synchronization.</li>
@@ -659,7 +667,7 @@
 <p>The command `<code>kcforestmgr</code>' is a utility for test and debugging of the file tree database and its applications.  `<var>path</var>' specifies the path of a database file.  `<var>key</var>' specifies the key of a record.  `<var>value</var>' specifies the value of a record.  `<var>file</var>' specifies the input/output file.</p>
 
 <dl class="api">
-<dt><code>kcforestmgr create [-otr] [-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-rcd] <var>path</var></code></dt>
+<dt><code>kcforestmgr create [-otr] [-onl|-otl|-onr] [-tc] [-bnum <var>num</var>] [-psiz <var>num</var>] [-rcd|-rcld|-rcdd] <var>path</var></code></dt>
 <dd>Creates a database file.</dd>
 <dt><code>kcforestmgr inform [-onl|-otl|-onr] [-st] <var>path</var></code></dt>
 <dd>Prints status information.</dd>
@@ -702,6 +710,8 @@
 <li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
 <li><code>-psiz <var>num</var></code> : specifies the size of each page.</li>
 <li><code>-rcd</code> : use the decimal comparator instead of the lexical one.</li>
+<li><code>-rcld</code> : use the lexical descending comparator instead of the ascending one.</li>
+<li><code>-rcdd</code> : use the decimal descending comparator instead of the lexical one.</li>
 <li><code>-st</code> : prints miscellaneous information.</li>
 <li><code>-add</code> : performs adding operation.</li>
 <li><code>-app</code> : performs appending operation.</li>
