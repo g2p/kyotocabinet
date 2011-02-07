@@ -1,4 +1,4 @@
-libkyotocabinet.so.8 libkyotocabinet8 #MINVER#
+libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  KCVERSION@Base 1.2.31
  KCVISNOP@Base 1.2.31
  KCVISREMOVE@Base 1.2.31

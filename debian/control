@@ -10,7 +10,7 @@ Build-Depends:
 Standards-Version: 3.9.1
 Section: libs
 
-Package: libkyotocabinet8
+Package: libkyotocabinet9
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -25,7 +25,7 @@ Description: Kyoto Cabinet database runtime libraries
 Package: kyotocabinet-dbg
 Section: debug
 Architecture: any
-Depends: libkyotocabinet8 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: libkyotocabinet9 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Kyoto Cabinet database debugging symbols
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
  It provideas a hash database and a B+ tree database and is developed as a
@@ -36,7 +36,7 @@ Description: Kyoto Cabinet database debugging symbols
 Package: libkyotocabinet-dev
 Section: libdevel
 Architecture: any
-Depends: libkyotocabinet8 (= ${binary:Version}), ${misc:Depends}
+Depends: libkyotocabinet9 (= ${binary:Version}), ${misc:Depends}
 Description: Kyoto Cabinet database development files
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
  It provideas a hash database and a B+ tree database and is developed as a
