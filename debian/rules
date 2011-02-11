@@ -5,34 +5,7 @@ LDFLAGS= -Wl,-z,defs
 
 DEB_BUILD_ARCH ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 
-srcpkg = $(shell dpkg-parsechangelog | sed -ne 's/Source: *//p')
-srcver = $(shell dpkg-parsechangelog | sed -ne 's/Version: *\(.*:\)\?\(.*\)-.*$$/\2/p')
 libpkg = $(shell  sed -ne 's/Package: *\(.*\)-dev/\1/p' debian/control)
-
-#{{{ generic rules
-
-../$(srcpkg)_$(srcver).orig.tar.gz:
-	@if git rev-parse --git-dir >/dev/null 2>&1; then                 \
-	    pristine-tar checkout $@;                                     \
-	fi
-
-check-tarball: ../$(srcpkg)_$(srcver).orig.tar.gz
-
-.PHONY: check-tarball
-
-#}}}
-#{{{ maintainer stuff
-
-refresh-patches: check-tarball
-	@dh_testdir
-	@echo 'refreshing debian/patches:'
-	@rm -rf '$(CURDIR)'/debian/patches
-	@mkdir -p '$(CURDIR)'/debian/patches
-	@cd '$(CURDIR)'/debian/patches && git format-patch upstream..upstream+patches
-	@cd debian/patches && ls *.patch > debian/patches/series
-	@echo .
-
-#}}}
 
 %:
 	dh $@ --parallel
@@ -40,10 +13,9 @@ refresh-patches: check-tarball
 override_dh_installchangelogs:
 	dh_installchangelogs ChangeLog
 
-override_dh_auto_configure: check-tarball
+override_dh_auto_configure:
 	dh_auto_configure -- \
 	    --enable-devel --enable-lzo --enable-lzma \
-	    \
 	    CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 override_dh_auto_test:
