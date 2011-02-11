@@ -1,5 +1,12 @@
+kyotocabinet (1.2.42-1) unstable; urgency=low
+
+  * Imported Upstream version 1.2.42
+
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Fri, 11 Feb 2011 11:21:12 +0100
+
 kyotocabinet (1.2.41-1) unstable; urgency=low
 
+  * More symbols
   * Imported Upstream version 1.2.41
 
  -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Mon, 07 Feb 2011 12:20:41 +0100
