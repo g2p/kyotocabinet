@@ -572,11 +572,10 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
                       break;
                     }
                     case 3: {
-                      std::pair<std::string, std::string>* rec = cur->get_pair(myrand(10) == 0);
-                      if (rec) {
-                        delete rec;
-                      } else if (db_->error() != kc::BasicDB::Error::NOREC) {
-                        dberrprint(db_, __LINE__, "Cursor::get_pair");
+                      std::string key, value;
+                      if (!cur->get(&key, &value, myrand(10) == 0) &&
+                          db_->error() != kc::BasicDB::Error::NOREC) {
+                        dberrprint(db_, __LINE__, "Cursor::get");
                         err_ = true;
                       }
                       break;
@@ -899,11 +898,10 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
                       break;
                     }
                     case 3: {
-                      std::pair<std::string, std::string>* rec = cur->get_pair(myrand(10) == 0);
-                      if (rec) {
-                        delete rec;
-                      } else if (db_->error() != kc::BasicDB::Error::NOREC) {
-                        dberrprint(db_, __LINE__, "Cursor::get_pair");
+                      std::string key, value;
+                      if (!cur->get(&key, &value, myrand(10) == 0) &&
+                          db_->error() != kc::BasicDB::Error::NOREC) {
+                        dberrprint(db_, __LINE__, "Cursor::get");
                         err_ = true;
                       }
                       break;
@@ -1368,11 +1366,10 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
                       break;
                     }
                     case 3: {
-                      std::pair<std::string, std::string>* rec = cur->get_pair(myrand(10) == 0);
-                      if (rec) {
-                        delete rec;
-                      } else if (db_->error() != kc::BasicDB::Error::NOREC) {
-                        dberrprint(db_, __LINE__, "Cursor::get_pair");
+                      std::string key, value;
+                      if (!cur->get(&key, &value, myrand(10) == 0) &&
+                          db_->error() != kc::BasicDB::Error::NOREC) {
+                        dberrprint(db_, __LINE__, "Cursor::get");
                         err_ = true;
                       }
                       break;
@@ -2331,6 +2328,11 @@ static int32_t procmisc(const char* path) {
         size_t ksiz;
         char* kbuf = cur->get_key(&ksiz, i % 3 == 0);
         if (kbuf) {
+          std::string value;
+          if (!db->get(std::string(kbuf, ksiz), &value)) {
+            dberrprint(db, __LINE__, "DB::get");
+            err = true;
+          }
           delete[] kbuf;
         } else if (cur->error() != kc::BasicDB::Error::NOREC) {
           dberrprint(db, __LINE__, "Cursor::get_key");
@@ -2340,11 +2342,11 @@ static int32_t procmisc(const char* path) {
       }
       case 1: {
         size_t vsiz;
-        char* vbuf = cur->get_key(&vsiz, i % 3 == 0);
+        char* vbuf = cur->get_value(&vsiz, i % 3 == 0);
         if (vbuf) {
           delete[] vbuf;
         } else if (cur->error() != kc::BasicDB::Error::NOREC) {
-          dberrprint(db, __LINE__, "Cursor::get_key");
+          dberrprint(db, __LINE__, "Cursor::get_value");
           err = true;
         }
         break;

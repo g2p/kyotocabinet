@@ -81,8 +81,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove a record.  <a href="#a2c86571eb8ded4699c50ae8f0eb44018"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#a11fe066de448a7fb003614c5fe82a46d">get</a> (const char *kbuf, size_t ksiz, size_t *sp)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#a11fe066de448a7fb003614c5fe82a46d"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual std::string *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#a239c549982878f500279380bc1a9d1b6">get</a> (const std::string &amp;key)=0</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#a239c549982878f500279380bc1a9d1b6"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#adfba823060898b7a409a2b4017c7ff6b">get</a> (const std::string &amp;key, std::string *value)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#adfba823060898b7a409a2b4017c7ff6b"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#a6b22f286e891f094da7564f4a212d8f4">get</a> (const char *kbuf, size_t ksiz, char *vbuf, size_t max)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#a6b22f286e891f094da7564f4a212d8f4"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1DB.html#a858d6b76cd5f0a5425a58bfd7b86f2f5">clear</a> ()=0</td></tr>
@@ -887,26 +887,35 @@
 
 </div>
 </div>
-<a class="anchor" id="a239c549982878f500279380bc1a9d1b6"></a><!-- doxytag: member="kyotocabinet::DB::get" ref="a239c549982878f500279380bc1a9d1b6" args="(const std::string &amp;key)=0" -->
+<a class="anchor" id="adfba823060898b7a409a2b4017c7ff6b"></a><!-- doxytag: member="kyotocabinet::DB::get" ref="adfba823060898b7a409a2b4017c7ff6b" args="(const std::string &amp;key, std::string *value)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">virtual std::string* kyotocabinet::DB::get </td>
+          <td class="memname">virtual bool kyotocabinet::DB::get </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
-          <td class="paramname"> <em>key</em></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td><code> [pure virtual]</code></td>
+          <td class="paramname"> <em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string *&nbsp;</td>
+          <td class="paramname"> <em>value</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>Retrieve the value of a record. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a11fe066de448a7fb003614c5fe82a46d" title="Retrieve the value of a record.">DB::get</a> method except that the parameter and the return value are std::string. The return value should be deleted explicitly by the caller. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a11fe066de448a7fb003614c5fe82a46d" title="Retrieve the value of a record.">DB::get</a> method except that the first parameters is the key string and the second parameter is a string to contain the result and the return value is bool for success. </dd></dl>
 
-<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#aaeb3e8ab339c7d4bdbdfcb6bc0592a12">kyotocabinet::BasicDB</a>.</p>
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1BasicDB.html#ad997b0824b30d20fefcfb7e4f8fbd96c">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -1031,7 +1040,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Feb 6 20:50:23 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Feb 11 01:48:53 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

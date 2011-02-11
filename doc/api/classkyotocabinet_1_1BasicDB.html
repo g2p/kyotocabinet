@@ -150,8 +150,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove a record.  <a href="#ac6b7b1fdab9e9288c8ff918bef8bf0b3"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a04721eb5a61876244bbc5c08e0a34c61">get</a> (const char *kbuf, size_t ksiz, size_t *sp)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#a04721eb5a61876244bbc5c08e0a34c61"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">std::string *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#aaeb3e8ab339c7d4bdbdfcb6bc0592a12">get</a> (const std::string &amp;key)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#aaeb3e8ab339c7d4bdbdfcb6bc0592a12"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#ad997b0824b30d20fefcfb7e4f8fbd96c">get</a> (const std::string &amp;key, std::string *value)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#ad997b0824b30d20fefcfb7e4f8fbd96c"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#abad0525bdccdcab5b587846a69ff0fe3">get</a> (const char *kbuf, size_t ksiz, char *vbuf, size_t max)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieve the value of a record.  <a href="#abad0525bdccdcab5b587846a69ff0fe3"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a0a76b8f56d3abd00b511a77ea32fc7f2">set_bulk</a> (const std::map&lt; std::string, std::string &gt; &amp;recs, bool atomic=true)</td></tr>
@@ -1499,26 +1499,35 @@
 
 </div>
 </div>
-<a class="anchor" id="aaeb3e8ab339c7d4bdbdfcb6bc0592a12"></a><!-- doxytag: member="kyotocabinet::BasicDB::get" ref="aaeb3e8ab339c7d4bdbdfcb6bc0592a12" args="(const std::string &amp;key)" -->
+<a class="anchor" id="ad997b0824b30d20fefcfb7e4f8fbd96c"></a><!-- doxytag: member="kyotocabinet::BasicDB::get" ref="ad997b0824b30d20fefcfb7e4f8fbd96c" args="(const std::string &amp;key, std::string *value)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::string* kyotocabinet::BasicDB::get </td>
+          <td class="memname">bool kyotocabinet::BasicDB::get </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&nbsp;</td>
-          <td class="paramname"> <em>key</em></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td><code> [virtual]</code></td>
+          <td class="paramname"> <em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string *&nbsp;</td>
+          <td class="paramname"> <em>value</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>Retrieve the value of a record. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a11fe066de448a7fb003614c5fe82a46d" title="Retrieve the value of a record.">DB::get</a> method except that the parameter and the return value are std::string. The return value should be deleted explicitly by the caller. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>Equal to the original <a class="el" href="classkyotocabinet_1_1DB.html#a11fe066de448a7fb003614c5fe82a46d" title="Retrieve the value of a record.">DB::get</a> method except that the first parameters is the key string and the second parameter is a string to contain the result and the return value is bool for success. </dd></dl>
 
-<p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#a239c549982878f500279380bc1a9d1b6">kyotocabinet::DB</a>.</p>
+<p>Implements <a class="el" href="classkyotocabinet_1_1DB.html#adfba823060898b7a409a2b4017c7ff6b">kyotocabinet::DB</a>.</p>
 
 </div>
 </div>
@@ -1989,7 +1998,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Feb 6 20:50:23 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Feb 11 01:48:53 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

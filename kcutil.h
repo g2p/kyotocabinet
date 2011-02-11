@@ -667,6 +667,13 @@ void setstdiobin();
 
 
 /**
+ * Dummy test driver.
+ * @return always true.
+ */
+bool _dummytest();
+
+
+/**
  * Convert a decimal string to an integer.
  */
 inline int64_t atoi(const char* str) {
@@ -2215,6 +2222,22 @@ inline void* xrealloc(void* ptr, size_t size) {
 inline void xfree(void* ptr) {
   _assert_(true);
   std::free(ptr);
+}
+
+
+/**
+ * Dummy test driver.
+ */
+inline bool _dummytest() {
+  _assert_(true);
+  std::ostringstream oss;
+  oss << INT8MAX << INT16MAX << INT32MAX << INT64MAX;
+  oss << INT8MIN << INT16MIN << INT32MIN << INT64MIN;
+  oss << UINT8MAX << UINT16MAX << UINT32MAX << UINT64MAX;
+  oss << VERSION << LIBVER << LIBREV << FMTVER << SYSNAME;
+  oss << BIGEND << CLOCKTICK << PAGESIZE << FEATURES;
+  oss << NUMBUFSIZ << MEMMAXSIZ;
+  return oss.tellp() > 0;
 }
 
 
