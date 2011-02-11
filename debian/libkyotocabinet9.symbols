@@ -637,7 +637,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZN12kyotocabinet7BasicDB3casERKSsS2_S2_@Base 1.2.31
  _ZN12kyotocabinet7BasicDB3getEPKcmPcm@Base 1.2.31
  _ZN12kyotocabinet7BasicDB3getEPKcmPm@Base 1.2.31
- _ZN12kyotocabinet7BasicDB3getERKSs@Base 1.2.31
+ _ZN12kyotocabinet7BasicDB3getERKSsPSs@Base 1.2.42
  _ZN12kyotocabinet7BasicDB3setEPKcmS2_m@Base 1.2.31
  _ZN12kyotocabinet7BasicDB3setERKSsS2_@Base 1.2.31
  _ZN12kyotocabinet7BasicDB4copyERKSsPNS0_15ProgressCheckerE@Base 1.2.31
@@ -647,14 +647,14 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZN12kyotocabinet7BasicDB5ErrorC1Ev@Base 1.2.31
  _ZN12kyotocabinet7BasicDB5ErrorD1Ev@Base 1.2.31
  _ZN12kyotocabinet7BasicDB6Cursor13set_value_strERKSsb@Base 1.2.31
+ _ZN12kyotocabinet7BasicDB6Cursor3getEPSsS2_b@Base 1.2.42
  _ZN12kyotocabinet7BasicDB6Cursor3getEPmPPKcS2_b@Base 1.2.31
  _ZN12kyotocabinet7BasicDB6Cursor5errorEv@Base 1.2.31
  _ZN12kyotocabinet7BasicDB6Cursor6removeEv@Base 1.2.31
+ _ZN12kyotocabinet7BasicDB6Cursor7get_keyEPSsb@Base 1.2.42
  _ZN12kyotocabinet7BasicDB6Cursor7get_keyEPmb@Base 1.2.31
- _ZN12kyotocabinet7BasicDB6Cursor7get_keyEb@Base 1.2.31
- _ZN12kyotocabinet7BasicDB6Cursor8get_pairEb@Base 1.2.31
+ _ZN12kyotocabinet7BasicDB6Cursor9get_valueEPSsb@Base 1.2.42
  _ZN12kyotocabinet7BasicDB6Cursor9get_valueEPmb@Base 1.2.31
- _ZN12kyotocabinet7BasicDB6Cursor9get_valueEb@Base 1.2.31
  _ZN12kyotocabinet7BasicDB6Cursor9set_valueEPKcmb@Base 1.2.31
  _ZN12kyotocabinet7BasicDB6CursorC2Ev@Base 1.2.31
  _ZN12kyotocabinet7BasicDB6CursorD0Ev@Base 1.2.31
@@ -3119,10 +3119,10 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZTIZN12kyotocabinet7BasicDB3getEPKcmPmE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB3setEPKcmS2_mE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB4copyERKSsPNS0_15ProgressCheckerEE17FileProcessorImpl@Base 1.2.31
+ _ZTIZN12kyotocabinet7BasicDB6Cursor3getEPSsS2_bE11VisitorImpl@Base 1.2.42
  _ZTIZN12kyotocabinet7BasicDB6Cursor3getEPmPPKcS2_bE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB6Cursor6removeEvE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB6Cursor7get_keyEPmbE11VisitorImpl@Base 1.2.31
- _ZTIZN12kyotocabinet7BasicDB6Cursor8get_pairEbE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB6Cursor9get_valueEPmbE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB6Cursor9set_valueEPKcmbE11VisitorImpl@Base 1.2.31
  _ZTIZN12kyotocabinet7BasicDB6appendEPKcmS2_mE11VisitorImpl@Base 1.2.31
@@ -3211,10 +3211,10 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZTSZN12kyotocabinet7BasicDB3getEPKcmPmE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB3setEPKcmS2_mE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB4copyERKSsPNS0_15ProgressCheckerEE17FileProcessorImpl@Base 1.2.31
+ _ZTSZN12kyotocabinet7BasicDB6Cursor3getEPSsS2_bE11VisitorImpl@Base 1.2.42
  _ZTSZN12kyotocabinet7BasicDB6Cursor3getEPmPPKcS2_bE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB6Cursor6removeEvE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB6Cursor7get_keyEPmbE11VisitorImpl@Base 1.2.31
- _ZTSZN12kyotocabinet7BasicDB6Cursor8get_pairEbE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB6Cursor9get_valueEPmbE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB6Cursor9set_valueEPKcmbE11VisitorImpl@Base 1.2.31
  _ZTSZN12kyotocabinet7BasicDB6appendEPKcmS2_mE11VisitorImpl@Base 1.2.31
@@ -3303,10 +3303,10 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZTVZN12kyotocabinet7BasicDB3getEPKcmPmE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB3setEPKcmS2_mE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB4copyERKSsPNS0_15ProgressCheckerEE17FileProcessorImpl@Base 1.2.31
+ _ZTVZN12kyotocabinet7BasicDB6Cursor3getEPSsS2_bE11VisitorImpl@Base 1.2.42
  _ZTVZN12kyotocabinet7BasicDB6Cursor3getEPmPPKcS2_bE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB6Cursor6removeEvE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB6Cursor7get_keyEPmbE11VisitorImpl@Base 1.2.31
- _ZTVZN12kyotocabinet7BasicDB6Cursor8get_pairEbE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB6Cursor9get_valueEPmbE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB6Cursor9set_valueEPKcmbE11VisitorImpl@Base 1.2.31
  _ZTVZN12kyotocabinet7BasicDB6appendEPKcmS2_mE11VisitorImpl@Base 1.2.31
@@ -3389,6 +3389,11 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZZN12kyotocabinet7BasicDB4copyERKSsPNS0_15ProgressCheckerEEN17FileProcessorImplC1ES2_S4_PS0_@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB4copyERKSsPNS0_15ProgressCheckerEEN17FileProcessorImplD0Ev@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB4copyERKSsPNS0_15ProgressCheckerEEN17FileProcessorImplD1Ev@Base 1.2.31
+ _ZZN12kyotocabinet7BasicDB6Cursor3getEPSsS2_bEN11VisitorImpl10visit_fullEPKcmS5_mPm@Base 1.2.42
+ _ZZN12kyotocabinet7BasicDB6Cursor3getEPSsS2_bEN11VisitorImpl2okEv@Base 1.2.42
+ _ZZN12kyotocabinet7BasicDB6Cursor3getEPSsS2_bEN11VisitorImplC1ES2_S2_@Base 1.2.42
+ _ZZN12kyotocabinet7BasicDB6Cursor3getEPSsS2_bEN11VisitorImplD0Ev@Base 1.2.42
+ _ZZN12kyotocabinet7BasicDB6Cursor3getEPSsS2_bEN11VisitorImplD1Ev@Base 1.2.42
  _ZZN12kyotocabinet7BasicDB6Cursor3getEPmPPKcS2_bEN11VisitorImpl10visit_fullES4_mS4_mS2_@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB6Cursor3getEPmPPKcS2_bEN11VisitorImpl3popES2_S5_S2_@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB6Cursor3getEPmPPKcS2_bEN11VisitorImpl5clearEv@Base 1.2.31
@@ -3406,11 +3411,6 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  _ZZN12kyotocabinet7BasicDB6Cursor7get_keyEPmbEN11VisitorImplC1Ev@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB6Cursor7get_keyEPmbEN11VisitorImplD0Ev@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB6Cursor7get_keyEPmbEN11VisitorImplD1Ev@Base 1.2.31
- _ZZN12kyotocabinet7BasicDB6Cursor8get_pairEbEN11VisitorImpl10visit_fullEPKcmS4_mPm@Base 1.2.31
- _ZZN12kyotocabinet7BasicDB6Cursor8get_pairEbEN11VisitorImpl3popEv@Base 1.2.31
- _ZZN12kyotocabinet7BasicDB6Cursor8get_pairEbEN11VisitorImplC1Ev@Base 1.2.31
- _ZZN12kyotocabinet7BasicDB6Cursor8get_pairEbEN11VisitorImplD0Ev@Base 1.2.31
- _ZZN12kyotocabinet7BasicDB6Cursor8get_pairEbEN11VisitorImplD1Ev@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB6Cursor9get_valueEPmbEN11VisitorImpl10visit_fullEPKcmS5_mS2_@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB6Cursor9get_valueEPmbEN11VisitorImpl3popES2_@Base 1.2.31
  _ZZN12kyotocabinet7BasicDB6Cursor9get_valueEPmbEN11VisitorImpl5clearEv@Base 1.2.31
