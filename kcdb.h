@@ -145,11 +145,10 @@ public:
     virtual char* get_key(size_t* sp, bool step = false) = 0;
     /**
      * Get the key of the current record.
-     * @note Equal to the original Cursor::get_key method except that the parameter and the
-     * return value are std::string.  The return value should be deleted explicitly by the
-     * caller.
+     * @note Equal to the original Cursor::get_key method except that a parameter is a string to
+     * contain the result and the return value is bool for success.
      */
-    virtual std::string* get_key(bool step = false) = 0;
+    virtual bool get_key(std::string* key, bool step = false) = 0;
     /**
      * Get the value of the current record.
      * @param sp the pointer to the variable into which the size of the region of the return
@@ -165,11 +164,10 @@ public:
     virtual char* get_value(size_t* sp, bool step = false) = 0;
     /**
      * Get the value of the current record.
-     * @note Equal to the original Cursor::get_value method except that the parameter and the
-     * return value are std::string.  The return value should be deleted explicitly by the
-     * caller.
+     * @note Equal to the original Cursor::get_value method except that a parameter is a string
+     * to contain the result and the return value is bool for success.
      */
-    virtual std::string* get_value(bool step = false) = 0;
+    virtual bool get_value(std::string* value, bool step = false) = 0;
     /**
      * Get a pair of the key and the value of the current record.
      * @param ksp the pointer to the variable into which the size of the region of the return
@@ -188,12 +186,10 @@ public:
     virtual char* get(size_t* ksp, const char** vbp, size_t* vsp, bool step = false) = 0;
     /**
      * Get a pair of the key and the value of the current record.
-     * @param step true to move the cursor to the next record, or false for no move.
-     * @return the pointer to the pair of the key and the value, or NULL on failure.
-     * @note If the cursor is invalidated, NULL is returned.  The return value should be deleted
-     * explicitly by the caller.
+     * @note Equal to the original Cursor::get method except that parameters are strings
+     * to contain the result and the return value is bool for success.
      */
-    virtual std::pair<std::string, std::string>* get_pair(bool step = false) = 0;
+    virtual bool get(std::string* key, std::string* value, bool step = false) = 0;
     /**
      * Jump the cursor to the first record for forward scan.
      * @return true on success, or false on failure.
@@ -415,10 +411,11 @@ public:
   virtual char* get(const char* kbuf, size_t ksiz, size_t* sp) = 0;
   /**
    * Retrieve the value of a record.
-   * @note Equal to the original DB::get method except that the parameter and the return value
-   * are std::string.  The return value should be deleted explicitly by the caller.
+   * @note Equal to the original DB::get method except that the first parameters is the key
+   * string and the second parameter is a string to contain the result and the return value is
+   * bool for success.
    */
-  virtual std::string* get(const std::string& key) = 0;
+  virtual bool get(const std::string& key, std::string* value) = 0;
   /**
    * Retrieve the value of a record.
    * @param kbuf the pointer to the key region.
@@ -617,17 +614,18 @@ public:
     }
     /**
      * Get the key of the current record.
-     * @note Equal to the original Cursor::key method except that the parameter and the return
-     * value are std::string.
+     * @note Equal to the original Cursor::get_key method except that a parameter is a string to
+     * contain the result and the return value is bool for success.
      */
-    std::string* get_key(bool step = false) {
-      _assert_(true);
+    bool get_key(std::string* key, bool step = false) {
+      _assert_(key);
       size_t ksiz;
       char* kbuf = get_key(&ksiz, step);
-      if (!kbuf) return NULL;
-      std::string* key = new std::string(kbuf, ksiz);
+      if (!kbuf) return false;
+      key->clear();
+      key->append(kbuf, ksiz);
       delete[] kbuf;
-      return key;
+      return true;
     }
     /**
      * Get the value of the current record.
@@ -682,17 +680,18 @@ public:
     }
     /**
      * Get the value of the current record.
-     * @note Equal to the original Cursor::value method except that the parameter and the return
-     * value are std::string.
+     * @note Equal to the original Cursor::get_value method except that a parameter is a string
+     * to contain the result and the return value is bool for success.
      */
-    std::string* get_value(bool step = false) {
-      _assert_(true);
+    bool get_value(std::string* value, bool step = false) {
+      _assert_(value);
       size_t vsiz;
       char* vbuf = get_value(&vsiz, step);
-      if (!vbuf) return NULL;
-      std::string* value = new std::string(vbuf, vsiz);
+      if (!vbuf) return false;
+      value->clear();
+      value->append(vbuf, vsiz);
       delete[] vbuf;
-      return value;
+      return true;
     }
     /**
      * Get a pair of the key and the value of the current record.
@@ -754,32 +753,35 @@ public:
     }
     /**
      * Get a pair of the key and the value of the current record.
-     * @return the pointer to the pair of the key and the value, or NULL on failure.
-     * @note If the cursor is invalidated, NULL is returned.  The return value should be deleted
-     * explicitly by the caller.
+     * @note Equal to the original Cursor::get method except that parameters are strings
+     * to contain the result and the return value is bool for success.
      */
-    std::pair<std::string, std::string>* get_pair(bool step = false) {
-      _assert_(true);
-      typedef std::pair<std::string, std::string> Record;
+    bool get(std::string* key, std::string* value, bool step = false) {
+      _assert_(key && value);
       class VisitorImpl : public Visitor {
       public:
-        explicit VisitorImpl() : rec_(NULL) {}
-        Record* pop() {
-          return rec_;
+        explicit VisitorImpl(std::string* key, std::string* value) :
+          key_(key), value_(value), ok_(false) {}
+        bool ok() {
+          return ok_;
         }
       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
-          std::string key(kbuf, ksiz);
-          std::string value(vbuf, vsiz);
-          rec_ = new Record(key, value);
+          key_->clear();
+          key_->append(kbuf, ksiz);
+          value_->clear();
+          value_->append(vbuf, vsiz);
+          ok_ = true;
           return NOP;
         }
-        Record* rec_;
+        std::string* key_;
+        std::string* value_;
+        bool ok_;
       };
-      VisitorImpl visitor;
-      if (!accept(&visitor, false, step)) return NULL;
-      return visitor.pop();
+      VisitorImpl visitor(key, value);
+      if (!accept(&visitor, false, step)) return false;
+      return visitor.ok();
     }
     /**
      * Get the database object.
@@ -1776,17 +1778,19 @@ public:
   }
   /**
    * Retrieve the value of a record.
-   * @note Equal to the original DB::get method except that the parameter and the return value
-   * are std::string.  The return value should be deleted explicitly by the caller.
+   * @note Equal to the original DB::get method except that the first parameters is the key
+   * string and the second parameter is a string to contain the result and the return value is
+   * bool for success.
    */
-  std::string* get(const std::string& key) {
-    _assert_(true);
+  bool get(const std::string& key, std::string* value) {
+    _assert_(value);
     size_t vsiz;
     char* vbuf = get(key.c_str(), key.size(), &vsiz);
-    if (!vbuf) return NULL;
-    std::string* value = new std::string(vbuf, vsiz);
+    if (!vbuf) return false;
+    value->clear();
+    value->append(vbuf, vsiz);
     delete[] vbuf;
-    return value;
+    return true;
   }
   /**
    * Retrieve the value of a record.

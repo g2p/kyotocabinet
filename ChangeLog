@@ -1,3 +1,13 @@
+2011-02-10  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kcdb.h (DB::Cursor::get_key, DB::Cursor::get_value): signature was modified.
+
+	* kcdb.h (DB::Cursor::get_pair, DB::Cursor::get): renamed.
+
+	* kcdb.h (DB::get): signature was modified.
+
+	- Release: 1.2.42
+
 2011-02-07  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kccommon.h: macros for integer range were added.

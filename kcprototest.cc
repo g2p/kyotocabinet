@@ -432,11 +432,10 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                     break;
                   }
                   case 3: {
-                    std::pair<std::string, std::string>* rec = cur->get_pair(myrand(10) == 0);
-                    if (rec) {
-                      delete rec;
-                    } else if (db_->error() != kc::BasicDB::Error::NOREC) {
-                      dberrprint(db_, __LINE__, "Cursor::get_pair");
+                    std::string key, value;
+                    if (!cur->get(&key, &value, myrand(10) == 0) &&
+                        db_->error() != kc::BasicDB::Error::NOREC) {
+                      dberrprint(db_, __LINE__, "Cursor::get");
                       err_ = true;
                     }
                     break;
@@ -765,11 +764,10 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                     break;
                   }
                   case 3: {
-                    std::pair<std::string, std::string>* rec = cur->get_pair(myrand(10) == 0);
-                    if (rec) {
-                      delete rec;
-                    } else if (db_->error() != kc::BasicDB::Error::NOREC) {
-                      dberrprint(db_, __LINE__, "Cursor::get_pair");
+                    std::string key, value;
+                    if (!cur->get(&key, &value, myrand(10) == 0) &&
+                        db_->error() != kc::BasicDB::Error::NOREC) {
+                      dberrprint(db_, __LINE__, "Cursor::get");
                       err_ = true;
                     }
                     break;
@@ -1231,11 +1229,10 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
                     break;
                   }
                   case 3: {
-                    std::pair<std::string, std::string>* rec = cur->get_pair(myrand(10) == 0);
-                    if (rec) {
-                      delete rec;
-                    } else if (db_->error() != kc::BasicDB::Error::NOREC) {
-                      dberrprint(db_, __LINE__, "Cursor::get_pair");
+                    std::string key, value;
+                    if (!cur->get(&key, &value, myrand(10) == 0) &&
+                        db_->error() != kc::BasicDB::Error::NOREC) {
+                      dberrprint(db_, __LINE__, "Cursor::get");
                       err_ = true;
                     }
                     break;
@@ -1946,13 +1943,16 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
             std::vector<std::string> keys;
             keys.reserve(100);
             while (myrand(50) != 0) {
-              std::string* key = cur->get_key();
-              if (key) {
-                keys.push_back(*key);
-                delete key;
+              std::string key;
+              if (cur->get_key(&key)) {
+                keys.push_back(key);
+                if (!cur->get_value(&key) && kc::BasicDB::Error::NOREC) {
+                  dberrprint(db_, __LINE__, "Cursor::get_value");
+                  err_ = true;
+                }
               } else {
                 if (db_->error() != kc::BasicDB::Error::NOREC) {
-                  dberrprint(db_, __LINE__, "Cursor::jump");
+                  dberrprint(db_, __LINE__, "Cursor::get_key");
                   err_ = true;
                 }
                 break;
