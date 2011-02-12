@@ -489,7 +489,7 @@ public:
     libver_(0), librev_(0), fmtver_(0), chksum_(0), type_(TYPEHASH),
     apow_(HDBDEFAPOW), fpow_(HDBDEFFPOW), opts_(0), bnum_(HDBDEFBNUM),
     flags_(0), flagopen_(false), count_(0), lsiz_(0), psiz_(0), opaque_(),
-    msiz_(HDBDEFMSIZ), dfunit_(0), embcomp_(&ZLIBRAWCOMP),
+    msiz_(HDBDEFMSIZ), dfunit_(0), embcomp_(ZLIBRAWCOMP),
     align_(0), fbpnum_(0), width_(0), linear_(false),
     comp_(NULL), rhsiz_(0), boff_(0), roff_(0), dfcur_(0), frgcnt_(0),
     tran_(false), trhard_(false), trfbp_(), trcount_(0), trsize_(0) {

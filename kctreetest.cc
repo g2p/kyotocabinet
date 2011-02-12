@@ -89,17 +89,17 @@ static void usage() {
   eprintf("usage:\n");
   eprintf("  %s order [-th num] [-rnd] [-set|-get|-getw|-rem|-etc] [-tran]"
           " [-oat|-oas|-onl|-otl|-onr] [-apow num] [-fpow num] [-ts] [-tl] [-tc] [-bnum num]"
-          " [-psiz num] [-msiz num] [-dfunit num] [-pccap num] [-rcd] [-lv] path rnum\n",
-          g_progname);
+          " [-psiz num] [-msiz num] [-dfunit num] [-pccap num] [-rcd|-rcld|-rcdd] [-lv]"
+          " path rnum\n", g_progname);
   eprintf("  %s queue [-th num] [-it num] [-rnd] [-oat|-oas|-onl|-otl|-onr]"
           " [-apow num] [-fpow num] [-ts] [-tl] [-tc] [-bnum num] [-psiz num] [-msiz num]"
-          " [-dfunit num] [-pccap num] [-rcd] [-lv] path rnum\n", g_progname);
+          " [-dfunit num] [-pccap num] [-rcd|-rcld|-rcdd] [-lv] path rnum\n", g_progname);
   eprintf("  %s wicked [-th num] [-it num] [-oat|-oas|-onl|-otl|-onr]"
           " [-apow num] [-fpow num] [-ts] [-tl] [-tc] [-bnum num] [-psiz num] [-msiz num]"
-          " [-dfunit num] [-pccap num] [-rcd] [-lv] path rnum\n", g_progname);
+          " [-dfunit num] [-pccap num] [-rcd|-rcld|-rcdd] [-lv] path rnum\n", g_progname);
   eprintf("  %s tran [-th num] [-it num] [-hard] [-oat|-oas|-onl|-otl|-onr]"
           " [-apow num] [-fpow num] [-ts] [-tl] [-tc] [-bnum num] [-psiz num] [-msiz num]"
-          " [-dfunit num] [-pccap num] [-rcd] [-lv] path rnum\n", g_progname);
+          " [-dfunit num] [-pccap num] [-rcd|-rcld|-rcdd] [-lv] path rnum\n", g_progname);
   eprintf("\n");
   std::exit(1);
 }
@@ -293,7 +293,11 @@ static int32_t runorder(int argc, char** argv) {
         if (++i >= argc) usage();
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
-        rcomp = &kc::DECIMALCOMP;
+        rcomp = kc::DECIMALCOMP;
+      } else if (!std::strcmp(argv[i], "-rcld")) {
+        rcomp = kc::LEXICALDESCCOMP;
+      } else if (!std::strcmp(argv[i], "-rcdd")) {
+        rcomp = kc::DECIMALDESCCOMP;
       } else if (!std::strcmp(argv[i], "-lv")) {
         lv = true;
       } else {
@@ -387,7 +391,11 @@ static int32_t runqueue(int argc, char** argv) {
         if (++i >= argc) usage();
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
-        rcomp = &kc::DECIMALCOMP;
+        rcomp = kc::DECIMALCOMP;
+      } else if (!std::strcmp(argv[i], "-rcld")) {
+        rcomp = kc::LEXICALDESCCOMP;
+      } else if (!std::strcmp(argv[i], "-rcdd")) {
+        rcomp = kc::DECIMALDESCCOMP;
       } else if (!std::strcmp(argv[i], "-lv")) {
         lv = true;
       } else {
@@ -478,7 +486,11 @@ static int32_t runwicked(int argc, char** argv) {
         if (++i >= argc) usage();
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
-        rcomp = &kc::DECIMALCOMP;
+        rcomp = kc::DECIMALCOMP;
+      } else if (!std::strcmp(argv[i], "-rcld")) {
+        rcomp = kc::LEXICALDESCCOMP;
+      } else if (!std::strcmp(argv[i], "-rcdd")) {
+        rcomp = kc::DECIMALDESCCOMP;
       } else if (!std::strcmp(argv[i], "-lv")) {
         lv = true;
       } else {
@@ -572,7 +584,11 @@ static int32_t runtran(int argc, char** argv) {
         if (++i >= argc) usage();
         pccap = kc::atoix(argv[i]);
       } else if (!std::strcmp(argv[i], "-rcd")) {
-        rcomp = &kc::DECIMALCOMP;
+        rcomp = kc::DECIMALCOMP;
+      } else if (!std::strcmp(argv[i], "-rcld")) {
+        rcomp = kc::LEXICALDESCCOMP;
+      } else if (!std::strcmp(argv[i], "-rcdd")) {
+        rcomp = kc::DECIMALDESCCOMP;
       } else if (!std::strcmp(argv[i], "-lv")) {
         lv = true;
       } else {

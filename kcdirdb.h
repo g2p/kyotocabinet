@@ -377,7 +377,7 @@ public:
     omode_(0), writer_(false), autotran_(false), autosync_(false), recov_(false), reorg_(false),
     file_(), curs_(), path_(""),
     libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEDIR),
-    flags_(0), opts_(0), count_(0), size_(0), opaque_(), embcomp_(&ZLIBRAWCOMP), comp_(NULL),
+    flags_(0), opts_(0), count_(0), size_(0), opaque_(), embcomp_(ZLIBRAWCOMP), comp_(NULL),
     tran_(false), trhard_(false), trcount_(0), trsize_(0), walpath_(""), tmppath_("") {
     _assert_(true);
   }

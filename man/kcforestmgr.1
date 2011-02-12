@@ -9,7 +9,7 @@ The command `\fBkcforestmgr\fR' is a utility for test and debugging of the file 
 .PP
 .RS
 .br
-\fBkcforestmgr create \fR[\fB\-otr\fR]\fB \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-rcd\fR]\fB \fIpath\fB\fR
+\fBkcforestmgr create \fR[\fB\-otr\fR]\fB \fR[\fB\-onl\fR|\fB\-otl\fR|\fB\-onr\fR]\fB \fR[\fB\-tc\fR]\fB \fR[\fB\-bnum \fInum\fB\fR]\fB \fR[\fB\-psiz \fInum\fB\fR]\fB \fR[\fB\-rcd\fR|\fB\-rcld\fR|\fB\-rcdd\fR]\fB \fIpath\fB\fR
 .RS
 Creates a database file.
 .RE
@@ -103,6 +103,10 @@ Options feature the following.
 \fB\-psiz \fInum\fR\fR : specifies the size of each page.
 .br
 \fB\-rcd\fR : use the decimal comparator instead of the lexical one.
+.br
+\fB\-rcld\fR : use the lexical descending comparator instead of the ascending one.
+.br
+\fB\-rcdd\fR : use the decimal descending comparator instead of the lexical one.
 .br
 \fB\-st\fR : prints miscellaneous information.
 .br

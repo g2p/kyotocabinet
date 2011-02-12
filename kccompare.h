@@ -49,6 +49,7 @@ public:
  */
 class LexicalComparator : public Comparator {
 public:
+  explicit LexicalComparator() {}
   int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
     _assert_(akbuf && bkbuf);
     size_t msiz = aksiz < bksiz ? aksiz : bksiz;
@@ -62,9 +63,25 @@ public:
 
 
 /**
+ * Comparator in the lexical descending order.
+ */
+class LexicalDescendingComparator : public Comparator {
+public:
+  explicit LexicalDescendingComparator() : comp_() {}
+  int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
+    return -comp_.compare(akbuf, aksiz, bkbuf, bksiz);
+  }
+private:
+  LexicalComparator comp_;
+};
+
+
+/**
  * Comparator in the decimal order.
  */
 class DecimalComparator : public Comparator {
+public:
+  explicit DecimalComparator() {}
   int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
     _assert_(akbuf && bkbuf);
     const int32_t LDBLCOLMAX = 16;
@@ -154,15 +171,41 @@ class DecimalComparator : public Comparator {
 
 
 /**
- * Prepared variable of the comparator in the lexical order.
+ * Comparator in the decimal descending order.
  */
-extern LexicalComparator LEXICALCOMP;
+class DecimalDescendingComparator : public Comparator {
+public:
+  explicit DecimalDescendingComparator() : comp_() {}
+  int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
+    return -comp_.compare(akbuf, aksiz, bkbuf, bksiz);
+  }
+private:
+  DecimalComparator comp_;
+};
 
 
 /**
- * Prepared variable of the comparator in the decimal order.
+ * Prepared pointer of the comparator in the lexical order.
  */
-extern DecimalComparator DECIMALCOMP;
+extern LexicalComparator* const LEXICALCOMP;
+
+
+/**
+ * Prepared pointer of the comparator in the lexical descending order.
+ */
+extern LexicalDescendingComparator* const LEXICALDESCCOMP;
+
+
+/**
+ * Prepared pointer of the comparator in the decimal order.
+ */
+extern DecimalComparator* const DECIMALCOMP;
+
+
+/**
+ * Prepared pointer of the comparator in the decimal descending order.
+ */
+extern DecimalDescendingComparator* const DECIMALDESCCOMP;
 
 
 }                                        // common namespace

@@ -392,9 +392,10 @@ uint32_t LZMA::calculate_crc(const void* buf, size_t size, uint32_t seed) {
 
 
 /**
- * Prepared variable of the ZLIB raw mode.
+ * Prepared pointer of the ZLIB raw mode.
  */
-ZLIBCompressor<ZLIB::RAW> ZLIBRAWCOMP;
+ZLIBCompressor<ZLIB::RAW> zlibrawfunc;
+ZLIBCompressor<ZLIB::RAW>* const ZLIBRAWCOMP = &zlibrawfunc;
 
 
 }                                        // common namespace

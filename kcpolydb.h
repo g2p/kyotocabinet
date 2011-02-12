@@ -405,11 +405,13 @@ public:
    * LZMA compressor, or "arc" for the Arcfour cipher.  "zkey" specifies the cipher key of the
    * compressor.  "capcnt" is for "cap_count".  "capsiz" is for "cap_size".  "psiz" is for
    * "tune_page".  "rcomp" is for "tune_comparator" and the value can be "lex" for the lexical
-   * comparator or "dec" for the decimal comparator.  "pccap" is for "tune_page_cache".  "apow"
-   * is for "tune_alignment".  "fpow" is for "tune_fbp".  "msiz" is for "tune_map".  "dfunit" is
-   * for "tune_defrag".  Every opened database must be closed by the PolyDB::close method when
-   * it is no longer in use.  It is not allowed for two or more database objects in the same
-   * process to keep their connections to the same database file at the same time.
+   * comparator, "dec" for the decimal comparator, "lexdesc" for the lexical descending
+   * comparator, or "decdesc" for the decimal descending comparator.  "pccap" is for
+   * "tune_page_cache".  "apow" is for "tune_alignment".  "fpow" is for "tune_fbp".  "msiz" is
+   * for "tune_map".  "dfunit" is for "tune_defrag".  Every opened database must be closed by
+   * the PolyDB::close method when it is no longer in use.  It is not allowed for two or more
+   * database objects in the same process to keep their connections to the same database file at
+   * the same time.
    */
   bool open(const std::string& path = ":", uint32_t mode = OWRITER | OCREATE) {
     _assert_(true);
@@ -573,9 +575,13 @@ public:
           pccap = atoix(value);
         } else if (!std::strcmp(key, "rcomp") || !std::strcmp(key, "comparator")) {
           if (!std::strcmp(value, "lex") || !std::strcmp(value, "lexical")) {
-            rcomp = &LEXICALCOMP;
+            rcomp = LEXICALCOMP;
           } else if (!std::strcmp(value, "dec") || !std::strcmp(value, "decimal")) {
-            rcomp = &DECIMALCOMP;
+            rcomp = DECIMALCOMP;
+          } else if (!std::strcmp(value, "lexdesc") || !std::strcmp(value, "lexicaldesc")) {
+            rcomp = LEXICALDESCCOMP;
+          } else if (!std::strcmp(value, "decdesc") || !std::strcmp(value, "decimaldesc")) {
+            rcomp = DECIMALDESCCOMP;
           }
         } else if (!std::strcmp(key, "zkey") || !std::strcmp(key, "pass") ||
                    !std::strcmp(key, "password")) {
@@ -657,7 +663,7 @@ public:
         zcomp_ = arccomp;
       } else if (zcompname == "arcz" || zcompname == "rc4z") {
         arccomp = new ArcfourCompressor();
-        arccomp->set_compressor(&ZLIBRAWCOMP);
+        arccomp->set_compressor(ZLIBRAWCOMP);
         zcomp_ = arccomp;
       }
     }
@@ -1052,7 +1058,7 @@ public:
     Comparator* comp;
     switch (type_) {
       case TYPEPTREE: {
-        comp = &LEXICALCOMP;
+        comp = LEXICALCOMP;
         break;
       }
       case TYPEGRASS: {
@@ -1081,7 +1087,7 @@ public:
     strvec->clear();
     Cursor* cur = cursor();
     int64_t curcnt = 0;
-    if (comp == &LEXICALCOMP) {
+    if (comp == LEXICALCOMP) {
       if (cur->jump(pbuf, psiz)) {
         while ((int64_t)strvec->size() < max) {
           size_t ksiz;
@@ -1228,7 +1234,7 @@ public:
         break;
       }
     }
-    if (!comp) comp = &LEXICALCOMP;
+    if (!comp) comp = LEXICALCOMP;
     std::priority_queue<MergeLine> lines;
     int64_t allcnt = 0;
     for (size_t i = 0; i < srcnum; i++) {
