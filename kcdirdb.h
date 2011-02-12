@@ -2162,7 +2162,7 @@ private:
   /** The method lock. */
   SpinRWLock mlock_;
   /** The record locks. */
-  SlottedSpinRWLock rlock_;
+  SlottedRWLock rlock_;
   /** The last happened error. */
   TSD<Error> error_;
   /** The internal logger. */

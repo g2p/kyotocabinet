@@ -3495,7 +3495,7 @@ private:
   /** The method lock. */
   SpinRWLock mlock_;
   /** The record locks. */
-  SlottedSpinRWLock rlock_;
+  SlottedRWLock rlock_;
   /** The file lock. */
   SpinLock flock_;
   /** The auto transaction lock. */

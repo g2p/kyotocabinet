@@ -2118,7 +2118,7 @@ private:
    * Slot cache of leaf nodes.
    */
   struct LeafSlot {
-    SpinLock lock;                       ///< lock
+    Mutex lock;                          ///< lock
     LeafCache* hot;                      ///< hot cache
     LeafCache* warm;                     ///< warm cache
   };
@@ -2206,7 +2206,7 @@ private:
     bool err = false;
     for (int32_t i = 0; i < PLDBSLOTNUM; i++) {
       LeafSlot* slot = lslots_ + i;
-      ScopedSpinLock lock(&slot->lock);
+      ScopedMutex lock(&slot->lock);
       typename LeafCache::Iterator it = slot->warm->begin();
       typename LeafCache::Iterator itend = slot->warm->end();
       while (it != itend) {
@@ -2232,7 +2232,7 @@ private:
   bool clean_leaf_cache_part(LeafSlot* slot) {
     _assert_(slot);
     bool err = false;
-    ScopedSpinLock lock(&slot->lock);
+    ScopedMutex lock(&slot->lock);
     if (slot->warm->count() > 0) {
       LeafNode* node = slot->warm->first_value();
       if (!save_leaf_node(node)) err = true;
@@ -2341,7 +2341,7 @@ private:
     _assert_(id > 0);
     int32_t sidx = id % PLDBSLOTNUM;
     LeafSlot* slot = lslots_ + sidx;
-    ScopedSpinLock lock(&slot->lock);
+    ScopedMutex lock(&slot->lock);
     LeafNode** np = slot->hot->get(id, LeafCache::MLAST);
     if (np) return *np;
     if (prom) {
