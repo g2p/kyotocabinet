@@ -2310,12 +2310,12 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"std::numeric_limits<int>::max()@Base" 1.2.41
  (c++)"std::numeric_limits<int>::min()@Base" 1.2.41
  (c++)"std::numeric_limits<unsigned int>::max()@Base" 1.2.41
- (c++)"std::numeric_limits<short>::max()@Base" 1.2.41
- (c++)"std::numeric_limits<short>::min()@Base" 1.2.41
- (c++)"std::numeric_limits<unsigned short>::max()@Base" 1.2.41
  (c++)"std::numeric_limits<long long>::max()@Base" 1.2.41
  (c++)"std::numeric_limits<long long>::min()@Base" 1.2.41
  (c++)"std::numeric_limits<unsigned long long>::max()@Base" 1.2.41
+ (c++)"std::numeric_limits<short>::max()@Base" 1.2.41
+ (c++)"std::numeric_limits<short>::min()@Base" 1.2.41
+ (c++)"std::numeric_limits<unsigned short>::max()@Base" 1.2.41
  (c++)"std::priority_queue<kyotocabinet::PolyDB::MergeLine, std::vector<kyotocabinet::PolyDB::MergeLine, std::allocator<kyotocabinet::PolyDB::MergeLine> >, std::less<kyotocabinet::PolyDB::MergeLine> >::pop()@Base" 1.2.31
  (c++)"std::priority_queue<kyotocabinet::PolyDB::MergeLine, std::vector<kyotocabinet::PolyDB::MergeLine, std::allocator<kyotocabinet::PolyDB::MergeLine> >, std::less<kyotocabinet::PolyDB::MergeLine> >::push(kyotocabinet::PolyDB::MergeLine const&)@Base" 1.2.31
  (c++)"std::priority_queue<kyotocabinet::PolyDB::MergeLine, std::vector<kyotocabinet::PolyDB::MergeLine, std::allocator<kyotocabinet::PolyDB::MergeLine> >, std::less<kyotocabinet::PolyDB::MergeLine> >::priority_queue(std::less<kyotocabinet::PolyDB::MergeLine> const&, std::vector<kyotocabinet::PolyDB::MergeLine, std::allocator<kyotocabinet::PolyDB::MergeLine> > const&)@Base" 1.2.31
@@ -2585,9 +2585,9 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"std::pair<std::_Rb_tree_const_iterator<int>, bool>::pair(std::_Rb_tree_const_iterator<int> const&, bool const&)@Base" 1.2.31
  (c++)"std::pair<std::_Rb_tree_const_iterator<unsigned int>, bool>::pair(std::_Rb_tree_const_iterator<unsigned int> const&, bool const&)@Base" 1.2.31
  (c++)"std::pair<bool, int>::pair(bool const&, int const&)@Base" 1.2.31
+ (c++)"std::pair<bool, unsigned long>::pair(bool const&, unsigned long const&)@Base" 1.2.31
  (c++)"std::pair<bool, unsigned int>::pair<bool, int>(std::pair<bool, int> const&)@Base" 1.2.31
  (c++)"std::pair<bool, unsigned int>::pair<bool, unsigned long>(std::pair<bool, unsigned long> const&)@Base" 1.2.31
- (c++)"std::pair<bool, unsigned long>::pair(bool const&, unsigned long const&)@Base" 1.2.31
  (c++)"std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> >::_M_insert_aux(__gnu_cxx::__normal_iterator<kyotocabinet::WALMessage*, std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> > >, kyotocabinet::WALMessage const&)@Base" 1.2.31
  (c++)"std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> >::end()@Base" 1.2.31
  (c++)"std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> >::begin()@Base" 1.2.31

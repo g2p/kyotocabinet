@@ -2587,6 +2587,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"std::pair<bool, int>::pair(bool const&, int const&)@Base" 1.2.31
  (c++)"std::pair<bool, unsigned long>::pair(bool const&, unsigned long const&)@Base" 1.2.31
  (c++)"std::pair<bool, unsigned long>::pair<bool, int>(std::pair<bool, int> const&)@Base" 1.2.31
+#
  (c++)"std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> >::_M_insert_aux(__gnu_cxx::__normal_iterator<kyotocabinet::WALMessage*, std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> > >, kyotocabinet::WALMessage const&)@Base" 1.2.31
  (c++)"std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> >::end()@Base" 1.2.31
  (c++)"std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> >::begin()@Base" 1.2.31
