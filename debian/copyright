@@ -1,12 +1,13 @@
 This package was dowloaded from http://fallabs.com/kyotocabinet/pkg/
 
 Files: debian/*
-Copyright: © 2007 Pierre Habouzit <madcoder@debian.org>
+Copyright: (C) 2007 Pierre Habouzit <madcoder@debian.org>
+Copyright: (C) 2011 Gabriel de Perthuis <g2p.code+debian@gmail.com>
 License: BSD
  The Debian Packaging is under the BSD license.
 
 Files: *
-Copyright: Copyright (C) 2010 Mikio Hirabayashi
+Copyright: (C) 2010 Mikio Hirabayashi
 License: GPL-3+
 Copyright:
  Kyoto Cabinet is free software; you can redistribute it and/or modify it
