@@ -1,3 +1,16 @@
+kyotocabinet (1.2.43-1) unstable; urgency=low
+
+  * Symbols update. Some signatures changed resulting in missing
+    symbols.
+  * Remove some unused rules.
+  * Simplify rules
+  * Rename debian branch.
+  * Demangled symbols for both archs.
+  * Align symbols
+  * Imported Upstream version 1.2.43
+
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Sat, 12 Feb 2011 22:56:18 +0100
+
 kyotocabinet (1.2.42-1) unstable; urgency=low
 
   * Imported Upstream version 1.2.42
