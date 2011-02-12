@@ -131,7 +131,7 @@ inline int64_t myrand(int64_t range) {
   g_rnd_y = g_rnd_z;
   g_rnd_z = g_rnd_w;
   g_rnd_w = (g_rnd_w ^ (g_rnd_w >> 19)) ^ (t ^ (t >> 8));
-  return (g_rnd_w & INT64_MAX) % range;
+  return (g_rnd_w & kc::INT64MAX) % range;
 }
 
 

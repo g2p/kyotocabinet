@@ -338,7 +338,7 @@ public:
    * @param kbuf the pointer to the key region.
    * @param ksiz the size of the key region.
    * @param num the additional number.
-   * @return the result value, or INT64_MIN on failure.
+   * @return the result value, or kyotocabinet::INT64MIN on failure.
    * @note If no record corresponds to the key, a new record is created with the initial value
    * set by the additional value.  The value is serialized as an 8-byte binary integer in
    * big-endian order, not a decimal string.  If existing value is not 8-byte, this function
@@ -1454,7 +1454,7 @@ public:
    * @param kbuf the pointer to the key region.
    * @param ksiz the size of the key region.
    * @param num the additional number.
-   * @return the result value, or INT64_MIN on failure.
+   * @return the result value, or kyotocabinet::INT64MIN on failure.
    * @note If no record corresponds to the key, a new record is created with the initial value
    * set by the additional value.  The value is serialized as an 8-byte binary integer in
    * big-endian order, not a decimal string.  If existing value is not 8-byte, this function
@@ -1472,7 +1472,7 @@ public:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         if (vsiz != sizeof(num_)) {
-          num_ = INT64_MIN;
+          num_ = INT64MIN;
           return NOP;
         }
         int64_t onum;
@@ -1496,9 +1496,9 @@ public:
       uint64_t big_;
     };
     VisitorImpl visitor(num);
-    if (!accept(kbuf, ksiz, &visitor, true)) return INT64_MIN;
+    if (!accept(kbuf, ksiz, &visitor, true)) return INT64MIN;
     num = visitor.num();
-    if (num == INT64_MIN) {
+    if (num == INT64MIN) {
       set_error(_KCCODELINE_, Error::LOGIC, "logical inconsistency");
       return num;
     }
@@ -1543,13 +1543,13 @@ public:
         linteg = ntoh64(linteg);
         std::memcpy(&lfract, vbuf + sizeof(linteg), sizeof(lfract));
         lfract = ntoh64(lfract);
-        if (lfract == INT64_MIN && linteg == INT64_MIN) {
+        if (lfract == INT64MIN && linteg == INT64MIN) {
           num_ = nan();
           return NOP;
-        } else if (linteg == INT64_MAX) {
+        } else if (linteg == INT64MAX) {
           num_ = HUGE_VAL;
           return NOP;
-        } else if (linteg == INT64_MIN) {
+        } else if (linteg == INT64MIN) {
           num_ = -HUGE_VAL;
           return NOP;
         }
@@ -1560,11 +1560,11 @@ public:
         long double dinteg;
         long double dfract = std::modfl(num_, &dinteg);
         if (chknan(dinteg)) {
-          linteg = INT64_MIN;
-          lfract = INT64_MIN;
+          linteg = INT64MIN;
+          lfract = INT64MIN;
           num_ = nan();
         } else if (chkinf(dinteg)) {
-          linteg = dinteg > 0 ? INT64_MAX : INT64_MIN;
+          linteg = dinteg > 0 ? INT64MAX : INT64MIN;
           lfract = 0;
           num_ = dinteg;
         } else {
@@ -1588,10 +1588,10 @@ public:
         long double dfract = std::modfl(num_, &dinteg);
         int64_t linteg, lfract;
         if (chknan(dinteg)) {
-          linteg = INT64_MIN;
-          lfract = INT64_MIN;
+          linteg = INT64MIN;
+          lfract = INT64MIN;
         } else if (chkinf(dinteg)) {
-          linteg = dinteg > 0 ? INT64_MAX : INT64_MIN;
+          linteg = dinteg > 0 ? INT64MAX : INT64MIN;
           lfract = 0;
         } else {
           linteg = (int64_t)dinteg;

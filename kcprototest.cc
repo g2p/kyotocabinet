@@ -1618,7 +1618,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
               case 4: {
                 if (myrand(2) == 0) {
                   int64_t num = myrand(rnum_);
-                  if (db_->increment(kbuf, ksiz, num) == INT64_MIN &&
+                  if (db_->increment(kbuf, ksiz, num) == kc::INT64MIN &&
                       db_->error() != kc::BasicDB::Error::LOGIC) {
                     dberrprint(db_, __LINE__, "DB::increment");
                     err_ = true;

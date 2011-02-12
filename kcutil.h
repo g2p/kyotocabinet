@@ -70,7 +70,7 @@ const size_t NUMBUFSIZ = 32;
 
 
 /** The maximum memory size for debugging. */
-const size_t MEMMAXSIZ = INT32_MAX / 2;
+const size_t MEMMAXSIZ = INT32MAX / 2;
 
 
 /**
@@ -86,8 +86,8 @@ int64_t atoi(const char* str);
  * @param str the decimal string, which can be trailed by a binary metric prefix.  "K", "M", "G",
  * "T", "P", and "E" are supported.  They are case-insensitive.
  * @return the integer.  If the string does not contain numeric expression, 0 is returned.  If
- * the integer overflows the domain, INT64_MAX or INT64_MIN is returned according to the
- * sign.
+ * the integer overflows the domain, kyotocabinet::INT64MAX or kyotocabinet::INT64_MIN is
+ * returned according to the sign.
  */
 int64_t atoix(const char* str);
 
@@ -739,8 +739,8 @@ inline int64_t atoix(const char* str) {
   } else if (*str == 'e' || *str == 'E') {
     num *= 1LL << 60;
   }
-  if (num > INT64_MAX) return INT64_MAX;
-  if (num < INT64_MIN) return INT64_MIN;
+  if (num > INT64MAX) return INT64MAX;
+  if (num < INT64MIN) return INT64MIN;
   return (int64_t)num;
 }
 

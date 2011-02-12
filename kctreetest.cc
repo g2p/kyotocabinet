@@ -629,7 +629,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
   oprintf("opening the database:\n");
   double stime = kc::time();
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (apow >= 0) db.tune_alignment(apow);
   if (fpow >= 0) db.tune_fbp(fpow);
   if (opts > 0) db.tune_options(opts);
@@ -1664,7 +1664,7 @@ static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t 
   bool err = false;
   kc::TreeDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (apow >= 0) db.tune_alignment(apow);
   if (fpow >= 0) db.tune_fbp(fpow);
   if (opts > 0) db.tune_options(opts);
@@ -1871,7 +1871,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
   bool err = false;
   kc::TreeDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (apow >= 0) db.tune_alignment(apow);
   if (fpow >= 0) db.tune_fbp(fpow);
   if (opts > 0) db.tune_options(opts);
@@ -1981,7 +1981,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
               case 4: {
                 if (myrand(2) == 0) {
                   int64_t num = myrand(rnum_);
-                  if (db_->increment(kbuf, ksiz, num) == INT64_MIN &&
+                  if (db_->increment(kbuf, ksiz, num) == kc::INT64MIN &&
                       db_->error() != kc::BasicDB::Error::LOGIC) {
                     dberrprint(db_, __LINE__, "DB::increment");
                     err_ = true;
@@ -2219,9 +2219,9 @@ static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t i
   kc::TreeDB db;
   kc::TreeDB paradb;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
-  paradb.tune_logger(stdlogger(g_progname, &std::cout),
-                     lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+  paradb.tune_logger(stdlogger(g_progname, &std::cout), lv ? kc::UINT32MAX :
+                     kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (apow >= 0) db.tune_alignment(apow);
   if (fpow >= 0) db.tune_fbp(fpow);
   if (opts > 0) db.tune_options(opts);

@@ -1,3 +1,13 @@
+2011-02-07  Mikio Hirabayashi  <info@fallabs.com>
+
+	* kccommon.h: macros for integer range were added.
+
+	* kchashdb.h (HashDB::begin_transaction): behavior of locking was modified.
+
+	* kcdirdb.h (DirDB::begin_transaction): behavior of locking was modified.
+
+	- Release: 1.2.41
+
 2011-02-05  Mikio Hirabayashi  <info@fallabs.com>
 
 	* kccompare.h (LexicalDescendingComparator, LexicalDescendingComparator): new classes.

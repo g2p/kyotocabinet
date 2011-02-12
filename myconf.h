@@ -90,9 +90,9 @@
 
 #endif
 
-#define _KC_VERSION    "1.2.40"
+#define _KC_VERSION    "1.2.41"
 #define _KC_LIBVER     9
-#define _KC_LIBREV     1
+#define _KC_LIBREV     2
 #define _KC_FMTVER     5
 
 #if defined(_MYBIGEND)
@@ -164,9 +164,6 @@
  * general headers
  *************************************************************************************************/
 
-
-#undef __STDC_LIMIT_MACROS
-#define __STDC_LIMIT_MACROS 1
 
 extern "C" {
 #include <assert.h>

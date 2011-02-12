@@ -349,7 +349,7 @@ private:
     delete[] tbuf;
     if (cycle_) {
       size_t range = zsiz - sizeof(salt);
-      if (range > INT8_MAX) range = INT8_MAX;
+      if (range > (size_t)INT8MAX) range = INT8MAX;
       salt_.add(hashmurmur(zbuf + sizeof(salt), range) << 32);
     }
     *sp = zsiz;

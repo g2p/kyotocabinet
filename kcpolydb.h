@@ -1054,7 +1054,7 @@ public:
     _assert_(strvec);
     const char* pbuf = prefix.data();
     size_t psiz = prefix.size();
-    if (max < 0) max = INT64_MAX;
+    if (max < 0) max = INT64MAX;
     Comparator* comp;
     switch (type_) {
       case TYPEPTREE: {
@@ -1154,7 +1154,7 @@ public:
   int64_t match_regex(const std::string& regex, std::vector<std::string>* strvec,
                       int64_t max = -1, ProgressChecker* checker = NULL) {
     _assert_(strvec);
-    if (max < 0) max = INT64_MAX;
+    if (max < 0) max = INT64MAX;
     Regex reg;
     if (!reg.compile(regex, Regex::MATCHONLY)) {
       set_error(_KCCODELINE_, Error::LOGIC, "compilation failed");

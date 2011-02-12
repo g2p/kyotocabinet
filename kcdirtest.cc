@@ -409,7 +409,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
   oprintf("opening the database:\n");
   double stime = kc::time();
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   uint32_t omode = kc::DirDB::OWRITER | kc::DirDB::OCREATE | kc::DirDB::OTRUNCATE;
   if (mode == 'r') {
@@ -1429,7 +1429,7 @@ static int32_t procqueue(const char* path, int64_t rnum, int32_t thnum, int32_t 
   bool err = false;
   kc::DirDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     if (itnum > 1) oprintf("iteration %d:\n", itcnt);
@@ -1623,7 +1623,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
   bool err = false;
   kc::DirDB db;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     if (itnum > 1) oprintf("iteration %d:\n", itcnt);
@@ -1725,7 +1725,7 @@ static int32_t procwicked(const char* path, int64_t rnum, int32_t thnum, int32_t
               case 4: {
                 if (myrand(2) == 0) {
                   int64_t num = myrand(rnum_);
-                  if (db_->increment(kbuf, ksiz, num) == INT64_MIN &&
+                  if (db_->increment(kbuf, ksiz, num) == kc::INT64MIN &&
                       db_->error() != kc::BasicDB::Error::LOGIC) {
                     dberrprint(db_, __LINE__, "DB::increment");
                     err_ = true;
@@ -1938,9 +1938,9 @@ static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t i
   kc::DirDB db;
   kc::DirDB paradb;
   db.tune_logger(stdlogger(g_progname, &std::cout),
-                 lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
-  paradb.tune_logger(stdlogger(g_progname, &std::cout),
-                     lv ? UINT32_MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+                 lv ? kc::UINT32MAX : kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
+  paradb.tune_logger(stdlogger(g_progname, &std::cout), lv ? kc::UINT32MAX :
+                     kc::BasicDB::Logger::WARN | kc::BasicDB::Logger::ERROR);
   if (opts > 0) db.tune_options(opts);
   for (int32_t itcnt = 1; itcnt <= itnum; itcnt++) {
     oprintf("iteration %d updating:\n", itcnt);

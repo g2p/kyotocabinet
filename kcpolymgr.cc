@@ -937,7 +937,7 @@ static int32_t procset(const char* path, const char* kbuf, size_t ksiz,
     }
     case 'i': {
       int64_t onum = db.increment(kbuf, ksiz, kc::atoi(vbuf));
-      if (onum == INT64_MIN) {
+      if (onum == kc::INT64MIN) {
         dberrprint(&db, "DB::increment failed");
         err = true;
       } else {
@@ -1041,7 +1041,7 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
     bool px_;
   } visitor(pv, px);
   if (kbuf || des || max >= 0) {
-    if (max < 0) max = INT64_MAX;
+    if (max < 0) max = kc::INT64MAX;
     kc::PolyDB::Cursor cur(&db);
     if (des) {
       if (kbuf) {
