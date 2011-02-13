@@ -9,6 +9,8 @@ Build-Depends:
  zlib1g-dev
 Standards-Version: 3.9.1
 Section: libs
+Vcs-Git: https://github.com/g2p/kyotocabinet.git
+Vcs-Browser: https://github.com/g2p/kyotocabinet
 Homepage: http://fallabs.com/kyotocabinet/
 
 Package: libkyotocabinet9
