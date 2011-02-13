@@ -10,7 +10,7 @@ Signed-off-by: Pierre Habouzit <madcoder@debian.org>
  3 files changed, 32 insertions(+), 35 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 1bf1946..3d927fd 100644
+index f380561..7c46e8a 100644
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -55,8 +55,7 @@ CXXFLAGS = @MYCXXFLAGS@
@@ -23,7 +23,7 @@ index 1bf1946..3d927fd 100644
  POSTCMD = @MYPOSTCMD@
  
  
-@@ -1006,71 +1005,71 @@ libkyotocabinet.dylib : libkyotocabinet.$(LIBVER).$(LIBREV).0.dylib
+@@ -1029,71 +1028,71 @@ libkyotocabinet.dylib : libkyotocabinet.$(LIBVER).$(LIBREV).0.dylib
  
  
  kcutiltest : kcutiltest.o $(LIBRARYFILES)
@@ -113,7 +113,7 @@ index 1bf1946..3d927fd 100644
  
  kcutil.o : kccommon.h kcutil.h myconf.h
 diff --git a/configure b/configure
-index 6ca944e..254ed21 100755
+index b852198..2146444 100755
 --- a/configure
 +++ b/configure
 @@ -2099,22 +2099,21 @@ MYPCFILES="kyotocabinet.pc"
@@ -147,7 +147,7 @@ index 6ca944e..254ed21 100755
  
  
 diff --git a/configure.in b/configure.in
-index 4b1ffa3..68b2bd5 100644
+index 657a297..5660d95 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -37,22 +37,21 @@ MYPCFILES="kyotocabinet.pc"

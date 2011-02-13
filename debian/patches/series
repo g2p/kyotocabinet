@@ -3,3 +3,4 @@
 0003-Don-t-drop-a-shared-ccache.patch
 0004-Link-as-needed-to-avoid-creating-unnecessary-depende.patch
 0005-Tweak-links-for-browsing-installed-docs.patch
+0006-Don-t-run-ldconfig-when-DESTDIR-is-defined-it-s-slow.patch

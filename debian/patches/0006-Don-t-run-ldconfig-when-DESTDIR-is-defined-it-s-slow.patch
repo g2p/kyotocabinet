@@ -1,0 +1,32 @@
+From: Gabriel <g2p.code+debian@gmail.com>
+Date: Sun, 13 Feb 2011 11:20:01 +0100
+Subject: [PATCH] Don't run ldconfig when DESTDIR is defined, it's slow and unnecessary.
+
+Could also test for FAKED_MODE to specifically exclude fakeroot builds.
+---
+ Makefile.in |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index 081704a..d981d66 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -124,7 +124,7 @@ install :
+ 	cp -Rf $(DOCUMENTFILES) $(DESTDIR)$(DOCDIR)
+ 	mkdir -p $(DESTDIR)$(PCDIR)
+ 	cp -Rf $(PCFILES) $(DESTDIR)$(PCDIR)
+-	-[ "$$UID" = 0 ] && PATH=/sbin:/usr/sbin:$(PATH) ldconfig 2>/dev/null || true
++	-[ "$$UID" = 0 -a -z "$$DESTDIR" ] && PATH=/sbin:/usr/sbin:$(PATH) ldconfig 2>/dev/null || true
+ 	@printf '\n'
+ 	@printf '#================================================================\n'
+ 	@printf '# Thanks for using Kyoto Cabinet.\n'
+@@ -143,7 +143,7 @@ uninstall :
+ 	-cd $(DESTDIR)$(MAN1DIR) && rm -f $(MAN1FILES)
+ 	-cd $(DESTDIR)$(DOCDIR) && rm -rf $(DOCUMENTFILES) && rmdir $(DOCDIR)
+ 	-cd $(DESTDIR)$(PCDIR) && rm -f $(PCFILES)
+-	-[ "$$UID" = 0 ] && PATH=/sbin:/usr/sbin:$(PATH) ldconfig 2>/dev/null || true
++	-[ "$$UID" = 0 && -z "$$FAKED_MODE" ] && PATH=/sbin:/usr/sbin:$(PATH) ldconfig 2>/dev/null || true
+ 
+ 
+ dist :
+-- 

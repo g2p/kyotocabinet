@@ -7,7 +7,7 @@ Subject: [PATCH] Tweak links for browsing installed docs
  1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/doc/index.html b/doc/index.html
-index b9cb622..99c36be 100644
+index b16c9e5..e813cb1 100644
 --- a/doc/index.html
 +++ b/doc/index.html
 @@ -75,13 +75,13 @@
