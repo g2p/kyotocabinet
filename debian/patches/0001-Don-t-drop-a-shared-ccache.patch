@@ -9,10 +9,10 @@ Subject: [PATCH] Don't drop a shared ccache.
  3 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile.in b/Makefile.in
-index 7c46e8a..081704a 100644
+index f380561..813f78d 100644
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -158,7 +158,7 @@ distclean : clean
+@@ -159,7 +159,7 @@ distclean : clean
  	cd example && $(MAKE) clean
  	rm -rf Makefile kyotocabinet.pc \
  	  config.cache config.log config.status config.tmp autom4te.cache
@@ -22,10 +22,10 @@ index 7c46e8a..081704a 100644
  
  check :
 diff --git a/configure b/configure
-index 2146444..37a19c9 100755
+index b852198..0ca3942 100755
 --- a/configure
 +++ b/configure
-@@ -3365,7 +3365,7 @@ fi
+@@ -3366,7 +3366,7 @@ fi
    then
      CC="ccache $CC"
      CXX="ccache $CXX"
@@ -35,10 +35,10 @@ index 2146444..37a19c9 100755
  fi
  
 diff --git a/configure.in b/configure.in
-index 5660d95..a8eb55a 100644
+index 657a297..e41f2a5 100644
 --- a/configure.in
 +++ b/configure.in
-@@ -185,7 +185,7 @@ then
+@@ -186,7 +186,7 @@ then
    then
      CC="ccache $CC"
      CXX="ccache $CXX"

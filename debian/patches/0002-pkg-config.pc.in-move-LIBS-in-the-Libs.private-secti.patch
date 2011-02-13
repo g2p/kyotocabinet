@@ -10,7 +10,7 @@ Signed-off-by: Pierre Habouzit <madcoder@debian.org>
  1 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/kyotocabinet.pc.in b/kyotocabinet.pc.in
-index 06e2276..6ddd073 100644
+index 06e2276..a445920 100644
 --- a/kyotocabinet.pc.in
 +++ b/kyotocabinet.pc.in
 @@ -10,5 +10,6 @@ datadir=@datadir@
@@ -19,6 +19,6 @@ index 06e2276..6ddd073 100644
  Version: @PACKAGE_VERSION@
 -Libs: -L${libdir} -lkyotocabinet @LIBS@
 +Libs: -L${libdir} -lkyotocabinet
- Cflags: -I${includedir}
 +Libs.private: @LIBS@
+ Cflags: -I${includedir}
 -- 
