@@ -1,6 +1,5 @@
 kyotocabinet (1.2.43-1) unstable; urgency=low
 
-  * First public release.
+  * Initial release. (Closes: #613450: ITP: kyotocabinet)
 
- -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Sat, 12 Feb 2011 22:56:18 +0100
-
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Mon, 14 Feb 2011 23:23:07 +0100
