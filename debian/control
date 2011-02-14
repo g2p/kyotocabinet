@@ -19,7 +19,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Kyoto Cabinet database runtime libraries
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
- It provideas a hash database and a B+ tree database and is developed as a
+ It provides a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
  .
  This is the runtime package for programs that use the Kyoto Cabinet database
@@ -31,7 +31,7 @@ Architecture: any
 Depends: libkyotocabinet9 (= ${binary:Version}), ${misc:Depends}
 Description: Kyoto Cabinet database debugging symbols
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
- It provideas a hash database and a B+ tree database and is developed as a
+ It provides a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
  .
  These are the debugging symbols for the library and its utilities.
@@ -42,7 +42,7 @@ Architecture: any
 Depends: libkyotocabinet9 (= ${binary:Version}), ${misc:Depends}
 Description: Kyoto Cabinet database development files
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
- It provideas a hash database and a B+ tree database and is developed as a
+ It provides a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
  .
  This is the development package which contains headers and static libraries
@@ -55,7 +55,7 @@ Priority: optional
 Depends: ${misc:Depends}
 Description: Kyoto Cabinet database documentation
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
- It provideas a hash database and a B+ tree database and is developed as a
+ It provides a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
  .
  This package contains the documentation for all the APIs and utilities
@@ -68,7 +68,7 @@ Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Kyoto Cabinet database utilities
  Kyoto Cabinet is an efficient database library like GDBM and NDBM.
- It provideas a hash database and a B+ tree database and is developed as a
+ It provides a hash database and a B+ tree database and is developed as a
  sibling of Tokyo Cabinet, focusing on parallelism and portability.
  .
  This is the Kyoto Cabinet database utilities package. It contains various
