@@ -962,7 +962,7 @@ public:
     while (it != itend) {
       Task* task = *it;
       task->aborted_ = true;
-      it++;
+      ++it;
     }
     cond_.broadcast();
     mutex_.unlock();

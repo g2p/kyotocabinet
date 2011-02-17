@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "myconf.h"
 #include "kcdbext.h"
+#include "myconf.h"
 
 namespace kyotocabinet {                 // common namespace
 

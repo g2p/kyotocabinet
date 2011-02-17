@@ -31,49 +31,6 @@ namespace kyotocabinet {                 // common namespace
 
 
 /**
- * Constants for implementation.
- */
-namespace {
-const size_t PRDBHASHBNUM = 1048583LL;   ///< bucket number of hash table
-const size_t PRDBOPAQUESIZ = 16;         ///< size of the opaque buffer
-const uint32_t PRDBLOCKBUSYLOOP = 8192;  ///< threshold of busy loop and sleep for locking
-}
-
-
-/**
- * Helper functions.
- */
-namespace {
-template <class STRMAP>
-typename STRMAP::iterator map_find(STRMAP* map, const std::string& key) {
-  return map->find(key);
-}
-template <>
-StringTreeMap::iterator map_find(StringTreeMap* map, const std::string& key) {
-  StringTreeMap::iterator it = map->find(key);
-  if (it != map->end()) return it;
-  return map->upper_bound(key);
-}
-template <class STRMAP>
-void map_tune(STRMAP* map) {}
-template <>
-void map_tune(StringHashMap* map) {
-  map->rehash(PRDBHASHBNUM);
-  map->max_load_factor(FLT_MAX);
-}
-template <class ITER>
-bool iter_back(ITER* itp) {
-  return false;
-}
-template <>
-bool iter_back(StringTreeMap::iterator* itp) {
-  --(*itp);
-  return true;
-}
-}
-
-
-/**
  * Prototype implementation of database with STL.
  * @param STRMAP a class compatible with the map class of STL.
  * @param DBTYPE the database type number of the class.
@@ -93,6 +50,7 @@ public:
   class Cursor;
 private:
   struct TranLog;
+  class ScopedVisitor;
   /** An alias of list of cursors. */
   typedef std::list<Cursor*> CursorList;
   /** An alias of list of transaction logs. */
@@ -164,7 +122,7 @@ public:
           while (cit != citend) {
             Cursor* cur = *cit;
             if (cur != this && cur->it_ == it_) cur->it_++;
-            cit++;
+            ++cit;
           }
         }
         db_->recs_.erase(it_++);
@@ -214,7 +172,7 @@ public:
         return false;
       }
       std::string key(kbuf, ksiz);
-      it_ = map_find(&db_->recs_, key);
+      search(key);
       if (it_ == db_->recs_.end()) {
         db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
@@ -245,7 +203,7 @@ public:
         db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
-      if (!iter_back(&it_)) {
+      if (!iter_back()) {
         db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
         return false;
       }
@@ -265,13 +223,13 @@ public:
         return false;
       }
       std::string key(kbuf, ksiz);
-      it_ = map_find(&db_->recs_, key);
+      search(key);
       if (it_ == db_->recs_.end()) {
         if (it_ == db_->recs_.begin()) {
           db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
           return false;
         }
-        if (!iter_back(&it_)) {
+        if (!iter_back()) {
           db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
           return false;
         }
@@ -283,7 +241,7 @@ public:
             it_ = db_->recs_.end();
             return false;
           }
-          if (!iter_back(&it_)) {
+          if (!iter_back()) {
             db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
             it_ = db_->recs_.end();
             return false;
@@ -339,8 +297,9 @@ public:
         it_ = db_->recs_.end();
         return false;
       }
-      if (!iter_back(&it_)) {
+      if (!iter_back()) {
         db_->set_error(_KCCODELINE_, Error::NOIMPL, "not implemented");
+        it_ = db_->recs_.end();
         return false;
       }
       return true;
@@ -354,6 +313,15 @@ public:
       return db_;
     }
   private:
+    /**
+     * Search for a record.
+     */
+    void search(const std::string& key);
+    /**
+     * Place back the inner iterator.
+     * @return true on success, or false on failure.
+     */
+    bool iter_back();
     /** Dummy constructor to forbid the use. */
     Cursor(const Cursor&);
     /** Dummy Operator to forbid the use. */
@@ -371,7 +339,7 @@ public:
     omode_(0), recs_(), curs_(), path_(""), size_(0), opaque_(),
     tran_(false), trlogs_(), trsize_(0) {
     _assert_(true);
-    map_tune(&recs_);
+    map_tune();
   }
   /**
    * Destructor.
@@ -386,7 +354,7 @@ public:
       while (cit != citend) {
         Cursor* cur = *cit;
         cur->db_ = NULL;
-        cit++;
+        ++cit;
       }
     }
   }
@@ -442,7 +410,7 @@ public:
             while (cit != citend) {
               Cursor* cur = *cit;
               if (cur->it_ == it) cur->it_++;
-              cit++;
+              ++cit;
             }
           }
           recs_.erase(it);
@@ -506,6 +474,8 @@ public:
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
+    ScopedVisitor svis(visitor);
+    if (keys.empty()) return true;
     std::vector<std::string>::const_iterator kit = keys.begin();
     std::vector<std::string>::const_iterator kitend = keys.end();
     while (kit != kitend) {
@@ -539,7 +509,7 @@ public:
             while (cit != citend) {
               Cursor* cur = *cit;
               if (cur->it_ == it) cur->it_++;
-              cit++;
+              ++cit;
             }
           }
           recs_.erase(it);
@@ -553,7 +523,7 @@ public:
           it->second = std::string(vbuf, vsiz);
         }
       }
-      kit++;
+      ++kit;
     }
     return true;
   }
@@ -577,6 +547,7 @@ public:
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
+    ScopedVisitor svis(visitor);
     int64_t allcnt = recs_.size();
     if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
       set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
@@ -595,12 +566,12 @@ public:
         size_ -= key.size() + value.size();
         recs_.erase(it++);
       } else if (vbuf == Visitor::NOP) {
-        it++;
+        ++it;
       } else {
         size_ -= value.size();
         size_ += vsiz;
         it->second = std::string(vbuf, vsiz);
-        it++;
+        ++it;
       }
       curcnt++;
       if (checker && !checker->check("iterate", "processing", curcnt, allcnt)) {
@@ -696,7 +667,7 @@ public:
       while (cit != citend) {
         Cursor* cur = *cit;
         cur->it_ = recs_.end();
-        cit++;
+        ++cit;
       }
     }
     path_.clear();
@@ -762,7 +733,7 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wcnt >= PRDBLOCKBUSYLOOP) {
+      if (wcnt >= LOCKBUSYLOOP) {
         Thread::chill();
       } else {
         Thread::yield();
@@ -828,14 +799,14 @@ public:
         while (cit != citend) {
           Cursor* cur = *cit;
           cur->it_ = recs_.end();
-          cit++;
+          ++cit;
         }
       }
       const TranLogList& logs = trlogs_;
       typename TranLogList::const_iterator lit = logs.end();
       typename TranLogList::const_iterator litbeg = logs.begin();
       while (lit != litbeg) {
-        lit--;
+        --lit;
         if (lit->full) {
           recs_[lit->key] = lit->value;
         } else {
@@ -867,7 +838,7 @@ public:
       while (cit != citend) {
         Cursor* cur = *cit;
         cur->it_ = recs_.end();
-        cit++;
+        ++cit;
       }
     }
     std::memset(opaque_, 0, sizeof(opaque_));
@@ -1083,6 +1054,10 @@ protected:
     if (mtrigger_) mtrigger_->trigger(kind, message);
   }
 private:
+  /** The size of the opaque buffer. */
+  static const size_t OPAQUESIZ = 16;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
   /**
    * Transaction log.
    */
@@ -1100,6 +1075,28 @@ private:
       _assert_(true);
     }
   };
+  /**
+   * Scoped visiotor.
+   */
+  class ScopedVisitor {
+  public:
+    /** constructor */
+    ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
+      _assert_(visitor);
+      visitor_->visit_before();
+    }
+    /** destructor */
+    ~ScopedVisitor() {
+      _assert_(true);
+      visitor_->visit_after();
+    }
+  private:
+    Visitor* visitor_;                   ///< visitor
+  };
+  /**
+   * Tune the internal map object.
+   */
+  void map_tune();
   /** Dummy constructor to forbid the use. */
   ProtoDB(const ProtoDB&);
   /** Dummy Operator to forbid the use. */
@@ -1125,7 +1122,7 @@ private:
   /** The total size of records. */
   int64_t size_;
   /** The opaque data. */
-  char opaque_[PRDBOPAQUESIZ];
+  char opaque_[OPAQUESIZ];
   /** The flag whether in transaction. */
   bool tran_;
   /** The transaction logs. */
@@ -1133,6 +1130,67 @@ private:
   /** The old size before transaction. */
   size_t trsize_;
 };
+
+
+/**
+ * Search for a record.
+ */
+template <class STRMAP, uint8_t DBTYPE>
+inline void ProtoDB<STRMAP, DBTYPE>::Cursor::search(const std::string& key) {
+  _assert_(true);
+  it_ = db_->recs_.find(key);
+}
+
+
+/**
+ * Search for a record.
+ */
+template <>
+inline void ProtoDB<StringTreeMap, BasicDB::TYPEPTREE>::Cursor::search(const std::string& key) {
+  _assert_(true);
+  it_ = db_->recs_.lower_bound(key);
+}
+
+
+/**
+ * Place back the inner iterator.
+ */
+template <class STRMAP, uint8_t DBTYPE>
+inline bool ProtoDB<STRMAP, DBTYPE>::Cursor::iter_back() {
+  _assert_(true);
+  return false;
+}
+
+
+/**
+ * Place back the inner iterator.
+ */
+template <>
+inline bool ProtoDB<StringTreeMap, BasicDB::TYPEPTREE>::Cursor::iter_back() {
+  _assert_(true);
+  --it_;
+  return true;
+}
+
+
+/**
+ * Tune the internal map object.
+ */
+template <class STRMAP, uint8_t DBTYPE>
+inline void ProtoDB<STRMAP, DBTYPE>::map_tune() {
+  _assert_(true);
+}
+
+
+/**
+ * Tune the internal map object.
+ */
+template <>
+inline void ProtoDB<StringHashMap, BasicDB::TYPEPHASH>::map_tune() {
+  _assert_(true);
+  recs_.rehash(1048583LL);
+  recs_.max_load_factor(FLT_MAX);
+}
 
 
 /** An alias of the prototype hash database. */

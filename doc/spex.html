@@ -281,6 +281,8 @@
 
 <p>By default, the library is built with linking to `<code>LIBCMT.LIB</code>' by the `<code>/MT</code>' option.  If you want to use `<code>MSVCRT.LIB</code>', which is required by the MFC, rebuild the library with the `<code>/MD</code>' option and set the same option when building applications.  If your environment is 64-bit version, add the `<code>/D_SYS_WIN64_</code>' option to compiler options to improve performance.</p>
 
+<p>Many people use virus checking softwares on Windows.  However, they are harmful for database softwares.  To avoid unexpected errors and performance overhead of database functions, set aside the data directory from virus checking.  If the above self-diagnostic test fails, please confirm the configuration of the virus checker first.</p>
+
 <hr />
 
 <h2 id="tutorial">Tutorial</h2>

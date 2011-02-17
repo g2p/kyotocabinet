@@ -123,7 +123,7 @@ static void dbmetaprint(kc::BasicDB* db, bool verbose) {
       std::map<std::string, std::string>::iterator itend = status.end();
       while (it != itend) {
         oprintf("%s: %s\n", it->first.c_str(), it->second.c_str());
-        it++;
+        ++it;
       }
     }
   } else {
@@ -2380,6 +2380,45 @@ static int32_t procmisc(const char* path) {
         }
         break;
       }
+    }
+  }
+  oprintf("bulk operations:\n");
+  class VisitorBulk : public kc::DB::Visitor {
+  public:
+    VisitorBulk() : before_(0), after_(0) {}
+    int64_t before() {
+      return before_;
+    }
+    int64_t after() {
+      return after_;
+    }
+  private:
+    void visit_before() {
+      before_++;
+    }
+    void visit_after() {
+      after_++;
+    }
+    int64_t before_;
+    int64_t after_;
+  };
+  std::vector<std::string> keys;
+  for (int64_t i = 1; !err && i <= rnum; i++) {
+    char kbuf[RECBUFSIZ];
+    size_t ksiz = std::sprintf(kbuf, "%08lld", (long long)i);
+    keys.push_back(std::string(kbuf, ksiz));
+    if (i % 10 == 0) {
+      VisitorBulk visitor;
+      if (db->accept_bulk(keys, &visitor, i % 3 > 0)) {
+        if (visitor.before() != 1 || visitor.after() != 1) {
+          dberrprint(db, __LINE__, "DB::accept_bulk");
+          err = true;
+        }
+      } else {
+        dberrprint(db, __LINE__, "DB::accept_bulk");
+        err = true;
+      }
+      keys.clear();
     }
   }
   kc::PolyDB* pdb = dynamic_cast<kc::PolyDB*>(db);

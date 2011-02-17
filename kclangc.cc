@@ -13,9 +13,9 @@
  *************************************************************************************************/
 
 
-#include "myconf.h"
 #include "kcpolydb.h"
 #include "kclangc.h"
+#include "myconf.h"
 
 using namespace kyotocabinet;
 
@@ -463,7 +463,7 @@ int64_t kcdbgetbulk(KCDB* db, const KCSTR* keys, size_t knum, KCREC* recs, int32
     rec->key.size = ksiz;
     rec->value.buf = vbuf;
     rec->value.size = vsiz;
-    it++;
+    ++it;
   }
   return ridx;
 }
@@ -608,7 +608,7 @@ char* kcdbstatus(KCDB* db) {
   std::map<std::string, std::string>::iterator itend = status.end();
   while (it != itend) {
     obuf << it->first << "\t" << it->second << "\n";
-    it++;
+    ++it;
   }
   std::string sstr = obuf.str();
   size_t ssiz = sstr.size();
@@ -635,7 +635,7 @@ int64_t kcdbmatchprefix(KCDB* db, const char* prefix, char** strary, size_t max)
     std::memcpy(kbuf, it->data(), ksiz);
     kbuf[ksiz] = '\0';
     strary[cnt++] = kbuf;
-    it++;
+    ++it;
   }
   return cnt;
 }
@@ -658,7 +658,7 @@ int64_t kcdbmatchregex(KCDB* db, const char* regex, char** strary, size_t max) {
     std::memcpy(kbuf, it->data(), ksiz);
     kbuf[ksiz] = '\0';
     strary[cnt++] = kbuf;
-    it++;
+    ++it;
   }
   return cnt;
 }

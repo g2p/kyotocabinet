@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "myconf.h"
 #include "kccompress.h"
+#include "myconf.h"
 
 #if _KC_ZLIB
 extern "C" {

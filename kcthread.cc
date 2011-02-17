@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "myconf.h"
 #include "kcthread.h"
+#include "myconf.h"
 
 namespace kyotocabinet {                 // common namespace
 
@@ -728,7 +728,7 @@ void SpinLock::unlock() {
  */
 struct SlottedSpinLockCore {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || _KC_GCCATOMIC
-  intptr_t* locks;                       ///< primitives
+  uint32_t* locks;                       ///< primitives
   size_t slotnum;                        ///< number of slots
 #else
   ::pthread_spinlock_t* spins;           ///< primitives
@@ -744,7 +744,7 @@ SlottedSpinLock::SlottedSpinLock(size_t slotnum) : opq_(NULL) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_) || _KC_GCCATOMIC
   _assert_(true);
   SlottedSpinLockCore* core = new SlottedSpinLockCore;
-  intptr_t* locks = new intptr_t[slotnum];
+  uint32_t* locks = new uint32_t[slotnum];
   for (size_t i = 0; i < slotnum; i++) {
     locks[i] = 0;
   }
@@ -796,7 +796,7 @@ void SlottedSpinLock::lock(size_t idx) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
   SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
-  intptr_t* lock = core->locks + idx;
+  uint32_t* lock = core->locks + idx;
   uint32_t wcnt = 0;
   while (::InterlockedCompareExchange((LONG*)lock, 1, 0) != 0) {
     if (wcnt >= LOCKBUSYLOOP) {
@@ -809,7 +809,7 @@ void SlottedSpinLock::lock(size_t idx) {
 #elif _KC_GCCATOMIC
   _assert_(true);
   SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
-  intptr_t* lock = core->locks + idx;
+  uint32_t* lock = core->locks + idx;
   uint32_t wcnt = 0;
   while (!__sync_bool_compare_and_swap(lock, 0, 1)) {
     if (wcnt >= LOCKBUSYLOOP) {
@@ -835,12 +835,12 @@ void SlottedSpinLock::unlock(size_t idx) {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
   SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
-  intptr_t* lock = core->locks + idx;
+  uint32_t* lock = core->locks + idx;
   ::InterlockedExchange((LONG*)lock, 0);
 #elif _KC_GCCATOMIC
   _assert_(true);
   SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
-  intptr_t* lock = core->locks + idx;
+  uint32_t* lock = core->locks + idx;
   (void)__sync_lock_test_and_set(lock, 0);
 #else
   _assert_(true);
@@ -858,10 +858,10 @@ void SlottedSpinLock::lock_all() {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
   SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
-  intptr_t* locks = core->locks;
+  uint32_t* locks = core->locks;
   size_t slotnum = core->slotnum;
   for (size_t i = 0; i < slotnum; i++) {
-    intptr_t* lock = locks + i;
+    uint32_t* lock = locks + i;
     uint32_t wcnt = 0;
     while (::InterlockedCompareExchange((LONG*)lock, 1, 0) != 0) {
       if (wcnt >= LOCKBUSYLOOP) {
@@ -875,10 +875,10 @@ void SlottedSpinLock::lock_all() {
 #elif _KC_GCCATOMIC
   _assert_(true);
   SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
-  intptr_t* locks = core->locks;
+  uint32_t* locks = core->locks;
   size_t slotnum = core->slotnum;
   for (size_t i = 0; i < slotnum; i++) {
-    intptr_t* lock = locks + i;
+    uint32_t* lock = locks + i;
     uint32_t wcnt = 0;
     while (!__sync_bool_compare_and_swap(lock, 0, 1)) {
       if (wcnt >= LOCKBUSYLOOP) {
@@ -909,19 +909,19 @@ void SlottedSpinLock::unlock_all() {
 #if defined(_SYS_MSVC_) || defined(_SYS_MINGW_)
   _assert_(true);
   SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
-  intptr_t* locks = core->locks;
+  uint32_t* locks = core->locks;
   size_t slotnum = core->slotnum;
   for (size_t i = 0; i < slotnum; i++) {
-    intptr_t* lock = locks + i;
+    uint32_t* lock = locks + i;
     ::InterlockedExchange((LONG*)lock, 0);
   }
 #elif _KC_GCCATOMIC
   _assert_(true);
   SlottedSpinLockCore* core = (SlottedSpinLockCore*)opq_;
-  intptr_t* locks = core->locks;
+  uint32_t* locks = core->locks;
   size_t slotnum = core->slotnum;
   for (size_t i = 0; i < slotnum; i++) {
-    intptr_t* lock = locks + i;
+    uint32_t* lock = locks + i;
     (void)__sync_lock_test_and_set(lock, 0);
   }
 #else

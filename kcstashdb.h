@@ -31,17 +31,6 @@ namespace kyotocabinet {                 // common namespace
 
 
 /**
- * Constants for implementation.
- */
-namespace {
-const int32_t SDBRLOCKSLOT = 1024;       ///< number of slots of the record lock
-const size_t SDBDEFBNUM = 1048583LL;     ///< default bucket number
-const size_t SDBOPAQUESIZ = 16;          ///< size of the opaque buffer
-const uint32_t SDBLOCKBUSYLOOP = 8192;   ///< threshold of busy loop and sleep for locking
-}
-
-
-/**
  * Economical on-memory hash database.
  * @note This class is a concrete class to operate a hash database on memory.  This class can be
  * inherited but overwriting methods is forbidden.  Before every database operation, it is
@@ -59,6 +48,8 @@ private:
   struct TranLog;
   class Repeater;
   class Setter;
+  class Remover;
+  class ScopedVisitor;
   /** An alias of list of cursors. */
   typedef std::list<Cursor*> CursorList;
   /** An alias of list of transaction logs. */
@@ -309,9 +300,9 @@ public:
    * Default constructor.
    */
   explicit StashDB() :
-    mlock_(), rlock_(SDBRLOCKSLOT), flock_(), error_(),
+    mlock_(), rlock_(RLOCKSLOT), flock_(), error_(),
     logger_(NULL), logkinds_(0), mtrigger_(NULL),
-    omode_(0), curs_(), path_(""), bnum_(SDBDEFBNUM), opaque_(),
+    omode_(0), curs_(), path_(""), bnum_(DEFBNUM), opaque_(),
     count_(0), size_(0), buckets_(NULL),
     tran_(false), trlogs_(), trcount_(0), trsize_(0) {
     _assert_(true);
@@ -329,7 +320,7 @@ public:
       while (cit != citend) {
         Cursor* cur = *cit;
         cur->db_ = NULL;
-        cit++;
+        ++cit;
       }
     }
   }
@@ -356,7 +347,7 @@ public:
       return false;
     }
     size_t bidx = hash_record(kbuf, ksiz) % bnum_;
-    size_t lidx = bidx % SDBRLOCKSLOT;
+    size_t lidx = bidx % RLOCKSLOT;
     if (writable) {
       rlock_.lock_writer(lidx);
     } else {
@@ -379,8 +370,6 @@ public:
   bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
                    bool writable = true) {
     _assert_(visitor);
-    size_t knum = keys.size();
-    if (knum < 1) return true;
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
@@ -390,6 +379,9 @@ public:
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
+    ScopedVisitor svis(visitor);
+    size_t knum = keys.size();
+    if (knum < 1) return true;
     struct RecordKey {
       const char* kbuf;
       size_t ksiz;
@@ -403,7 +395,7 @@ public:
       rkey->kbuf = key.data();
       rkey->ksiz = key.size();
       rkey->bidx = hash_record(rkey->kbuf, rkey->ksiz) % bnum_;
-      lidxs.insert(rkey->bidx % SDBRLOCKSLOT);
+      lidxs.insert(rkey->bidx % RLOCKSLOT);
     }
     std::set<size_t>::iterator lit = lidxs.begin();
     std::set<size_t>::iterator litend = lidxs.end();
@@ -413,7 +405,7 @@ public:
       } else {
         rlock_.lock_reader(*lit);
       }
-      lit++;
+      ++lit;
     }
     for (size_t i = 0; i < knum; i++) {
       RecordKey* rkey = rkeys + i;
@@ -423,7 +415,7 @@ public:
     litend = lidxs.end();
     while (lit != litend) {
       rlock_.unlock(*lit);
-      lit++;
+      ++lit;
     }
     delete[] rkeys;
     return true;
@@ -448,6 +440,7 @@ public:
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
+    ScopedVisitor svis(visitor);
     int64_t allcnt = count_;
     if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
       set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
@@ -642,7 +635,7 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wcnt >= SDBLOCKBUSYLOOP) {
+      if (wcnt >= LOCKBUSYLOOP) {
         Thread::chill();
       } else {
         Thread::yield();
@@ -867,7 +860,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    bnum_ = bnum >= 0 ? bnum : SDBDEFBNUM;
+    bnum_ = bnum >= 0 ? bnum : DEFBNUM;
     if (bnum_ > (size_t)INT16MAX) bnum_ = nearbyprime(bnum_);
     return true;
   }
@@ -976,6 +969,16 @@ protected:
     if (mtrigger_) mtrigger_->trigger(kind, message);
   }
 private:
+  /** The number of slots of the record lock. */
+  static const int32_t RLOCKSLOT = 1024;
+  /** The default bucket number. */
+  static const size_t DEFBNUM = 1048583LL;
+  /** The size of the opaque buffer. */
+  static const size_t OPAQUESIZ = 16;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
+  /** The mininum number of buckets to use mmap. */
+  static const size_t MAPZMAPBNUM = 32768;
   /**
    * Record data.
    */
@@ -1103,12 +1106,30 @@ private:
    */
   class Remover : public Visitor {
   private:
-    /** constructor */
+    /** visit a record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
       return REMOVE;
     }
+  };
+  /**
+   * Scoped visiotor.
+   */
+  class ScopedVisitor {
+  public:
+    /** constructor */
+    ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
+      _assert_(visitor);
+      visitor_->visit_before();
+    }
+    /** destructor */
+    ~ScopedVisitor() {
+      _assert_(true);
+      visitor_->visit_after();
+    }
+  private:
+    Visitor* visitor_;                   ///< visitor
   };
   /**
    * Accept a visitor to a record.
@@ -1207,7 +1228,7 @@ private:
     while (cit != citend) {
       Cursor* cur = *cit;
       if (cur->rbuf_ == rbuf) cur->step_impl();
-      cit++;
+      ++cit;
     }
   }
   /**
@@ -1224,7 +1245,7 @@ private:
     while (cit != citend) {
       Cursor* cur = *cit;
       if (cur->rbuf_ == obuf) cur->rbuf_ = nbuf;
-      cit++;
+      ++cit;
     }
   }
   /**
@@ -1239,7 +1260,7 @@ private:
       Cursor* cur = *cit;
       cur->bidx_ = -1;
       cur->rbuf_ = NULL;
-      cit++;
+      ++cit;
     }
   }
   /**
@@ -1250,7 +1271,7 @@ private:
     TranLogList::const_iterator it = trlogs_.end();
     TranLogList::const_iterator itbeg = trlogs_.begin();
     while (it != itbeg) {
-      it--;
+      --it;
       const char* kbuf = it->key.c_str();
       size_t ksiz = it->key.size();
       const char* vbuf = it->value.c_str();
@@ -1292,7 +1313,7 @@ private:
   /** The number of buckets. */
   size_t bnum_;
   /** The opaque data. */
-  char opaque_[SDBOPAQUESIZ];
+  char opaque_[OPAQUESIZ];
   /** The record number. */
   AtomicInt64 count_;
   /** The total size of records. */

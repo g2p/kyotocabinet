@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.43)
+AC_INIT(kyotocabinet, 1.2.44)
 
 # Package information
 MYLIBVER=9
-MYLIBREV=4
+MYLIBREV=5
 MYFORMATVER=5
 
 # Targets
@@ -35,24 +35,24 @@ MYDOCUMENTFILES="COPYING ChangeLog doc kyotocabinet.idl"
 MYPCFILES="kyotocabinet.pc"
 
 # Building flags
-MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -O2"
-MYCXXFLAGS="-Wall -fPIC -fsigned-char -O2"
-MYCPPFLAGS="-I. -I\$(INCLUDEDIR) -I$HOME/include -I/usr/local/include"
+MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -g0 -O2"
+MYCXXFLAGS="-Wall -fPIC -fsigned-char -g0 -O2"
+MYCPPFLAGS="-I. -I\$(INCLUDEDIR) -I/usr/local/include"
 MYCPPFLAGS="$MYCPPFLAGS -DNDEBUG -D_GNU_SOURCE=1"
 MYCPPFLAGS="$MYCPPFLAGS -D_FILE_OFFSET_BITS=64 -D_REENTRANT -D__EXTENSIONS__"
-MYLDFLAGS="-L. -L\$(LIBDIR) -L$HOME/lib -L/usr/local/lib"
+MYLDFLAGS="-L. -L\$(LIBDIR) -L/usr/local/lib"
 MYCMDLDFLAGS=""
-MYRUNPATH="\$(LIBDIR)"
+MYCMDLIBS=""
+MYLDLIBPATH=""
 MYLDLIBPATHENV="LD_LIBRARY_PATH"
 MYPOSTCMD="true"
 
 # Building paths
-PATH="$PATH:$HOME/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin"
-PATH="$PATH:/opt/SUNWspro/bin:/usr/ccs/bin:/usr/xpg4/bin:/usr/xpg6/bin:/usr/ucb"
-CPATH="$HOME/include:/usr/local/include:$CPATH"
-LIBRARY_PATH="$HOME/lib:/usr/local/lib:$LIBRARY_PATH"
-LD_LIBRARY_PATH="$HOME/lib:/usr/local/lib:$LD_LIBRARY_PATH"
-PKG_CONFIG_PATH="$HOME/lib/pkgconfig:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
+PATH=".:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:$PATH"
+CPATH=".:/usr/local/include:$CPATH"
+LIBRARY_PATH=".:/usr/local/lib:$LIBRARY_PATH"
+LD_LIBRARY_PATH=".:/usr/local/lib:$LD_LIBRARY_PATH"
+PKG_CONFIG_PATH=".:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PATH CPATH LIBRARY_PATH LD_LIBRARY_PATH PKG_CONFIG_PATH
 
 
@@ -63,6 +63,7 @@ export PATH CPATH LIBRARY_PATH LD_LIBRARY_PATH PKG_CONFIG_PATH
 
 # Internal variables
 enables=""
+is_static=""
 
 # Debug mode
 AC_ARG_ENABLE(debug,
@@ -72,8 +73,7 @@ then
   MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -O0"
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O0"
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
-  MYCMDLDFLAGS="$MYCMDLDFLAGS -static"
-  MYRUNPATH="$MYRUNPATH:."
+  is_static="yes"
   enables="$enables (debug)"
 fi
 
@@ -87,7 +87,6 @@ then
   MYCXXFLAGS="-Wall -Wextra -Wno-unused-parameter -Wnon-virtual-dtor"
   MYCXXFLAGS="$MYCXXFLAGS -fPIC -fsigned-char -g -O2 -fno-inline -pipe"
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
-  MYRUNPATH="$MYRUNPATH:."
   enables="$enables (devel)"
 fi
 
@@ -97,7 +96,6 @@ AC_ARG_ENABLE(profile,
 if test "$enable_profile" = "yes"
 then
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -pg -O2 -fno-inline -pipe"
-  MYRUNPATH="$MYRUNPATH:."
   enables="$enables (profile)"
 fi
 
@@ -107,7 +105,6 @@ AC_ARG_ENABLE(uyield,
 if test "$enable_uyield" = "yes"
 then
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCUYIELD"
-  MYRUNPATH="$MYRUNPATH:."
   enables="$enables (uyield)"
 fi
 
@@ -116,7 +113,7 @@ AC_ARG_ENABLE(static,
   AC_HELP_STRING([--enable-static], [build by static linking]))
 if test "$enable_static" = "yes"
 then
-  MYCMDLDFLAGS="$MYCMDLDFLAGS -static"
+  is_static="yes"
   enables="$enables (static)"
 fi
 
@@ -179,16 +176,6 @@ printf '#================================================================\n'
 AC_PROG_CC
 AC_PROG_CXX
 AC_LANG(C++)
-if test "$enable_devel" = "yes"
-then
-  AC_CHECK_PROG(is_ccache, ccache, yes, no)
-  if test "$is_ccache" = "yes"
-  then
-    CC="ccache $CC"
-    CXX="ccache $CXX"
-    ccache -C >config.tmp 2>&1
-  fi
-fi
 
 # Reset variables
 if test "$GCC" != "yes"
@@ -258,6 +245,7 @@ then
   AC_CHECK_LIB(lzma, main)
 fi
 AC_CHECK_LIB(kyotocabinet, main, AC_MSG_WARN([old version of Kyoto Cabinet was detected]))
+MYLDLIBPATH="$LD_LIBRARY_PATH"
 
 # Necessary headers
 AC_CHECK_HEADER(stdlib.h, true, AC_MSG_ERROR([stdlib.h is required]))
@@ -278,6 +266,19 @@ fi
 if test "$enable_lzma" = "yes"
 then
   AC_CHECK_HEADER(lzma.h, true, AC_MSG_ERROR([lzma.h is required]))
+fi
+
+# Static linking
+if test "$is_static" = "yes"
+then
+  MYCMDLDFLAGS="$MYCMDLDFLAGS -static"
+  MYCMDLIBS="$MYCMDLIBS $LIBS"
+fi
+
+# As-needed linking
+if uname | grep Linux >config.tmp
+then
+  MYLDFLAGS="$MYLDFLAGS -Wl,--as-needed"
 fi
 
 # Shared libraries
@@ -325,7 +326,8 @@ AC_SUBST(MYCXXFLAGS)
 AC_SUBST(MYCPPFLAGS)
 AC_SUBST(MYLDFLAGS)
 AC_SUBST(MYCMDLDFLAGS)
-AC_SUBST(MYRUNPATH)
+AC_SUBST(MYCMDLIBS)
+AC_SUBST(MYLDLIBPATH)
 AC_SUBST(MYLDLIBPATHENV)
 AC_SUBST(MYPOSTCMD)
 

@@ -2098,7 +2098,7 @@ static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t i
                   err_ = true;
                 }
               }
-              it++;
+              ++it;
             }
           }
           if (tran && myrand(100) == 0) {

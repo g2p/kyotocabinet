@@ -1992,7 +1992,7 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
                   err_ = true;
                 }
               }
-              it++;
+              ++it;
             }
           }
           if (tran && myrand(100) == 0) {

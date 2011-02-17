@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "myconf.h"
 #include "kcfile.h"
+#include "myconf.h"
 
 namespace kyotocabinet {                 // common namespace
 
@@ -28,7 +28,7 @@ const int32_t DIRPERM = 00755;           ///< default permission of a new direct
 const int32_t PATHBUFSIZ = 8192;         ///< size of the path buffer
 const int32_t IOBUFSIZ = 16384;          ///< size of the IO buffer
 const int64_t FILEMAXSIZ = INT64MAX - INT32MAX;  // maximum size of a file
-const char* WALPATHEXT = "wal";          ///< extension of the WAL file
+const char* const WALPATHEXT = "wal";    ///< extension of the WAL file
 const char WALMAGICDATA[] = "KW\n";      ///< magic data of the WAL file
 const uint8_t WALMSGMAGIC = 0xee;        ///< magic data for WAL record
 }

@@ -1414,7 +1414,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
         kc::File::Status sbuf;
         if (!kc::File::status(path, &sbuf)) return false;
         if (sbuf.size != size_ && sbuf.size != msiz_ &&
-            sbuf.size != kc::HDBDEFMSIZ) return false;
+            sbuf.size % (1 << 20) != 0) return false;
         if (size != size_) return false;
         return true;
       }
@@ -2387,7 +2387,7 @@ static int32_t proctran(const char* path, int64_t rnum, int32_t thnum, int32_t i
                   err_ = true;
                 }
               }
-              it++;
+              ++it;
             }
           }
           if (tran && myrand(100) == 0) {

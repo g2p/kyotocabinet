@@ -27,28 +27,16 @@
 #include <kcdb.h>
 #include <kcplantdb.h>
 
+#define KCDDBMAGICFILE  "__KCDIR__"      ///< magic file of the directory
+#define KCDDBMETAFILE  "__meta__"        ///< meta data file of the directory
+#define KCDDBOPAQUEFILE  "__opq__"       ///< opaque file of the directory
+#define KCDDBATRANPREFIX  "_x"           ///< prefix of files for auto transaction
+#define KCDDBCHKSUMSEED  "__kyotocabinet__"  ///< seed of the module checksum
+#define KCDDBMAGICEOF  "_EOF_"           ///< magic data for the end of file
+#define KCDDBWALPATHEXT  "wal"           ///< extension of the WAL directory
+#define KCDDBTMPPATHEXT  "tmp"           ///< extension of the temporary directory
+
 namespace kyotocabinet {                 // common namespace
-
-
-/**
- * Constants for implementation.
- */
-namespace {
-const char* DDBMAGICFILE = "__KCDIR__";  ///< magic file of the directory
-const char* DDBMETAFILE = "__meta__";    ///< meta data file of the directory
-const char* DDBOPAQUEFILE = "__opq__";   ///< opaque file of the directory
-const char* DDBATRANPREFIX = "_x";       ///< prefix of files for auto transaction
-const char DDBCHKSUMSEED[] = "__kyotocabinet__";  ///< seed of the module checksum
-const char DDBMAGICEOF[] = "_EOF_";      ///< magic data for the end of file
-const int64_t DDBMETABUFSIZ = 128;       ///< size of the meta data buffer
-const uint8_t DDBRECMAGIC = 0xcc;        ///< magic data for record
-const int32_t DDBRLOCKSLOT = 8192;       ///< number of slots of the record lock
-const int32_t DDBRECUNITSIZ = 32;        ///< unit size of a record
-const size_t DDBOPAQUESIZ = 16;          ///< size of the opaque buffer
-const uint32_t DDBLOCKBUSYLOOP = 8192;   ///< threshold of busy loop and sleep for locking
-const char* DDBWALPATHEXT = "wal";       ///< extension of the WAL directory
-const char* DDBTMPPATHEXT = "tmp";       ///< extension of the temporary directory
-}
 
 
 /**
@@ -67,6 +55,7 @@ public:
   class Cursor;
 private:
   struct Record;
+  class ScopedVisitor;
   /** An alias of list of cursors. */
   typedef std::list<Cursor*> CursorList;
   /** An alias of vector of strings. */
@@ -135,7 +124,7 @@ public:
               if (!disable()) err = true;
               break;
             }
-          } while (*name_.c_str() == *DDBMAGICFILE);
+          } while (*name_.c_str() == *KCDDBMAGICFILE);
         }
       } else {
         while (true) {
@@ -144,7 +133,7 @@ public:
             disable();
             break;
           }
-          if (*name_.c_str() == *DDBMAGICFILE) continue;
+          if (*name_.c_str() == *KCDDBMAGICFILE) continue;
           const std::string& npath = db_->path_ + File::PATHCHR + name_;
           if (!File::status(npath)) continue;
           if (db_->read_record(npath, &rec)) {
@@ -157,7 +146,7 @@ public:
                   if (!disable()) err = true;
                   break;
                 }
-              } while (*name_.c_str() == *DDBMAGICFILE);
+              } while (*name_.c_str() == *KCDDBMAGICFILE);
             }
           } else {
             db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
@@ -191,7 +180,7 @@ public:
           disable();
           return false;
         }
-      } while (*name_.c_str() == *DDBMAGICFILE);
+      } while (*name_.c_str() == *KCDDBMAGICFILE);
       return true;
     }
     /**
@@ -215,7 +204,7 @@ public:
           disable();
           return false;
         }
-        if (*name_.c_str() == *DDBMAGICFILE) continue;
+        if (*name_.c_str() == *KCDDBMAGICFILE) continue;
         const std::string& rpath = db_->path_ + File::PATHCHR + name_;
         Record rec;
         if (db_->read_record(rpath, &rec)) {
@@ -303,7 +292,7 @@ public:
           disable();
           return false;
         }
-      } while (*name_.c_str() == *DDBMAGICFILE);
+      } while (*name_.c_str() == *KCDDBMAGICFILE);
       return true;
     }
     /**
@@ -374,7 +363,7 @@ public:
    * Default constructor.
    */
   explicit DirDB() :
-    mlock_(), rlock_(DDBRLOCKSLOT), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
+    mlock_(), rlock_(RLOCKSLOT), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
     omode_(0), writer_(false), autotran_(false), autosync_(false), recov_(false), reorg_(false),
     file_(), curs_(), path_(""),
     libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEDIR),
@@ -395,7 +384,7 @@ public:
       while (cit != citend) {
         Cursor* cur = *cit;
         cur->db_ = NULL;
-        cit++;
+        ++cit;
       }
     }
   }
@@ -423,7 +412,7 @@ public:
     }
     bool err = false;
     char name[NUMBUFSIZ];
-    size_t lidx = hashpath(kbuf, ksiz, name) % DDBRLOCKSLOT;
+    size_t lidx = hashpath(kbuf, ksiz, name) % RLOCKSLOT;
     if (writable) {
       rlock_.lock_writer(lidx);
     } else {
@@ -446,8 +435,6 @@ public:
   bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
                    bool writable = true) {
     _assert_(visitor);
-    size_t knum = keys.size();
-    if (knum < 1) return true;
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
@@ -457,6 +444,9 @@ public:
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
+    ScopedVisitor svis(visitor);
+    size_t knum = keys.size();
+    if (knum < 1) return true;
     bool err = false;
     struct RecordKey {
       const char* kbuf;
@@ -470,7 +460,7 @@ public:
       RecordKey* rkey = rkeys + i;
       rkey->kbuf = key.data();
       rkey->ksiz = key.size();
-      lidxs.insert(hashpath(rkey->kbuf, rkey->ksiz, rkey->name) % DDBRLOCKSLOT);
+      lidxs.insert(hashpath(rkey->kbuf, rkey->ksiz, rkey->name) % RLOCKSLOT);
     }
     std::set<size_t>::iterator lit = lidxs.begin();
     std::set<size_t>::iterator litend = lidxs.end();
@@ -480,7 +470,7 @@ public:
       } else {
         rlock_.lock_reader(*lit);
       }
-      lit++;
+      ++lit;
     }
     for (size_t i = 0; i < knum; i++) {
       RecordKey* rkey = rkeys + i;
@@ -493,7 +483,7 @@ public:
     litend = lidxs.end();
     while (lit != litend) {
       rlock_.unlock(*lit);
-      lit++;
+      ++lit;
     }
     delete[] rkeys;
     return !err;
@@ -518,6 +508,7 @@ public:
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
+    ScopedVisitor svis(visitor);
     bool err = false;
     if (!iterate_impl(visitor, checker)) err = true;
     trigger_meta(MetaTrigger::ITERATE, "iterate");
@@ -599,11 +590,11 @@ public:
       psiz--;
     }
     const std::string& cpath = path.substr(0, psiz);
-    const std::string& magicpath = cpath + File::PATHCHR + DDBMAGICFILE;
-    const std::string& metapath = cpath + File::PATHCHR + DDBMETAFILE;
-    const std::string& opqpath = cpath + File::PATHCHR + DDBOPAQUEFILE;
-    const std::string& walpath = cpath + File::EXTCHR + DDBWALPATHEXT;
-    const std::string& tmppath = cpath + File::EXTCHR + DDBTMPPATHEXT;
+    const std::string& magicpath = cpath + File::PATHCHR + KCDDBMAGICFILE;
+    const std::string& metapath = cpath + File::PATHCHR + KCDDBMETAFILE;
+    const std::string& opqpath = cpath + File::PATHCHR + KCDDBOPAQUEFILE;
+    const std::string& walpath = cpath + File::EXTCHR + KCDDBWALPATHEXT;
+    const std::string& tmppath = cpath + File::EXTCHR + KCDDBTMPPATHEXT;
     bool hot = false;
     if (writer_ && (mode & OTRUNCATE) && File::status(magicpath)) {
       if (!file_.open(magicpath, fmode)) {
@@ -842,7 +833,7 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wcnt >= DDBLOCKBUSYLOOP) {
+      if (wcnt >= LOCKBUSYLOOP) {
         Thread::chill();
       } else {
         Thread::yield();
@@ -941,7 +932,7 @@ public:
       if (dir.open(path_)) {
         std::string name;
         while (dir.read(&name)) {
-          if (*name.c_str() == *DDBMAGICFILE) continue;
+          if (*name.c_str() == *KCDDBMAGICFILE) continue;
           const std::string& rpath = path_ + File::PATHCHR + name;
           const std::string& walpath = walpath_ + File::PATHCHR + name;
           if (File::status(walpath)) {
@@ -1368,6 +1359,18 @@ protected:
     return reorg_;
   }
 private:
+  /** The size of the meta data buffer. */
+  static const int64_t METABUFSIZ = 128;
+  /** The magic data for record. */
+  static const uint8_t RECMAGIC = 0xcc;
+  /** The number of slots of the record lock. */
+  static const int32_t RLOCKSLOT = 2048;
+  /** The unit size of a record. */
+  static const int32_t RECUNITSIZ = 32;
+  /** The size of the opaque buffer. */
+  static const size_t OPAQUESIZ = 16;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
   /**
    * Set the power of the alignment of record size.
    * @note This is a dummy implementation for compatibility.
@@ -1458,6 +1461,24 @@ private:
     size_t vsiz;                         ///< value size
   };
   /**
+   * Scoped visiotor.
+   */
+  class ScopedVisitor {
+  public:
+    /** constructor */
+    ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
+      _assert_(visitor);
+      visitor_->visit_before();
+    }
+    /** destructor */
+    ~ScopedVisitor() {
+      _assert_(true);
+      visitor_->visit_after();
+    }
+  private:
+    Visitor* visitor_;                   ///< visitor
+  };
+  /**
    * Dump the magic data into the file.
    * @return true on success, or false on failure.
    */
@@ -1475,7 +1496,7 @@ private:
    * @return the result string.
    */
   std::string format_magic(int64_t count, int64_t size) {
-    return strprintf("%lld\n%lld\n%s\n", (long long)count, (long long)size, DDBMAGICEOF);
+    return strprintf("%lld\n%lld\n%s\n", (long long)count, (long long)size, KCDDBMAGICEOF);
   }
   /**
    * Load the magic data from the file.
@@ -1497,8 +1518,8 @@ private:
     pv = std::strchr(rp, '\n');
     if (!pv) return false;
     rp = pv + 1;
-    if (std::strlen(rp) < sizeof(DDBMAGICEOF) - 1 ||
-        std::memcmp(rp, DDBMAGICEOF, sizeof(DDBMAGICEOF) - 1)) return false;
+    if (std::strlen(rp) < sizeof(KCDDBMAGICEOF) - 1 ||
+        std::memcmp(rp, KCDDBMAGICEOF, sizeof(KCDDBMAGICEOF) - 1)) return false;
     flags_ = 0;
     count_ = count;
     size_ = size;
@@ -1521,7 +1542,7 @@ private:
     bool err = false;
     std::string name;
     while (dir.read(&name)) {
-      if (*name.c_str() == *DDBMAGICFILE) continue;
+      if (*name.c_str() == *KCDDBMAGICFILE) continue;
       const std::string& rpath = cpath + File::PATHCHR + name;
       File::Status sbuf;
       if (File::status(rpath, &sbuf)) {
@@ -1548,8 +1569,8 @@ private:
    */
   uint8_t calc_checksum() {
     _assert_(true);
-    const char* kbuf = DDBCHKSUMSEED;
-    size_t ksiz = sizeof(DDBCHKSUMSEED) - 1;
+    const char* kbuf = KCDDBCHKSUMSEED;
+    size_t ksiz = sizeof(KCDDBCHKSUMSEED) - 1;
     char* zbuf = NULL;
     size_t zsiz = 0;
     if (comp_) {
@@ -1572,7 +1593,7 @@ private:
   bool dump_meta(const std::string& metapath) {
     _assert_(true);
     bool err = false;
-    char buf[DDBMETABUFSIZ];
+    char buf[METABUFSIZ];
     char* wp = buf;
     wp += std::sprintf(wp, "%u\n", libver_);
     wp += std::sprintf(wp, "%u\n", librev_);
@@ -1580,7 +1601,7 @@ private:
     wp += std::sprintf(wp, "%u\n", chksum_);
     wp += std::sprintf(wp, "%u\n", type_);
     wp += std::sprintf(wp, "%u\n", opts_);
-    wp += std::sprintf(wp, "%s\n", DDBMAGICEOF);
+    wp += std::sprintf(wp, "%s\n", KCDDBMAGICEOF);
     if (!File::write_file(metapath, buf, wp - buf)) {
       set_error(_KCCODELINE_, Error::SYSTEM, "writing a file failed");
       err = true;
@@ -1595,7 +1616,7 @@ private:
   bool load_meta(const std::string& metapath) {
     _assert_(true);
     int64_t size;
-    char* buf = File::read_file(metapath, &size, DDBMETABUFSIZ);
+    char* buf = File::read_file(metapath, &size, METABUFSIZ);
     if (!buf) {
       set_error(_KCCODELINE_, Error::SYSTEM, "reading a file failed");
       return false;
@@ -1603,7 +1624,7 @@ private:
     std::string str(buf, size);
     delete[] buf;
     std::vector<std::string> elems;
-    if (strsplit(str, '\n', &elems) < 7 || elems[6] != DDBMAGICEOF) {
+    if (strsplit(str, '\n', &elems) < 7 || elems[6] != KCDDBMAGICEOF) {
       set_error(_KCCODELINE_, Error::BROKEN, "invalid meta data file");
       return false;
     }
@@ -1622,7 +1643,7 @@ private:
   bool dump_opaque() {
     _assert_(true);
     bool err = false;
-    const std::string& opath = path_ + File::PATHCHR + DDBOPAQUEFILE;
+    const std::string& opath = path_ + File::PATHCHR + KCDDBOPAQUEFILE;
     if (!File::write_file(opath, opaque_, sizeof(opaque_))) {
       set_error(_KCCODELINE_, Error::SYSTEM, "writing a file failed");
       err = true;
@@ -1636,7 +1657,7 @@ private:
   void load_opaque() {
     _assert_(true);
     std::memset(opaque_, 0, sizeof(opaque_));
-    const std::string& opath = path_ + File::PATHCHR + DDBOPAQUEFILE;
+    const std::string& opath = path_ + File::PATHCHR + KCDDBOPAQUEFILE;
     int64_t size;
     char* buf = File::read_file(opath, &size, sizeof(opaque_));
     if (buf) {
@@ -1659,7 +1680,7 @@ private:
     bool err = false;
     std::string name;
     while (dir.read(&name)) {
-      if (*name.c_str() == *DDBMAGICFILE) continue;
+      if (*name.c_str() == *KCDDBMAGICFILE) continue;
       const std::string& rpath = cpath + File::PATHCHR + name;
       if (!File::remove(rpath)) {
         set_error(_KCCODELINE_, Error::SYSTEM, "removing a file failed");
@@ -1697,7 +1718,7 @@ private:
       rsiz = zsiz;
     }
     const char* rp = rbuf;
-    if (rsiz < 4 || *(const unsigned char*)rp != DDBRECMAGIC) {
+    if (rsiz < 4 || *(const unsigned char*)rp != RECMAGIC) {
       set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a record");
       report(_KCCODELINE_, Logger::WARN, "rpath=%s", rpath.c_str());
       report_binary(_KCCODELINE_, Logger::WARN, "rbuf", rbuf, rsiz);
@@ -1720,7 +1741,7 @@ private:
     rsiz -= step;
     size_t vsiz = num;
     if (rsiz < 1 + (int64_t)ksiz + (int64_t)vsiz ||
-        ((const unsigned char*)rp)[ksiz+vsiz] != DDBRECMAGIC) {
+        ((const unsigned char*)rp)[ksiz+vsiz] != RECMAGIC) {
       set_error(_KCCODELINE_, Error::BROKEN, "too short record");
       report(_KCCODELINE_, Logger::WARN, "rpath=%s", rpath.c_str());
       delete[] rbuf;
@@ -1751,14 +1772,14 @@ private:
     bool err = false;
     char* rbuf = new char[NUMBUFSIZ*2+ksiz+vsiz];
     char* wp = rbuf;
-    *(wp++) = DDBRECMAGIC;
+    *(wp++) = RECMAGIC;
     wp += writevarnum(wp, ksiz);
     wp += writevarnum(wp, vsiz);
     std::memcpy(wp, kbuf, ksiz);
     wp += ksiz;
     std::memcpy(wp, vbuf, vsiz);
     wp += vsiz;
-    *(wp++) = DDBRECMAGIC;
+    *(wp++) = RECMAGIC;
     size_t rsiz = wp - rbuf;
     if (comp_) {
       size_t zsiz;
@@ -1774,7 +1795,7 @@ private:
       rsiz = zsiz;
     }
     if (autotran_ && !tran_) {
-      const std::string& tpath = path_ + File::PATHCHR + DDBATRANPREFIX + name;
+      const std::string& tpath = path_ + File::PATHCHR + KCDDBATRANPREFIX + name;
       if (!File::write_file(tpath, rbuf, rsiz)) {
         set_error(_KCCODELINE_, Error::SYSTEM, "writing a file failed");
         err = true;
@@ -1807,7 +1828,7 @@ private:
     while (cit != citend) {
       Cursor* cur = *cit;
       if (cur->alive_ && !cur->disable()) err = true;
-      cit++;
+      ++cit;
     }
     return !err;
   }
@@ -1830,9 +1851,9 @@ private:
             if (!cur->disable()) err = true;
             break;
           }
-        } while (*cur->name_.c_str() == *DDBMAGICFILE);
+        } while (*cur->name_.c_str() == *KCDDBMAGICFILE);
       }
-      cit++;
+      ++cit;
     }
     return !err;
   }
@@ -1981,7 +2002,7 @@ private:
     std::string name;
     int64_t curcnt = 0;
     while (dir.read(&name)) {
-      if (*name.c_str() == *DDBMAGICFILE) continue;
+      if (*name.c_str() == *KCDDBMAGICFILE) continue;
       const std::string& rpath = path_ + File::PATHCHR + name;
       Record rec;
       if (read_record(rpath, &rec)) {
@@ -2153,7 +2174,7 @@ private:
    * @return the size of the database file in bytes.
    */
   int64_t size_impl() {
-    return size_ + count_ * DDBRECUNITSIZ;
+    return size_ + count_ * RECUNITSIZ;
   }
   /** Dummy constructor to forbid the use. */
   DirDB(const DirDB&);
@@ -2208,7 +2229,7 @@ private:
   /** The total size of records. */
   AtomicInt64 size_;
   /** The opaque data. */
-  char opaque_[DDBOPAQUESIZ];
+  char opaque_[OPAQUESIZ];
   /** The embedded data compressor. */
   Compressor* embcomp_;
   /** The data compressor. */

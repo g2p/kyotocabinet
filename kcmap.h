@@ -23,15 +23,6 @@ namespace kyotocabinet {                 // common namespace
 
 
 /**
- * Constants for implementation.
- */
-namespace {
-const size_t MAPDEFBNUM = 31;            ///< default bucket number of hash table
-const size_t MAPZMAPBNUM = 32768;        ///< mininum number of buckets to use mmap
-}
-
-
-/**
  * Memory-saving hash map.
  */
 class TinyHashMap {
@@ -148,7 +139,7 @@ public:
       while (it != itend) {
         char* rbuf = *it;
         delete[] rbuf;
-        it++;
+        ++it;
       }
       recs_.clear();
     }
@@ -487,6 +478,10 @@ public:
     return count_;
   }
 private:
+  /** The default bucket number of hash table. */
+  static const size_t MAPDEFBNUM = 31;
+  /** The mininum number of buckets to use mmap. */
+  static const size_t MAPZMAPBNUM = 32768;
   /**
    * Record data.
    */
@@ -1162,6 +1157,10 @@ public:
     return last_->value;
   }
 private:
+  /** The default bucket number of hash table. */
+  static const size_t MAPDEFBNUM = 31;
+  /** The mininum number of buckets to use mmap. */
+  static const size_t MAPZMAPBNUM = 32768;
   /**
    * Record data.
    */

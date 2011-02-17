@@ -24,16 +24,9 @@
 #include <kccompare.h>
 #include <kcmap.h>
 
+#define KCDBSSMAGICDATA  "KCSS\n"        ///< The magic data of the snapshot file
+
 namespace kyotocabinet {                 // common namespace
-
-
-/**
- * Constants for implementation.
- */
-namespace {
-const char DBSSMAGICDATA[] = "KCSS\n";   ///< magic data of the snapshot file
-const size_t DBIOBUFSIZ = 8192;          ///< size of the IO buffer
-}
 
 
 /**
@@ -85,6 +78,18 @@ public:
     virtual const char* visit_empty(const char* kbuf, size_t ksiz, size_t* sp) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && sp);
       return NOP;
+    }
+    /**
+     * Preprocess the main operations.
+     */
+    virtual void visit_before() {
+      _assert_(true);
+    }
+    /**
+     * Postprocess the main operations.
+     */
+    virtual void visit_after() {
+      _assert_(true);
     }
   };
   /**
@@ -1197,7 +1202,7 @@ public:
           err = true;
         }
         if (ifs) {
-          char buf[DBIOBUFSIZ];
+          char buf[IOBUFSIZ];
           int64_t curcnt = 0;
           while (!err && !ifs.eof()) {
             size_t n = ifs.read(buf, sizeof(buf)).gcount();
@@ -1845,7 +1850,7 @@ public:
       std::map<std::string, std::string>::const_iterator ritend = recs.end();
       while (rit != ritend) {
         keys.push_back(rit->first);
-        rit++;
+        ++rit;
       }
       class VisitorImpl : public Visitor {
       public:
@@ -1877,7 +1882,7 @@ public:
     while (rit != ritend) {
       if (!set(rit->first.data(), rit->first.size(), rit->second.data(), rit->second.size()))
         return -1;
-      rit++;
+      ++rit;
     }
     return recs.size();
   }
@@ -1917,7 +1922,7 @@ public:
       } else if (error() != Error::NOREC) {
         return -1;
       }
-      kit++;
+      ++kit;
     }
     return cnt;
   }
@@ -1958,7 +1963,7 @@ public:
       } else if (error() != Error::NOREC) {
         return -1;
       }
-      kit++;
+      ++kit;
     }
     return recs->size();
   }
@@ -1994,7 +1999,7 @@ public:
     };
     VisitorImpl visitor(dest);
     bool err = false;
-    dest->write(DBSSMAGICDATA, sizeof(DBSSMAGICDATA));
+    dest->write(KCDBSSMAGICDATA, sizeof(KCDBSSMAGICDATA));
     if (iterate(&visitor, false, checker)) {
       unsigned char c = 0xff;
       dest->write((char*)&c, 1);
@@ -2042,13 +2047,13 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "invalid stream");
       return false;
     }
-    char buf[DBIOBUFSIZ];
-    src->read(buf, sizeof(DBSSMAGICDATA));
+    char buf[IOBUFSIZ];
+    src->read(buf, sizeof(KCDBSSMAGICDATA));
     if (src->fail()) {
       set_error(_KCCODELINE_, Error::SYSTEM, "stream input error");
       return false;
     }
-    if (std::memcmp(buf, DBSSMAGICDATA, sizeof(DBSSMAGICDATA))) {
+    if (std::memcmp(buf, KCDBSSMAGICDATA, sizeof(KCDBSSMAGICDATA))) {
       set_error(_KCCODELINE_, Error::INVALID, "invalid magic data of input stream");
       return false;
     }
@@ -2199,6 +2204,9 @@ public:
     }
     return "unknown";
   }
+private:
+  /** The size of the IO buffer. */
+  static const size_t IOBUFSIZ = 8192;
 };
 
 
