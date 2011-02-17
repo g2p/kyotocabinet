@@ -1,33 +1,19 @@
 #!/usr/bin/make -f
 
-CFLAGS = -g -Wall -Wextra $(if $(findstring noopt,$(DEB_BUILD_OPTIONS)),-O0,-O2)
-LDFLAGS= -Wl,-z,defs
-
-DEB_BUILD_ARCH ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
-
-
 %:
 	dh $@ --parallel
 
+override_dh_auto_configure:
+	autoreconf -fvi
+	dh_auto_configure -- \
+	    --enable-devel --enable-lzo --enable-lzma
+
 override_dh_installchangelogs:
 	dh_installchangelogs ChangeLog
-
-override_dh_auto_configure:
-	dh_auto_configure -- \
-	    --enable-devel --enable-lzo --enable-lzma \
-	    CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
-
-override_dh_auto_test:
-	$(if $(findstring $(DEB_BUILD_ARCH),armel)$(findstring nocheck,$(DEB_BUILD_OPTIONS)),,$(MAKE) check)
-
-override_dh_clean:
-	dh_clean
-	! test -e Makefile || $(MAKE) distclean
-	rm -f build-*-stamp
 
 override_dh_strip:
 	dh_strip --dbg-package=kyotocabinet-dbg
 
 .PHONY: \
-	override_dh_installchangelogs override_dh_auto_configure \
-	override_dh_auto_test override_dh_clean override_dh_strip
+	override_dh_auto_configure override_dh_installchangelogs override_dh_strip
+

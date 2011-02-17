@@ -2,7 +2,7 @@ Source: kyotocabinet
 Priority: extra
 Maintainer: Gabriel de Perthuis <g2p.code+debian@gmail.com>
 Build-Depends:
- autotools-dev,
+ automake,
  debhelper (>= 7.0.50),
  liblzma-dev,
  liblzo2-dev,
