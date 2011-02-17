@@ -1,3 +1,9 @@
+kyotocabinet (1.2.44-1) unstable; urgency=low
+
+  * Import upstream version 1.2.44
+
+ -- Gabriel de Perthuis <g2p.code+debian@gmail.com>  Thu, 17 Feb 2011 20:37:43 +0100
+
 kyotocabinet (1.2.43-1) unstable; urgency=low
 
   * Initial release. (Closes: #613450: ITP: kyotocabinet)

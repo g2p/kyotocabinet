@@ -22,7 +22,7 @@ override_dh_auto_test:
 
 override_dh_clean:
 	dh_clean
-	! test -e Makefile || $(MAKE) CCACHE_DIR="$$(mktemp -u --suffix=fake-ccache)" distclean
+	! test -e Makefile || $(MAKE) distclean
 	rm -f build-*-stamp
 
 override_dh_strip:

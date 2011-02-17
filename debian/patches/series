@@ -1,6 +1,1 @@
-0001-Don-t-drop-a-shared-ccache.patch
-0002-pkg-config.pc.in-move-LIBS-in-the-Libs.private-secti.patch
-0003-Avoid-LDENV-to-avoid-rpaths.patch
-0004-Link-as-needed-to-avoid-creating-unnecessary-depende.patch
-0005-Tweak-links-for-browsing-installed-docs.patch
-0006-Don-t-run-ldconfig-when-DESTDIR-is-defined-it-s-slow.patch
+0001-Tweak-links-for-browsing-installed-docs.patch
