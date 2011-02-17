@@ -27,50 +27,11 @@
 #include <kcdb.h>
 #include <kcplantdb.h>
 
+#define KCHDBMAGICDATA  "KC\n"           ///< magic data of the file
+#define KCHDBCHKSUMSEED  "__kyotocabinet__"  ///< seed of the module checksum
+#define KCHDBTMPPATHEXT  "tmpkch"        ///< extension of the temporary file
+
 namespace kyotocabinet {                 // common namespace
-
-
-/**
- * Constants for implementation.
- */
-namespace {
-const char HDBMAGICDATA[] = "KC\n";      ///< magic data of the file
-const char HDBCHKSUMSEED[] = "__kyotocabinet__";  ///< seed of the module checksum
-const int64_t HDBMOFFLIBVER = 4;         ///< offset of the library version
-const int64_t HDBMOFFLIBREV = 5;         ///< offset of the library revision
-const int64_t HDBMOFFFMTVER = 6;         ///< offset of the format revision
-const int64_t HDBMOFFCHKSUM = 7;         ///< offset of the module checksum
-const int64_t HDBMOFFTYPE = 8;           ///< offset of the database type
-const int64_t HDBMOFFAPOW = 9;           ///< offset of the alignment power
-const int64_t HDBMOFFFPOW = 10;          ///< offset of the free block pool power
-const int64_t HDBMOFFOPTS = 11;          ///< offset of the options
-const int64_t HDBMOFFBNUM = 16;          ///< offset of the bucket number
-const int64_t HDBMOFFFLAGS = 24;         ///< offset of the status flags
-const int64_t HDBMOFFCOUNT = 32;         ///< offset of the record number
-const int64_t HDBMOFFSIZE = 40;          ///< offset of the file size
-const int64_t HDBMOFFOPAQUE = 48;        ///< offset of the opaque data
-const int64_t HDBHEADSIZ = 64;           ///< size of the header
-const int32_t HDBFBPWIDTH = 6;           ///< width of the free block
-const int32_t HDBWIDTHLARGE = 6;         ///< large width of the record address
-const int32_t HDBWIDTHSMALL = 4;         ///< small width of the record address
-const size_t HDBRECBUFSIZ = 48;          ///< size of the record buffer
-const size_t HDBIOBUFSIZ = 1024;         ///< size of the IO buffer
-const int32_t HDBRLOCKSLOT = 4096;       ///< number of slots of the record lock
-const uint8_t HDBDEFAPOW = 3;            ///< default alignment power
-const uint8_t HDBMAXAPOW = 15;           ///< maximum alignment power
-const uint8_t HDBDEFFPOW = 10;           ///< default free block pool power
-const uint8_t HDBMAXFPOW = 20;           ///< maximum free block pool power
-const int64_t HDBDEFBNUM = 1048583LL;    ///< default bucket number
-const int64_t HDBDEFMSIZ = 64LL << 20;   ///< default size of the memory-mapped region
-const uint8_t HDBRECMAGIC = 0xcc;        ///< magic data for record
-const uint8_t HDBPADMAGIC = 0xee;        ///< magic data for padding
-const uint8_t HDBFBMAGIC = 0xdd;         ///< magic data for free block
-const int32_t HDBDFRGMAX = 512;          ///< maximum unit of auto defragmentation
-const int32_t HDBDFRGCEF = 2;            ///< coefficient of auto defragmentation
-const int64_t HDBSLVGWIDTH = 1LL << 20;  ///< checking width for record salvage
-const uint32_t HDBLOCKBUSYLOOP = 8192;   ///< threshold of busy loop and sleep for locking
-const char* HDBTMPPATHEXT = "tmpkch";    ///< extension of the temporary file
-}
 
 
 /**
@@ -92,6 +53,7 @@ private:
   struct FreeBlock;
   struct FreeBlockComparator;
   class Repeater;
+  class ScopedVisitor;
   /** An alias of set of free blocks. */
   typedef std::set<FreeBlock> FBP;
   /** An alias of list of cursors. */
@@ -153,7 +115,7 @@ public:
         return false;
       }
       Record rec;
-      char rbuf[HDBRECBUFSIZ];
+      char rbuf[RECBUFSIZ];
       if (!step_impl(&rec, rbuf, 0)) return false;
       if (!rec.vbuf && !db_->read_record_body(&rec)) {
         delete[] rec.bbuf;
@@ -241,7 +203,7 @@ public:
         }
       }
       if (db_->dfunit_ > 0 && db_->frgcnt_ >= db_->dfunit_) {
-        if (!db_->defrag_impl(db_->dfunit_ * HDBDFRGCEF)) return false;
+        if (!db_->defrag_impl(db_->dfunit_ * DFRGCEF)) return false;
         db_->frgcnt_ -= db_->dfunit_;
       }
       return true;
@@ -286,7 +248,7 @@ public:
       int64_t off = db_->get_bucket(bidx);
       if (off < 0) return false;
       Record rec;
-      char rbuf[HDBRECBUFSIZ];
+      char rbuf[RECBUFSIZ];
       while (off > 0) {
         rec.off = off;
         if (!db_->read_record(&rec, rbuf)) return false;
@@ -391,7 +353,7 @@ public:
       }
       bool err = false;
       Record rec;
-      char rbuf[HDBRECBUFSIZ];
+      char rbuf[RECBUFSIZ];
       if (step_impl(&rec, rbuf, 1)) {
         delete[] rec.bbuf;
       } else {
@@ -483,14 +445,14 @@ public:
    * Default constructor.
    */
   explicit HashDB() :
-    mlock_(), rlock_(HDBRLOCKSLOT), flock_(), atlock_(), error_(),
+    mlock_(), rlock_(RLOCKSLOT), flock_(), atlock_(), error_(),
     logger_(NULL), logkinds_(0), mtrigger_(NULL),
     omode_(0), writer_(false), autotran_(false), autosync_(false), reorg_(false), trim_(false),
     file_(), fbp_(), curs_(), path_(""),
     libver_(0), librev_(0), fmtver_(0), chksum_(0), type_(TYPEHASH),
-    apow_(HDBDEFAPOW), fpow_(HDBDEFFPOW), opts_(0), bnum_(HDBDEFBNUM),
+    apow_(DEFAPOW), fpow_(DEFFPOW), opts_(0), bnum_(DEFBNUM),
     flags_(0), flagopen_(false), count_(0), lsiz_(0), psiz_(0), opaque_(),
-    msiz_(HDBDEFMSIZ), dfunit_(0), embcomp_(ZLIBRAWCOMP),
+    msiz_(DEFMSIZ), dfunit_(0), embcomp_(ZLIBRAWCOMP),
     align_(0), fbpnum_(0), width_(0), linear_(false),
     comp_(NULL), rhsiz_(0), boff_(0), roff_(0), dfcur_(0), frgcnt_(0),
     tran_(false), trhard_(false), trfbp_(), trcount_(0), trsize_(0) {
@@ -509,7 +471,7 @@ public:
       while (cit != citend) {
         Cursor* cur = *cit;
         cur->db_ = NULL;
-        cit++;
+        ++cit;
       }
     }
   }
@@ -547,7 +509,7 @@ public:
     uint64_t hash = hash_record(kbuf, ksiz);
     uint32_t pivot = fold_hash(hash);
     int64_t bidx = hash % bnum_;
-    size_t lidx = bidx % HDBRLOCKSLOT;
+    size_t lidx = bidx % RLOCKSLOT;
     if (writable) {
       rlock_.lock_writer(lidx);
     } else {
@@ -558,8 +520,8 @@ public:
     if (!err && dfunit_ > 0 && frgcnt_ >= dfunit_ && mlock_.promote()) {
       int64_t unit = frgcnt_;
       if (unit >= dfunit_) {
-        if (unit > HDBDFRGMAX) unit = HDBDFRGMAX;
-        if (!defrag_impl(unit * HDBDFRGCEF)) err = true;
+        if (unit > DFRGMAX) unit = DFRGMAX;
+        if (!defrag_impl(unit * DFRGCEF)) err = true;
         frgcnt_ -= unit;
       }
     }
@@ -579,8 +541,6 @@ public:
   bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
                    bool writable = true) {
     _assert_(visitor);
-    size_t knum = keys.size();
-    if (knum < 1) return true;
     mlock_.lock_reader();
     if (omode_ == 0) {
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
@@ -597,6 +557,13 @@ public:
         mlock_.unlock();
         return false;
       }
+    }
+    visitor->visit_before();
+    size_t knum = keys.size();
+    if (knum < 1) {
+      visitor->visit_after();
+      mlock_.unlock();
+      return true;
     }
     bool err = false;
     struct RecordKey {
@@ -615,7 +582,7 @@ public:
       uint64_t hash = hash_record(rkey->kbuf, rkey->ksiz);
       rkey->pivot = fold_hash(hash);
       rkey->bidx = hash % bnum_;
-      lidxs.insert(rkey->bidx % HDBRLOCKSLOT);
+      lidxs.insert(rkey->bidx % RLOCKSLOT);
     }
     std::set<size_t>::iterator lit = lidxs.begin();
     std::set<size_t>::iterator litend = lidxs.end();
@@ -625,7 +592,7 @@ public:
       } else {
         rlock_.lock_reader(*lit);
       }
-      lit++;
+      ++lit;
     }
     for (size_t i = 0; i < knum; i++) {
       RecordKey* rkey = rkeys + i;
@@ -638,17 +605,18 @@ public:
     litend = lidxs.end();
     while (lit != litend) {
       rlock_.unlock(*lit);
-      lit++;
+      ++lit;
     }
     delete[] rkeys;
     if (!err && dfunit_ > 0 && frgcnt_ >= dfunit_ && mlock_.promote()) {
       int64_t unit = frgcnt_;
       if (unit >= dfunit_) {
-        if (unit > HDBDFRGMAX) unit = HDBDFRGMAX;
-        if (!defrag_impl(unit * HDBDFRGCEF)) err = true;
+        if (unit > DFRGMAX) unit = DFRGMAX;
+        if (!defrag_impl(unit * DFRGCEF)) err = true;
         frgcnt_ -= unit;
       }
     }
+    visitor->visit_after();
     mlock_.unlock();
     return !err;
   }
@@ -678,6 +646,7 @@ public:
         return false;
       }
     }
+    ScopedVisitor svis(visitor);
     bool err = false;
     if (!iterate_impl(visitor, checker)) err = true;
     trigger_meta(MetaTrigger::ITERATE, "iterate");
@@ -821,7 +790,7 @@ public:
       calc_meta();
       reorg_ = true;
     }
-    if (type_ == 0 || apow_ > HDBMAXAPOW || fpow_ > HDBMAXFPOW ||
+    if (type_ == 0 || apow_ > MAXAPOW || fpow_ > MAXFPOW ||
         bnum_ < 1 || count_ < 0 || lsiz_ < roff_) {
       set_error(_KCCODELINE_, Error::BROKEN, "invalid meta data");
       report(_KCCODELINE_, Logger::WARN, "type=0x%02X apow=%d fpow=%d bnum=%lld count=%lld"
@@ -935,7 +904,7 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wcnt >= HDBLOCKBUSYLOOP) {
+      if (wcnt >= LOCKBUSYLOOP) {
         Thread::chill();
       } else {
         Thread::yield();
@@ -1028,7 +997,7 @@ public:
       return false;
     }
     disable_cursors();
-    if (!file_.truncate(HDBHEADSIZ)) {
+    if (!file_.truncate(HEADSIZ)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
@@ -1200,8 +1169,8 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    apow_ = apow >= 0 ? apow : HDBDEFAPOW;
-    if (apow_ > HDBMAXAPOW) apow_ = HDBMAXAPOW;
+    apow_ = apow >= 0 ? apow : DEFAPOW;
+    if (apow_ > MAXAPOW) apow_ = MAXAPOW;
     return true;
   }
   /**
@@ -1216,8 +1185,8 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    fpow_ = fpow >= 0 ? fpow : HDBDEFFPOW;
-    if (fpow_ > HDBMAXFPOW) fpow_ = HDBMAXFPOW;
+    fpow_ = fpow >= 0 ? fpow : DEFFPOW;
+    if (fpow_ > MAXFPOW) fpow_ = MAXFPOW;
     return true;
   }
   /**
@@ -1248,7 +1217,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    bnum_ = bnum > 0 ? bnum : HDBDEFBNUM;
+    bnum_ = bnum > 0 ? bnum : DEFBNUM;
     if (bnum_ > INT16MAX) bnum_ = nearbyprime(bnum_);
     return true;
   }
@@ -1264,7 +1233,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    msiz_ = msiz >= 0 ? msiz : HDBDEFMSIZ;
+    msiz_ = msiz >= 0 ? msiz : DEFMSIZ;
     return true;
   }
   /**
@@ -1640,6 +1609,72 @@ protected:
     return reorg_;
   }
 private:
+  /** The offset of the library version. */
+  static const int64_t MOFFLIBVER = 4;
+  /** The offset of the library revision. */
+  static const int64_t MOFFLIBREV = 5;
+  /** The offset of the format revision. */
+  static const int64_t MOFFFMTVER = 6;
+  /** The offset of the module checksum. */
+  static const int64_t MOFFCHKSUM = 7;
+  /** The offset of the database type. */
+  static const int64_t MOFFTYPE = 8;
+  /** The offset of the alignment power. */
+  static const int64_t MOFFAPOW = 9;
+  /** The offset of the free block pool power. */
+  static const int64_t MOFFFPOW = 10;
+  /** The offset of the options. */
+  static const int64_t MOFFOPTS = 11;
+  /** The offset of the bucket number. */
+  static const int64_t MOFFBNUM = 16;
+  /** The offset of the status flags. */
+  static const int64_t MOFFFLAGS = 24;
+  /** The offset of the record number. */
+  static const int64_t MOFFCOUNT = 32;
+  /** The offset of the file size. */
+  static const int64_t MOFFSIZE = 40;
+  /** The offset of the opaque data. */
+  static const int64_t MOFFOPAQUE = 48;
+  /** The size of the header. */
+  static const int64_t HEADSIZ = 64;
+  /** The width of the free block. */
+  static const int32_t FBPWIDTH = 6;
+  /** The large width of the record address. */
+  static const int32_t WIDTHLARGE = 6;
+  /** The small width of the record address. */
+  static const int32_t WIDTHSMALL = 4;
+  /** The size of the record buffer. */
+  static const size_t RECBUFSIZ = 48;
+  /** The size of the IO buffer. */
+  static const size_t IOBUFSIZ = 1024;
+  /** The number of slots of the record lock. */
+  static const int32_t RLOCKSLOT = 1024;
+  /** The default alignment power. */
+  static const uint8_t DEFAPOW = 3;
+  /** The maximum alignment power. */
+  static const uint8_t MAXAPOW = 15;
+  /** The default free block pool power. */
+  static const uint8_t DEFFPOW = 10;
+  /** The maximum free block pool power. */
+  static const uint8_t MAXFPOW = 20;
+  /** The default bucket number. */
+  static const int64_t DEFBNUM = 1048583LL;
+  /** The default size of the memory-mapped region. */
+  static const int64_t DEFMSIZ = 64LL << 20;
+  /** The magic data for record. */
+  static const uint8_t RECMAGIC = 0xcc;
+  /** The magic data for padding. */
+  static const uint8_t PADMAGIC = 0xee;
+  /** The magic data for free block. */
+  static const uint8_t FBMAGIC = 0xdd;
+  /** The maximum unit of auto defragmentation. */
+  static const int32_t DFRGMAX = 512;
+  /** The coefficient of auto defragmentation. */
+  static const int32_t DFRGCEF = 2;
+  /** The checking width for record salvage. */
+  static const int64_t SLVGWIDTH = 1LL << 20;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
   /**
    * Record data.
    */
@@ -1685,10 +1720,12 @@ private:
    */
   class Repeater : public Visitor {
   public:
+    /** constructor */
     explicit Repeater(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {
       _assert_(vbuf);
     }
   private:
+    /** visit a record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
@@ -1697,6 +1734,24 @@ private:
     }
     const char* vbuf_;
     size_t vsiz_;
+  };
+  /**
+   * Scoped visiotor.
+   */
+  class ScopedVisitor {
+  public:
+    /** constructor */
+    ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
+      _assert_(visitor);
+      visitor_->visit_before();
+    }
+    /** destructor */
+    ~ScopedVisitor() {
+      _assert_(true);
+      visitor_->visit_after();
+    }
+  private:
+    Visitor* visitor_;                   ///< visitor
   };
   /**
    * Accept a visitor to a record.
@@ -1717,7 +1772,7 @@ private:
     enum { DIREMPTY, DIRLEFT, DIRRIGHT, DIRMIXED } entdir = DIREMPTY;
     int64_t entoff = 0;
     Record rec;
-    char rbuf[HDBRECBUFSIZ];
+    char rbuf[RECBUFSIZ];
     while (off > 0) {
       rec.off = off;
       if (!read_record(&rec, rbuf)) return false;
@@ -2023,7 +2078,7 @@ private:
     int64_t off = roff_;
     int64_t end = lsiz_;
     Record rec;
-    char rbuf[HDBRECBUFSIZ];
+    char rbuf[RECBUFSIZ];
     int64_t curcnt = 0;
     while (off > 0 && off < end) {
       rec.off = off;
@@ -2184,7 +2239,7 @@ private:
     _assert_(step >= 0);
     int64_t end = lsiz_;
     Record rec;
-    char rbuf[HDBRECBUFSIZ];
+    char rbuf[RECBUFSIZ];
     while (true) {
       if (dfcur_ >= end) {
         dfcur_ = roff_;
@@ -2267,12 +2322,14 @@ private:
     _assert_(true);
     align_ = 1 << apow_;
     fbpnum_ = fpow_ > 0 ? 1 << fpow_ : 0;
-    width_ = (opts_ & TSMALL) ? HDBWIDTHSMALL : HDBWIDTHLARGE;
+    //width_ = (opts_ & TSMALL) ? WIDTHSMALL : WIDTHLARGE;
+    width_ = (opts_ & TSMALL) ? sizeof(uint32_t) : sizeof(uint32_t) + 2;
+
     linear_ = (opts_ & TLINEAR) ? true : false;
     comp_ = (opts_ & TCOMPRESS) ? embcomp_ : NULL;
     rhsiz_ = sizeof(uint16_t) + sizeof(uint8_t) * 2;
     rhsiz_ += linear_ ? width_ : width_ * 2;
-    boff_ = HDBHEADSIZ + HDBFBPWIDTH * fbpnum_;
+    boff_ = HEADSIZ + FBPWIDTH * fbpnum_;
     if (fbpnum_ > 0) boff_ += width_ * 2 + sizeof(uint8_t) * 2;
     roff_ = boff_ + width_ * bnum_;
     int64_t rem = roff_ % align_;
@@ -2287,8 +2344,8 @@ private:
    */
   uint8_t calc_checksum() {
     _assert_(true);
-    const char* kbuf = HDBCHKSUMSEED;
-    size_t ksiz = sizeof(HDBCHKSUMSEED) - 1;
+    const char* kbuf = KCHDBCHKSUMSEED;
+    size_t ksiz = sizeof(KCHDBCHKSUMSEED) - 1;
     char* zbuf = NULL;
     size_t zsiz = 0;
     if (comp_) {
@@ -2307,26 +2364,26 @@ private:
    */
   bool dump_meta() {
     _assert_(true);
-    char head[HDBHEADSIZ];
+    char head[HEADSIZ];
     std::memset(head, 0, sizeof(head));
-    std::memcpy(head, HDBMAGICDATA, sizeof(HDBMAGICDATA));
-    std::memcpy(head + HDBMOFFLIBVER, &libver_, sizeof(libver_));
-    std::memcpy(head + HDBMOFFLIBREV, &librev_, sizeof(librev_));
-    std::memcpy(head + HDBMOFFFMTVER, &fmtver_, sizeof(fmtver_));
-    std::memcpy(head + HDBMOFFCHKSUM, &chksum_, sizeof(chksum_));
-    std::memcpy(head + HDBMOFFTYPE, &type_, sizeof(type_));
-    std::memcpy(head + HDBMOFFAPOW, &apow_, sizeof(apow_));
-    std::memcpy(head + HDBMOFFFPOW, &fpow_, sizeof(fpow_));
-    std::memcpy(head + HDBMOFFOPTS, &opts_, sizeof(opts_));
+    std::memcpy(head, KCHDBMAGICDATA, sizeof(KCHDBMAGICDATA));
+    std::memcpy(head + MOFFLIBVER, &libver_, sizeof(libver_));
+    std::memcpy(head + MOFFLIBREV, &librev_, sizeof(librev_));
+    std::memcpy(head + MOFFFMTVER, &fmtver_, sizeof(fmtver_));
+    std::memcpy(head + MOFFCHKSUM, &chksum_, sizeof(chksum_));
+    std::memcpy(head + MOFFTYPE, &type_, sizeof(type_));
+    std::memcpy(head + MOFFAPOW, &apow_, sizeof(apow_));
+    std::memcpy(head + MOFFFPOW, &fpow_, sizeof(fpow_));
+    std::memcpy(head + MOFFOPTS, &opts_, sizeof(opts_));
     uint64_t num = hton64(bnum_);
-    std::memcpy(head + HDBMOFFBNUM, &num, sizeof(num));
+    std::memcpy(head + MOFFBNUM, &num, sizeof(num));
     if (!flagopen_) flags_ &= ~FOPEN;
-    std::memcpy(head + HDBMOFFFLAGS, &flags_, sizeof(flags_));
+    std::memcpy(head + MOFFFLAGS, &flags_, sizeof(flags_));
     num = hton64(count_);
-    std::memcpy(head + HDBMOFFCOUNT, &num, sizeof(num));
+    std::memcpy(head + MOFFCOUNT, &num, sizeof(num));
     num = hton64(lsiz_);
-    std::memcpy(head + HDBMOFFSIZE, &num, sizeof(num));
-    std::memcpy(head + HDBMOFFOPAQUE, opaque_, sizeof(opaque_));
+    std::memcpy(head + MOFFSIZE, &num, sizeof(num));
+    std::memcpy(head + MOFFOPAQUE, opaque_, sizeof(opaque_));
     if (!file_.write(0, head, sizeof(head))) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
@@ -2341,14 +2398,14 @@ private:
    */
   bool dump_auto_meta() {
     _assert_(true);
-    const int64_t hsiz = HDBMOFFOPAQUE - HDBMOFFCOUNT;
+    const int64_t hsiz = MOFFOPAQUE - MOFFCOUNT;
     char head[hsiz];
     std::memset(head, 0, hsiz);
     uint64_t num = hton64(count_);
     std::memcpy(head, &num, sizeof(num));
     num = hton64(lsiz_);
-    std::memcpy(head + HDBMOFFSIZE - HDBMOFFCOUNT, &num, sizeof(num));
-    if (!file_.write_fast(HDBMOFFCOUNT, head, sizeof(head))) {
+    std::memcpy(head + MOFFSIZE - MOFFCOUNT, &num, sizeof(num));
+    if (!file_.write_fast(MOFFCOUNT, head, sizeof(head))) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
@@ -2362,7 +2419,7 @@ private:
    */
   bool dump_opaque() {
     _assert_(true);
-    if (!file_.write_fast(HDBMOFFOPAQUE, opaque_, sizeof(opaque_))) {
+    if (!file_.write_fast(MOFFOPAQUE, opaque_, sizeof(opaque_))) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
@@ -2374,7 +2431,7 @@ private:
    */
   bool load_meta() {
     _assert_(true);
-    char head[HDBHEADSIZ];
+    char head[HEADSIZ];
     if (file_.size() < (int64_t)sizeof(head)) {
       set_error(_KCCODELINE_, Error::INVALID, "missing magic data of the file");
       return false;
@@ -2385,29 +2442,29 @@ private:
              (long long)psiz_, (long long)0, (long long)file_.size());
       return false;
     }
-    if (std::memcmp(head, HDBMAGICDATA, sizeof(HDBMAGICDATA))) {
+    if (std::memcmp(head, KCHDBMAGICDATA, sizeof(KCHDBMAGICDATA))) {
       set_error(_KCCODELINE_, Error::INVALID, "invalid magic data of the file");
       return false;
     }
-    std::memcpy(&libver_, head + HDBMOFFLIBVER, sizeof(libver_));
-    std::memcpy(&librev_, head + HDBMOFFLIBREV, sizeof(librev_));
-    std::memcpy(&fmtver_, head + HDBMOFFFMTVER, sizeof(fmtver_));
-    std::memcpy(&chksum_, head + HDBMOFFCHKSUM, sizeof(chksum_));
-    std::memcpy(&type_, head + HDBMOFFTYPE, sizeof(type_));
-    std::memcpy(&apow_, head + HDBMOFFAPOW, sizeof(apow_));
-    std::memcpy(&fpow_, head + HDBMOFFFPOW, sizeof(fpow_));
-    std::memcpy(&opts_, head + HDBMOFFOPTS, sizeof(opts_));
+    std::memcpy(&libver_, head + MOFFLIBVER, sizeof(libver_));
+    std::memcpy(&librev_, head + MOFFLIBREV, sizeof(librev_));
+    std::memcpy(&fmtver_, head + MOFFFMTVER, sizeof(fmtver_));
+    std::memcpy(&chksum_, head + MOFFCHKSUM, sizeof(chksum_));
+    std::memcpy(&type_, head + MOFFTYPE, sizeof(type_));
+    std::memcpy(&apow_, head + MOFFAPOW, sizeof(apow_));
+    std::memcpy(&fpow_, head + MOFFFPOW, sizeof(fpow_));
+    std::memcpy(&opts_, head + MOFFOPTS, sizeof(opts_));
     uint64_t num;
-    std::memcpy(&num, head + HDBMOFFBNUM, sizeof(num));
+    std::memcpy(&num, head + MOFFBNUM, sizeof(num));
     bnum_ = ntoh64(num);
-    std::memcpy(&flags_, head + HDBMOFFFLAGS, sizeof(flags_));
+    std::memcpy(&flags_, head + MOFFFLAGS, sizeof(flags_));
     flagopen_ = flags_ & FOPEN;
-    std::memcpy(&num, head + HDBMOFFCOUNT, sizeof(num));
+    std::memcpy(&num, head + MOFFCOUNT, sizeof(num));
     count_ = ntoh64(num);
-    std::memcpy(&num, head + HDBMOFFSIZE, sizeof(num));
+    std::memcpy(&num, head + MOFFSIZE, sizeof(num));
     lsiz_ = ntoh64(num);
     psiz_ = lsiz_;
-    std::memcpy(opaque_, head + HDBMOFFOPAQUE, sizeof(opaque_));
+    std::memcpy(opaque_, head + MOFFOPAQUE, sizeof(opaque_));
     trcount_ = count_;
     trsize_ = lsiz_;
     return true;
@@ -2421,10 +2478,10 @@ private:
   bool set_flag(uint8_t flag, bool sign) {
     _assert_(true);
     uint8_t flags;
-    if (!file_.read(HDBMOFFFLAGS, &flags, sizeof(flags))) {
+    if (!file_.read(MOFFFLAGS, &flags, sizeof(flags))) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
-             (long long)psiz_, (long long)HDBMOFFFLAGS, (long long)file_.size());
+             (long long)psiz_, (long long)MOFFFLAGS, (long long)file_.size());
       return false;
     }
     if (sign) {
@@ -2432,7 +2489,7 @@ private:
     } else {
       flags &= ~flag;
     }
-    if (!file_.write(HDBMOFFFLAGS, &flags, sizeof(flags))) {
+    if (!file_.write(MOFFFLAGS, &flags, sizeof(flags))) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
@@ -2455,7 +2512,7 @@ private:
     db.tune_buckets(bnum_);
     db.tune_map(msiz_);
     if (embcomp_) db.tune_compressor(embcomp_);
-    const std::string& npath = path + File::EXTCHR + HDBTMPPATHEXT;
+    const std::string& npath = path + File::EXTCHR + KCHDBTMPPATHEXT;
     if (db.open(npath, OWRITER | OCREATE | OTRUNCATE)) {
       report(_KCCODELINE_, Logger::WARN, "reorganizing the database");
       lsiz_ = file_.size();
@@ -2493,17 +2550,17 @@ private:
     int64_t off = roff_;
     int64_t end = psiz_;
     Record rec, nrec;
-    char rbuf[HDBRECBUFSIZ], nbuf[HDBRECBUFSIZ];
+    char rbuf[RECBUFSIZ], nbuf[RECBUFSIZ];
     while (off > 0 && off < end) {
       rec.off = off;
       if (!read_record(&rec, rbuf)) {
-        int64_t checkend = off + HDBSLVGWIDTH;
+        int64_t checkend = off + SLVGWIDTH;
         if (checkend > end - (int64_t)rhsiz_) checkend = end - rhsiz_;
         bool hit = false;
         for (off += rhsiz_; off < checkend; off++) {
           rec.off = off;
           if (!read_record(&rec, rbuf)) continue;
-          if ((int64_t)rec.rsiz > HDBSLVGWIDTH || rec.off + (int64_t)rec.rsiz >= checkend) {
+          if ((int64_t)rec.rsiz > SLVGWIDTH || rec.off + (int64_t)rec.rsiz >= checkend) {
             delete[] rec.bbuf;
             continue;
           }
@@ -2514,7 +2571,7 @@ private:
           delete[] rec.bbuf;
           nrec.off = off + rec.rsiz;
           if (!read_record(&nrec, nbuf)) continue;
-          if ((int64_t)nrec.rsiz > HDBSLVGWIDTH || nrec.off + (int64_t)nrec.rsiz >= checkend) {
+          if ((int64_t)nrec.rsiz > SLVGWIDTH || nrec.off + (int64_t)nrec.rsiz >= checkend) {
             delete[] nrec.bbuf;
             continue;
           }
@@ -2711,8 +2768,8 @@ private:
       return false;
     }
     size_t rsiz = psiz_ - rec->off;
-    if (rsiz > HDBRECBUFSIZ) {
-      rsiz = HDBRECBUFSIZ;
+    if (rsiz > RECBUFSIZ) {
+      rsiz = RECBUFSIZ;
     } else {
       if (rsiz < rhsiz_) {
         set_error(_KCCODELINE_, Error::BROKEN, "too short record region");
@@ -2730,11 +2787,11 @@ private:
     }
     const char* rp = rbuf;
     uint16_t snum;
-    if (*(uint8_t*)rp == HDBRECMAGIC) {
+    if (*(uint8_t*)rp == RECMAGIC) {
       ((uint8_t*)&snum)[0] = 0;
       ((uint8_t*)&snum)[1] = *(uint8_t*)(rp + 1);
     } else if (*(uint8_t*)rp >= 0x80) {
-      if (*(uint8_t*)(rp++) != HDBFBMAGIC || *(uint8_t*)(rp++) != HDBFBMAGIC) {
+      if (*(uint8_t*)(rp++) != FBMAGIC || *(uint8_t*)(rp++) != FBMAGIC) {
         set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a free block");
         report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld",
                (long long)psiz_, (long long)rec->off, (long long)rsiz, (long long)file_.size());
@@ -2743,7 +2800,7 @@ private:
       }
       rec->rsiz = readfixnum(rp, width_) << apow_;
       rp += width_;
-      if (*(uint8_t*)(rp++) != HDBPADMAGIC || *(uint8_t*)(rp++) != HDBPADMAGIC) {
+      if (*(uint8_t*)(rp++) != PADMAGIC || *(uint8_t*)(rp++) != PADMAGIC) {
         set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a free block");
         report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld",
                (long long)psiz_, (long long)rec->off, (long long)rsiz, (long long)file_.size());
@@ -2829,7 +2886,7 @@ private:
         if (rec->psiz > 0) {
           rp += rec->vsiz;
           rsiz -= rec->vsiz;
-          if (rsiz > 0 && *(uint8_t*)rp != HDBPADMAGIC) {
+          if (rsiz > 0 && *(uint8_t*)rp != PADMAGIC) {
             set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a record");
             report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld rsiz=%lld fsiz=%lld"
                    " snum=%04X", (long long)psiz_, (long long)rec->off, (long long)rsiz,
@@ -2868,7 +2925,7 @@ private:
       delete[] bbuf;
       return false;
     }
-    if (rec->psiz > 0 && ((uint8_t*)bbuf)[bsiz-1] != HDBPADMAGIC) {
+    if (rec->psiz > 0 && ((uint8_t*)bbuf)[bsiz-1] != PADMAGIC) {
       set_error(_KCCODELINE_, Error::BROKEN, "invalid magic data of a record");
       report_binary(_KCCODELINE_, Logger::WARN, "bbuf", bbuf, bsiz);
       delete[] bbuf;
@@ -2887,12 +2944,12 @@ private:
    */
   bool write_record(Record* rec, bool over) {
     _assert_(rec);
-    char stack[HDBIOBUFSIZ];
+    char stack[IOBUFSIZ];
     char* rbuf = rec->rsiz > sizeof(stack) ? new char[rec->rsiz] : stack;
     char* wp = rbuf;
     uint16_t snum = hton16(rec->psiz);
     std::memcpy(wp, &snum, sizeof(snum));
-    if (rec->psiz < 0x100) *wp = HDBRECMAGIC;
+    if (rec->psiz < 0x100) *wp = RECMAGIC;
     wp += sizeof(snum);
     writefixnum(wp, rec->left >> apow_, width_);
     wp += width_;
@@ -2908,7 +2965,7 @@ private:
     wp += rec->vsiz;
     if (rec->psiz > 0) {
       std::memset(wp, 0, rec->psiz);
-      *wp = HDBPADMAGIC;
+      *wp = PADMAGIC;
       wp += rec->psiz;
     }
     bool err = false;
@@ -2939,7 +2996,7 @@ private:
       rec->rsiz -= nsiz;
       rec->psiz -= nsiz;
       int64_t noff = rec->off + rec->rsiz;
-      char nbuf[HDBRECBUFSIZ];
+      char nbuf[RECBUFSIZ];
       if (!write_free_block(noff, nsiz, nbuf)) return false;
       insert_free_block(noff, nsiz);
     }
@@ -3012,7 +3069,7 @@ private:
     }
     int64_t entoff = 0;
     Record rec;
-    char rbuf[HDBRECBUFSIZ];
+    char rbuf[RECBUFSIZ];
     while (off > 0) {
       rec.off = off;
       if (!read_record(&rec, rbuf)) return false;
@@ -3070,12 +3127,12 @@ private:
   bool write_free_block(int64_t off, size_t rsiz, char* rbuf) {
     _assert_(off >= 0 && rbuf);
     char* wp = rbuf;
-    *(wp++) = HDBFBMAGIC;
-    *(wp++) = HDBFBMAGIC;
+    *(wp++) = FBMAGIC;
+    *(wp++) = FBMAGIC;
     writefixnum(wp, rsiz >> apow_, width_);
     wp += width_;
-    *(wp++) = HDBPADMAGIC;
-    *(wp++) = HDBPADMAGIC;
+    *(wp++) = PADMAGIC;
+    *(wp++) = PADMAGIC;
     if (!file_.write_fast(off, rbuf, wp - rbuf)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
@@ -3132,7 +3189,7 @@ private:
       if (it->off >= begin && it->off < end) {
         fbp_.erase(it++);
       } else {
-        it++;
+        ++it;
       }
     }
   }
@@ -3143,7 +3200,7 @@ private:
   bool dump_free_blocks() {
     _assert_(true);
     if (fbpnum_ < 1) return true;
-    size_t size = boff_ - HDBHEADSIZ;
+    size_t size = boff_ - HEADSIZ;
     char* rbuf = new char[size];
     char* wp = rbuf;
     char* end = rbuf + size - width_ * 2 - sizeof(uint8_t) * 2;
@@ -3155,7 +3212,7 @@ private:
       FBP::const_iterator itend = fbp_.end();
       while (it != itend) {
         blocks[cnt++] = *it;
-        it++;
+        ++it;
       }
       std::sort(blocks, blocks + num, FreeBlockComparator());
       for (size_t i = num - 1; i > 0; i--) {
@@ -3170,7 +3227,7 @@ private:
     *(wp++) = 0;
     *(wp++) = 0;
     bool err = false;
-    if (!file_.write(HDBHEADSIZ, rbuf, wp - rbuf)) {
+    if (!file_.write(HEADSIZ, rbuf, wp - rbuf)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
@@ -3189,7 +3246,7 @@ private:
     *(wp++) = 0;
     *(wp++) = 0;
     bool err = false;
-    if (!file_.write(HDBHEADSIZ, rbuf, wp - rbuf)) {
+    if (!file_.write(HEADSIZ, rbuf, wp - rbuf)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       err = true;
     }
@@ -3202,12 +3259,12 @@ private:
   bool load_free_blocks() {
     _assert_(true);
     if (fbpnum_ < 1) return true;
-    size_t size = boff_ - HDBHEADSIZ;
+    size_t size = boff_ - HEADSIZ;
     char* rbuf = new char[size];
-    if (!file_.read(HDBHEADSIZ, rbuf, size)) {
+    if (!file_.read(HEADSIZ, rbuf, size)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       report(_KCCODELINE_, Logger::WARN, "psiz=%lld off=%lld fsiz=%lld",
-             (long long)psiz_, (long long)HDBHEADSIZ, (long long)file_.size());
+             (long long)psiz_, (long long)HEADSIZ, (long long)file_.size());
       delete[] rbuf;
       return false;
     }
@@ -3265,7 +3322,7 @@ private:
     while (cit != citend) {
       Cursor* cur = *cit;
       cur->off_ = 0;
-      cit++;
+      ++cit;
     }
   }
   /**
@@ -3288,7 +3345,7 @@ private:
         cur->off_ = dest;
         if (cur->off_ >= cur->end_) cur->off_ = 0;
       }
-      cit++;
+      ++cit;
     }
   }
   /**
@@ -3307,7 +3364,7 @@ private:
       } else if (cur->end_ > end) {
         cur->end_ = end;
       }
-      cit++;
+      ++cit;
     }
   }
   /**
@@ -3384,7 +3441,7 @@ private:
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       return false;
     }
-    if (!file_.write_transaction(HDBMOFFBNUM, HDBHEADSIZ - HDBMOFFBNUM)) {
+    if (!file_.write_transaction(MOFFBNUM, HEADSIZ - MOFFBNUM)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       file_.end_transaction(false);
       return false;
@@ -3394,7 +3451,7 @@ private:
       FBP::const_iterator itbeg = fbp_.begin();
       for (int32_t cnt = fpow_ * 2 + 1; cnt > 0; cnt--) {
         if (it == itbeg) break;
-        it--;
+        --it;
         trfbp_.insert(*it);
       }
     }
@@ -3412,7 +3469,7 @@ private:
       atlock_.unlock();
       return false;
     }
-    if (!file_.write_transaction(HDBMOFFCOUNT, HDBMOFFOPAQUE - HDBMOFFCOUNT)) {
+    if (!file_.write_transaction(MOFFCOUNT, MOFFOPAQUE - MOFFCOUNT)) {
       set_error(_KCCODELINE_, Error::SYSTEM, file_.error());
       file_.end_transaction(false);
       atlock_.unlock();
@@ -3557,7 +3614,7 @@ private:
   /** The physical size of the file. */
   AtomicInt64 psiz_;
   /** The opaque data. */
-  char opaque_[HDBHEADSIZ-HDBMOFFOPAQUE];
+  char opaque_[HEADSIZ-MOFFOPAQUE];
   /** The size of the internal memory-mapped region. */
   int64_t msiz_;
   /** The unit step number of auto defragmentation. */

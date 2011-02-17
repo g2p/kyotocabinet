@@ -46,7 +46,7 @@ extern const int32_t FMTVER;
 
 
 /** The system name. */
-extern const char* SYSNAME;
+extern const char* const SYSNAME;
 
 
 /** The flag for big endian environments. */
@@ -1459,7 +1459,7 @@ inline size_t strsplit(const std::string& str, char delim, std::vector<std::stri
       elems->push_back(col);
       pv = it + 1;
     }
-    it++;
+    ++it;
   }
   std::string col(pv, it);
   elems->push_back(col);
@@ -1483,7 +1483,7 @@ inline size_t strsplit(const std::string& str, const std::string& delims,
       pv = it + 1;
       break;
     }
-    it++;
+    ++it;
   }
   std::string col(pv, it);
   elems->push_back(col);
@@ -1501,7 +1501,7 @@ inline void strvecdump(const std::vector<std::string>& src, std::string* dest) {
   size_t dsiz = 1;
   while (it != itend) {
     dsiz += 2 + it->size();
-    it++;
+    ++it;
   }
   dest->reserve(dest->size() + dsiz);
   it = src.begin();
@@ -1510,7 +1510,7 @@ inline void strvecdump(const std::vector<std::string>& src, std::string* dest) {
     size_t nsiz = writevarnum(nbuf, it->size());
     dest->append(nbuf, nsiz);
     dest->append(it->data(), it->size());
-    it++;
+    ++it;
   }
 }
 
@@ -1545,7 +1545,7 @@ inline void strmapdump(const std::map<std::string, std::string>& src, std::strin
   size_t dsiz = 1;
   while (it != itend) {
     dsiz += 4 + it->first.size() + it->second.size();
-    it++;
+    ++it;
   }
   dest->reserve(dest->size() + dsiz);
   it = src.begin();
@@ -1556,7 +1556,7 @@ inline void strmapdump(const std::map<std::string, std::string>& src, std::strin
     dest->append(nbuf, nsiz);
     dest->append(it->first.data(), it->first.size());
     dest->append(it->second.data(), it->second.size());
-    it++;
+    ++it;
   }
 }
 

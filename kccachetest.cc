@@ -2078,7 +2078,7 @@ static int32_t proctran(int64_t rnum, int32_t thnum, int32_t itnum,
                   err_ = true;
                 }
               }
-              it++;
+              ++it;
             }
           }
           if (tran && myrand(100) == 0) {

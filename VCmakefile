@@ -721,6 +721,7 @@ binpkg :
 	copy *.lib kcwin32\lib
 	md kcwin32\bin
 	copy *.exe kcwin32\bin
+	xcopy /S /E /I doc kcwin32\doc
 
 
 

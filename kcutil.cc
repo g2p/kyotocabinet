@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "myconf.h"
 #include "kcutil.h"
+#include "myconf.h"
 
 namespace kyotocabinet {                 // common namespace
 
@@ -36,7 +36,7 @@ const int32_t FMTVER = _KC_FMTVER;
 
 
 /** The system name. */
-const char* SYSNAME = _KC_SYSNAME;
+const char* const SYSNAME = _KC_SYSNAME;
 
 
 /** The flag for big endian environments. */

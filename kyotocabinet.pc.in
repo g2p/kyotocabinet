@@ -10,5 +10,6 @@ datadir=@datadir@
 Name: Kyoto Cabinet
 Description: a straightforward implementation of DBM
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -lkyotocabinet @LIBS@
+Libs: -L${libdir} -lkyotocabinet
+Libs.private: @LIBS@
 Cflags: -I${includedir}

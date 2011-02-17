@@ -54,9 +54,9 @@ CFLAGS = @MYCFLAGS@
 CXXFLAGS = @MYCXXFLAGS@
 LDFLAGS = @MYLDFLAGS@
 CMDLDFLAGS = @MYCMDLDFLAGS@
+CMDLIBS = @MYCMDLIBS@
 LIBS = @LIBS@
-LDENV = LD_RUN_PATH=/lib:/usr/lib:$(LIBDIR):$(HOME)/lib:/usr/local/lib:@MYRUNPATH@
-RUNENV = @MYLDLIBPATHENV@=.:/lib:/usr/lib:$(LIBDIR):$(HOME)/lib:/usr/local/lib:@MYRUNPATH@
+RUNENV = @MYLDLIBPATHENV@=@MYLDLIBPATH@
 POSTCMD = @MYPOSTCMD@
 
 
@@ -125,7 +125,6 @@ install :
 	cp -Rf $(DOCUMENTFILES) $(DESTDIR)$(DOCDIR)
 	mkdir -p $(DESTDIR)$(PCDIR)
 	cp -Rf $(PCFILES) $(DESTDIR)$(PCDIR)
-	-[ "$$UID" = 0 ] && PATH=/sbin:/usr/sbin:$(PATH) ldconfig 2>/dev/null || true
 	@printf '\n'
 	@printf '#================================================================\n'
 	@printf '# Thanks for using Kyoto Cabinet.\n'
@@ -144,7 +143,6 @@ uninstall :
 	-cd $(DESTDIR)$(MAN1DIR) && rm -f $(MAN1FILES)
 	-cd $(DESTDIR)$(DOCDIR) && rm -rf $(DOCUMENTFILES) && rmdir $(DOCDIR)
 	-cd $(DESTDIR)$(PCDIR) && rm -f $(PCFILES)
-	-[ "$$UID" = 0 ] && PATH=/sbin:/usr/sbin:$(PATH) ldconfig 2>/dev/null || true
 
 
 dist :
@@ -159,7 +157,6 @@ distclean : clean
 	cd example && $(MAKE) clean
 	rm -rf Makefile kyotocabinet.pc \
 	  config.cache config.log config.status config.tmp autom4te.cache
-	which ccache >/dev/null 2>&1 && ccache -C >/dev/null 2>&1
 
 
 check :
@@ -1029,71 +1026,71 @@ libkyotocabinet.dylib : libkyotocabinet.$(LIBVER).$(LIBREV).0.dylib
 
 
 kcutiltest : kcutiltest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcutilmgr : kcutilmgr.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcprototest : kcprototest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcstashtest : kcstashtest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kccachetest : kccachetest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcgrasstest : kcgrasstest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kchashtest : kchashtest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kchashmgr : kchashmgr.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kctreetest : kctreetest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kctreemgr : kctreemgr.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcdirtest : kcdirtest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcdirmgr : kcdirmgr.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcforesttest : kcforesttest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcforestmgr : kcforestmgr.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcpolytest : kcpolytest.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcpolymgr : kcpolymgr.o $(LIBRARYFILES)
-	$(LDENV) $(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kclangctest : kclangctest.o $(LIBRARYFILES)
-	$(LDENV) $(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) $(CMDLDFLAGS) -lkyotocabinet $(CMDLIBS)
 
 
 kcutil.o : kccommon.h kcutil.h myconf.h

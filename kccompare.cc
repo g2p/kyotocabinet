@@ -13,8 +13,8 @@
  *************************************************************************************************/
 
 
-#include "myconf.h"
 #include "kccompare.h"
+#include "myconf.h"
 
 namespace kyotocabinet {                 // common namespace
 

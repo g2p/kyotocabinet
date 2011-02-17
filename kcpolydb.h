@@ -452,7 +452,7 @@ public:
     std::vector<std::string>::iterator itend = elems.end();
     if (it != itend) {
       fpath = *it;
-      it++;
+      ++it;
     }
     const char* fstr = fpath.c_str();
     const char* pv = std::strrchr(fstr, File::PATHCHR);
@@ -588,7 +588,7 @@ public:
           zkey = value;
         }
       }
-      it++;
+      ++it;
     }
     delete stdlogger_;
     delete stdlogstrm_;

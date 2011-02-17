@@ -1591,7 +1591,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
     fileerrprint(&file, __LINE__, "File::end_transaction");
     err = true;
   }
-  for (kc::StringTreeMap::iterator it = chkmap.begin(); it != chkmap.end(); it++) {
+  for (kc::StringTreeMap::iterator it = chkmap.begin(); it != chkmap.end(); ++it) {
     const char* key = it->first.c_str();
     int64_t roff = kc::atoi(key);
     int32_t rsiz = kc::atoi(std::strchr(key, ':') + 1);
@@ -1951,7 +1951,7 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
   oprintf("traversing records:\n");
   stime = kc::time();
   int64_t cnt = 0;
-  for (Map::Iterator it = map.begin(); !err && it != map.end(); it++) {
+  for (Map::Iterator it = map.begin(); !err && it != map.end(); ++it) {
     cnt++;
     if (it.key() != it.value()) {
       errprint(__LINE__, "LinkedHashMap::Iterator::key");
@@ -2062,7 +2062,7 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
       }
     }
     cnt = 0;
-    for (Map::Iterator it = map.begin(); !err && it != map.end(); it++) {
+    for (Map::Iterator it = map.begin(); !err && it != map.end(); ++it) {
       cnt++;
       if (it.key() != it.value()) {
         errprint(__LINE__, "LinkedHashMap::Iterator::key");
@@ -2081,7 +2081,7 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
     cnt = 0;
     Map::Iterator it = map.end();
     while (!err && it != map.begin()) {
-      it--;
+      --it;
       cnt++;
       if (it.key() != it.value()) {
         errprint(__LINE__, "LinkedHashMap::Iterator::key");

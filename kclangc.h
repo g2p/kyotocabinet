@@ -20,6 +20,9 @@
 extern "C" {
 #endif
 
+#if !defined(__STDC_LIMIT_MACROS)
+#define __STDC_LIMIT_MACROS  1
+#endif
 
 #include <assert.h>
 #include <ctype.h>

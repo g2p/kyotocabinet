@@ -878,7 +878,7 @@ static int32_t procinform(const char* path, int32_t oflags, bool st) {
       std::map<std::string, std::string>::iterator itend = status.end();
       while (it != itend) {
         oprintf("%s: %s\n", it->first.c_str(), it->second.c_str());
-        it++;
+        ++it;
       }
     } else {
       dberrprint(&db, "DB::status failed");
@@ -1158,7 +1158,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
         it->clear();
         it->append(ebuf, esiz);
         delete[] ebuf;
-        it++;
+        ++it;
       }
     }
     switch (fields.size()) {
@@ -1302,7 +1302,7 @@ static int32_t procmerge(const char* path, int32_t oflags, kc::PolyDB::MergeMode
       err = true;
       delete srcdb;
     }
-    it++;
+    ++it;
   }
   DotChecker checker(&std::cout, 1000);
   if (!db.merge(srcary, srcnum, mode, &checker)) {
@@ -1391,7 +1391,7 @@ static int32_t procgetbulk(const char* path, int32_t oflags,
       oprintf("\t");
       printdata(it->second.data(), it->second.size(), px);
       oprintf("\n");
-      it++;
+      ++it;
     }
   } else {
     dberrprint(&db, "DB::get_bulk failed");

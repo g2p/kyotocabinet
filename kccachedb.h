@@ -31,20 +31,6 @@ namespace kyotocabinet {                 // common namespace
 
 
 /**
- * Constants for implementation.
- */
-namespace {
-const int32_t CDBSLOTNUM = 16;           ///< number of slot tables
-const size_t CDBDEFBNUM = 1048583LL;     ///< default bucket number
-const size_t CDBZMAPBNUM = 32768;        ///< mininum number of buckets to use mmap
-const uint32_t CDBKSIZMAX = 0xfffff;     ///< maximum size of each key
-const size_t CDBRECBUFSIZ = 48;          ///< size of the record buffer
-const size_t CDBOPAQUESIZ = 16;          ///< size of the opaque buffer
-const uint32_t CDBLOCKBUSYLOOP = 8192;   ///< threshold of busy loop and sleep for locking
-}
-
-
-/**
  * On-memory hash database with LRU deletion.
  * @note This class is a concrete class to operate a hash database on memory.  This class can be
  * inherited but overwriting methods is forbidden.  Before every database operation, it is
@@ -65,6 +51,7 @@ private:
   class Repeater;
   class Setter;
   class Remover;
+  class ScopedVisitor;
   /** An alias of list of cursors. */
   typedef std::list<Cursor*> CursorList;
   /** An alias of list of transaction logs. */
@@ -119,7 +106,7 @@ public:
         db_->set_error(_KCCODELINE_, Error::NOREC, "no record");
         return false;
       }
-      uint32_t rksiz = rec_->ksiz & CDBKSIZMAX;
+      uint32_t rksiz = rec_->ksiz & KSIZMAX;
       char* dbuf = (char*)rec_ + sizeof(*rec_);
       const char* rvbuf = dbuf + rksiz;
       size_t rvsiz = rec_->vsiz;
@@ -136,14 +123,14 @@ public:
       const char* vbuf = visitor->visit_full(dbuf, rksiz, rvbuf, rvsiz, &vsiz);
       delete[] zbuf;
       if (vbuf == Visitor::REMOVE) {
-        uint64_t hash = db_->hash_record(dbuf, rksiz) / CDBSLOTNUM;
+        uint64_t hash = db_->hash_record(dbuf, rksiz) / SLOTNUM;
         Slot* slot = db_->slots_ + sidx_;
         Repeater repeater(Visitor::REMOVE, 0);
         db_->accept_impl(slot, hash, dbuf, rksiz, &repeater, db_->comp_, true);
       } else if (vbuf == Visitor::NOP) {
         if (step) step_impl();
       } else {
-        uint64_t hash = db_->hash_record(dbuf, rksiz) / CDBSLOTNUM;
+        uint64_t hash = db_->hash_record(dbuf, rksiz) / SLOTNUM;
         Slot* slot = db_->slots_ + sidx_;
         Repeater repeater(vbuf, vsiz);
         db_->accept_impl(slot, hash, dbuf, rksiz, &repeater, db_->comp_, true);
@@ -162,7 +149,7 @@ public:
         db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      for (int32_t i = 0; i < CDBSLOTNUM; i++) {
+      for (int32_t i = 0; i < SLOTNUM; i++) {
         Slot* slot = db_->slots_ + i;
         if (slot->first) {
           sidx_ = i;
@@ -188,18 +175,18 @@ public:
         db_->set_error(_KCCODELINE_, Error::INVALID, "not opened");
         return false;
       }
-      if (ksiz > CDBKSIZMAX) ksiz = CDBKSIZMAX;
+      if (ksiz > KSIZMAX) ksiz = KSIZMAX;
       uint64_t hash = db_->hash_record(kbuf, ksiz);
-      int32_t sidx = hash % CDBSLOTNUM;
-      hash /= CDBSLOTNUM;
+      int32_t sidx = hash % SLOTNUM;
+      hash /= SLOTNUM;
       Slot* slot = db_->slots_ + sidx;
       size_t bidx = hash % slot->bnum;
       Record* rec = slot->buckets[bidx];
       Record** entp = slot->buckets + bidx;
-      uint32_t fhash = db_->fold_hash(hash) & ~CDBKSIZMAX;
+      uint32_t fhash = db_->fold_hash(hash) & ~KSIZMAX;
       while (rec) {
-        uint32_t rhash = rec->ksiz & ~CDBKSIZMAX;
-        uint32_t rksiz = rec->ksiz & CDBKSIZMAX;
+        uint32_t rhash = rec->ksiz & ~KSIZMAX;
+        uint32_t rksiz = rec->ksiz & KSIZMAX;
         if (fhash > rhash) {
           entp = &rec->left;
           rec = rec->left;
@@ -327,7 +314,7 @@ public:
       _assert_(true);
       rec_ = rec_->next;
       if (!rec_) {
-        for (int32_t i = sidx_ + 1; i < CDBSLOTNUM; i++) {
+        for (int32_t i = sidx_ + 1; i < SLOTNUM; i++) {
           Slot* slot = db_->slots_ + i;
           if (slot->first) {
             sidx_ = i;
@@ -374,7 +361,7 @@ public:
   explicit CacheDB() :
     mlock_(), flock_(), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
     omode_(0), curs_(), path_(""), type_(TYPECACHE),
-    opts_(0), bnum_(CDBDEFBNUM), capcnt_(-1), capsiz_(-1),
+    opts_(0), bnum_(DEFBNUM), capcnt_(-1), capsiz_(-1),
     opaque_(), embcomp_(ZLIBRAWCOMP), comp_(NULL), slots_(), tran_(false) {
     _assert_(true);
   }
@@ -391,7 +378,7 @@ public:
       while (cit != citend) {
         Cursor* cur = *cit;
         cur->db_ = NULL;
-        cit++;
+        ++cit;
       }
     }
   }
@@ -417,10 +404,10 @@ public:
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
-    if (ksiz > CDBKSIZMAX) ksiz = CDBKSIZMAX;
+    if (ksiz > KSIZMAX) ksiz = KSIZMAX;
     uint64_t hash = hash_record(kbuf, ksiz);
-    int32_t sidx = hash % CDBSLOTNUM;
-    hash /= CDBSLOTNUM;
+    int32_t sidx = hash % SLOTNUM;
+    hash /= SLOTNUM;
     Slot* slot = slots_ + sidx;
     slot->lock.lock();
     accept_impl(slot, hash, kbuf, ksiz, visitor, comp_, false);
@@ -440,8 +427,6 @@ public:
   bool accept_bulk(const std::vector<std::string>& keys, Visitor* visitor,
                    bool writable = true) {
     _assert_(visitor);
-    size_t knum = keys.size();
-    if (knum < 1) return true;
     ScopedSpinRWLock lock(&mlock_, false);
     if (omode_ == 0) {
       set_error(_KCCODELINE_, Error::INVALID, "not opened");
@@ -451,6 +436,9 @@ public:
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
+    ScopedVisitor svis(visitor);
+    size_t knum = keys.size();
+    if (knum < 1) return true;
     struct RecordKey {
       const char* kbuf;
       size_t ksiz;
@@ -464,18 +452,18 @@ public:
       RecordKey* rkey = rkeys + i;
       rkey->kbuf = key.data();
       rkey->ksiz = key.size();
-      if (rkey->ksiz > CDBKSIZMAX) rkey->ksiz = CDBKSIZMAX;
+      if (rkey->ksiz > KSIZMAX) rkey->ksiz = KSIZMAX;
       rkey->hash = hash_record(rkey->kbuf, rkey->ksiz);
-      rkey->sidx = rkey->hash % CDBSLOTNUM;
+      rkey->sidx = rkey->hash % SLOTNUM;
       sidxs.insert(rkey->sidx);
-      rkey->hash /= CDBSLOTNUM;
+      rkey->hash /= SLOTNUM;
     }
     std::set<int32_t>::iterator sit = sidxs.begin();
     std::set<int32_t>::iterator sitend = sidxs.end();
     while (sit != sitend) {
       Slot* slot = slots_ + *sit;
       slot->lock.lock();
-      sit++;
+      ++sit;
     }
     for (size_t i = 0; i < knum; i++) {
       RecordKey* rkey = rkeys + i;
@@ -487,7 +475,7 @@ public:
     while (sit != sitend) {
       Slot* slot = slots_ + *sit;
       slot->lock.unlock();
-      sit++;
+      ++sit;
     }
     delete[] rkeys;
     return true;
@@ -512,18 +500,19 @@ public:
       set_error(_KCCODELINE_, Error::NOPERM, "permission denied");
       return false;
     }
+    ScopedVisitor svis(visitor);
     int64_t allcnt = count_impl();
     if (checker && !checker->check("iterate", "beginning", 0, allcnt)) {
       set_error(_KCCODELINE_, Error::LOGIC, "checker failed");
       return false;
     }
     int64_t curcnt = 0;
-    for (int32_t i = 0; i < CDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       Slot* slot = slots_ + i;
       Record* rec = slot->first;
       while (rec) {
         Record* next = rec->next;
-        uint32_t rksiz = rec->ksiz & CDBKSIZMAX;
+        uint32_t rksiz = rec->ksiz & KSIZMAX;
         char* dbuf = (char*)rec + sizeof(*rec);
         const char* rvbuf = dbuf + rksiz;
         size_t rvsiz = rec->vsiz;
@@ -540,11 +529,11 @@ public:
         const char* vbuf = visitor->visit_full(dbuf, rksiz, rvbuf, rvsiz, &vsiz);
         delete[] zbuf;
         if (vbuf == Visitor::REMOVE) {
-          uint64_t hash = hash_record(dbuf, rksiz) / CDBSLOTNUM;
+          uint64_t hash = hash_record(dbuf, rksiz) / SLOTNUM;
           Repeater repeater(Visitor::REMOVE, 0);
           accept_impl(slot, hash, dbuf, rksiz, &repeater, comp_, true);
         } else if (vbuf != Visitor::NOP) {
-          uint64_t hash = hash_record(dbuf, rksiz) / CDBSLOTNUM;
+          uint64_t hash = hash_record(dbuf, rksiz) / SLOTNUM;
           Repeater repeater(vbuf, vsiz);
           accept_impl(slot, hash, dbuf, rksiz, &repeater, comp_, true);
         }
@@ -619,12 +608,12 @@ public:
     report(_KCCODELINE_, Logger::DEBUG, "opening the database (path=%s)", path.c_str());
     omode_ = mode;
     path_.append(path);
-    size_t bnum = nearbyprime(bnum_ / CDBSLOTNUM);
-    size_t capcnt = capcnt_ > 0 ? capcnt_ / CDBSLOTNUM + 1 : (1ULL << (sizeof(capcnt) * 8 - 1));
-    size_t capsiz = capsiz_ > 0 ? capsiz_ / CDBSLOTNUM + 1 : (1ULL << (sizeof(capsiz) * 8 - 1));
-    if (capsiz > sizeof(*this) / CDBSLOTNUM) capsiz -= sizeof(*this) / CDBSLOTNUM;
+    size_t bnum = nearbyprime(bnum_ / SLOTNUM);
+    size_t capcnt = capcnt_ > 0 ? capcnt_ / SLOTNUM + 1 : (1ULL << (sizeof(capcnt) * 8 - 1));
+    size_t capsiz = capsiz_ > 0 ? capsiz_ / SLOTNUM + 1 : (1ULL << (sizeof(capsiz) * 8 - 1));
+    if (capsiz > sizeof(*this) / SLOTNUM) capsiz -= sizeof(*this) / SLOTNUM;
     if (capsiz > bnum * sizeof(Record*)) capsiz -= bnum * sizeof(Record*);
-    for (int32_t i = 0; i < CDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       initialize_slot(slots_ + i, bnum, capcnt, capsiz);
     }
     comp_ = (opts_ & TCOMPRESS) ? embcomp_ : NULL;
@@ -645,7 +634,7 @@ public:
     }
     report(_KCCODELINE_, Logger::DEBUG, "closing the database (path=%s)", path_.c_str());
     tran_ = false;
-    for (int32_t i = CDBSLOTNUM - 1; i >= 0; i--) {
+    for (int32_t i = SLOTNUM - 1; i >= 0; i--) {
       destroy_slot(slots_ + i);
     }
     path_.clear();
@@ -711,7 +700,7 @@ public:
       }
       if (!tran_) break;
       mlock_.unlock();
-      if (wcnt >= CDBLOCKBUSYLOOP) {
+      if (wcnt >= LOCKBUSYLOOP) {
         Thread::chill();
       } else {
         Thread::yield();
@@ -769,7 +758,7 @@ public:
       return false;
     }
     if (!commit) disable_cursors();
-    for (int32_t i = 0; i < CDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       if (!commit) apply_slot_trlogs(slots_ + i);
       slots_[i].trlogs.clear();
       adjust_slot_capacity(slots_ + i);
@@ -790,7 +779,7 @@ public:
       return false;
     }
     disable_cursors();
-    for (int32_t i = 0; i < CDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       Slot* slot = slots_ + i;
       clear_slot(slot);
     }
@@ -866,7 +855,7 @@ public:
       (*strmap)["opaque"] = std::string(opaque_, sizeof(opaque_));
     if (strmap->count("bnum_used") > 0) {
       int64_t cnt = 0;
-      for (int32_t i = 0; i < CDBSLOTNUM; i++) {
+      for (int32_t i = 0; i < SLOTNUM; i++) {
         Slot* slot = slots_ + i;
         Record** buckets = slot->buckets;
         size_t bnum = slot->bnum;
@@ -951,7 +940,7 @@ public:
       set_error(_KCCODELINE_, Error::INVALID, "already opened");
       return false;
     }
-    bnum_ = bnum >= 0 ? bnum : CDBDEFBNUM;
+    bnum_ = bnum >= 0 ? bnum : DEFBNUM;
     return true;
   }
   /**
@@ -1236,6 +1225,20 @@ protected:
     return false;
   }
 private:
+  /** The number of slot tables. */
+  static const int32_t SLOTNUM = 16;
+  /** The default bucket number. */
+  static const size_t DEFBNUM = 1048583LL;
+  /** The mininum number of buckets to use mmap. */
+  static const size_t ZMAPBNUM = 32768;
+  /** The maximum size of each key. */
+  static const uint32_t KSIZMAX = 0xfffff;
+  /** The size of the record buffer. */
+  static const size_t RECBUFSIZ = 48;
+  /** The size of the opaque buffer. */
+  static const size_t OPAQUESIZ = 16;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
   /**
    * Set the power of the alignment of record size.
    * @note This is a dummy implementation for compatibility.
@@ -1405,12 +1408,30 @@ private:
    */
   class Remover : public Visitor {
   private:
-    /** constructor */
+    /** visit a record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && sp);
       return REMOVE;
     }
+  };
+  /**
+   * Scoped visiotor.
+   */
+  class ScopedVisitor {
+  public:
+    /** constructor */
+    ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
+      _assert_(visitor);
+      visitor_->visit_before();
+    }
+    /** destructor */
+    ~ScopedVisitor() {
+      _assert_(true);
+      visitor_->visit_after();
+    }
+  private:
+    Visitor* visitor_;                   ///< visitor
   };
   /**
    * Accept a visitor to a record.
@@ -1428,10 +1449,10 @@ private:
     size_t bidx = hash % slot->bnum;
     Record* rec = slot->buckets[bidx];
     Record** entp = slot->buckets + bidx;
-    uint32_t fhash = fold_hash(hash) & ~CDBKSIZMAX;
+    uint32_t fhash = fold_hash(hash) & ~KSIZMAX;
     while (rec) {
-      uint32_t rhash = rec->ksiz & ~CDBKSIZMAX;
-      uint32_t rksiz = rec->ksiz & CDBKSIZMAX;
+      uint32_t rhash = rec->ksiz & ~KSIZMAX;
+      uint32_t rksiz = rec->ksiz & KSIZMAX;
       if (fhash > rhash) {
         entp = &rec->left;
         rec = rec->left;
@@ -1595,7 +1616,7 @@ private:
   int64_t count_impl() {
     _assert_(true);
     int64_t sum = 0;
-    for (int32_t i = 0; i < CDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       Slot* slot = slots_ + i;
       ScopedSpinLock lock(&slot->lock);
       sum += slot->count;
@@ -1609,7 +1630,7 @@ private:
   int64_t size_impl() {
     _assert_(true);
     int64_t sum = sizeof(*this);
-    for (int32_t i = 0; i < CDBSLOTNUM; i++) {
+    for (int32_t i = 0; i < SLOTNUM; i++) {
       Slot* slot = slots_ + i;
       ScopedSpinLock lock(&slot->lock);
       sum += slot->bnum * sizeof(Record*);
@@ -1627,7 +1648,7 @@ private:
   void initialize_slot(Slot* slot, size_t bnum, size_t capcnt, size_t capsiz) {
     _assert_(slot);
     Record** buckets;
-    if (bnum >= CDBZMAPBNUM) {
+    if (bnum >= ZMAPBNUM) {
       buckets = (Record**)mapalloc(sizeof(*buckets) * bnum);
     } else {
       buckets = new Record*[bnum];
@@ -1657,7 +1678,7 @@ private:
       xfree(rec);
       rec = prev;
     }
-    if (slot->bnum >= CDBZMAPBNUM) {
+    if (slot->bnum >= ZMAPBNUM) {
       mapfree(slot->buckets);
     } else {
       delete[] slot->buckets;
@@ -1672,7 +1693,7 @@ private:
     Record* rec = slot->last;
     while (rec) {
       if (tran_) {
-        uint32_t rksiz = rec->ksiz & CDBKSIZMAX;
+        uint32_t rksiz = rec->ksiz & KSIZMAX;
         char* dbuf = (char*)rec + sizeof(*rec);
         TranLog log(dbuf, rksiz, dbuf + rksiz, rec->vsiz);
         slot->trlogs.push_back(log);
@@ -1701,12 +1722,12 @@ private:
     TranLogList::const_iterator it = logs.end();
     TranLogList::const_iterator itbeg = logs.begin();
     while (it != itbeg) {
-      it--;
+      --it;
       const char* kbuf = it->key.c_str();
       size_t ksiz = it->key.size();
       const char* vbuf = it->value.c_str();
       size_t vsiz = it->value.size();
-      uint64_t hash = hash_record(kbuf, ksiz) / CDBSLOTNUM;
+      uint64_t hash = hash_record(kbuf, ksiz) / SLOTNUM;
       if (it->full) {
         Setter setter(vbuf, vsiz);
         accept_impl(slot, hash, kbuf, ksiz, &setter, NULL, true);
@@ -1724,12 +1745,12 @@ private:
     _assert_(slot);
     if ((slot->count > slot->capcnt || slot->size > slot->capsiz) && slot->first) {
       Record* rec = slot->first;
-      uint32_t rksiz = rec->ksiz & CDBKSIZMAX;
+      uint32_t rksiz = rec->ksiz & KSIZMAX;
       char* dbuf = (char*)rec + sizeof(*rec);
-      char stack[CDBRECBUFSIZ];
+      char stack[RECBUFSIZ];
       char* kbuf = rksiz > sizeof(stack) ? new char[rksiz] : stack;
       std::memcpy(kbuf, dbuf, rksiz);
-      uint64_t hash = hash_record(kbuf, rksiz) / CDBSLOTNUM;
+      uint64_t hash = hash_record(kbuf, rksiz) / SLOTNUM;
       Remover remover;
       accept_impl(slot, hash, dbuf, rksiz, &remover, NULL, true);
       if (kbuf != stack) delete[] kbuf;
@@ -1782,7 +1803,7 @@ private:
     while (cit != citend) {
       Cursor* cur = *cit;
       if (cur->rec_ == rec) cur->step_impl();
-      cit++;
+      ++cit;
     }
   }
   /**
@@ -1799,7 +1820,7 @@ private:
     while (cit != citend) {
       Cursor* cur = *cit;
       if (cur->rec_ == orec) cur->rec_ = nrec;
-      cit++;
+      ++cit;
     }
   }
   /**
@@ -1814,7 +1835,7 @@ private:
       Cursor* cur = *cit;
       cur->sidx_ = -1;
       cur->rec_ = NULL;
-      cit++;
+      ++cit;
     }
   }
   /** Dummy constructor to forbid the use. */
@@ -1850,13 +1871,13 @@ private:
   /** The capacity of memory usage. */
   int64_t capsiz_;
   /** The opaque data. */
-  char opaque_[CDBOPAQUESIZ];
+  char opaque_[OPAQUESIZ];
   /** The embedded data compressor. */
   Compressor* embcomp_;
   /** The data compressor. */
   Compressor* comp_;
   /** The slot tables. */
-  Slot slots_[CDBSLOTNUM];
+  Slot slots_[SLOTNUM];
   /** The flag whether in transaction. */
   bool tran_;
 };

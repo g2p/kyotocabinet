@@ -1275,7 +1275,7 @@ static int32_t procimport(const char* path, const char* file, int32_t oflags, bo
         it->clear();
         it->append(ebuf, esiz);
         delete[] ebuf;
-        it++;
+        ++it;
       }
     }
     switch (fields.size()) {
@@ -1479,7 +1479,7 @@ static int32_t procgetbulk(const char* path, int32_t oflags,
       oprintf("\t");
       printdata(it->second.data(), it->second.size(), px);
       oprintf("\n");
-      it++;
+      ++it;
     }
   } else {
     dberrprint(&db, "DB::get_bulk failed");
@@ -1551,7 +1551,7 @@ static int32_t proccheck(const char* path, int32_t oflags) {
   }
   kc::File::Status sbuf;
   if (kc::File::status(path, &sbuf)) {
-    if (db.size() != sbuf.size && sbuf.size != kc::HDBDEFMSIZ) {
+    if (db.size() != sbuf.size && sbuf.size % (1 << 20) != 0) {
       dberrprint(&db, "DB::size failed");
       err = true;
     }
