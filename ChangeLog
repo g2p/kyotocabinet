@@ -1,3 +1,13 @@
+2011-02-21  FAL Labs  <info@fallabs.com>
+
+	* kcdbext.h (MapReduce::execute): adaptive comparator was added.
+
+	* kcdbext.h (MapReduce::execute_reduce): new function.
+
+	* kcdbext.h (MapReduce::before, MapReduce::after): new functions.
+
+	- Release: 1.2.45
+
 2011-02-15  FAL Labs  <info@fallabs.com>
 
 	* kcdb.h (DB::Visitor::visit_before, DB::Visitor::visit_after): new functions.
