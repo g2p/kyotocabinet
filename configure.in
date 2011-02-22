@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.44)
+AC_INIT(kyotocabinet, 1.2.45)
 
 # Package information
 MYLIBVER=9
-MYLIBREV=5
+MYLIBREV=6
 MYFORMATVER=5
 
 # Targets
@@ -278,6 +278,7 @@ fi
 # As-needed linking
 if uname | grep Linux >config.tmp
 then
+  MYLDFLAGS="$MYLDFLAGS -Wl,-rpath-link,.:/usr/local/lib:$MYLDLIBPATH"
   MYLDFLAGS="$MYLDFLAGS -Wl,--as-needed"
 fi
 

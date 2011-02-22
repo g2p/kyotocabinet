@@ -169,7 +169,7 @@ public:
    * Default constructor.
    */
   explicit MapReduce() :
-    tmpdbs_(NULL), dbnum_(MRDEFDBNUM), dbclock_(0), keyclock_(0),
+    rcomp_(NULL), tmpdbs_(NULL), dbnum_(MRDEFDBNUM), dbclock_(0), keyclock_(0),
     cache_(NULL), csiz_(0), clim_(MRDEFCLIM), cbnum_(MRDEFCBNUM) {
     _assert_(true);
   }
@@ -198,9 +198,34 @@ public:
    * @param ksiz the size of the key region.
    * @param iter the iterator to get the values.
    * @return true on success, or false on failure.
-   * @note Database operations can be performed in this function.
+   * @note To avoid deadlock, any explicit database operation must not be performed in this
+   * function.
    */
   virtual bool reduce(const char* kbuf, size_t ksiz, ValueIterator* iter) = 0;
+  /**
+   * Preprocess the map operations.
+   * @return true on success, or false on failure.
+   */
+  virtual bool preprocess() {
+    _assert_(true);
+    return true;
+  }
+  /**
+   * Mediate between the map and the reduce phases.
+   * @return true on success, or false on failure.
+   */
+  virtual bool midprocess() {
+    _assert_(true);
+    return true;
+  }
+  /**
+   * Postprocess the reduce operations.
+   * @return true on success, or false on failure.
+   */
+  virtual bool postprocess() {
+    _assert_(true);
+    return true;
+  }
   /**
    * Process a log message.
    * @param name the name of the event.
@@ -222,8 +247,27 @@ public:
    * @return true on success, or false on failure.
    */
   bool execute(BasicDB* db, const std::string& tmppath = "", uint32_t opts = 0) {
+    int64_t count = db->count();
+    if (count < 0) return false;
     bool err = false;
     double stime, etime;
+    rcomp_ = LEXICALCOMP;
+    BasicDB* idb = db;
+    if (typeid(*db) == typeid(PolyDB)) {
+      PolyDB* pdb = (PolyDB*)idb;
+      idb = pdb->reveal_inner_db();
+    }
+    const std::type_info& info = typeid(*idb);
+    if (info == typeid(GrassDB)) {
+      GrassDB* gdb = (GrassDB*)idb;
+      rcomp_ = gdb->rcomp();
+    } else if (info == typeid(TreeDB)) {
+      TreeDB* tdb = (TreeDB*)idb;
+      rcomp_ = tdb->rcomp();
+    } else if (info == typeid(ForestDB)) {
+      ForestDB* fdb = (ForestDB*)idb;
+      rcomp_ = fdb->rcomp();
+    }
     tmpdbs_ = new BasicDB*[dbnum_];
     if (tmppath.empty()) {
       if (!logf("prepare", "started to open temporary databases on memory")) err = true;
@@ -236,6 +280,7 @@ public:
         gdb->tune_buckets(MRDBBNUM / 2);
         gdb->tune_page(MRDBPSIZ);
         gdb->tune_page_cache(MRDBPCCAP);
+        gdb->tune_comparator(rcomp_);
         gdb->open("%", GrassDB::OWRITER | GrassDB::OCREATE | GrassDB::OTRUNCATE);
         tmpdbs_[i] = gdb;
       }
@@ -271,6 +316,7 @@ public:
         tdb->tune_page(MRDBPSIZ);
         tdb->tune_map(MRDBMSIZ);
         tdb->tune_page_cache(MRDBPCCAP);
+        tdb->tune_comparator(rcomp_);
         if (!tdb->open(childpath, TreeDB::OWRITER | TreeDB::OCREATE | TreeDB::OTRUNCATE)) {
           const BasicDB::Error& e = tdb->error();
           db->set_error(_KCCODELINE_, e.code(), e.message());
@@ -289,17 +335,10 @@ public:
         return false;
       }
     }
-    dbclock_ = 0;
-    keyclock_ = 0;
-    cache_ = new TinyHashMap(cbnum_);
-    csiz_ = 0;
-    int64_t scale = db->count();
-    Thread::yield();
-    if (!logf("map", "started the map process: scale=%lld", (long long)scale)) err = true;
-    stime = time();
-    MapChecker mapchecker;
-    MapVisitor mapvisitor(this, &mapchecker);
     if (opts & XNOLOCK) {
+      MapChecker mapchecker;
+      MapVisitor mapvisitor(this, &mapchecker, db->count());
+      mapvisitor.visit_before();
       if (!err) {
         BasicDB::Cursor* cur = db->cursor();
         if (!cur->jump()) err = true;
@@ -311,68 +350,14 @@ public:
         }
         delete cur;
       }
+      if (mapvisitor.error()) err = true;
+      mapvisitor.visit_after();
     } else {
+      MapChecker mapchecker;
+      MapVisitor mapvisitor(this, &mapchecker, db->count());
       if (!err && !db->iterate(&mapvisitor, false, &mapchecker)) err = true;
+      if (mapvisitor.error()) err = true;
     }
-    if (cache_->count() > 0 && !flush_cache()) err = true;
-    delete cache_;
-    etime = time();
-    if (!logf("map", "the map process finished: time=%.6f", etime - stime)) err = true;
-    Thread::yield();
-    scale = 0;
-    for (size_t i = 0; i < dbnum_; i++) {
-      scale += tmpdbs_[i]->count();
-    }
-    if (!logf("reduce", "started the reduce process: scale=%lld", (long long)scale)) err = true;
-    stime = time();
-    std::priority_queue<MergeLine> lines;
-    for (size_t i = 0; i < dbnum_; i++) {
-      MergeLine line;
-      line.cur = tmpdbs_[i]->cursor();
-      line.comp = LEXICALCOMP;
-      line.cur->jump();
-      line.kbuf = line.cur->get(&line.ksiz, &line.vbuf, &line.vsiz, true);
-      if (line.kbuf) {
-        lines.push(line);
-      } else {
-        delete line.cur;
-      }
-    }
-    char* lkbuf = NULL;
-    size_t lksiz = 0;
-    Values values;
-    while (!err && !lines.empty()) {
-      MergeLine line = lines.top();
-      lines.pop();
-      if (lkbuf && (lksiz != line.ksiz || std::memcmp(lkbuf, line.kbuf, lksiz))) {
-        if (!call_reducer(lkbuf, lksiz, values)) err = true;
-        values.clear();
-      }
-      values.push_back(std::string(line.vbuf, line.vsiz));
-      delete[] lkbuf;
-      lkbuf = line.kbuf;
-      lksiz = line.ksiz;
-      line.kbuf = line.cur->get(&line.ksiz, &line.vbuf, &line.vsiz, true);
-      if (line.kbuf) {
-        lines.push(line);
-      } else {
-        delete line.cur;
-      }
-    }
-    if (lkbuf) {
-      if (!err && !call_reducer(lkbuf, lksiz, values)) err = true;
-      values.clear();
-      delete[] lkbuf;
-    }
-    while (!lines.empty()) {
-      MergeLine line = lines.top();
-      lines.pop();
-      delete[] line.kbuf;
-      delete line.cur;
-    }
-    etime = time();
-    if (!logf("reduce", "the reduce process finished: time=%.6f", etime - stime)) err = true;
-    Thread::yield();
     if (!logf("clean", "closing the temporary databases")) err = true;
     stime = time();
     for (size_t i = 0; i < dbnum_; i++) {
@@ -456,33 +441,69 @@ private:
   class MapVisitor : public BasicDB::Visitor {
   public:
     /** constructor */
-    explicit MapVisitor(MapReduce* mr, MapChecker* checker) :
-      mr_(mr), checker_(checker), emitter_(mr) {}
+    explicit MapVisitor(MapReduce* mr, MapChecker* checker, int64_t scale) :
+      mr_(mr), checker_(checker), emitter_(mr), scale_(scale),
+      stime_(0), err_(false) {}
+    /** get the error flag */
+    bool error() {
+      return err_;
+    }
+    /** preprocess the mappter */
+    void visit_before() {
+      if (!mr_->preprocess()) err_ = true;
+      stime_ = time();
+      mr_->dbclock_ = 0;
+      mr_->keyclock_ = 0;
+      mr_->cache_ = new TinyHashMap(mr_->cbnum_);
+      mr_->csiz_ = 0;
+      if (!mr_->logf("map", "started the map process: scale=%lld", (long long)scale_))
+        err_ = true;
+    }
+    /** postprocess the mappter and call the reducer */
+    void visit_after() {
+      if (mr_->cache_->count() > 0 && !mr_->flush_cache()) err_ = true;
+      delete mr_->cache_;
+      if (!mr_->midprocess()) err_ = true;
+      double etime = time();
+      if (!mr_->logf("map", "the map process finished: time=%.6f", etime - stime_))
+        err_ = true;
+      if (!err_ && !mr_->execute_reduce()) err_ = true;
+      if (!mr_->postprocess()) err_ = true;
+    }
   private:
     /** visit a record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
-      if (!mr_->map(kbuf, ksiz, vbuf, vsiz, &emitter_)) checker_->stop();
-      if (mr_->csiz_ >= mr_->clim_ && !mr_->flush_cache()) checker_->stop();
+      if (!mr_->map(kbuf, ksiz, vbuf, vsiz, &emitter_)) {
+        checker_->stop();
+        err_ = true;
+      }
+      if (mr_->csiz_ >= mr_->clim_ && !mr_->flush_cache()) {
+        checker_->stop();
+        err_ = true;
+      }
       return NOP;
     }
     MapReduce* mr_;                      ///< driver
     MapChecker* checker_;                ///< checker
     MapEmitter emitter_;                 ///< emitter
+    int64_t scale_;                      ///< number of records
+    double stime_;                       ///< start time
+    bool err_;                           ///< error flag
   };
   /**
    * Front line of a merging list.
    */
   struct MergeLine {
     BasicDB::Cursor* cur;                ///< cursor
-    Comparator* comp;                    ///< lexical comparator
+    Comparator* rcomp;                   ///< record comparator
     char* kbuf;                          ///< pointer to the key
     size_t ksiz;                         ///< size of the key
     const char* vbuf;                    ///< pointer to the value
     size_t vsiz;                         ///< size of the value
     /** comparing operator */
     bool operator <(const MergeLine& right) const {
-      return comp->compare(kbuf, ksiz, right.kbuf, right.ksiz) > 0;
+      return rcomp->compare(kbuf, ksiz, right.kbuf, right.ksiz) > 0;
     }
   };
   /**
@@ -527,6 +548,67 @@ private:
     return !err;
   }
   /**
+   * Execute the reduce part.
+   * @return true on success, or false on failure.
+   */
+  bool execute_reduce() {
+    bool err = false;
+    int64_t scale = 0;
+    for (size_t i = 0; i < dbnum_; i++) {
+      scale += tmpdbs_[i]->count();
+    }
+    if (!logf("reduce", "started the reduce process: scale=%lld", (long long)scale)) err = true;
+    double stime = time();
+    std::priority_queue<MergeLine> lines;
+    for (size_t i = 0; i < dbnum_; i++) {
+      MergeLine line;
+      line.cur = tmpdbs_[i]->cursor();
+      line.rcomp = rcomp_;
+      line.cur->jump();
+      line.kbuf = line.cur->get(&line.ksiz, &line.vbuf, &line.vsiz, true);
+      if (line.kbuf) {
+        lines.push(line);
+      } else {
+        delete line.cur;
+      }
+    }
+    char* lkbuf = NULL;
+    size_t lksiz = 0;
+    Values values;
+    while (!err && !lines.empty()) {
+      MergeLine line = lines.top();
+      lines.pop();
+      if (lkbuf && (lksiz != line.ksiz || std::memcmp(lkbuf, line.kbuf, lksiz))) {
+        if (!call_reducer(lkbuf, lksiz, values)) err = true;
+        values.clear();
+      }
+      values.push_back(std::string(line.vbuf, line.vsiz));
+      delete[] lkbuf;
+      lkbuf = line.kbuf;
+      lksiz = line.ksiz;
+      line.kbuf = line.cur->get(&line.ksiz, &line.vbuf, &line.vsiz, true);
+      if (line.kbuf) {
+        lines.push(line);
+      } else {
+        delete line.cur;
+      }
+    }
+    if (lkbuf) {
+      if (!err && !call_reducer(lkbuf, lksiz, values)) err = true;
+      values.clear();
+      delete[] lkbuf;
+    }
+    while (!lines.empty()) {
+      MergeLine line = lines.top();
+      lines.pop();
+      delete[] line.kbuf;
+      delete line.cur;
+    }
+    double etime = time();
+    if (!logf("reduce", "the reduce process finished: time=%.6f", etime - stime)) err = true;
+    return !err;
+  }
+  /**
    * Call the reducer.
    * @param kbuf the pointer to the key region.
    * @param ksiz the size of the key region.
@@ -544,6 +626,8 @@ private:
   MapReduce(const MapReduce&);
   /** Dummy Operator to forbid the use. */
   MapReduce& operator =(const MapReduce&);
+  /** The record comparator. */
+  Comparator* rcomp_;
   /** The temporary databases. */
   BasicDB** tmpdbs_;
   /** The number of temporary databases. */
