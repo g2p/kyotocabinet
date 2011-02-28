@@ -2315,8 +2315,10 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"std::_List_iterator<kyotocabinet::StashDB::Cursor*>::operator++()@Base" 1.2.31
  (c++)"std::numeric_limits<signed char>::max()@Base" 1.2.41
  (c++)"std::numeric_limits<signed char>::min()@Base" 1.2.41
+ (c++)"std::numeric_limits<double>::max()@Base" 1.2.46
  (c++)"std::numeric_limits<double>::infinity()@Base" 1.2.31
  (c++)"std::numeric_limits<double>::quiet_NaN()@Base" 1.2.31
+ (c++)"std::numeric_limits<float>::max()@Base" 1.2.46
  (c++)"std::numeric_limits<unsigned char>::max()@Base" 1.2.41
  (c++)"std::numeric_limits<int>::max()@Base" 1.2.41
  (c++)"std::numeric_limits<int>::min()@Base" 1.2.41
