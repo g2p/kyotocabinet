@@ -396,6 +396,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::DirDB::Cursor::~Cursor()@Base" 1.2.31
  (c++)"kyotocabinet::DirDB::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::DirDB::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::DirDB::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::DirDB::report(char const*, int, char const*, kyotocabinet::BasicDB::Logger::Kind, char const*, ...)@Base" 1.2.31
  (c++)"kyotocabinet::DirDB::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::DirDB::iterate(kyotocabinet::DB::Visitor*, bool, kyotocabinet::BasicDB::ProgressChecker*)@Base" 1.2.31
@@ -507,6 +508,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::HashDB::Cursor::~Cursor()@Base" 1.2.31
  (c++)"kyotocabinet::HashDB::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::HashDB::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::HashDB::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::HashDB::report(char const*, int, char const*, kyotocabinet::BasicDB::Logger::Kind, char const*, ...)@Base" 1.2.31
  (c++)"kyotocabinet::HashDB::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::HashDB::iterate(kyotocabinet::DB::Visitor*, bool, kyotocabinet::BasicDB::ProgressChecker*)@Base" 1.2.31
@@ -572,6 +574,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::PolyDB::Cursor::~Cursor()@Base" 1.2.31
  (c++)"kyotocabinet::PolyDB::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::PolyDB::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::PolyDB::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::PolyDB::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::PolyDB::iterate(kyotocabinet::DB::Visitor*, bool, kyotocabinet::BasicDB::ProgressChecker*)@Base" 1.2.31
  (c++)"kyotocabinet::PolyDB::MergeLine::~MergeLine()@Base" 1.2.31
@@ -736,6 +739,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::CacheDB::Setter::~Setter()@Base" 1.2.31
  (c++)"kyotocabinet::CacheDB::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::CacheDB::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::CacheDB::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::CacheDB::report(char const*, int, char const*, kyotocabinet::BasicDB::Logger::Kind, char const*, ...)@Base" 1.2.31
  (c++)"kyotocabinet::CacheDB::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::CacheDB::Remover::visit_full(char const*, unsigned long, char const*, unsigned long, unsigned long*)@Base" 1.2.31
@@ -859,6 +863,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::PlantDB<kyotocabinet::DirDB, (unsigned char)65>::Cursor::~Cursor()@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::DirDB, (unsigned char)65>::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::DirDB, (unsigned char)65>::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::PlantDB<kyotocabinet::DirDB, (unsigned char)65>::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::PlantDB<kyotocabinet::DirDB, (unsigned char)65>::report(char const*, int, char const*, kyotocabinet::BasicDB::Logger::Kind, char const*, ...)@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::DirDB, (unsigned char)65>::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::DirDB, (unsigned char)65>::iterate(kyotocabinet::DB::Visitor*, bool, kyotocabinet::BasicDB::ProgressChecker*)@Base" 1.2.31
@@ -968,6 +973,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::PlantDB<kyotocabinet::HashDB, (unsigned char)49>::Cursor::~Cursor()@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::HashDB, (unsigned char)49>::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::HashDB, (unsigned char)49>::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::PlantDB<kyotocabinet::HashDB, (unsigned char)49>::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::PlantDB<kyotocabinet::HashDB, (unsigned char)49>::report(char const*, int, char const*, kyotocabinet::BasicDB::Logger::Kind, char const*, ...)@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::HashDB, (unsigned char)49>::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::HashDB, (unsigned char)49>::iterate(kyotocabinet::DB::Visitor*, bool, kyotocabinet::BasicDB::ProgressChecker*)@Base" 1.2.31
@@ -1077,6 +1083,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::PlantDB<kyotocabinet::CacheDB, (unsigned char)33>::Cursor::~Cursor()@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::CacheDB, (unsigned char)33>::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::CacheDB, (unsigned char)33>::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::PlantDB<kyotocabinet::CacheDB, (unsigned char)33>::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::PlantDB<kyotocabinet::CacheDB, (unsigned char)33>::report(char const*, int, char const*, kyotocabinet::BasicDB::Logger::Kind, char const*, ...)@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::CacheDB, (unsigned char)33>::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::PlantDB<kyotocabinet::CacheDB, (unsigned char)33>::iterate(kyotocabinet::DB::Visitor*, bool, kyotocabinet::BasicDB::ProgressChecker*)@Base" 1.2.31
@@ -1128,6 +1135,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::ProtoDB<std::tr1::unordered_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::tr1::hash<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::equal_to<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)16>::Cursor::~Cursor()@Base" 1.2.31
  (c++)"kyotocabinet::ProtoDB<std::tr1::unordered_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::tr1::hash<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::equal_to<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)16>::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::ProtoDB<std::tr1::unordered_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::tr1::hash<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::equal_to<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)16>::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::ProtoDB<std::tr1::unordered_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::tr1::hash<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::equal_to<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)16>::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::ProtoDB<std::tr1::unordered_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::tr1::hash<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::equal_to<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)16>::report(char const*, int, char const*, kyotocabinet::BasicDB::Logger::Kind, char const*, ...)@Base" 1.2.31
  (c++)"kyotocabinet::ProtoDB<std::tr1::unordered_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::tr1::hash<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::equal_to<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)16>::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::ProtoDB<std::tr1::unordered_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::tr1::hash<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::equal_to<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)16>::TranLog::TranLog(kyotocabinet::ProtoDB<std::tr1::unordered_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::tr1::hash<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::equal_to<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)16>::TranLog const&)@Base" 1.2.31
@@ -1173,6 +1181,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::ProtoDB<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)17>::Cursor::~Cursor()@Base" 1.2.31
  (c++)"kyotocabinet::ProtoDB<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)17>::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::ProtoDB<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)17>::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::ProtoDB<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)17>::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::ProtoDB<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)17>::report(char const*, int, char const*, kyotocabinet::BasicDB::Logger::Kind, char const*, ...)@Base" 1.2.31
  (c++)"kyotocabinet::ProtoDB<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)17>::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::ProtoDB<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)17>::TranLog::TranLog(kyotocabinet::ProtoDB<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, (unsigned char)17>::TranLog const&)@Base" 1.2.31
@@ -1235,6 +1244,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kyotocabinet::StashDB::Setter::~Setter()@Base" 1.2.31
  (c++)"kyotocabinet::StashDB::accept(char const*, unsigned long, kyotocabinet::DB::Visitor*, bool)@Base" 1.2.31
  (c++)"kyotocabinet::StashDB::cursor()@Base" 1.2.31
+ (c++)"kyotocabinet::StashDB::occupy(bool, kyotocabinet::BasicDB::FileProcessor*)@Base" 1.2.47
  (c++)"kyotocabinet::StashDB::report(char const*, int, char const*, kyotocabinet::BasicDB::Logger::Kind, char const*, ...)@Base" 1.2.31
  (c++)"kyotocabinet::StashDB::status(std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*)@Base" 1.2.31
  (c++)"kyotocabinet::StashDB::Remover::visit_full(char const*, unsigned long, char const*, unsigned long, unsigned long*)@Base" 1.2.31
@@ -2598,7 +2608,6 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"std::pair<bool, int>::pair(bool const&, int const&)@Base" 1.2.31
  (c++)"std::pair<bool, unsigned long>::pair(bool const&, unsigned long const&)@Base" 1.2.31
  (c++)"std::pair<bool, unsigned long>::pair<bool, int>(std::pair<bool, int> const&)@Base" 1.2.31
-#
  (c++)"std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> >::_M_insert_aux(__gnu_cxx::__normal_iterator<kyotocabinet::WALMessage*, std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> > >, kyotocabinet::WALMessage const&)@Base" 1.2.31
  (c++)"std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> >::end()@Base" 1.2.31
  (c++)"std::vector<kyotocabinet::WALMessage, std::allocator<kyotocabinet::WALMessage> >::begin()@Base" 1.2.31
@@ -3117,6 +3126,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"typeinfo for kyotocabinet::StashDB@Base" 1.2.31
  (c++)"typeinfo for std::invalid_argument@Base" 1.2.31
  (c++)"typeinfo for kcdbaccept::VisitorImpl@Base" 1.2.31
+ (c++)"typeinfo for kcdboccupy::FileProcessorImpl@Base" 1.2.47
  (c++)"typeinfo for kccuraccept::VisitorImpl@Base" 1.2.31
  (c++)"typeinfo for kcdbiterate::VisitorImpl@Base" 1.2.31
  (c++)"typeinfo for kcdbacceptbulk::VisitorImpl@Base" 1.2.32
@@ -3209,6 +3219,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"typeinfo name for kyotocabinet::StashDB@Base" 1.2.31
  (c++)"typeinfo name for std::invalid_argument@Base" 1.2.31
  (c++)"typeinfo name for kcdbaccept::VisitorImpl@Base" 1.2.31
+ (c++)"typeinfo name for kcdboccupy::FileProcessorImpl@Base" 1.2.47
  (c++)"typeinfo name for kccuraccept::VisitorImpl@Base" 1.2.31
  (c++)"typeinfo name for kcdbiterate::VisitorImpl@Base" 1.2.31
  (c++)"typeinfo name for kcdbacceptbulk::VisitorImpl@Base" 1.2.32
@@ -3301,6 +3312,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"vtable for kyotocabinet::StashDB@Base" 1.2.31
  (c++)"vtable for std::invalid_argument@Base" 1.2.31
  (c++)"vtable for kcdbaccept::VisitorImpl@Base" 1.2.31
+ (c++)"vtable for kcdboccupy::FileProcessorImpl@Base" 1.2.47
  (c++)"vtable for kccuraccept::VisitorImpl@Base" 1.2.31
  (c++)"vtable for kcdbiterate::VisitorImpl@Base" 1.2.31
  (c++)"vtable for kcdbacceptbulk::VisitorImpl@Base" 1.2.32
@@ -3341,6 +3353,9 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  (c++)"kcdbaccept::VisitorImpl::~VisitorImpl()@Base" 1.2.31
  (c++)"kcdbaccept::VisitorImpl::~VisitorImpl()@Base" 1.2.31
  (c++)"kcdbaccept::VisitorImpl::~VisitorImpl()@Base" 1.2.31
+ (c++)"kcdboccupy::FileProcessorImpl::~FileProcessorImpl()@Base" 1.2.47
+ (c++)"kcdboccupy::FileProcessorImpl::~FileProcessorImpl()@Base" 1.2.47
+ (c++)"kcdboccupy::FileProcessorImpl::~FileProcessorImpl()@Base" 1.2.47
  (c++)"kccuraccept::VisitorImpl::~VisitorImpl()@Base" 1.2.31
  (c++)"kccuraccept::VisitorImpl::~VisitorImpl()@Base" 1.2.31
  (c++)"kccuraccept::VisitorImpl::~VisitorImpl()@Base" 1.2.31
@@ -3571,6 +3586,7 @@ libkyotocabinet.so.9 libkyotocabinet9 #MINVER#
  kcdbmatchregex@Base 1.2.31
  kcdbmerge@Base 1.2.31
  kcdbnew@Base 1.2.31
+ kcdboccupy@Base 1.2.47
  kcdbopen@Base 1.2.31
  kcdbpath@Base 1.2.31
  kcdbremove@Base 1.2.31
