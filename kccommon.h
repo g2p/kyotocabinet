@@ -106,7 +106,11 @@ using tr1::unordered_set;
 #undef BIGEND
 #undef CLOCKTICK
 #undef PAGESIZE
+#undef FEATURES
+#undef NUMBUFSIZ
+#undef MEMMAXSIZ
 
+#undef IOBUFSIZ
 #undef SUCCESS
 #undef NOIMPL
 #undef INVALID
@@ -131,6 +135,22 @@ using tr1::unordered_set;
 #undef BEGINTRAN
 #undef COMMITTRAN
 #undef ABORTTRAN
+
+#undef INT8MAX
+#undef INT16MAX
+#undef INT32MAX
+#undef INT64MAX
+#undef INT8MIN
+#undef INT16MIN
+#undef INT32MIN
+#undef INT64MIN
+#undef UINT8MAX
+#undef UINT16MAX
+#undef UINT32MAX
+#undef UINT64MAX
+#undef SIZEMAX
+#undef FLTMAX
+#undef DBLMAX
 
 #if defined(_KCUYIELD)
 #if defined(_MSC_VER)
@@ -173,20 +193,7 @@ using tr1::unordered_set;
 /**
  * All symbols of Kyoto Cabinet.
  */
-namespace kyotocabinet {
-const int8_t INT8MAX = (std::numeric_limits<int8_t>::max)();       ///< maximum value of int8_t
-const int16_t INT16MAX = (std::numeric_limits<int16_t>::max)();    ///< maximum value of int16_t
-const int32_t INT32MAX = (std::numeric_limits<int32_t>::max)();    ///< maximum value of int32_t
-const int64_t INT64MAX = (std::numeric_limits<int64_t>::max)();    ///< maximum value of int64_t
-const int8_t INT8MIN = (std::numeric_limits<int8_t>::min)();       ///< minimum value of int8_t
-const int16_t INT16MIN = (std::numeric_limits<int16_t>::min)();    ///< minimum value of int16_t
-const int32_t INT32MIN = (std::numeric_limits<int32_t>::min)();    ///< minimum value of int32_t
-const int64_t INT64MIN = (std::numeric_limits<int64_t>::min)();    ///< minimum value of int64_t
-const uint8_t UINT8MAX = (std::numeric_limits<uint8_t>::max)();    ///< maximum value of uint8_t
-const uint16_t UINT16MAX = (std::numeric_limits<uint16_t>::max)(); ///< maximum value of uint16_t
-const uint32_t UINT32MAX = (std::numeric_limits<uint32_t>::max)(); ///< maximum value of uint32_t
-const uint64_t UINT64MAX = (std::numeric_limits<uint64_t>::max)(); ///< maximum value of uint64_t
-}
+namespace kyotocabinet {}
 
 
 #endif                                   // duplication check

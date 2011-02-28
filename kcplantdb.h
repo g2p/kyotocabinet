@@ -28,6 +28,7 @@
 
 #define KCPDBMETAKEY  "@"                ///< key of the record for meta data
 #define KCPDBTMPPATHEXT  "tmpkct"        ///< extension of the temporary file
+#define KCPDRECBUFSIZ  128               ///< size of the record buffer
 
 namespace kyotocabinet {                 // common namespace
 
@@ -70,6 +71,46 @@ private:
   typedef LinkedHashMap<int64_t, InnerNode*> InnerCache;
   /** An alias of list of cursors. */
   typedef std::list<Cursor*> CursorList;
+  /** The number of cache slots. */
+  static const int32_t SLOTNUM = 16;
+  /** The default alignment power. */
+  static const uint8_t DEFAPOW = 8;
+  /** The default free block pool power. */
+  static const uint8_t DEFFPOW = 10;
+  /** The default bucket number. */
+  static const int64_t DEFBNUM = 64LL << 10;
+  /** The default page size. */
+  static const int32_t DEFPSIZ = 8192;
+  /** The default capacity size of the page cache. */
+  static const int64_t DEFPCCAP = 64LL << 20;
+  /** The size of the header. */
+  static const int64_t HEADSIZ = 80;
+  /** The offset of the numbers. */
+  static const int64_t MOFFNUMS = 8;
+  /** The prefix of leaf nodes. */
+  static const char LNPREFIX = 'L';
+  /** The prefix of inner nodes. */
+  static const char INPREFIX = 'I';
+  /** The average number of ways of each node. */
+  static const size_t AVGWAY = 16;
+  /** The ratio of the warm cache. */
+  static const size_t WARMRATIO = 4;
+  /** The ratio of flushing inner nodes. */
+  static const size_t INFLRATIO = 32;
+  /** The default number of items in each leaf node. */
+  static const size_t DEFLINUM = 64;
+  /** The default number of items in each inner node. */
+  static const size_t DEFIINUM = 128;
+  /** The base ID number for inner nodes. */
+  static const int64_t INIDBASE = 1LL << 48;
+  /** The minimum number of links in each inner node. */
+  static const size_t INLINKMIN = 8;
+  /** The maximum level of B+ tree. */
+  static const int32_t LEVELMAX = 16;
+  /** The number of cached nodes for auto transaction. */
+  static const int32_t ATRANCNUM = 256;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
 public:
   /**
    * Cursor to indicate a record.
@@ -411,7 +452,7 @@ public:
       _assert_(visitor && hitp);
       bool err = false;
       bool hit = false;
-      char rstack[PlantDB::RECBUFSIZ];
+      char rstack[KCPDRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -420,7 +461,7 @@ public:
       std::memcpy(rbuf + sizeof(*rec), kbuf_, ksiz_);
       LeafNode* node = db_->load_leaf_node(lid_, false);
       if (node) {
-        char lstack[PlantDB::RECBUFSIZ];
+        char lstack[KCPDRECBUFSIZ];
         char* lbuf = NULL;
         size_t lsiz = 0;
         Link* link = NULL;
@@ -523,8 +564,7 @@ public:
           bool flush = db_->cusage_ > db_->pccap_;
           if (link || flush || async) {
             int64_t id = node->id;
-            if (atran && !link && !db_->fix_auto_transaction_leaf(node))
-              err = true;
+            if (atran && !link && !db_->fix_auto_transaction_leaf(node)) err = true;
             if (!db_->mlock_.promote()) {
               db_->mlock_.unlock();
               db_->mlock_.lock_writer();
@@ -547,6 +587,8 @@ public:
                   !db_->flush_inner_cache_part(islot)) err = true;
             }
             if (async && !db_->fix_auto_synchronization()) err = true;
+          } else {
+            if (!db_->fix_auto_transaction_leaf(node)) err = true;
           }
         }
         if (lbuf != lstack) delete[] lbuf;
@@ -567,7 +609,7 @@ public:
       bool err = false;
       bool reorg = false;
       *retryp = false;
-      char lstack[PlantDB::RECBUFSIZ];
+      char lstack[KCPDRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz_;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
@@ -604,7 +646,7 @@ public:
           return false;
         }
       }
-      char rstack[PlantDB::RECBUFSIZ];
+      char rstack[KCPDRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -712,7 +754,7 @@ public:
      */
     bool adjust_position() {
       _assert_(true);
-      char lstack[PlantDB::RECBUFSIZ];
+      char lstack[KCPDRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz_;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
@@ -727,7 +769,7 @@ public:
         if (lbuf != lstack) delete[] lbuf;
         return false;
       }
-      char rstack[PlantDB::RECBUFSIZ];
+      char rstack[KCPDRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -761,7 +803,7 @@ public:
       _assert_(hitp);
       bool err = false;
       bool hit = false;
-      char rstack[PlantDB::RECBUFSIZ];
+      char rstack[KCPDRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -812,7 +854,7 @@ public:
      */
     bool back_position_atom() {
       _assert_(true);
-      char lstack[PlantDB::RECBUFSIZ];
+      char lstack[KCPDRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz_;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
@@ -827,7 +869,7 @@ public:
         if (lbuf != lstack) delete[] lbuf;
         return false;
       }
-      char rstack[PlantDB::RECBUFSIZ];
+      char rstack[KCPDRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz_;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -865,7 +907,7 @@ public:
     /** The inner database. */
     PlantDB* db_;
     /** The stack buffer for the key. */
-    char stack_[PlantDB::RECBUFSIZ];
+    char stack_[KCPDRECBUFSIZ];
     /** The pointer to the key region. */
     char* kbuf_;
     /** The size of the key region. */
@@ -941,7 +983,7 @@ public:
       mlock_.unlock();
       return false;
     }
-    char lstack[RECBUFSIZ];
+    char lstack[KCPDRECBUFSIZ];
     size_t lsiz = sizeof(Link) + ksiz;
     char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
     Link* link = (Link*)lbuf;
@@ -957,7 +999,7 @@ public:
       mlock_.unlock();
       return false;
     }
-    char rstack[RECBUFSIZ];
+    char rstack[KCPDRECBUFSIZ];
     size_t rsiz = sizeof(Record) + ksiz;
     char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
     Record* rec = (Record*)rbuf;
@@ -1052,7 +1094,7 @@ public:
     while (!err && kit != kitend) {
       const char* kbuf = kit->data();
       size_t ksiz = kit->size();
-      char lstack[RECBUFSIZ];
+      char lstack[KCPDRECBUFSIZ];
       size_t lsiz = sizeof(Link) + ksiz;
       char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
       Link* link = (Link*)lbuf;
@@ -1068,7 +1110,7 @@ public:
         err = true;
         break;
       }
-      char rstack[RECBUFSIZ];
+      char rstack[KCPDRECBUFSIZ];
       size_t rsiz = sizeof(Record) + ksiz;
       char* rbuf = rsiz > sizeof(rstack) ? new char[rsiz] : rstack;
       Record* rec = (Record*)rbuf;
@@ -1178,7 +1220,7 @@ public:
       if (reorg) {
         Record* rec = keys.front();
         char* dbuf = (char*)rec + sizeof(*rec);
-        char lstack[RECBUFSIZ];
+        char lstack[KCPDRECBUFSIZ];
         size_t lsiz = sizeof(Link) + rec->ksiz;
         char* lbuf = lsiz > sizeof(lstack) ? new char[lsiz] : lstack;
         Link* link = (Link*)lbuf;
@@ -1291,21 +1333,18 @@ public:
       return false;
     }
     if (db_.reorganized()) {
-      if (!writer_) {
-        if (!db_.close()) return false;
-        mode &= ~OREADER;
-        mode |= OWRITER;
-        if (!db_.open(path, mode)) return false;
-      }
       if (!reorganize_file(mode)) return false;
     } else if (db_.recovered()) {
       if (!writer_) {
         if (!db_.close()) return false;
-        mode &= ~OREADER;
-        mode |= OWRITER;
-        if (!db_.open(path, mode)) return false;
+        uint32_t tmode = (mode & ~OREADER) | OWRITER;
+        if (!db_.open(path, tmode)) return false;
       }
       if (!recalc_count()) return false;
+      if (!writer_) {
+        if (!db_.close()) return false;
+        if (!db_.open(path, mode)) return false;
+      }
     }
     if (writer_ && db_.count() < 1) {
       root_ = 0;
@@ -2019,48 +2058,6 @@ protected:
     if (mtrigger_) mtrigger_->trigger(kind, message);
   }
 private:
-  /** The number of cache slots. */
-  static const int32_t SLOTNUM = 16;
-  /** The default alignment power. */
-  static const uint8_t DEFAPOW = 8;
-  /** The default free block pool power. */
-  static const uint8_t DEFFPOW = 10;
-  /** The default bucket number. */
-  static const int64_t DEFBNUM = 64LL << 10;
-  /** The default page size. */
-  static const int32_t DEFPSIZ = 8192;
-  /** The default capacity size of the page cache. */
-  static const int64_t DEFPCCAP = 64LL << 20;
-  /** The size of the header. */
-  static const int64_t HEADSIZ = 80;
-  /** The offset of the numbers. */
-  static const int64_t MOFFNUMS = 8;
-  /** The prefix of leaf nodes. */
-  static const char LNPREFIX = 'L';
-  /** The prefix of inner nodes. */
-  static const char INPREFIX = 'I';
-  /** The average number of ways of each node. */
-  static const size_t AVGWAY = 16;
-  /** The ratio of the warm cache. */
-  static const size_t WARMRATIO = 4;
-  /** The ratio of flushing inner nodes. */
-  static const size_t INFLRATIO = 32;
-  /** The default number of items in each leaf node. */
-  static const size_t DEFLINUM = 64;
-  /** The default number of items in each inner node. */
-  static const size_t DEFIINUM = 128;
-  /** The size of the record buffer. */
-  static const size_t RECBUFSIZ = 64;
-  /** The base ID number for inner nodes. */
-  static const int64_t INIDBASE = 1LL << 48;
-  /** The minimum number of links in each inner node. */
-  static const size_t INLINKMIN = 8;
-  /** The maximum level of B+ tree. */
-  static const int32_t LEVELMAX = 16;
-  /** The number of cached nodes for auto transaction. */
-  static const int32_t ATRANCNUM = 256;
-  /** The threshold of busy loop and sleep for locking. */
-  static const uint32_t LOCKBUSYLOOP = 8192;
   /**
    * Record data.
    */
@@ -3448,7 +3445,13 @@ private:
     } else {
       BASEDB udb;
       if (!err && udb.open(npath, OREADER)) {
-        if (!db_.clear()) err = true;
+        if (writer_) {
+          if (!db_.clear()) err = true;
+        } else {
+          if (!db_.close()) err = true;
+          uint32_t tmode = (mode & ~OREADER) | OWRITER | OCREATE | OTRUNCATE;
+          if (!db_.open(path, tmode)) err = true;
+        }
         cur = udb.cursor();
         cur->jump();
         const char* vbuf;
@@ -3459,7 +3462,12 @@ private:
           cur->step();
         }
         delete cur;
-        if (!db_.synchronize(false, NULL)) err = true;
+        if (writer_) {
+          if (!db_.synchronize(false, NULL)) err = true;
+        } else {
+          if (!db_.close()) err = true;
+          if (!db_.open(path, mode)) err = true;
+        }
         if (!udb.close()) {
           set_error(_KCCODELINE_, udb.error().code(), "closing the destination failed");
           err = true;

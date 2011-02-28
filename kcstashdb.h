@@ -54,6 +54,16 @@ private:
   typedef std::list<Cursor*> CursorList;
   /** An alias of list of transaction logs. */
   typedef std::list<TranLog> TranLogList;
+  /** The number of slots of the record lock. */
+  static const int32_t RLOCKSLOT = 1024;
+  /** The default bucket number. */
+  static const size_t DEFBNUM = 1048583LL;
+  /** The size of the opaque buffer. */
+  static const size_t OPAQUESIZ = 16;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
+  /** The mininum number of buckets to use mmap. */
+  static const size_t MAPZMAPBNUM = 32768;
 public:
   /**
    * Cursor to indicate a record.
@@ -969,16 +979,6 @@ protected:
     if (mtrigger_) mtrigger_->trigger(kind, message);
   }
 private:
-  /** The number of slots of the record lock. */
-  static const int32_t RLOCKSLOT = 1024;
-  /** The default bucket number. */
-  static const size_t DEFBNUM = 1048583LL;
-  /** The size of the opaque buffer. */
-  static const size_t OPAQUESIZ = 16;
-  /** The threshold of busy loop and sleep for locking. */
-  static const uint32_t LOCKBUSYLOOP = 8192;
-  /** The mininum number of buckets to use mmap. */
-  static const size_t MAPZMAPBNUM = 32768;
   /**
    * Record data.
    */

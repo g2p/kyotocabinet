@@ -1,3 +1,15 @@
+2011-02-23  FAL Labs  <info@fallabs.com>
+
+	* kcutil.h (SIZEMAX, FLTMAX, DBLMAX): new constants.
+
+	* kcplantdb.h (PlantDB::open): repair mechanism was modified.
+
+	* kcplantdb.h (PlantDB::Cursor::accept_spec): a bug related to transactin was fixed.
+
+	- all database classes were refactored to support some old compilers.
+
+	- Release: 1.2.46
+
 2011-02-21  FAL Labs  <info@fallabs.com>
 
 	* kcdbext.h (MapReduce::execute): adaptive comparator was added.

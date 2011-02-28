@@ -58,6 +58,72 @@ private:
   typedef std::set<FreeBlock> FBP;
   /** An alias of list of cursors. */
   typedef std::list<Cursor*> CursorList;
+  /** The offset of the library version. */
+  static const int64_t MOFFLIBVER = 4;
+  /** The offset of the library revision. */
+  static const int64_t MOFFLIBREV = 5;
+  /** The offset of the format revision. */
+  static const int64_t MOFFFMTVER = 6;
+  /** The offset of the module checksum. */
+  static const int64_t MOFFCHKSUM = 7;
+  /** The offset of the database type. */
+  static const int64_t MOFFTYPE = 8;
+  /** The offset of the alignment power. */
+  static const int64_t MOFFAPOW = 9;
+  /** The offset of the free block pool power. */
+  static const int64_t MOFFFPOW = 10;
+  /** The offset of the options. */
+  static const int64_t MOFFOPTS = 11;
+  /** The offset of the bucket number. */
+  static const int64_t MOFFBNUM = 16;
+  /** The offset of the status flags. */
+  static const int64_t MOFFFLAGS = 24;
+  /** The offset of the record number. */
+  static const int64_t MOFFCOUNT = 32;
+  /** The offset of the file size. */
+  static const int64_t MOFFSIZE = 40;
+  /** The offset of the opaque data. */
+  static const int64_t MOFFOPAQUE = 48;
+  /** The size of the header. */
+  static const int64_t HEADSIZ = 64;
+  /** The width of the free block. */
+  static const int32_t FBPWIDTH = 6;
+  /** The large width of the record address. */
+  static const int32_t WIDTHLARGE = 6;
+  /** The small width of the record address. */
+  static const int32_t WIDTHSMALL = 4;
+  /** The size of the record buffer. */
+  static const size_t RECBUFSIZ = 48;
+  /** The size of the IO buffer. */
+  static const size_t IOBUFSIZ = 1024;
+  /** The number of slots of the record lock. */
+  static const int32_t RLOCKSLOT = 1024;
+  /** The default alignment power. */
+  static const uint8_t DEFAPOW = 3;
+  /** The maximum alignment power. */
+  static const uint8_t MAXAPOW = 15;
+  /** The default free block pool power. */
+  static const uint8_t DEFFPOW = 10;
+  /** The maximum free block pool power. */
+  static const uint8_t MAXFPOW = 20;
+  /** The default bucket number. */
+  static const int64_t DEFBNUM = 1048583LL;
+  /** The default size of the memory-mapped region. */
+  static const int64_t DEFMSIZ = 64LL << 20;
+  /** The magic data for record. */
+  static const uint8_t RECMAGIC = 0xcc;
+  /** The magic data for padding. */
+  static const uint8_t PADMAGIC = 0xee;
+  /** The magic data for free block. */
+  static const uint8_t FBMAGIC = 0xdd;
+  /** The maximum unit of auto defragmentation. */
+  static const int32_t DFRGMAX = 512;
+  /** The coefficient of auto defragmentation. */
+  static const int32_t DFRGCEF = 2;
+  /** The checking width for record salvage. */
+  static const int64_t SLVGWIDTH = 1LL << 20;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
 public:
   /**
    * Cursor to indicate a record.
@@ -1609,72 +1675,6 @@ protected:
     return reorg_;
   }
 private:
-  /** The offset of the library version. */
-  static const int64_t MOFFLIBVER = 4;
-  /** The offset of the library revision. */
-  static const int64_t MOFFLIBREV = 5;
-  /** The offset of the format revision. */
-  static const int64_t MOFFFMTVER = 6;
-  /** The offset of the module checksum. */
-  static const int64_t MOFFCHKSUM = 7;
-  /** The offset of the database type. */
-  static const int64_t MOFFTYPE = 8;
-  /** The offset of the alignment power. */
-  static const int64_t MOFFAPOW = 9;
-  /** The offset of the free block pool power. */
-  static const int64_t MOFFFPOW = 10;
-  /** The offset of the options. */
-  static const int64_t MOFFOPTS = 11;
-  /** The offset of the bucket number. */
-  static const int64_t MOFFBNUM = 16;
-  /** The offset of the status flags. */
-  static const int64_t MOFFFLAGS = 24;
-  /** The offset of the record number. */
-  static const int64_t MOFFCOUNT = 32;
-  /** The offset of the file size. */
-  static const int64_t MOFFSIZE = 40;
-  /** The offset of the opaque data. */
-  static const int64_t MOFFOPAQUE = 48;
-  /** The size of the header. */
-  static const int64_t HEADSIZ = 64;
-  /** The width of the free block. */
-  static const int32_t FBPWIDTH = 6;
-  /** The large width of the record address. */
-  static const int32_t WIDTHLARGE = 6;
-  /** The small width of the record address. */
-  static const int32_t WIDTHSMALL = 4;
-  /** The size of the record buffer. */
-  static const size_t RECBUFSIZ = 48;
-  /** The size of the IO buffer. */
-  static const size_t IOBUFSIZ = 1024;
-  /** The number of slots of the record lock. */
-  static const int32_t RLOCKSLOT = 1024;
-  /** The default alignment power. */
-  static const uint8_t DEFAPOW = 3;
-  /** The maximum alignment power. */
-  static const uint8_t MAXAPOW = 15;
-  /** The default free block pool power. */
-  static const uint8_t DEFFPOW = 10;
-  /** The maximum free block pool power. */
-  static const uint8_t MAXFPOW = 20;
-  /** The default bucket number. */
-  static const int64_t DEFBNUM = 1048583LL;
-  /** The default size of the memory-mapped region. */
-  static const int64_t DEFMSIZ = 64LL << 20;
-  /** The magic data for record. */
-  static const uint8_t RECMAGIC = 0xcc;
-  /** The magic data for padding. */
-  static const uint8_t PADMAGIC = 0xee;
-  /** The magic data for free block. */
-  static const uint8_t FBMAGIC = 0xdd;
-  /** The maximum unit of auto defragmentation. */
-  static const int32_t DFRGMAX = 512;
-  /** The coefficient of auto defragmentation. */
-  static const int32_t DFRGCEF = 2;
-  /** The checking width for record salvage. */
-  static const int64_t SLVGWIDTH = 1LL << 20;
-  /** The threshold of busy loop and sleep for locking. */
-  static const uint32_t LOCKBUSYLOOP = 8192;
   /**
    * Record data.
    */

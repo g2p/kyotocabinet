@@ -21,6 +21,66 @@
 namespace kyotocabinet {                 // common namespace
 
 
+/** The maximum value of int8_t. */
+const int8_t INT8MAX = (std::numeric_limits<int8_t>::max)();
+
+
+/** The maximum value of int16_t. */
+const int16_t INT16MAX = (std::numeric_limits<int16_t>::max)();
+
+
+/** The maximum value of int32_t. */
+const int32_t INT32MAX = (std::numeric_limits<int32_t>::max)();
+
+
+/** The maximum value of int64_t. */
+const int64_t INT64MAX = (std::numeric_limits<int64_t>::max)();
+
+
+/** The minimum value of int8_t. */
+const int8_t INT8MIN = (std::numeric_limits<int8_t>::min)();
+
+
+/** The minimum value of int16_t. */
+const int16_t INT16MIN = (std::numeric_limits<int16_t>::min)();
+
+
+/** The minimum value of int32_t. */
+const int32_t INT32MIN = (std::numeric_limits<int32_t>::min)();
+
+
+/** The minimum value of int64_t. */
+const int64_t INT64MIN = (std::numeric_limits<int64_t>::min)();
+
+
+/** The maximum value of uint8_t. */
+const uint8_t UINT8MAX = (std::numeric_limits<uint8_t>::max)();
+
+
+/** The maximum value of uint16_t. */
+const uint16_t UINT16MAX = (std::numeric_limits<uint16_t>::max)();
+
+
+/** The maximum value of uint32_t. */
+const uint32_t UINT32MAX = (std::numeric_limits<uint32_t>::max)();
+
+
+/** The maximum value of uint64_t. */
+const uint64_t UINT64MAX = (std::numeric_limits<uint64_t>::max)();
+
+
+/** The maximum value of size_t. */
+const size_t SIZEMAX = (std::numeric_limits<size_t>::max)();
+
+
+/** The maximum value of float. */
+const float FLTMAX = (std::numeric_limits<float>::max)();
+
+
+/** The maximum value of double. */
+const double DBLMAX = (std::numeric_limits<double>::max)();
+
+
 /** An alias of hash map of strings. */
 typedef std::unordered_map<std::string, std::string> StringHashMap;
 
@@ -2234,6 +2294,7 @@ inline bool _dummytest() {
   oss << INT8MAX << INT16MAX << INT32MAX << INT64MAX;
   oss << INT8MIN << INT16MIN << INT32MIN << INT64MIN;
   oss << UINT8MAX << UINT16MAX << UINT32MAX << UINT64MAX;
+  oss << SIZEMAX << FLTMAX << DBLMAX;
   oss << VERSION << LIBVER << LIBREV << FMTVER << SYSNAME;
   oss << BIGEND << CLOCKTICK << PAGESIZE << FEATURES;
   oss << NUMBUFSIZ << MEMMAXSIZ;
