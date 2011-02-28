@@ -2112,6 +2112,10 @@ static int32_t proclhmap(int64_t rnum, bool rnd, int64_t bnum) {
 static int32_t procmisc(int64_t rnum) {
   oprintf("<Miscellaneous Test>\n  seed=%u  rnum=%lld\n\n", g_randseed, (long long)rnum);
   bool err = false;
+  if (!kc::_dummytest()) {
+    errprint(__LINE__, "_dummytest");
+    err = true;
+  }
   double stime = kc::time();
   for (int64_t i = 1; !err && i <= rnum; i++) {
     uint16_t num16 = (1ULL << myrand(sizeof(num16) * 8)) - 5 + myrand(10);

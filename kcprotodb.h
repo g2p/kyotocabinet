@@ -55,6 +55,10 @@ private:
   typedef std::list<Cursor*> CursorList;
   /** An alias of list of transaction logs. */
   typedef std::list<TranLog> TranLogList;
+  /** The size of the opaque buffer. */
+  static const size_t OPAQUESIZ = 16;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
 public:
   /**
    * Cursor to indicate a record.
@@ -1054,10 +1058,6 @@ protected:
     if (mtrigger_) mtrigger_->trigger(kind, message);
   }
 private:
-  /** The size of the opaque buffer. */
-  static const size_t OPAQUESIZ = 16;
-  /** The threshold of busy loop and sleep for locking. */
-  static const uint32_t LOCKBUSYLOOP = 8192;
   /**
    * Transaction log.
    */
@@ -1189,7 +1189,7 @@ template <>
 inline void ProtoDB<StringHashMap, BasicDB::TYPEPHASH>::map_tune() {
   _assert_(true);
   recs_.rehash(1048583LL);
-  recs_.max_load_factor(FLT_MAX);
+  recs_.max_load_factor(FLTMAX);
 }
 
 

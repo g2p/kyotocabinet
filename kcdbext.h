@@ -50,6 +50,22 @@ private:
   struct MergeLine;
   /** An alias of vector of loaded values. */
   typedef std::vector<std::string> Values;
+  /** The default number of temporary databases. */
+  static const size_t MRDEFDBNUM = 8;
+  /** The maxinum number of temporary databases. */
+  static const size_t MRMAXDBNUM = 256;
+  /** The default cache limit. */
+  static const int64_t MRDEFCLIM = 512LL << 20;
+  /** The default cache bucket numer. */
+  static const int64_t MRDEFCBNUM = 1048583LL;
+  /** The bucket number of temprary databases. */
+  static const int64_t MRDBBNUM = 512LL << 10;
+  /** The page size of temprary databases. */
+  static const int32_t MRDBPSIZ = 32768;
+  /** The mapped size of temprary databases. */
+  static const int64_t MRDBMSIZ = 516LL * 4096;
+  /** The page cache capacity of temprary databases. */
+  static const int64_t MRDBPCCAP = 16LL << 20;
 public:
   /**
    * Data emitter for the mapper.
@@ -397,22 +413,6 @@ public:
     if (cbnum_ > INT16MAX) cbnum_ = nearbyprime(cbnum_);
   }
 private:
-  /** The default number of temporary databases. */
-  static const size_t MRDEFDBNUM = 8;
-  /** The maxinum number of temporary databases. */
-  static const size_t MRMAXDBNUM = 256;
-  /** The default cache limit. */
-  static const int64_t MRDEFCLIM = 512LL << 20;
-  /** The default cache bucket numer. */
-  static const int64_t MRDEFCBNUM = 1048583LL;
-  /** The bucket number of temprary databases. */
-  static const int64_t MRDBBNUM = 512LL << 10;
-  /** The page size of temprary databases. */
-  static const int32_t MRDBPSIZ = 32768;
-  /** The mapped size of temprary databases. */
-  static const int64_t MRDBMSIZ = 516LL * 4096;
-  /** The page cache capacity of temprary databases. */
-  static const int64_t MRDBPCCAP = 16LL << 20;
   /**
    * Checker for the map process.
    */

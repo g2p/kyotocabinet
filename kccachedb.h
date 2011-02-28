@@ -56,6 +56,20 @@ private:
   typedef std::list<Cursor*> CursorList;
   /** An alias of list of transaction logs. */
   typedef std::list<TranLog> TranLogList;
+  /** The number of slot tables. */
+  static const int32_t SLOTNUM = 16;
+  /** The default bucket number. */
+  static const size_t DEFBNUM = 1048583LL;
+  /** The mininum number of buckets to use mmap. */
+  static const size_t ZMAPBNUM = 32768;
+  /** The maximum size of each key. */
+  static const uint32_t KSIZMAX = 0xfffff;
+  /** The size of the record buffer. */
+  static const size_t RECBUFSIZ = 48;
+  /** The size of the opaque buffer. */
+  static const size_t OPAQUESIZ = 16;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
 public:
   /**
    * Cursor to indicate a record.
@@ -1225,20 +1239,6 @@ protected:
     return false;
   }
 private:
-  /** The number of slot tables. */
-  static const int32_t SLOTNUM = 16;
-  /** The default bucket number. */
-  static const size_t DEFBNUM = 1048583LL;
-  /** The mininum number of buckets to use mmap. */
-  static const size_t ZMAPBNUM = 32768;
-  /** The maximum size of each key. */
-  static const uint32_t KSIZMAX = 0xfffff;
-  /** The size of the record buffer. */
-  static const size_t RECBUFSIZ = 48;
-  /** The size of the opaque buffer. */
-  static const size_t OPAQUESIZ = 16;
-  /** The threshold of busy loop and sleep for locking. */
-  static const uint32_t LOCKBUSYLOOP = 8192;
   /**
    * Set the power of the alignment of record size.
    * @note This is a dummy implementation for compatibility.

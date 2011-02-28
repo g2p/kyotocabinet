@@ -60,6 +60,18 @@ private:
   typedef std::list<Cursor*> CursorList;
   /** An alias of vector of strings. */
   typedef std::vector<std::string> StringVector;
+  /** The size of the meta data buffer. */
+  static const int64_t METABUFSIZ = 128;
+  /** The magic data for record. */
+  static const uint8_t RECMAGIC = 0xcc;
+  /** The number of slots of the record lock. */
+  static const int32_t RLOCKSLOT = 2048;
+  /** The unit size of a record. */
+  static const int32_t RECUNITSIZ = 32;
+  /** The size of the opaque buffer. */
+  static const size_t OPAQUESIZ = 16;
+  /** The threshold of busy loop and sleep for locking. */
+  static const uint32_t LOCKBUSYLOOP = 8192;
 public:
   /**
    * Cursor to indicate a record.
@@ -1359,18 +1371,6 @@ protected:
     return reorg_;
   }
 private:
-  /** The size of the meta data buffer. */
-  static const int64_t METABUFSIZ = 128;
-  /** The magic data for record. */
-  static const uint8_t RECMAGIC = 0xcc;
-  /** The number of slots of the record lock. */
-  static const int32_t RLOCKSLOT = 2048;
-  /** The unit size of a record. */
-  static const int32_t RECUNITSIZ = 32;
-  /** The size of the opaque buffer. */
-  static const size_t OPAQUESIZ = 16;
-  /** The threshold of busy loop and sleep for locking. */
-  static const uint32_t LOCKBUSYLOOP = 8192;
   /**
    * Set the power of the alignment of record size.
    * @note This is a dummy implementation for compatibility.

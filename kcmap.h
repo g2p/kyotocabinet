@@ -31,6 +31,10 @@ public:
 private:
   struct Record;
   struct RecordComparator;
+  /** The default bucket number of hash table. */
+  static const size_t MAPDEFBNUM = 31;
+  /** The mininum number of buckets to use mmap. */
+  static const size_t MAPZMAPBNUM = 32768;
 public:
   /**
    * Iterator of records.
@@ -478,10 +482,6 @@ public:
     return count_;
   }
 private:
-  /** The default bucket number of hash table. */
-  static const size_t MAPDEFBNUM = 31;
-  /** The mininum number of buckets to use mmap. */
-  static const size_t MAPZMAPBNUM = 32768;
   /**
    * Record data.
    */
@@ -666,6 +666,10 @@ public:
   class Iterator;
 private:
   struct Record;
+  /** The default bucket number of hash table. */
+  static const size_t MAPDEFBNUM = 31;
+  /** The mininum number of buckets to use mmap. */
+  static const size_t MAPZMAPBNUM = 32768;
 public:
   /**
    * Iterator of records.
@@ -1157,10 +1161,6 @@ public:
     return last_->value;
   }
 private:
-  /** The default bucket number of hash table. */
-  static const size_t MAPDEFBNUM = 31;
-  /** The mininum number of buckets to use mmap. */
-  static const size_t MAPZMAPBNUM = 32768;
   /**
    * Record data.
    */

@@ -470,6 +470,9 @@ public:
   class FileProcessor;
   class Logger;
   class MetaTrigger;
+private:
+  /** The size of the IO buffer. */
+  static const size_t IOBUFSIZ = 8192;
 public:
   /**
    * Database types.
@@ -2204,9 +2207,6 @@ public:
     }
     return "unknown";
   }
-private:
-  /** The size of the IO buffer. */
-  static const size_t IOBUFSIZ = 8192;
 };
 
 
