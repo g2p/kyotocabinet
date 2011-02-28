@@ -132,6 +132,7 @@ using tr1::unordered_set;
 #undef CLEAR
 #undef ITERATE
 #undef SYNCHRONIZE
+#undef OCCUPY
 #undef BEGINTRAN
 #undef COMMITTRAN
 #undef ABORTTRAN

@@ -79,6 +79,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Close the database file.  <a href="#acf5dd748aed15bb2866e8f12c6e2b3f8"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#ace50ae3d13ba63e258673c80cca7b5c8">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#ace50ae3d13ba63e258673c80cca7b5c8"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a268cf0a71c8b825131eeb84148a28879">occupy</a> (bool writable=true, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Occupy database by locking and do something meanwhile.  <a href="#a268cf0a71c8b825131eeb84148a28879"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#ae263750ceefb788101c26ecfc90255d0">begin_transaction</a> (bool hard=false)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Begin transaction.  <a href="#ae263750ceefb788101c26ecfc90255d0"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1PolyDB.html#a4dfcad317e944a9da54df590840c520f">begin_transaction_try</a> (bool hard=false)</td></tr>
@@ -579,8 +581,49 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operation of the postprocessor is performed atomically and other threads accessing the same record are blocked. To avoid deadlock, any explicit database operation must not be performed in this function. </dd></dl>
 
 <p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#acf7a2e70f3c1e72be5241f0d611f3d70">kyotocabinet::BasicDB</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a268cf0a71c8b825131eeb84148a28879"></a><!-- doxytag: member="kyotocabinet::PolyDB::occupy" ref="a268cf0a71c8b825131eeb84148a28879" args="(bool writable=true, FileProcessor *proc=NULL)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool kyotocabinet::PolyDB::occupy </td>
+          <td>(</td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>writable</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *&nbsp;</td>
+          <td class="paramname"> <em>proc</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Occupy database by locking and do something meanwhile. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>writable</em>&nbsp;</td><td>true to use writer lock, or false to use reader lock. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>proc</em>&nbsp;</td><td>a processor object. If it is NULL, no processing is performed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operation of the processor is performed atomically and other threads accessing the same record are blocked. To avoid deadlock, any explicit database operation must not be performed in this function. </dd></dl>
+
+<p>Implements <a class="el" href="classkyotocabinet_1_1BasicDB.html#ae0b69e1cb959b7890f84c195608aef68">kyotocabinet::BasicDB</a>.</p>
 
 </div>
 </div>
@@ -1049,7 +1092,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Feb 23 07:40:16 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Feb 27 08:12:27 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

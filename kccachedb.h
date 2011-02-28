@@ -663,6 +663,9 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
+   * @note The operation of the postprocessor is performed atomically and other threads accessing
+   * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+   * be performed in this function.
    */
   bool synchronize(bool hard = false, FileProcessor* proc = NULL,
                    ProgressChecker* checker = NULL) {
@@ -689,6 +692,26 @@ public:
       }
     }
     trigger_meta(MetaTrigger::SYNCHRONIZE, "synchronize");
+    return !err;
+  }
+  /**
+   * Occupy database by locking and do something meanwhile.
+   * @param writable true to use writer lock, or false to use reader lock.
+   * @param proc a processor object.  If it is NULL, no processing is performed.
+   * @return true on success, or false on failure.
+   * @note The operation of the processor is performed atomically and other threads accessing
+   * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+   * be performed in this function.
+   */
+  bool occupy(bool writable = true, FileProcessor* proc = NULL) {
+    _assert_(true);
+    ScopedSpinRWLock lock(&mlock_, writable);
+    bool err = false;
+    if (proc && !proc->process(path_, count_impl(), size_impl())) {
+      set_error(_KCCODELINE_, Error::LOGIC, "processing failed");
+      err = true;
+    }
+    trigger_meta(MetaTrigger::OCCUPY, "occupy");
     return !err;
   }
   /**
@@ -1416,12 +1439,12 @@ private:
     }
   };
   /**
-   * Scoped visiotor.
+   * Scoped visitor.
    */
   class ScopedVisitor {
   public:
     /** constructor */
-    ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
+    explicit ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
       _assert_(visitor);
       visitor_->visit_before();
     }

@@ -970,8 +970,8 @@ public:
     /**
      * Process the database file.
      * @param path the path of the database file.
-     * @param count the number of records.
-     * @param size the size of the available region.
+     * @param count the number of records.  A negative value means omission.
+     * @param size the size of the available region.  A negative value means omission.
      * @return true on success, or false on failure.
      */
     virtual bool process(const std::string& path, int64_t count, int64_t size) = 0;
@@ -1022,6 +1022,7 @@ public:
       CLEAR,                             ///< clearing
       ITERATE,                           ///< iteration
       SYNCHRONIZE,                       ///< synchronization
+      OCCUPY,                            ///< occupation
       BEGINTRAN,                         ///< beginning transaction
       COMMITTRAN,                        ///< committing transaction
       ABORTTRAN,                         ///< aborting transaction
@@ -1037,9 +1038,10 @@ public:
      * Trigger a meta database operation.
      * @param kind the kind of the event.  MetaTrigger::OPEN for opening, MetaTrigger::CLOSE for
      * closing, MetaTrigger::CLEAR for clearing, MetaTrigger::ITERATE for iteration,
-     * MetaTrigger::SYNCHRONIZE for synchronization, MetaTrigger::BEGINTRAN for beginning
-     * transaction, MetaTrigger::COMMITTRAN for committing transaction, MetaTrigger::ABORTTRAN
-     * for aborting transaction, and MetaTrigger::MISC for miscellaneous operations.
+     * MetaTrigger::SYNCHRONIZE for synchronization, MetaTrigger::OCCUPY for occupation,
+     * MetaTrigger::BEGINTRAN for beginning transaction, MetaTrigger::COMMITTRAN for committing
+     * transaction, MetaTrigger::ABORTTRAN for aborting transaction, and MetaTrigger::MISC for
+     * miscellaneous operations.
      * @param message the supplement message.
      */
     virtual void trigger(Kind kind, const char* message) = 0;
@@ -1134,9 +1136,22 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
+   * @note The operation of the postprocessor is performed atomically and other threads accessing
+   * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+   * be performed in this function.
    */
   virtual bool synchronize(bool hard = false, FileProcessor* proc = NULL,
                            ProgressChecker* checker = NULL) = 0;
+  /**
+   * Occupy database by locking and do something meanwhile.
+   * @param writable true to use writer lock, or false to use reader lock.
+   * @param proc a processor object.  If it is NULL, no processing is performed.
+   * @return true on success, or false on failure.
+   * @note The operation of the processor is performed atomically and other threads accessing
+   * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+   * be performed in this function.
+   */
+  virtual bool occupy(bool writable = true, FileProcessor* proc = NULL) = 0;
   /**
    * Create a copy of the database file.
    * @param dest the path of the destination file.

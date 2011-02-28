@@ -502,6 +502,28 @@ int32_t kcdbsync(KCDB* db, int32_t hard, KCFILEPROC proc, void* opq) {
 
 
 /**
+ * Occupy database by locking and do something meanwhile.
+ */
+int32_t kcdboccupy(KCDB* db, int32_t writable, KCFILEPROC proc, void* opq) {
+  _assert_(db);
+  PolyDB* pdb = (PolyDB*)db;
+  class FileProcessorImpl : public BasicDB::FileProcessor {
+  public:
+    explicit FileProcessorImpl(KCFILEPROC proc, void* opq) : proc_(proc), opq_(opq) {}
+    bool process(const std::string& path, int64_t count, int64_t size) {
+      if (!proc_) return true;
+      return proc_(path.c_str(), count, size, opq_);
+    }
+  private:
+    KCFILEPROC proc_;
+    void* opq_;
+  };
+  FileProcessorImpl myproc(proc, opq);
+  return pdb->occupy(writable, &myproc);
+}
+
+
+/**
  * Create a copy of the database file.
  */
 int32_t kcdbcopy(KCDB* db, const char* dest) {
