@@ -102,6 +102,8 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Iterate to accept a visitor for each record.  <a href="#a809c175a7a69deaa56ed6b9cef9fa973"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#acf7a2e70f3c1e72be5241f0d611f3d70">synchronize</a> (bool hard=false, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)=0</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Synchronize updated contents with the file and the device.  <a href="#acf7a2e70f3c1e72be5241f0d611f3d70"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#ae0b69e1cb959b7890f84c195608aef68">occupy</a> (bool writable=true, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *proc=NULL)=0</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Occupy database by locking and do something meanwhile.  <a href="#ae0b69e1cb959b7890f84c195608aef68"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a258665509711eb2952544ebee55ed861">copy</a> (const std::string &amp;dest, <a class="el" href="classkyotocabinet_1_1BasicDB_1_1ProgressChecker.html">ProgressChecker</a> *checker=NULL)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a copy of the database file.  <a href="#a258665509711eb2952544ebee55ed861"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classkyotocabinet_1_1BasicDB.html#a7999f8bf717cfd22ceed42bc54755f00">begin_transaction</a> (bool hard=false)=0</td></tr>
@@ -580,8 +582,49 @@
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operation of the postprocessor is performed atomically and other threads accessing the same record are blocked. To avoid deadlock, any explicit database operation must not be performed in this function. </dd></dl>
 
 <p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a142e5aede110bcdbe8bc5821259738a7">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#af66e7b519cc379afe31fef0dcd374ce5">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a95c76a2cef3f0d6e3843c1b8f45a51fb">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a897d968c5d8c59ef65baa760eeb3bf49">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#ace50ae3d13ba63e258673c80cca7b5c8">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#a0b8e02efc1451ecf5ad610671274de58">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#ab4bef2c0d9ee18fc46ccbbff8e534cf8">kyotocabinet::StashDB</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ae0b69e1cb959b7890f84c195608aef68"></a><!-- doxytag: member="kyotocabinet::BasicDB::occupy" ref="ae0b69e1cb959b7890f84c195608aef68" args="(bool writable=true, FileProcessor *proc=NULL)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool kyotocabinet::BasicDB::occupy </td>
+          <td>(</td>
+          <td class="paramtype">bool&nbsp;</td>
+          <td class="paramname"> <em>writable</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classkyotocabinet_1_1BasicDB_1_1FileProcessor.html">FileProcessor</a> *&nbsp;</td>
+          <td class="paramname"> <em>proc</em> = <code>NULL</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Occupy database by locking and do something meanwhile. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>writable</em>&nbsp;</td><td>true to use writer lock, or false to use reader lock. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>proc</em>&nbsp;</td><td>a processor object. If it is NULL, no processing is performed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true on success, or false on failure. </dd></dl>
+<dl class="note"><dt><b>Note:</b></dt><dd>The operation of the processor is performed atomically and other threads accessing the same record are blocked. To avoid deadlock, any explicit database operation must not be performed in this function. </dd></dl>
+
+<p>Implemented in <a class="el" href="classkyotocabinet_1_1CacheDB.html#a9f9fcf0e3fec220dac0b9bddbb87d6f0">kyotocabinet::CacheDB</a>, <a class="el" href="classkyotocabinet_1_1DirDB.html#a1eda8983b0356dc78585bfb20841285b">kyotocabinet::DirDB</a>, <a class="el" href="classkyotocabinet_1_1HashDB.html#a2cc8738caa124218fca02cc16d95b364">kyotocabinet::HashDB</a>, <a class="el" href="classkyotocabinet_1_1PlantDB.html#a9fc52545ca3b3622ff07c2ee2a7a6af9">kyotocabinet::PlantDB&lt; BASEDB, DBTYPE &gt;</a>, <a class="el" href="classkyotocabinet_1_1PolyDB.html#a268cf0a71c8b825131eeb84148a28879">kyotocabinet::PolyDB</a>, <a class="el" href="classkyotocabinet_1_1ProtoDB.html#ad41db2c5def683d9f2d054b8e6cbf6c2">kyotocabinet::ProtoDB&lt; STRMAP, DBTYPE &gt;</a>, and <a class="el" href="classkyotocabinet_1_1StashDB.html#a047cdafa5b83684291c8ef304b7d7c94">kyotocabinet::StashDB</a>.</p>
 
 </div>
 </div>
@@ -1998,7 +2041,7 @@
 </div>
 </div>
 </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Wed Feb 23 07:40:16 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Feb 27 08:12:27 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

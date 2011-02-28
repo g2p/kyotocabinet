@@ -917,6 +917,9 @@ public:
    * @param proc a postprocessor object.  If it is NULL, no postprocessing is performed.
    * @param checker a progress checker object.  If it is NULL, no checking is performed.
    * @return true on success, or false on failure.
+   * @note The operation of the postprocessor is performed atomically and other threads accessing
+   * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+   * be performed in this function.
    */
   bool synchronize(bool hard = false, FileProcessor* proc = NULL,
                    ProgressChecker* checker = NULL) {
@@ -926,6 +929,23 @@ public:
       return false;
     }
     return db_->synchronize(hard, proc, checker);
+  }
+  /**
+   * Occupy database by locking and do something meanwhile.
+   * @param writable true to use writer lock, or false to use reader lock.
+   * @param proc a processor object.  If it is NULL, no processing is performed.
+   * @return true on success, or false on failure.
+   * @note The operation of the processor is performed atomically and other threads accessing
+   * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+   * be performed in this function.
+   */
+  bool occupy(bool writable = true, FileProcessor* proc = NULL) {
+    _assert_(true);
+    if (type_ == TYPEVOID) {
+      set_error(_KCCODELINE_, Error::INVALID, "not opened");
+      return false;
+    }
+    return db_->occupy(writable, proc);
   }
   /**
    * Begin transaction.
@@ -1391,6 +1411,7 @@ private:
         case MetaTrigger::CLEAR: kstr = "CLEAR"; break;
         case MetaTrigger::ITERATE: kstr = "ITERATE"; break;
         case MetaTrigger::SYNCHRONIZE: kstr = "SYNCHRONIZE"; break;
+        case MetaTrigger::OCCUPY: kstr = "OCCUPY"; break;
         case MetaTrigger::BEGINTRAN: kstr = "BEGINTRAN"; break;
         case MetaTrigger::COMMITTRAN: kstr = "COMMITTRAN"; break;
         case MetaTrigger::ABORTTRAN: kstr = "ABORTTRAN"; break;

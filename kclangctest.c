@@ -520,6 +520,10 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
       dberrprint(db, __LINE__, "kcdbsync");
       err = TRUE;
     }
+    if (!kcdboccupy(db, FALSE, NULL, NULL)) {
+      dberrprint(db, __LINE__, "kcdboccupy");
+      err = TRUE;
+    }
     etime = kctime();
     dbmetaprint(db, FALSE);
     iprintf("time: %.3f\n", etime - stime);

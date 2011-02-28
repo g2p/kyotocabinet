@@ -1235,6 +1235,10 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t thnum, bool rnd
       dberrprint(&db, __LINE__, "DB::synchronize");
       err = true;
     }
+    if (!db.occupy(rnd ? myrand(2) == 0 : true, &syncprocessor)) {
+      dberrprint(&db, __LINE__, "DB::occupy");
+      err = true;
+    }
     etime = kc::time();
     dbmetaprint(&db, false);
     oprintf("time: %.3f\n", etime - stime);

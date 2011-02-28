@@ -389,6 +389,7 @@ const char* kcdbemsg(KCDB* db);
 int32_t kcdbaccept(KCDB* db, const char* kbuf, size_t ksiz,
                    KCVISITFULL fullproc, KCVISITEMPTY emptyproc, void* opq, int32_t writable);
 
+
 /**
  * Accept a visitor to multiple records at once.
  * @param db a database object.
@@ -606,8 +607,25 @@ int32_t kcdbclear(KCDB* db);
  * performed.
  * @param opq an opaque pointer to be given to the call back function.
  * @return true on success, or false on failure.
+ * @note The operation of the postprocessor is performed atomically and other threads accessing
+ * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+ * be performed in this function.
  */
 int32_t kcdbsync(KCDB* db, int32_t hard, KCFILEPROC proc, void* opq);
+
+
+/**
+ * Occupy database by locking and do something meanwhile.
+ * @param db a database object.
+ * @param writable true to use writer lock, or false to use reader lock.
+ * @param proc a processor object.  If it is NULL, no processing is performed.
+ * @param opq an opaque pointer to be given to the call back function.
+ * @return true on success, or false on failure.
+ * @note The operation of the processor is performed atomically and other threads accessing
+ * the same record are blocked.  To avoid deadlock, any explicit database operation must not
+ * be performed in this function.
+ */
+int32_t kcdboccupy(KCDB* db, int32_t writable, KCFILEPROC proc, void* opq);
 
 
 /**

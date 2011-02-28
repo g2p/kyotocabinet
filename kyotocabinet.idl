@@ -92,9 +92,10 @@ module kyotocabinet {
     const long CLEAR = 2;
     const long ITERATE = 3;
     const long SYNCHRONIZE = 4;
-    const long BEGINTRAN = 5;
-    const long COMMITTRAN = 6;
-    const long ABORTTRAN = 7;
+    const long OCCUPY = 5;
+    const long BEGINTRAN = 6;
+    const long COMMITTRAN = 7;
+    const long ABORTTRAN = 8;
     const long MISC = 15;
     void trigger(in long kind, in string message);
   };
@@ -149,6 +150,7 @@ module kyotocabinet {
     Map get_bulk(in List keys);
     boolean clear();
     boolean synchronize(in boolean hard, inout FileProcessor proc);
+    boolean occupy(in boolean writable, inout FileProcessor proc);
     boolean copy(in string dest);
     boolean begin_transaction(in boolean hard);
     boolean end_transaction(in boolean commit);
