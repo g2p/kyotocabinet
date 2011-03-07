@@ -72,10 +72,9 @@ Example</a></h2>
   }
 
   <span class="comment">// retrieve a record</span>
-  <span class="keywordtype">string</span>* value = db.get(<span class="stringliteral">&quot;foo&quot;</span>);
-  <span class="keywordflow">if</span> (value) {
-    cout &lt;&lt; *value &lt;&lt; endl;
-    <span class="keyword">delete</span> value;
+  <span class="keywordtype">string</span> value;
+  <span class="keywordflow">if</span> (db.get(<span class="stringliteral">&quot;foo&quot;</span>, &amp;value)) {
+    cout &lt;&lt; value &lt;&lt; endl;
   } <span class="keywordflow">else</span> {
     cerr &lt;&lt; <span class="stringliteral">&quot;get error: &quot;</span> &lt;&lt; db.error().name() &lt;&lt; endl;
   }
@@ -83,10 +82,9 @@ Example</a></h2>
   <span class="comment">// traverse records</span>
   DB::Cursor* cur = db.cursor();
   cur-&gt;jump();
-  pair&lt;string, string&gt;* rec;
-  <span class="keywordflow">while</span> ((rec = cur-&gt;get_pair(<span class="keyword">true</span>)) != NULL) {
-    cout &lt;&lt; rec-&gt;first &lt;&lt; <span class="stringliteral">&quot;:&quot;</span> &lt;&lt; rec-&gt;second &lt;&lt; endl;
-    <span class="keyword">delete</span> rec;
+  <span class="keywordtype">string</span> ckey, cvalue;
+  <span class="keywordflow">while</span> (cur-&gt;get(&amp;ckey, &amp;cvalue, <span class="keyword">true</span>)) {
+    cout &lt;&lt; ckey &lt;&lt; <span class="stringliteral">&quot;:&quot;</span> &lt;&lt; cvalue &lt;&lt; endl;
   }
   <span class="keyword">delete</span> cur;
 
@@ -175,9 +173,9 @@ Example</a></h2>
     <span class="comment">// call back function of the mapper</span>
     <span class="keywordtype">bool</span> map(<span class="keyword">const</span> <span class="keywordtype">char</span>* kbuf, <span class="keywordtype">size_t</span> ksiz, <span class="keyword">const</span> <span class="keywordtype">char</span>* vbuf, <span class="keywordtype">size_t</span> vsiz,
              MapEmitter* emitter) {
-      std::vector&lt;std::string&gt; words;
-      <a class="code" href="namespacekyotocabinet.html#a295fcdb0ba9274e2d986a66e1eb189b8" title="Split a string with a delimiter.">strsplit</a>(vbuf, <span class="charliteral">&#39; &#39;</span>, &amp;words);
-      <span class="keywordflow">for</span> (std::vector&lt;std::string&gt;::iterator it = words.begin();
+      vector&lt;string&gt; words;
+      <a class="code" href="namespacekyotocabinet.html#a295fcdb0ba9274e2d986a66e1eb189b8" title="Split a string with a delimiter.">strsplit</a>(<span class="keywordtype">string</span>(vbuf, vsiz), <span class="charliteral">&#39; &#39;</span>, &amp;words);
+      <span class="keywordflow">for</span> (vector&lt;string&gt;::iterator it = words.begin();
            it != words.end(); it++) {
         emitter-&gt;emit(it-&gt;data(), it-&gt;size(), <span class="stringliteral">&quot;&quot;</span>, 0);
       }
@@ -191,7 +189,7 @@ Example</a></h2>
       <span class="keywordflow">while</span> ((vbuf = iter-&gt;next(&amp;vsiz)) != NULL) {
         count++;
       }
-      std::cout &lt;&lt; std::string(kbuf, ksiz) &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; count &lt;&lt; std::endl;
+      cout &lt;&lt; string(kbuf, ksiz) &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; count &lt;&lt; endl;
       <span class="keywordflow">return</span> <span class="keyword">true</span>;
     }
   } mr;
@@ -237,7 +235,7 @@ Example</a></h2>
   <span class="keyword">const</span> <span class="keywordtype">char</span> *cvbuf;
 
   <span class="comment">/* create the database object */</span>
-  db = <a class="code" href="kclangc_8h.html#a485c6993061575b14c4615988e694a15" title="Create a database object.">kcdbnew</a>();
+  db = <a class="code" href="kclangc_8h.html#a485c6993061575b14c4615988e694a15" title="Create a polymorphic database object.">kcdbnew</a>();
 
   <span class="comment">/* open the database */</span>
   <span class="keywordflow">if</span> (!<a class="code" href="kclangc_8h.html#a464237fa818e4b70b15526a898b5c5f5" title="Open a database file.">kcdbopen</a>(db, <span class="stringliteral">&quot;casket.kch&quot;</span>, <a class="code" href="kclangc_8h.html#adf764cbdea00d65edcd07bb9953ad2b7a352bdce1311ada70fcaf2f22194cbbdf" title="open as a writer">KCOWRITER</a> | <a class="code" href="kclangc_8h.html#adf764cbdea00d65edcd07bb9953ad2b7a8aae26396f1c8062f63ff6319430116f" title="writer creating">KCOCREATE</a>)) {
@@ -261,7 +259,7 @@ Example</a></h2>
   }
 
   <span class="comment">/* traverse records */</span>
-  cur = <a class="code" href="kclangc_8h.html#adccaf4771f7804511791af33a316e0ba" title="Create a cursor object.">kcdbcursor</a>(db);
+  cur = <a class="code" href="kclangc_8h.html#adccaf4771f7804511791af33a316e0ba" title="Create a polymorphic cursor object.">kcdbcursor</a>(db);
   <a class="code" href="kclangc_8h.html#a086c2e825133e414430ebd9fa010c9e0" title="Jump the cursor to the first record for forward scan.">kccurjump</a>(cur);
   <span class="keywordflow">while</span> ((kbuf = <a class="code" href="kclangc_8h.html#a543b0095fb011f3ae42424460190d25a" title="Get a pair of the key and the value of the current record.">kccurget</a>(cur, &amp;ksiz, &amp;cvbuf, &amp;vsiz, 1)) != NULL) {
     printf(<span class="stringliteral">&quot;%s:%s\n&quot;</span>, kbuf, cvbuf);
@@ -291,7 +289,7 @@ Example</a></h2>
   <span class="keywordflow">return</span> 0;
 }
 </pre></div> </div>
-<hr class="footer"/><address style="text-align: right;"><small>Generated on Sun Feb 27 08:12:26 2011 for Kyoto Cabinet by&nbsp;
+<hr class="footer"/><address style="text-align: right;"><small>Generated on Fri Mar 4 23:09:39 2011 for Kyoto Cabinet by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.3 </small></address>
 </body>

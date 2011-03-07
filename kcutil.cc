@@ -67,18 +67,18 @@ const int32_t PAGESIZE = sysconf(_SC_PAGESIZE);
 /** The extra feature list. */
 const char* const FEATURES = ""
 #if _KC_GCCATOMIC
-"(atomic)"
+    "(atomic)"
 #endif
 #if _KC_ZLIB
-"(zlib)"
+    "(zlib)"
 #endif
 #if _KC_LZO
-"(lzo)"
+    "(lzo)"
 #endif
 #if _KC_LZMA
-"(lzma)"
+    "(lzma)"
 #endif
-  ;
+    ;
 
 
 /**

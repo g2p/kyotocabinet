@@ -51,9 +51,9 @@ namespace kyotocabinet {                 // common namespace
  */
 class DirDB : public BasicDB {
   friend class PlantDB<DirDB, BasicDB::TYPEFOREST>;
-public:
+ public:
   class Cursor;
-private:
+ private:
   struct Record;
   class ScopedVisitor;
   /** An alias of list of cursors. */
@@ -72,13 +72,13 @@ private:
   static const size_t OPAQUESIZ = 16;
   /** The threshold of busy loop and sleep for locking. */
   static const uint32_t LOCKBUSYLOOP = 8192;
-public:
+ public:
   /**
    * Cursor to indicate a record.
    */
   class Cursor : public BasicDB::Cursor {
     friend class DirDB;
-  public:
+   public:
     /**
      * Constructor.
      * @param db the container database object.
@@ -329,7 +329,7 @@ public:
       _assert_(true);
       return db_;
     }
-  private:
+   private:
     /**
      * Disable the cursor.
      * @return true on success, or false on failure.
@@ -375,12 +375,14 @@ public:
    * Default constructor.
    */
   explicit DirDB() :
-    mlock_(), rlock_(RLOCKSLOT), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
-    omode_(0), writer_(false), autotran_(false), autosync_(false), recov_(false), reorg_(false),
-    file_(), curs_(), path_(""),
-    libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEDIR),
-    flags_(0), opts_(0), count_(0), size_(0), opaque_(), embcomp_(ZLIBRAWCOMP), comp_(NULL),
-    tran_(false), trhard_(false), trcount_(0), trsize_(0), walpath_(""), tmppath_("") {
+      mlock_(), rlock_(RLOCKSLOT), error_(),
+      logger_(NULL), logkinds_(0), mtrigger_(NULL),
+      omode_(0), writer_(false), autotran_(false), autosync_(false),
+      recov_(false), reorg_(false),
+      file_(), curs_(), path_(""),
+      libver_(LIBVER), librev_(LIBREV), fmtver_(FMTVER), chksum_(0), type_(TYPEDIR),
+      flags_(0), opts_(0), count_(0), size_(0), opaque_(), embcomp_(ZLIBRAWCOMP), comp_(NULL),
+      tran_(false), trhard_(false), trcount_(0), trsize_(0), walpath_(""), tmppath_("") {
     _assert_(true);
   }
   /**
@@ -549,7 +551,7 @@ public:
     if (code == Error::BROKEN || code == Error::SYSTEM) flags_ |= FFATAL;
     if (logger_) {
       Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
-        Logger::ERROR : Logger::INFO;
+          Logger::ERROR : Logger::INFO;
       if (kind & logkinds_)
         report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
     }
@@ -1187,7 +1189,7 @@ public:
     }
     return 0;
   }
-protected:
+ protected:
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.
@@ -1393,7 +1395,7 @@ protected:
     }
     return reorg_;
   }
-private:
+ private:
   /**
    * Set the power of the alignment of record size.
    * @note This is a dummy implementation for compatibility.
@@ -1471,7 +1473,7 @@ private:
   int64_t dfunit() {
     return 0;
   }
-private:
+ private:
   /**
    * Record data.
    */
@@ -1487,7 +1489,7 @@ private:
    * Scoped visitor.
    */
   class ScopedVisitor {
-  public:
+   public:
     /** constructor */
     explicit ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
       _assert_(visitor);
@@ -1498,7 +1500,7 @@ private:
       _assert_(true);
       visitor_->visit_after();
     }
-  private:
+   private:
     Visitor* visitor_;                   ///< visitor
   };
   /**

@@ -27,7 +27,7 @@ namespace kyotocabinet {                 // common namespace
  * Interfrace of data compression and decompression.
  */
 class Compressor {
-public:
+ public:
   /**
    * Destructor.
    */
@@ -63,7 +63,7 @@ public:
  * ZLIB compressor.
  */
 class ZLIB {
-public:
+ public:
   /**
    * Compression modes.
    */
@@ -113,7 +113,7 @@ public:
  * LZO compressor.
  */
 class LZO {
-public:
+ public:
   /**
    * Compression modes.
    */
@@ -162,7 +162,7 @@ public:
  * LZMA compressor.
  */
 class LZMA {
-public:
+ public:
   /**
    * Compression modes.
    */
@@ -213,7 +213,7 @@ public:
  */
 template <ZLIB::Mode MODE>
 class ZLIBCompressor : public Compressor {
-private:
+ private:
   /**
    * Compress a serial data.
    */
@@ -236,7 +236,7 @@ private:
  */
 template <LZO::Mode MODE>
 class LZOCompressor : public Compressor {
-private:
+ private:
   /**
    * Compress a serial data.
    */
@@ -259,7 +259,7 @@ private:
  */
 template <LZMA::Mode MODE>
 class LZMACompressor : public Compressor {
-private:
+ private:
   /**
    * Compress a serial data.
    */
@@ -281,7 +281,7 @@ private:
  * Compressor with the Arcfour cipher.
  */
 class ArcfourCompressor : public Compressor {
-public:
+ public:
   /**
    * Constructor.
    */
@@ -326,7 +326,7 @@ public:
     salt_ = salt;
     cycle_ = true;
   }
-private:
+ private:
   /**
    * Compress a serial data.
    */

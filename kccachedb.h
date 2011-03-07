@@ -42,9 +42,9 @@ namespace kyotocabinet {                 // common namespace
  */
 class CacheDB : public BasicDB {
   friend class PlantDB<CacheDB, BasicDB::TYPEGRASS>;
-public:
+ public:
   class Cursor;
-private:
+ private:
   struct Record;
   struct TranLog;
   struct Slot;
@@ -70,13 +70,13 @@ private:
   static const size_t OPAQUESIZ = 16;
   /** The threshold of busy loop and sleep for locking. */
   static const uint32_t LOCKBUSYLOOP = 8192;
-public:
+ public:
   /**
    * Cursor to indicate a record.
    */
   class Cursor : public BasicDB::Cursor {
     friend class CacheDB;
-  public:
+   public:
     /**
      * Constructor.
      * @param db the container database object.
@@ -319,7 +319,7 @@ public:
       _assert_(true);
       return db_;
     }
-  private:
+   private:
     /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
@@ -373,10 +373,10 @@ public:
    * Default constructor.
    */
   explicit CacheDB() :
-    mlock_(), flock_(), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
-    omode_(0), curs_(), path_(""), type_(TYPECACHE),
-    opts_(0), bnum_(DEFBNUM), capcnt_(-1), capsiz_(-1),
-    opaque_(), embcomp_(ZLIBRAWCOMP), comp_(NULL), slots_(), tran_(false) {
+      mlock_(), flock_(), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
+      omode_(0), curs_(), path_(""), type_(TYPECACHE),
+      opts_(0), bnum_(DEFBNUM), capcnt_(-1), capsiz_(-1),
+      opaque_(), embcomp_(ZLIBRAWCOMP), comp_(NULL), slots_(), tran_(false) {
     _assert_(true);
   }
   /**
@@ -588,7 +588,7 @@ public:
     error_->set(code, message);
     if (logger_) {
       Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
-        Logger::ERROR : Logger::INFO;
+          Logger::ERROR : Logger::INFO;
       if (kind & logkinds_)
         report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
     }
@@ -1055,7 +1055,7 @@ public:
     }
     return true;
   }
-protected:
+ protected:
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.
@@ -1261,7 +1261,7 @@ protected:
     }
     return false;
   }
-private:
+ private:
   /**
    * Set the power of the alignment of record size.
    * @note This is a dummy implementation for compatibility.
@@ -1339,7 +1339,7 @@ private:
   int64_t dfunit() {
     return 0;
   }
-private:
+ private:
   /**
    * Record data.
    */
@@ -1360,7 +1360,7 @@ private:
     std::string value;                   ///< old value
     /** constructor for a full record */
     explicit TranLog(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) :
-      full(true), key(kbuf, ksiz), value(vbuf, vsiz) {
+        full(true), key(kbuf, ksiz), value(vbuf, vsiz) {
       _assert_(true);
     }
     /** constructor for an empty record */
@@ -1388,10 +1388,10 @@ private:
    * Repeating visitor.
    */
   class Repeater : public Visitor {
-  public:
+   public:
     /** constructor */
     explicit Repeater(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
-  private:
+   private:
     /** process a full record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
@@ -1406,10 +1406,10 @@ private:
    * Setting visitor.
    */
   class Setter : public Visitor {
-  public:
+   public:
     /** constructor */
     explicit Setter(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
-  private:
+   private:
     /** process a full record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
@@ -1430,7 +1430,7 @@ private:
    * Removing visitor.
    */
   class Remover : public Visitor {
-  private:
+   private:
     /** visit a record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
@@ -1442,7 +1442,7 @@ private:
    * Scoped visitor.
    */
   class ScopedVisitor {
-  public:
+   public:
     /** constructor */
     explicit ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
       _assert_(visitor);
@@ -1453,7 +1453,7 @@ private:
       _assert_(true);
       visitor_->visit_after();
     }
-  private:
+   private:
     Visitor* visitor_;                   ///< visitor
   };
   /**
@@ -1797,7 +1797,7 @@ private:
   uint32_t fold_hash(uint64_t hash) {
     _assert_(true);
     return ((hash & 0xffffffff00000000ULL) >> 32) ^ ((hash & 0x0000ffffffff0000ULL) >> 16) ^
-      ((hash & 0x000000000000ffffULL) << 16) ^ ((hash & 0x00000000ffff0000ULL) >> 0);
+        ((hash & 0x000000000000ffffULL) << 16) ^ ((hash & 0x00000000ffff0000ULL) >> 0);
   }
   /**
    * Compare two keys in lexical order.

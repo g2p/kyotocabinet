@@ -46,9 +46,9 @@ namespace kyotocabinet {                 // common namespace
  */
 class HashDB : public BasicDB {
   friend class PlantDB<HashDB, BasicDB::TYPETREE>;
-public:
+ public:
   class Cursor;
-private:
+ private:
   struct Record;
   struct FreeBlock;
   struct FreeBlockComparator;
@@ -124,13 +124,13 @@ private:
   static const int64_t SLVGWIDTH = 1LL << 20;
   /** The threshold of busy loop and sleep for locking. */
   static const uint32_t LOCKBUSYLOOP = 8192;
-public:
+ public:
   /**
    * Cursor to indicate a record.
    */
   class Cursor : public BasicDB::Cursor {
     friend class HashDB;
-  public:
+   public:
     /**
      * Constructor.
      * @param db the container database object.
@@ -325,7 +325,7 @@ public:
           return false;
         }
         uint32_t tpivot = db_->linear_ ? pivot :
-          db_->fold_hash(db_->hash_record(rec.kbuf, rec.ksiz));
+            db_->fold_hash(db_->hash_record(rec.kbuf, rec.ksiz));
         if (pivot > tpivot) {
           delete[] rec.bbuf;
           off = rec.left;
@@ -449,7 +449,7 @@ public:
       _assert_(true);
       return db_;
     }
-  private:
+   private:
     /**
      * Step the cursor to the next record.
      * @param rec the record structure.
@@ -511,17 +511,18 @@ public:
    * Default constructor.
    */
   explicit HashDB() :
-    mlock_(), rlock_(RLOCKSLOT), flock_(), atlock_(), error_(),
-    logger_(NULL), logkinds_(0), mtrigger_(NULL),
-    omode_(0), writer_(false), autotran_(false), autosync_(false), reorg_(false), trim_(false),
-    file_(), fbp_(), curs_(), path_(""),
-    libver_(0), librev_(0), fmtver_(0), chksum_(0), type_(TYPEHASH),
-    apow_(DEFAPOW), fpow_(DEFFPOW), opts_(0), bnum_(DEFBNUM),
-    flags_(0), flagopen_(false), count_(0), lsiz_(0), psiz_(0), opaque_(),
-    msiz_(DEFMSIZ), dfunit_(0), embcomp_(ZLIBRAWCOMP),
-    align_(0), fbpnum_(0), width_(0), linear_(false),
-    comp_(NULL), rhsiz_(0), boff_(0), roff_(0), dfcur_(0), frgcnt_(0),
-    tran_(false), trhard_(false), trfbp_(), trcount_(0), trsize_(0) {
+      mlock_(), rlock_(RLOCKSLOT), flock_(), atlock_(), error_(),
+      logger_(NULL), logkinds_(0), mtrigger_(NULL),
+      omode_(0), writer_(false), autotran_(false), autosync_(false),
+      reorg_(false), trim_(false),
+      file_(), fbp_(), curs_(), path_(""),
+      libver_(0), librev_(0), fmtver_(0), chksum_(0), type_(TYPEHASH),
+      apow_(DEFAPOW), fpow_(DEFFPOW), opts_(0), bnum_(DEFBNUM),
+      flags_(0), flagopen_(false), count_(0), lsiz_(0), psiz_(0), opaque_(),
+      msiz_(DEFMSIZ), dfunit_(0), embcomp_(ZLIBRAWCOMP),
+      align_(0), fbpnum_(0), width_(0), linear_(false),
+      comp_(NULL), rhsiz_(0), boff_(0), roff_(0), dfcur_(0), frgcnt_(0),
+      tran_(false), trhard_(false), trfbp_(), trcount_(0), trsize_(0) {
     _assert_(true);
   }
   /**
@@ -741,7 +742,7 @@ public:
     if (code == Error::BROKEN || code == Error::SYSTEM) flags_ |= FFATAL;
     if (logger_) {
       Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
-        Logger::ERROR : Logger::INFO;
+          Logger::ERROR : Logger::INFO;
       if (kind & logkinds_)
         report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
     }
@@ -1426,7 +1427,7 @@ public:
     }
     return flags_;
   }
-protected:
+ protected:
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.
@@ -1697,7 +1698,7 @@ protected:
     }
     return reorg_;
   }
-private:
+ private:
   /**
    * Record data.
    */
@@ -1742,12 +1743,12 @@ private:
    * Repeating visitor.
    */
   class Repeater : public Visitor {
-  public:
+   public:
     /** constructor */
     explicit Repeater(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {
       _assert_(vbuf);
     }
-  private:
+   private:
     /** visit a record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
@@ -1762,7 +1763,7 @@ private:
    * Scoped visitor.
    */
   class ScopedVisitor {
-  public:
+   public:
     /** constructor */
     explicit ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
       _assert_(visitor);
@@ -1773,7 +1774,7 @@ private:
       _assert_(true);
       visitor_->visit_after();
     }
-  private:
+   private:
     Visitor* visitor_;                   ///< visitor
   };
   /**
@@ -2345,9 +2346,7 @@ private:
     _assert_(true);
     align_ = 1 << apow_;
     fbpnum_ = fpow_ > 0 ? 1 << fpow_ : 0;
-    //width_ = (opts_ & TSMALL) ? WIDTHSMALL : WIDTHLARGE;
     width_ = (opts_ & TSMALL) ? sizeof(uint32_t) : sizeof(uint32_t) + 2;
-
     linear_ = (opts_ & TLINEAR) ? true : false;
     comp_ = (opts_ & TCOMPRESS) ? embcomp_ : NULL;
     rhsiz_ = sizeof(uint16_t) + sizeof(uint8_t) * 2;
@@ -2712,7 +2711,7 @@ private:
   uint32_t fold_hash(uint64_t hash) {
     _assert_(true);
     return (((hash & 0xffff000000000000ULL) >> 48) | ((hash & 0x0000ffff00000000ULL) >> 16)) ^
-      (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
+        (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
   }
   /**
    * Compare two keys in lexical order.

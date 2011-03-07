@@ -26,7 +26,7 @@ namespace kyotocabinet {                 // common namespace
  * Regular expression.
  */
 class Regex {
-public:
+ public:
   /**
    * Options.
    */
@@ -96,7 +96,7 @@ public:
     if (!regex.compile(pattern, opts)) return str;
     return regex.replace(str, alt);
   }
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   Regex(const Regex&);
   /** Dummy Operator to forbid the use. */

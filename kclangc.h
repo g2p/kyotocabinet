@@ -51,6 +51,14 @@ typedef union {
 
 
 /**
+ * C wrapper of polymorphic cursor.
+ */
+typedef union {
+  void* cur;                             /**< dummy member */
+} KCCUR;
+
+
+/**
  * Binary string of byte array.
  */
 typedef struct {
@@ -166,14 +174,6 @@ typedef int32_t (*KCFILEPROC)(const char* path, int64_t count, int64_t size, voi
 
 
 /**
- * C wrapper of polymorphic cursor.
- */
-typedef union {
-  void* cur;                             /**< dummy member */
-} KCCUR;
-
-
-/**
  * Allocate a region on memory.
  * @param size the size of the region.
  * @return the pointer to the allocated region.  The region of the return value should be
@@ -279,7 +279,7 @@ const char* kcecodename(int32_t code);
 
 
 /**
- * Create a database object.
+ * Create a polymorphic database object.
  * @return the created database object.
  * @note The object of the return value should be released with the kcdbdel function when it is
  * no longer in use.
@@ -761,7 +761,7 @@ int32_t kcdbmerge(KCDB* db, KCDB** srcary, size_t srcnum, uint32_t mode);
 
 
 /**
- * Create a cursor object.
+ * Create a polymorphic cursor object.
  * @param db a database object.
  * @return the return value is the created cursor object.
  * @note The object of the return value should be released with the kccurdel function when it is
@@ -943,6 +943,260 @@ int32_t kccurecode(KCCUR* cur);
  * @return the supplement message of the last happened error.
  */
 const char* kccuremsg(KCCUR* cur);
+
+
+/**
+ * C wrapper of memory-saving string hash map.
+ */
+typedef union {
+  void* map;                             /**< dummy member */
+} KCMAP;
+
+
+/**
+ * C wrapper of iterator of memory-saving string hash map.
+ */
+typedef union {
+  void* iter;                            /**< dummy member */
+} KCMAPITER;
+
+
+/**
+ * C wrapper of sorter of memory-saving string hash map.
+ */
+typedef union {
+  void* iter;                            /**< dummy member */
+} KCMAPSORT;
+
+
+/**
+ * Create a string hash map object.
+ * @param bnum the number of buckets of the hash table.  If it is not more than 0, the default
+ * setting 31 is specified.
+ * @return the created map object.
+ * @note The object of the return value should be released with the kcmapdel function when it is
+ * no longer in use.
+ */
+KCMAP* kcmapnew(size_t bnum);
+
+
+/**
+ * Destroy a map object.
+ * @param map the map object.
+ */
+void kcmapdel(KCMAP* map);
+
+
+/**
+ * Set the value of a record.
+ * @param map the map object.
+ * @param kbuf the pointer to the key region.
+ * @param ksiz the size of the key region.
+ * @param vbuf the pointer to the value region.
+ * @param vsiz the size of the value region.
+ * @note If no record corresponds to the key, a new record is created.  If the corresponding
+ * record exists, the value is overwritten.
+ */
+void kcmapset(KCMAP* map, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz);
+
+
+/**
+ * Add a record.
+ * @param map the map object.
+ * @param kbuf the pointer to the key region.
+ * @param ksiz the size of the key region.
+ * @param vbuf the pointer to the value region.
+ * @param vsiz the size of the value region.
+ * @return true on success, or false on failure.
+ * @note If no record corresponds to the key, a new record is created.  If the corresponding
+ * record exists, the record is not modified and false is returned.
+ */
+int32_t kcmapadd(KCMAP* map, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz);
+
+
+/**
+ * Replace the value of a record.
+ * @param map the map object.
+ * @param kbuf the pointer to the key region.
+ * @param ksiz the size of the key region.
+ * @param vbuf the pointer to the value region.
+ * @param vsiz the size of the value region.
+ * @return true on success, or false on failure.
+ * @note If no record corresponds to the key, no new record is created and false is returned.
+ * If the corresponding record exists, the value is modified.
+ */
+int32_t kcmapreplace(KCMAP* map, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz);
+
+
+/**
+ * Append the value of a record.
+ * @param map the map object.
+ * @param kbuf the pointer to the key region.
+ * @param ksiz the size of the key region.
+ * @param vbuf the pointer to the value region.
+ * @param vsiz the size of the value region.
+ * @note If no record corresponds to the key, a new record is created.  If the corresponding
+ * record exists, the given value is appended at the end of the existing value.
+ */
+void kcmapappend(KCMAP* map, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz);
+
+
+/**
+ * Remove a record.
+ * @param map the map object.
+ * @param kbuf the pointer to the key region.
+ * @param ksiz the size of the key region.
+ * @return true on success, or false on failure.
+ * @note If no record corresponds to the key, false is returned.
+ */
+int32_t kcmapremove(KCMAP* map, const char* kbuf, size_t ksiz);
+
+
+/**
+ * Retrieve the value of a record.
+ * @param map the map object.
+ * @param kbuf the pointer to the key region.
+ * @param ksiz the size of the key region.
+ * @param sp the pointer to the variable into which the size of the region of the return
+ * value is assigned.
+ * @return the pointer to the value region of the corresponding record, or NULL on failure.
+ */
+const char* kcmapget(KCMAP* map, const char* kbuf, size_t ksiz, size_t* sp);
+
+
+/**
+ * Remove all records.
+ * @param map the map object.
+ */
+void kcmapclear(KCMAP* map);
+
+
+/**
+ * Get the number of records.
+ * @param map the map object.
+ * @return the number of records.
+ */
+size_t kcmapcount(KCMAP* map);
+
+
+/**
+ * Create a string hash map iterator object.
+ * @param map a map object.
+ * @return the return value is the created iterator object.
+ * @note The object of the return value should be released with the kcmapiterdel function when
+ * it is no longer in use.
+ * @note This object will not be invalidated even when the map object is updated once.
+ * However, phantom records may be retrieved if they are removed after creation of each iterator.
+ */
+KCMAPITER* kcmapiterator(KCMAP* map);
+
+
+/**
+ * Destroy an iterator object.
+ * @param iter the iterator object.
+ */
+void kcmapiterdel(KCMAPITER* iter);
+
+
+/**
+ * Get the key of the current record.
+ * @param iter the iterator object.
+ * @param sp the pointer to the variable into which the size of the region of the return
+ * value is assigned.
+ * @return the pointer to the key region of the current record, or NULL on failure.
+ */
+const char* kcmapitergetkey(KCMAPITER* iter, size_t* sp);
+
+
+/**
+ * Get the value of the current record.
+ * @param iter the iterator object.
+ * @param sp the pointer to the variable into which the size of the region of the return
+ * value is assigned.
+ * @return the pointer to the value region of the current record, or NULL on failure.
+ */
+const char* kcmapitergetvalue(KCMAPITER* iter, size_t* sp);
+
+
+/**
+ * Get a pair of the key and the value of the current record.
+ * @param iter the iterator object.
+ * @param ksp the pointer to the variable into which the size of the region of the return
+ * value is assigned.
+ * @param vbp the pointer to the variable into which the pointer to the value region is
+ * assigned.
+ * @param vsp the pointer to the variable into which the size of the value region is
+ * assigned.
+ * @return the pointer to the key region, or NULL on failure.
+ */
+const char* kcmapiterget(KCMAPITER* iter, size_t* ksp, const char** vbp, size_t* vsp);
+
+
+/**
+ * Step the cursor to the next record.
+ * @param iter the iterator object.
+ */
+void kcmapiterstep(KCMAPITER* iter);
+
+
+/**
+ * Create a string hash map sorter object.
+ * @param map a map object.
+ * @return the return value is the created sorter object.
+ * @note The object of the return value should be released with the kcmapsortdel function when
+ * it is no longer in use.
+ * @note This object will not be invalidated even when the map object is updated once.
+ * However, phantom records may be retrieved if they are removed after creation of each sorter.
+ */
+KCMAPSORT* kcmapsorter(KCMAP* map);
+
+
+/**
+ * Destroy an sorter object.
+ * @param sort the sorter object.
+ */
+void kcmapsortdel(KCMAPSORT* sort);
+
+
+/**
+ * Get the key of the current record.
+ * @param sort the sorter object.
+ * @param sp the pointer to the variable into which the size of the region of the return
+ * value is assigned.
+ * @return the pointer to the key region of the current record, or NULL on failure.
+ */
+const char* kcmapsortgetkey(KCMAPSORT* sort, size_t* sp);
+
+
+/**
+ * Get the value of the current record.
+ * @param sort the sorter object.
+ * @param sp the pointer to the variable into which the size of the region of the return
+ * value is assigned.
+ * @return the pointer to the value region of the current record, or NULL on failure.
+ */
+const char* kcmapsortgetvalue(KCMAPSORT* sort, size_t* sp);
+
+
+/**
+ * Get a pair of the key and the value of the current record.
+ * @param sort the sorter object.
+ * @param ksp the pointer to the variable into which the size of the region of the return
+ * value is assigned.
+ * @param vbp the pointer to the variable into which the pointer to the value region is
+ * assigned.
+ * @param vsp the pointer to the variable into which the size of the value region is
+ * assigned.
+ * @return the pointer to the key region, or NULL on failure.
+ */
+const char* kcmapsortget(KCMAPSORT* sort, size_t* ksp, const char** vbp, size_t* vsp);
+
+
+/**
+ * Step the cursor to the next record.
+ * @param sort the sorter object.
+ */
+void kcmapsortstep(KCMAPSORT* sort);
 
 
 #if defined(__cplusplus)

@@ -1,3 +1,11 @@
+2011-03-01  FAL Labs  <info@fallabs.com>
+
+	* kclangc.h (kcmapnew, kcmapdel, kcmapiterator, kcmapsorter): new functions.
+
+	* kclangctest.cc (runmap, procmap): new functions.
+
+	- Release: 1.2.48
+
 2011-02-25  FAL Labs  <info@fallabs.com>
 
 	* kcdb.h (BasicDB::occupy): new function.

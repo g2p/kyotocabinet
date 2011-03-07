@@ -7,11 +7,11 @@
 #================================================================
 
 # Package name
-AC_INIT(kyotocabinet, 1.2.47)
+AC_INIT(kyotocabinet, 1.2.48)
 
 # Package information
 MYLIBVER=9
-MYLIBREV=8
+MYLIBREV=9
 MYFORMATVER=5
 
 # Targets
@@ -70,7 +70,7 @@ AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug], [build for debugging]))
 if test "$enable_debug" = "yes"
 then
-  MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -O0"
+  MYCFLAGS="-Wall -ansi -pedantic -fPIC -fsigned-char -g -O0"
   MYCXXFLAGS="-Wall -fPIC -fsigned-char -g -O0"
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
   is_static="yes"
@@ -88,6 +88,16 @@ then
   MYCXXFLAGS="$MYCXXFLAGS -fPIC -fsigned-char -g -O2 -fno-inline -pipe"
   MYCPPFLAGS="$MYCPPFLAGS -UNDEBUG -D_KCDEBUG"
   enables="$enables (devel)"
+fi
+
+# Disable optimization
+AC_ARG_ENABLE(opt,
+  AC_HELP_STRING([--disable-opt], [build without optimization]))
+if test "$enable_opt" = "no"
+then
+  MYCFLAGS="$MYCFLAGS -O0"
+  MYCXXFLAGS="$MYCXXFLAGS -O0"
+  enables="$enables (no-opt)"
 fi
 
 # Profiling mode

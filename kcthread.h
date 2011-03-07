@@ -26,7 +26,7 @@ namespace kyotocabinet {                 // common namespace
  * Threading device.
  */
 class Thread {
-public:
+ public:
   /**
    * Default constructor.
    */
@@ -74,7 +74,7 @@ public:
    * @return the hash value of the current thread.
    */
   static int64_t hash();
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   Thread(const Thread&);
   /** Dummy Operator to forbid the use. */
@@ -89,7 +89,7 @@ private:
  */
 class Mutex {
   friend class CondVar;
-public:
+ public:
   /**
    * Type of the behavior for double locking.
    */
@@ -130,7 +130,7 @@ public:
    * Release the lock.
    */
   void unlock();
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   Mutex(const Mutex&);
   /** Dummy Operator to forbid the use. */
@@ -144,7 +144,7 @@ private:
  * Scoped mutex device.
  */
 class ScopedMutex {
-public:
+ public:
   /**
    * Constructor.
    * @param mutex a mutex to lock the block.
@@ -160,7 +160,7 @@ public:
     _assert_(true);
     mutex_->unlock();
   }
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   ScopedMutex(const ScopedMutex&);
   /** Dummy Operator to forbid the use. */
@@ -174,7 +174,7 @@ private:
  * Slotted mutex device.
  */
 class SlottedMutex {
-public:
+ public:
   /**
    * Constructor.
    * @param slotnum the number of slots.
@@ -202,7 +202,7 @@ public:
    * Release the locks of all slots.
    */
   void unlock_all();
-private:
+ private:
   /** Opaque pointer. */
   void* opq_;
 };
@@ -212,7 +212,7 @@ private:
  * Lightweight mutual exclusion device.
  */
 class SpinLock {
-public:
+ public:
   /**
    * Default constructor.
    */
@@ -234,7 +234,7 @@ public:
    * Release the lock.
    */
   void unlock();
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   SpinLock(const SpinLock&);
   /** Dummy Operator to forbid the use. */
@@ -248,7 +248,7 @@ private:
  * Scoped spin lock device.
  */
 class ScopedSpinLock {
-public:
+ public:
   /**
    * Constructor.
    * @param spinlock a spin lock to lock the block.
@@ -264,7 +264,7 @@ public:
     _assert_(true);
     spinlock_->unlock();
   }
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   ScopedSpinLock(const ScopedSpinLock&);
   /** Dummy Operator to forbid the use. */
@@ -278,7 +278,7 @@ private:
  * Slotted spin lock devices.
  */
 class SlottedSpinLock {
-public:
+ public:
   /**
    * Constructor.
    * @param slotnum the number of slots.
@@ -306,7 +306,7 @@ public:
    * Release the locks of all slots.
    */
   void unlock_all();
-private:
+ private:
   /** Opaque pointer. */
   void* opq_;
 };
@@ -316,7 +316,7 @@ private:
  * Reader-writer locking device.
  */
 class RWLock {
-public:
+ public:
   /**
    * Default constructor.
    */
@@ -347,7 +347,7 @@ public:
    * Release the lock.
    */
   void unlock();
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   RWLock(const RWLock&);
   /** Dummy Operator to forbid the use. */
@@ -361,7 +361,7 @@ private:
  * Scoped reader-writer locking device.
  */
 class ScopedRWLock {
-public:
+ public:
   /**
    * Constructor.
    * @param rwlock a rwlock to lock the block.
@@ -382,7 +382,7 @@ public:
     _assert_(true);
     rwlock_->unlock();
   }
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   ScopedRWLock(const ScopedRWLock&);
   /** Dummy Operator to forbid the use. */
@@ -396,7 +396,7 @@ private:
  * Slotted reader-writer lock devices.
  */
 class SlottedRWLock {
-public:
+ public:
   /**
    * Constructor.
    * @param slotnum the number of slots.
@@ -433,7 +433,7 @@ public:
    * Release the locks of all slots.
    */
   void unlock_all();
-private:
+ private:
   /** Opaque pointer. */
   void* opq_;
 };
@@ -443,7 +443,7 @@ private:
  * Lightweight reader-writer locking device.
  */
 class SpinRWLock {
-public:
+ public:
   /**
    * Default constructor.
    */
@@ -483,7 +483,7 @@ public:
    * Demote the writer lock to a reader lock.
    */
   void demote();
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   SpinRWLock(const SpinRWLock&);
   /** Dummy Operator to forbid the use. */
@@ -497,7 +497,7 @@ private:
  * Scoped reader-writer locking device.
  */
 class ScopedSpinRWLock {
-public:
+ public:
   /**
    * Constructor.
    * @param srwlock a spin rwlock to lock the block.
@@ -518,7 +518,7 @@ public:
     _assert_(true);
     srwlock_->unlock();
   }
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   ScopedSpinRWLock(const ScopedSpinRWLock&);
   /** Dummy Operator to forbid the use. */
@@ -532,7 +532,7 @@ private:
  * Slotted lightweight reader-writer lock devices.
  */
 class SlottedSpinRWLock {
-public:
+ public:
   /**
    * Constructor.
    * @param slotnum the number of slots.
@@ -569,7 +569,7 @@ public:
    * Release the locks of all slots.
    */
   void unlock_all();
-private:
+ private:
   /** Opaque pointer. */
   void* opq_;
 };
@@ -579,7 +579,7 @@ private:
  * Condition variable.
  */
 class CondVar {
-public:
+ public:
   /**
    * Default constructor.
    */
@@ -610,7 +610,7 @@ public:
    * @note The mutex used for the wait method should be locked by the caller.
    */
   void broadcast();
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   CondVar(const CondVar&);
   /** Dummy Operator to forbid the use. */
@@ -624,7 +624,7 @@ private:
  * Key of thread specific data.
  */
 class TSDKey {
-public:
+ public:
   /**
    * Default constructor.
    */
@@ -648,7 +648,7 @@ public:
    * @return the value.
    */
   void* get() const ;
-private:
+ private:
   /** Opaque pointer. */
   void* opq_;
 };
@@ -659,7 +659,7 @@ private:
  */
 template <class TYPE>
 class TSD {
-public:
+ public:
   /**
    * Default constructor.
    */
@@ -713,7 +713,7 @@ public:
     if (!obj) return TYPE();
     return *obj;
   }
-private:
+ private:
   /**
    * Delete the inner object.
    * @param obj the inner object.
@@ -735,7 +735,7 @@ private:
  * Integer with atomic operations.
  */
 class AtomicInt64 {
-public:
+ public:
   /**
    * Default constructor.
    */
@@ -849,7 +849,7 @@ public:
     }
     return val;
   }
-private:
+ private:
   /** The value. */
   volatile int64_t value_;
   /** The alternative lock. */
@@ -861,19 +861,19 @@ private:
  * Task queue device.
  */
 class TaskQueue {
-public:
+ public:
   class Task;
-private:
+ private:
   class WorkerThread;
   /** An alias of list of tasks. */
   typedef std::list<Task*> TaskList;
-public:
+ public:
   /**
    * Interface of a task.
    */
   class Task {
     friend class TaskQueue;
-  public:
+   public:
     /**
      * Default constructor.
      */
@@ -911,7 +911,7 @@ public:
       _assert_(true);
       return aborted_;
     }
-  private:
+   private:
     /** The task ID number. */
     uint64_t id_;
     /** The thread ID number. */
@@ -1014,17 +1014,17 @@ public:
     mutex_.unlock();
     return count;
   }
-private:
+ private:
   /**
    * Implementation of the worker thread.
    */
   class WorkerThread : public Thread {
     friend class TaskQueue;
-  public:
+   public:
     explicit WorkerThread() : id_(0), queue_(NULL), aborted_(false) {
       _assert_(true);
     }
-  private:
+   private:
     void run() {
       _assert_(true);
       bool empty = false;

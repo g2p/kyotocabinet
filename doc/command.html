@@ -23,7 +23,7 @@
 <h1 id="headline">Specificatoins of Command Line Utilities of Kyoto Cabinet</h1>
 
 <div class="note">Copyright (C) 2009-2011 FAL Labs</div>
-<div class="note">Last Update: Sun, 06 Feb 2011 20:45:23 +0900</div>
+<div class="note">Last Update: Fri, 04 Mar 2011 23:07:26 -0800</div>
 
 <hr />
 
@@ -851,6 +851,8 @@
 <dl class="api">
 <dt><code>kcpolytest order [-rnd] [-etc] [-tran] [-oat|-onl|-onl|-otl|-onr] <var>path</var> <var>rnum</var></code></dt>
 <dd>Performs in-order tests.</dd>
+<dt><code>kclangctest map [-rnd] [-etc] [-bnum <var>num</var>] <var>rnum</var></code></dt>
+<dd>Performs test of memory-saving hash map.</dd>
 </dl>
 
 <p>Options feature the following.</p>
@@ -864,6 +866,7 @@
 <li><code>-onl</code> : opens the database with the no locking option.</li>
 <li><code>-otl</code> : opens the database with the try locking option.</li>
 <li><code>-onr</code> : opens the database with the no auto repair option.</li>
+<li><code>-bnum <var>num</var></code> : specifies the number of buckets of the hash table.</li>
 </ul>
 
 <p>This command returns 0 on success, another on failure.</p>

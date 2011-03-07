@@ -26,7 +26,7 @@ namespace kyotocabinet {                 // common namespace
  * Interfrace of comparator of record keys.
  */
 class Comparator {
-public:
+ public:
   /**
    * Destructor.
    */
@@ -48,7 +48,7 @@ public:
  * Comparator in the lexical order.
  */
 class LexicalComparator : public Comparator {
-public:
+ public:
   explicit LexicalComparator() {}
   int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
     _assert_(akbuf && bkbuf);
@@ -66,12 +66,12 @@ public:
  * Comparator in the lexical descending order.
  */
 class LexicalDescendingComparator : public Comparator {
-public:
+ public:
   explicit LexicalDescendingComparator() : comp_() {}
   int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
     return -comp_.compare(akbuf, aksiz, bkbuf, bksiz);
   }
-private:
+ private:
   LexicalComparator comp_;
 };
 
@@ -80,7 +80,7 @@ private:
  * Comparator in the decimal order.
  */
 class DecimalComparator : public Comparator {
-public:
+ public:
   explicit DecimalComparator() {}
   int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
     _assert_(akbuf && bkbuf);
@@ -174,12 +174,12 @@ public:
  * Comparator in the decimal descending order.
  */
 class DecimalDescendingComparator : public Comparator {
-public:
+ public:
   explicit DecimalDescendingComparator() : comp_() {}
   int32_t compare(const char* akbuf, size_t aksiz, const char* bkbuf, size_t bksiz) {
     return -comp_.compare(akbuf, aksiz, bkbuf, bksiz);
   }
-private:
+ private:
   DecimalComparator comp_;
 };
 

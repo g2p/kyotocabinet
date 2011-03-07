@@ -27,9 +27,9 @@ namespace kyotocabinet {                 // common namespace
  * Filesystem abstraction.
  */
 class File {
-public:
+ public:
   struct Status;
-public:
+ public:
   /** Path delimiter character. */
   static const char PATHCHR;
   /** Path delimiter string. */
@@ -330,7 +330,7 @@ public:
    * @return true on success, or false on failure.
    */
   static bool synchronize_whole();
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   File(const File&);
   /** Dummy Operator to forbid the use. */
@@ -344,7 +344,7 @@ private:
  * Directory stream abstraction.
  */
 class DirStream {
-public:
+ public:
   /**
    * Default constructor.
    */
@@ -371,7 +371,7 @@ public:
    * @return true on success, or false on failure.
    */
   bool read(std::string* path);
-private:
+ private:
   /** Dummy constructor to forbid the use. */
   DirStream(const DirStream&);
   /** Dummy Operator to forbid the use. */

@@ -34,12 +34,12 @@ namespace kyotocabinet {                 // common namespace
  * @note This class is an abstract class to prescribe the interface of record access.
  */
 class DB {
-public:
+ public:
   /**
    * Interface to access a record.
    */
   class Visitor {
-  public:
+   public:
     /** Special pointer for no operation. */
     static const char* const NOP;
     /** Special pointer to remove the record. */
@@ -96,7 +96,7 @@ public:
    * Interface of cursor to indicate a record.
    */
   class Cursor {
-  public:
+   public:
     /**
      * Destructor.
      */
@@ -463,17 +463,17 @@ public:
  * child processes.
  */
 class BasicDB : public DB {
-public:
+ public:
   class Cursor;
   class Error;
   class ProgressChecker;
   class FileProcessor;
   class Logger;
   class MetaTrigger;
-private:
+ private:
   /** The size of the IO buffer. */
   static const size_t IOBUFSIZ = 8192;
-public:
+ public:
   /**
    * Database types.
    */
@@ -494,7 +494,7 @@ public:
    * Interface of cursor to indicate a record.
    */
   class Cursor : public DB::Cursor {
-  public:
+   public:
     /**
      * Destructor.
      */
@@ -511,13 +511,13 @@ public:
     bool set_value(const char* vbuf, size_t vsiz, bool step = false) {
       _assert_(vbuf && vsiz <= MEMMAXSIZ);
       class VisitorImpl : public Visitor {
-      public:
+       public:
         explicit VisitorImpl(const char* vbuf, size_t vsiz) :
-          vbuf_(vbuf), vsiz_(vsiz), ok_(false) {}
+            vbuf_(vbuf), vsiz_(vsiz), ok_(false) {}
         bool ok() const {
           return ok_;
         }
-      private:
+       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
           ok_ = true;
@@ -551,12 +551,12 @@ public:
     bool remove() {
       _assert_(true);
       class VisitorImpl : public Visitor {
-      public:
+       public:
         explicit VisitorImpl() : ok_(false) {}
         bool ok() const {
           return ok_;
         }
-      private:
+       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
           ok_ = true;
@@ -584,7 +584,7 @@ public:
     char* get_key(size_t* sp, bool step = false) {
       _assert_(sp);
       class VisitorImpl : public Visitor {
-      public:
+       public:
         explicit VisitorImpl() : kbuf_(NULL), ksiz_(0) {}
         char* pop(size_t* sp) {
           *sp = ksiz_;
@@ -593,7 +593,7 @@ public:
         void clear() {
           delete[] kbuf_;
         }
-      private:
+       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
           kbuf_ = new char[ksiz+1];
@@ -650,7 +650,7 @@ public:
     char* get_value(size_t* sp, bool step = false) {
       _assert_(sp);
       class VisitorImpl : public Visitor {
-      public:
+       public:
         explicit VisitorImpl() : vbuf_(NULL), vsiz_(0) {}
         char* pop(size_t* sp) {
           *sp = vsiz_;
@@ -659,7 +659,7 @@ public:
         void clear() {
           delete[] vbuf_;
         }
-      private:
+       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
           vbuf_ = new char[vsiz+1];
@@ -719,7 +719,7 @@ public:
     char* get(size_t* ksp, const char** vbp, size_t* vsp, bool step = false) {
       _assert_(ksp && vbp && vsp);
       class VisitorImpl : public Visitor {
-      public:
+       public:
         explicit VisitorImpl() : kbuf_(NULL), ksiz_(0), vbuf_(NULL), vsiz_(0) {}
         char* pop(size_t* ksp, const char** vbp, size_t* vsp) {
           *ksp = ksiz_;
@@ -730,7 +730,7 @@ public:
         void clear() {
           delete[] kbuf_;
         }
-      private:
+       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
           size_t rsiz = ksiz + 1 + vsiz + 1;
@@ -767,13 +767,13 @@ public:
     bool get(std::string* key, std::string* value, bool step = false) {
       _assert_(key && value);
       class VisitorImpl : public Visitor {
-      public:
+       public:
         explicit VisitorImpl(std::string* key, std::string* value) :
-          key_(key), value_(value), ok_(false) {}
+            key_(key), value_(value), ok_(false) {}
         bool ok() {
           return ok_;
         }
-      private:
+       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
           key_->clear();
@@ -809,7 +809,7 @@ public:
    * Error data.
    */
   class Error {
-  public:
+   public:
     /**
      * Error codes.
      */
@@ -928,7 +928,7 @@ public:
     operator int32_t() const {
       return code_;
     }
-  private:
+   private:
     /** The error code. */
     Code code_;
     /** The supplement message. */
@@ -938,7 +938,7 @@ public:
    * Interface to check progress status of long process.
    */
   class ProgressChecker {
-  public:
+   public:
     /**
      * Destructor.
      */
@@ -960,7 +960,7 @@ public:
    * Interface to process the database file.
    */
   class FileProcessor {
-  public:
+   public:
     /**
      * Destructor.
      */
@@ -980,7 +980,7 @@ public:
    * Interface to log internal information and errors.
    */
   class Logger {
-  public:
+   public:
     /**
      * Event kinds.
      */
@@ -1012,7 +1012,7 @@ public:
    * Interface to trigger meta database operations.
    */
   class MetaTrigger {
-  public:
+   public:
     /**
      * Event kinds.
      */
@@ -1161,11 +1161,11 @@ public:
   bool copy(const std::string& dest, ProgressChecker* checker = NULL) {
     _assert_(true);
     class FileProcessorImpl : public FileProcessor {
-    public:
+     public:
       explicit FileProcessorImpl(const std::string& dest, ProgressChecker* checker,
                                  BasicDB* db) :
-        dest_(dest), checker_(checker), db_(db) {}
-    private:
+          dest_(dest), checker_(checker), db_(db) {}
+     private:
       bool process(const std::string& path, int64_t count, int64_t size) {
         File::Status sbuf;
         if (!File::status(path, &sbuf)) return false;
@@ -1307,9 +1307,9 @@ public:
   bool set(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         *sp = vsiz_;
@@ -1347,13 +1347,13 @@ public:
   bool add(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl(const char* vbuf, size_t vsiz) :
-        vbuf_(vbuf), vsiz_(vsiz), ok_(false) {}
+          vbuf_(vbuf), vsiz_(vsiz), ok_(false) {}
       bool ok() const {
         return ok_;
       }
-    private:
+     private:
       const char* visit_empty(const char* kbuf, size_t ksiz, size_t* sp) {
         ok_ = true;
         *sp = vsiz_;
@@ -1392,13 +1392,13 @@ public:
   bool replace(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl(const char* vbuf, size_t vsiz) :
-        vbuf_(vbuf), vsiz_(vsiz), ok_(false) {}
+          vbuf_(vbuf), vsiz_(vsiz), ok_(false) {}
       bool ok() const {
         return ok_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         ok_ = true;
@@ -1438,13 +1438,13 @@ public:
   bool append(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl(const char* vbuf, size_t vsiz) :
-        vbuf_(vbuf), vsiz_(vsiz), nbuf_(NULL) {}
+          vbuf_(vbuf), vsiz_(vsiz), nbuf_(NULL) {}
       ~VisitorImpl() {
         if (nbuf_) delete[] nbuf_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         size_t nsiz = vsiz + vsiz_;
@@ -1488,12 +1488,12 @@ public:
   int64_t increment(const char* kbuf, size_t ksiz, int64_t num) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl(int64_t num) : num_(num), big_(0) {}
       int64_t num() {
         return num_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         if (vsiz != sizeof(num_)) {
@@ -1551,12 +1551,12 @@ public:
   double increment_double(const char* kbuf, size_t ksiz, double num) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl(double num) : DECUNIT(1000000000000000LL), num_(num), buf_() {}
       double num() {
         return num_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         if (vsiz != sizeof(buf_)) {
@@ -1665,13 +1665,13 @@ public:
            const char* ovbuf, size_t ovsiz, const char* nvbuf, size_t nvsiz) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl(const char* ovbuf, size_t ovsiz, const char* nvbuf, size_t nvsiz) :
-        ovbuf_(ovbuf), ovsiz_(ovsiz), nvbuf_(nvbuf), nvsiz_(nvsiz), ok_(false) {}
+          ovbuf_(ovbuf), ovsiz_(ovsiz), nvbuf_(nvbuf), nvsiz_(nvsiz), ok_(false) {}
       bool ok() const {
         return ok_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         if (!ovbuf_ || vsiz != ovsiz_ || std::memcmp(vbuf, ovbuf_, vsiz)) return NOP;
@@ -1721,12 +1721,12 @@ public:
   bool remove(const char* kbuf, size_t ksiz) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl() : ok_(false) {}
       bool ok() const {
         return ok_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         ok_ = true;
@@ -1766,13 +1766,13 @@ public:
   char* get(const char* kbuf, size_t ksiz, size_t* sp) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && sp);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl() : vbuf_(NULL), vsiz_(0) {}
       char* pop(size_t* sp) {
         *sp = vsiz_;
         return vbuf_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         vbuf_ = new char[vsiz+1];
@@ -1827,12 +1827,12 @@ public:
   int32_t get(const char* kbuf, size_t ksiz, char* vbuf, size_t max) {
     _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf);
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl(char* vbuf, size_t max) : vbuf_(vbuf), max_(max), vsiz_(-1) {}
       int32_t vsiz() {
         return vsiz_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         vsiz_ = vsiz;
@@ -1871,20 +1871,20 @@ public:
         ++rit;
       }
       class VisitorImpl : public Visitor {
-      public:
+       public:
         explicit VisitorImpl(const std::map<std::string, std::string>& recs) : recs_(recs) {}
-      private:
+       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
           std::map<std::string, std::string>::const_iterator rit =
-            recs_.find(std::string(kbuf, ksiz));
+              recs_.find(std::string(kbuf, ksiz));
           if (rit == recs_.end()) return NOP;
           *sp = rit->second.size();
           return rit->second.data();
         }
         const char* visit_empty(const char* kbuf, size_t ksiz, size_t* sp) {
           std::map<std::string, std::string>::const_iterator rit =
-            recs_.find(std::string(kbuf, ksiz));
+              recs_.find(std::string(kbuf, ksiz));
           if (rit == recs_.end()) return NOP;
           *sp = rit->second.size();
           return rit->second.data();
@@ -1914,12 +1914,12 @@ public:
     _assert_(true);
     if (atomic) {
       class VisitorImpl : public Visitor {
-      public:
+       public:
         explicit VisitorImpl() : cnt_(0) {}
         int64_t cnt() const {
           return cnt_;
         }
-      private:
+       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
           cnt_++;
@@ -1956,9 +1956,9 @@ public:
     _assert_(recs);
     if (atomic) {
       class VisitorImpl : public Visitor {
-      public:
+       public:
         explicit VisitorImpl(std::map<std::string, std::string>* recs) : recs_(recs) {}
-      private:
+       private:
         const char* visit_full(const char* kbuf, size_t ksiz,
                                const char* vbuf, size_t vsiz, size_t* sp) {
           (*recs_)[std::string(kbuf, ksiz)] = std::string(vbuf, vsiz);
@@ -1998,9 +1998,9 @@ public:
       return false;
     }
     class VisitorImpl : public Visitor {
-    public:
+     public:
       explicit VisitorImpl(std::ostream* dest) : dest_(dest), stack_() {}
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         char* wp = stack_;

@@ -335,7 +335,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("mutex:\n");
   double stime = kc::time();
   class ThreadMutex : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::Mutex* mutex, int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
       mutex_ = mutex;
@@ -358,7 +358,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::Mutex* mutex_;
     int64_t rnum_;
@@ -384,7 +384,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("slotted mutex:\n");
   stime = kc::time();
   class ThreadSlottedMutex : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SlottedMutex* smutex,
                    int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
@@ -409,7 +409,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SlottedMutex* smutex_;
     int64_t rnum_;
@@ -435,7 +435,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("spin lock:\n");
   stime = kc::time();
   class ThreadSpinLock : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SpinLock* spinlock, int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
       spinlock_ = spinlock;
@@ -458,7 +458,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SpinLock* spinlock_;
     int64_t rnum_;
@@ -484,7 +484,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("slotted spin lock:\n");
   stime = kc::time();
   class ThreadSlottedSpinLock : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SlottedSpinLock* sspinlock,
                    int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
@@ -509,7 +509,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SlottedSpinLock* sspinlock_;
     int64_t rnum_;
@@ -535,7 +535,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("reader-writer lock writer:\n");
   stime = kc::time();
   class ThreadRWLockWriter : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::RWLock* rwlock, int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
       rwlock_ = rwlock;
@@ -558,7 +558,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::RWLock* rwlock_;
     int64_t rnum_;
@@ -583,7 +583,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("reader-writer lock reader:\n");
   stime = kc::time();
   class ThreadRWLockReader : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::RWLock* rwlock, int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
       rwlock_ = rwlock;
@@ -606,7 +606,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::RWLock* rwlock_;
     int64_t rnum_;
@@ -632,7 +632,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("slotted reader-writer lock writer:\n");
   stime = kc::time();
   class ThreadSlottedRWLockWriter : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SlottedRWLock* srwlock,
                    int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
@@ -657,7 +657,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SlottedRWLock* srwlock_;
     int64_t rnum_;
@@ -682,7 +682,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("slotted reader-writer lock reader:\n");
   stime = kc::time();
   class ThreadSlottedRWLockReader : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SlottedRWLock* srwlock,
                    int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
@@ -707,7 +707,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SlottedRWLock* srwlock_;
     int64_t rnum_;
@@ -733,7 +733,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("spin reader-writer lock writer:\n");
   stime = kc::time();
   class ThreadSpinRWLockWriter : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SpinRWLock* spinrwlock,
                    int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
@@ -757,7 +757,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SpinRWLock* spinrwlock_;
     int64_t rnum_;
@@ -782,7 +782,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("spin reader-writer lock reader:\n");
   stime = kc::time();
   class ThreadSpinRWLockReader : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SpinRWLock* spinrwlock,
                    int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
@@ -806,7 +806,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SpinRWLock* spinrwlock_;
     int64_t rnum_;
@@ -831,7 +831,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("spin reader-writer lock wicked:\n");
   stime = kc::time();
   class ThreadSpinRWLockWicked : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SpinRWLock* spinrwlock,
                    int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
@@ -875,7 +875,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SpinRWLock* spinrwlock_;
     int64_t rnum_;
@@ -901,7 +901,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("slotted spin reader-writer lock writer:\n");
   stime = kc::time();
   class ThreadSlottedSpinRWLockWriter : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SlottedSpinRWLock* ssrwlock,
                    int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
@@ -926,7 +926,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SlottedSpinRWLock* ssrwlock_;
     int64_t rnum_;
@@ -951,7 +951,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   oprintf("slotted spin reader-writer lock reader:\n");
   stime = kc::time();
   class ThreadSlottedSpinRWLockReader : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::SlottedSpinRWLock* ssrwlock,
                    int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
@@ -976,7 +976,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::SlottedSpinRWLock* ssrwlock_;
     int64_t rnum_;
@@ -1003,7 +1003,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
   kc::AtomicInt64 anum;
   anum = rnum * thnum;
   class ThreadAtomic : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::AtomicInt64* anum, int64_t rnum, int32_t thnum, double iv) {
       id_ = id;
       anum_ = anum;
@@ -1031,7 +1031,7 @@ static int32_t procmutex(int64_t rnum, int32_t thnum, double iv) {
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::AtomicInt64* anum_;
     int64_t rnum_;
@@ -1069,7 +1069,7 @@ static int32_t procpara(int64_t rnum, int32_t thnum, double iv) {
   bool err = false;
   double stime = kc::time();
   class TaskQueueImpl : public kc::TaskQueue {
-  public:
+   public:
     void setparams(int32_t thnum, double iv) {
       thnum_ = thnum;
       iv_ = iv;
@@ -1087,7 +1087,7 @@ static int32_t procpara(int64_t rnum, int32_t thnum, double iv) {
     int64_t done_count() {
       return cnt_;
     }
-  private:
+   private:
     int32_t thnum_;
     double iv_;
     kc::AtomicInt64 cnt_;
@@ -1145,7 +1145,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   oprintf("time: %.3f\n", etime - stime);
   oprintf("writing:\n");
   class ThreadWrite : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::File* file, int64_t rnum, int32_t thnum, bool rnd) {
       id_ = id;
       file_ = file;
@@ -1185,7 +1185,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::File* file_;
     int64_t rnum_;
@@ -1214,7 +1214,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   oprintf("reading:\n");
   stime = kc::time();
   class ThreadRead : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::File* file, int64_t rnum, int32_t thnum, bool rnd) {
       id_ = id;
       file_ = file;
@@ -1244,7 +1244,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::File* file_;
     int64_t rnum_;
@@ -1282,7 +1282,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   oprintf("fast writing:\n");
   stime = kc::time();
   class ThreadWriteFast : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::File* file, int64_t rnum, int32_t thnum, bool rnd) {
       id_ = id;
       file_ = file;
@@ -1312,7 +1312,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::File* file_;
     int64_t rnum_;
@@ -1341,7 +1341,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
   oprintf("fast reading:\n");
   stime = kc::time();
   class ThreadReadFast : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::File* file, int64_t rnum, int32_t thnum, bool rnd) {
       id_ = id;
       file_ = file;
@@ -1370,7 +1370,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::File* file_;
     int64_t rnum_;
@@ -1417,7 +1417,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
     err = true;
   }
   class ThreadCommit : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::File* file, int64_t rnum, int32_t thnum,
                    bool rnd, int64_t fsiz) {
       id_ = id;
@@ -1456,7 +1456,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::File* file_;
     int64_t rnum_;
@@ -1520,7 +1520,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
     err = true;
   }
   class ThreadAbort : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::File* file, int64_t rnum, int32_t thnum,
                    bool rnd, int64_t fsiz) {
       id_ = id;
@@ -1559,7 +1559,7 @@ static int32_t procfile(const char* path, int64_t rnum, int32_t thnum, bool rnd,
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::File* file_;
     int64_t rnum_;

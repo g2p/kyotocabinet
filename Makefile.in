@@ -798,6 +798,9 @@ check-langc :
 	  "casket.kch#bnum=5000#msiz=50000#dfunit=2" 10000
 	$(RUNENV) $(RUNCMD) ./kclangctest order -rnd -etc -oat -tran \
 	  "casket.kch#bnum=5000#msiz=50000#dfunit=2#zcomp=arcz" 10000
+	$(RUNENV) $(RUNCMD) ./kclangctest map 10000
+	$(RUNENV) $(RUNCMD) ./kclangctest map -etc -bnum 1000 10000
+	$(RUNENV) $(RUNCMD) ./kclangctest map -etc -rnd -bnum 1000 10000
 
 
 check-valgrind :
