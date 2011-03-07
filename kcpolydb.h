@@ -46,19 +46,19 @@ namespace kyotocabinet {                 // common namespace
  * database at the same time.  It is forbidden to share a database object with child processes.
  */
 class PolyDB : public BasicDB {
-public:
+ public:
   class Cursor;
-private:
+ private:
   class StreamLogger;
   class StreamMetaTrigger;
   struct MergeLine;
-public:
+ public:
   /**
    * Cursor to indicate a record.
    */
   class Cursor : public BasicDB::Cursor {
     friend class PolyDB;
-  public:
+   public:
     /**
      * Constructor.
      * @param db the container database object.
@@ -208,7 +208,7 @@ public:
       _assert_(true);
       return db_;
     }
-  private:
+   private:
     /** Dummy constructor to forbid the use. */
     Cursor(const Cursor&);
     /** Dummy Operator to forbid the use. */
@@ -231,9 +231,9 @@ public:
    * Default constructor.
    */
   explicit PolyDB() :
-    type_(TYPEVOID), db_(NULL), error_(),
-    stdlogstrm_(NULL), stdlogger_(NULL), logger_(NULL), logkinds_(0),
-    stdmtrgstrm_(NULL), stdmtrigger_(NULL), mtrigger_(NULL), zcomp_(NULL) {
+      type_(TYPEVOID), db_(NULL), error_(),
+      stdlogstrm_(NULL), stdlogger_(NULL), logger_(NULL), logkinds_(0),
+      stdmtrgstrm_(NULL), stdmtrigger_(NULL), mtrigger_(NULL), zcomp_(NULL) {
     _assert_(true);
   }
   /**
@@ -1367,12 +1367,12 @@ public:
     mtrigger_ = trigger;
     return true;
   }
-private:
+ private:
   /**
    * Stream logger implementation.
    */
   class StreamLogger : public Logger {
-  public:
+   public:
     /** constructor */
     StreamLogger(std::ostream* strm, const char* prefix) : strm_(strm), prefix_(prefix) {}
     /** print a log message */
@@ -1388,9 +1388,9 @@ private:
       }
       if (!prefix_.empty()) *strm_ << prefix_ << ": ";
       *strm_ << "[" << kstr << "]: " << file << ": " << line << ": " << func << ": " <<
-        message << std::endl;
+          message << std::endl;
     }
-  private:
+   private:
     std::ostream* strm_;                 ///< output stream
     std::string prefix_;                 ///< prefix of each message
   };
@@ -1398,7 +1398,7 @@ private:
    * Stream meta operation trigger implementation.
    */
   class StreamMetaTrigger : public MetaTrigger {
-  public:
+   public:
     /** constructor */
     StreamMetaTrigger(std::ostream* strm, const char* prefix) : strm_(strm), prefix_(prefix) {}
     /** print a meta operation */
@@ -1420,7 +1420,7 @@ private:
       if (!prefix_.empty()) *strm_ << prefix_ << ": ";
       *strm_ << "[" << kstr << "]: " << message << std::endl;
     }
-  private:
+   private:
     std::ostream* strm_;                 ///< output stream
     std::string prefix_;                 ///< prefix of each message
   };

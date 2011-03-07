@@ -25,9 +25,9 @@ int main(int argc, char** argv) {
     // call back function of the mapper
     bool map(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz,
              MapEmitter* emitter) {
-      std::vector<std::string> words;
-      strsplit(vbuf, ' ', &words);
-      for (std::vector<std::string>::iterator it = words.begin();
+      vector<string> words;
+      strsplit(string(vbuf, vsiz), ' ', &words);
+      for (vector<string>::iterator it = words.begin();
            it != words.end(); it++) {
         emitter->emit(it->data(), it->size(), "", 0);
       }
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
       while ((vbuf = iter->next(&vsiz)) != NULL) {
         count++;
       }
-      std::cout << std::string(kbuf, ksiz) << ": " << count << std::endl;
+      cout << string(kbuf, ksiz) << ": " << count << endl;
       return true;
     }
   } mr;

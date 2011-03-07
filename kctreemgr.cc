@@ -1141,9 +1141,9 @@ static int32_t proclist(const char* path, const char*kbuf, size_t ksiz, int32_t 
   }
   bool err = false;
   class VisitorImpl : public kc::DB::Visitor {
-  public:
+   public:
     explicit VisitorImpl(bool pv, bool px) : pv_(pv), px_(px) {}
-  private:
+   private:
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       printdata(kbuf, ksiz, px_);

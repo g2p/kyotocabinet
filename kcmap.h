@@ -23,28 +23,31 @@ namespace kyotocabinet {                 // common namespace
 
 
 /**
- * Memory-saving hash map.
+ * Memory-saving string hash map.
  */
 class TinyHashMap {
-public:
+ public:
   class Iterator;
-private:
+ private:
   struct Record;
   struct RecordComparator;
   /** The default bucket number of hash table. */
   static const size_t MAPDEFBNUM = 31;
   /** The mininum number of buckets to use mmap. */
   static const size_t MAPZMAPBNUM = 32768;
-public:
+ public:
   /**
    * Iterator of records.
    */
   class Iterator {
     friend class TinyHashMap;
-  public:
+   public:
     /**
      * Constructor.
      * @param map the container.
+     * @note This object will not be invalidated even when the map object is updated once.
+     * However, phantom records may be retrieved if they are removed after creation of each
+     * iterator.
      */
     explicit Iterator(TinyHashMap* map) : map_(map), bidx_(-1), ridx_(0), recs_() {
       _assert_(map);
@@ -118,7 +121,7 @@ public:
         }
       }
     }
-  private:
+   private:
     /**
      * Read records of the current bucket.
      */
@@ -127,7 +130,7 @@ public:
       while (rbuf) {
         Record rec(rbuf);
         size_t rsiz = sizeof(rec.child_) + sizevarnum(rec.ksiz_) + rec.ksiz_ +
-          sizevarnum(rec.vsiz_) + rec.vsiz_ + sizevarnum(rec.psiz_);
+            sizevarnum(rec.vsiz_) + rec.vsiz_ + sizevarnum(rec.psiz_);
         char* nbuf = new char[rsiz];
         std::memcpy(nbuf, rbuf, rsiz);
         recs_.push_back(nbuf);
@@ -164,10 +167,11 @@ public:
    * Sorter of records.
    */
   class Sorter {
-  public:
+   public:
     /**
      * Constructor.
      * @param map the container.
+     * @note This object will be invalidated when the map object is updated once.
      */
     explicit Sorter(TinyHashMap* map) : map_(map), ridx_(0), recs_() {
       _assert_(map);
@@ -481,7 +485,7 @@ public:
     _assert_(true);
     return count_;
   }
-private:
+ private:
   /**
    * Record data.
    */
@@ -489,12 +493,12 @@ private:
     /** constructor */
     Record(char* child, const char* kbuf, uint64_t ksiz,
            const char* vbuf, uint64_t vsiz, uint64_t psiz) :
-      child_(child), kbuf_(kbuf), ksiz_(ksiz), vbuf_(vbuf), vsiz_(vsiz), psiz_(psiz) {
+        child_(child), kbuf_(kbuf), ksiz_(ksiz), vbuf_(vbuf), vsiz_(vsiz), psiz_(psiz) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ && psiz <= MEMMAXSIZ);
     }
     /** constructor */
     Record(const char* rbuf) :
-      child_(NULL), kbuf_(NULL), ksiz_(0), vbuf_(NULL), vsiz_(0), psiz_(0) {
+        child_(NULL), kbuf_(NULL), ksiz_(0), vbuf_(NULL), vsiz_(0), psiz_(0) {
       _assert_(rbuf);
       deserialize(rbuf);
     }
@@ -540,7 +544,7 @@ private:
     char* serialize() {
       _assert_(true);
       uint64_t rsiz = sizeof(child_) + sizevarnum(ksiz_) + ksiz_ + sizevarnum(vsiz_) + vsiz_ +
-        sizevarnum(psiz_) + psiz_;
+          sizevarnum(psiz_) + psiz_;
       char* rbuf = new char[rsiz];
       char* wp = rbuf;
       *(char**)wp = child_;
@@ -662,21 +666,21 @@ private:
 template <class KEY, class VALUE,
           class HASH = std::hash<KEY>, class EQUALTO = std::equal_to<KEY> >
 class LinkedHashMap {
-public:
+ public:
   class Iterator;
-private:
+ private:
   struct Record;
   /** The default bucket number of hash table. */
   static const size_t MAPDEFBNUM = 31;
   /** The mininum number of buckets to use mmap. */
   static const size_t MAPZMAPBNUM = 32768;
-public:
+ public:
   /**
    * Iterator of records.
    */
   class Iterator {
     friend class LinkedHashMap;
-  public:
+   public:
     /**
      * Copy constructor.
      * @param src the source object.
@@ -774,7 +778,7 @@ public:
       }
       return old;
     }
-  private:
+   private:
     /**
      * Constructor.
      * @param map the container.
@@ -800,7 +804,7 @@ public:
    * Default constructor.
    */
   explicit LinkedHashMap() :
-    buckets_(NULL), bnum_(MAPDEFBNUM), first_(NULL), last_(NULL), count_(0) {
+      buckets_(NULL), bnum_(MAPDEFBNUM), first_(NULL), last_(NULL), count_(0) {
     _assert_(true);
     initialize();
   }
@@ -809,7 +813,7 @@ public:
    * @param bnum the number of buckets of the hash table.
    */
   explicit LinkedHashMap(size_t bnum) :
-    buckets_(NULL), bnum_(bnum), first_(NULL), last_(NULL), count_(0) {
+      buckets_(NULL), bnum_(bnum), first_(NULL), last_(NULL), count_(0) {
     _assert_(true);
     if (bnum_ < 1) bnum_ = MAPDEFBNUM;
     initialize();
@@ -1160,7 +1164,7 @@ public:
     _assert_(true);
     return last_->value;
   }
-private:
+ private:
   /**
    * Record data.
    */
@@ -1172,7 +1176,7 @@ private:
     Record* next;                        ///< next record
     /** constructor */
     explicit Record(const KEY& k, const VALUE& v) :
-      key(k), value(v), child(NULL), prev(NULL), next(NULL) {
+        key(k), value(v), child(NULL), prev(NULL), next(NULL) {
       _assert_(true);
     }
   };

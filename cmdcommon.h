@@ -84,12 +84,12 @@ void printdb(kc::BasicDB* db, bool px = false);
 
 // checker to show progress by printing dots
 class DotChecker : public kc::BasicDB::ProgressChecker {
-public:
+ public:
   explicit DotChecker(std::ostream* strm, int64_t freq) : strm_(strm), freq_(freq), cnt_(0) {}
   int64_t count() {
     return cnt_;
   }
-private:
+ private:
   bool check(const char* name, const char* message, int64_t curcnt, int64_t allcnt) {
     if (std::strcmp(message, "processing") || freq_ == 0) return true;
     if (freq_ < 0) {
@@ -254,15 +254,15 @@ inline std::string unitnumstrbyte(int64_t num) {
 // get the progress checker to print the parameters
 inline kc::BasicDB::ProgressChecker* stdchecker(const char* prefix, std::ostream* strm) {
   class CheckerImpl : public kc::BasicDB::ProgressChecker {
-  public:
+   public:
     explicit CheckerImpl(std::ostream* strm, const char* prefix) :
-      strm_(strm), prefix_(prefix) {}
+        strm_(strm), prefix_(prefix) {}
     bool check(const char* name, const char* message, int64_t curcnt, int64_t allcnt) {
       *strm_ << prefix_ << ": " << name << ": " << message << ": " <<
-        curcnt << "/" << allcnt << std::endl;
+          curcnt << "/" << allcnt << std::endl;
       return true;
     }
-  private:
+   private:
     std::ostream* strm_;
     const char* prefix_;
   };
@@ -274,9 +274,9 @@ inline kc::BasicDB::ProgressChecker* stdchecker(const char* prefix, std::ostream
 // get the logger into the standard stream
 inline kc::BasicDB::Logger* stdlogger(const char* prefix, std::ostream* strm) {
   class LoggerImpl : public kc::BasicDB::Logger {
-  public:
+   public:
     explicit LoggerImpl(std::ostream* strm, const char* prefix) :
-      strm_(strm), prefix_(prefix) {}
+        strm_(strm), prefix_(prefix) {}
     void log(const char* file, int32_t line, const char* func, Kind kind,
              const char* message) {
       const char* kstr = "MISC";
@@ -287,9 +287,9 @@ inline kc::BasicDB::Logger* stdlogger(const char* prefix, std::ostream* strm) {
         case kc::BasicDB::Logger::ERROR: kstr = "ERROR"; break;
       }
       *strm_ << prefix_ << ": [" << kstr << "]: " <<
-        file << ": " << line << ": " << func << ": " << message << std::endl;
+          file << ": " << line << ": " << func << ": " << message << std::endl;
     }
-  private:
+   private:
     std::ostream* strm_;
     const char* prefix_;
   };
@@ -301,9 +301,9 @@ inline kc::BasicDB::Logger* stdlogger(const char* prefix, std::ostream* strm) {
 // print all record of a database
 inline void printdb(kc::BasicDB* db, bool px) {
   class Printer : public kc::DB::Visitor {
-  public:
+   public:
     explicit Printer(bool px) : px_(px) {}
-  private:
+   private:
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       printdata(kbuf, ksiz, px_);

@@ -41,9 +41,9 @@ namespace kyotocabinet {                 // common namespace
  * time.  It is forbidden to share a database object with child processes.
  */
 class StashDB : public BasicDB {
-public:
+ public:
   class Cursor;
-private:
+ private:
   struct Record;
   struct TranLog;
   class Repeater;
@@ -64,13 +64,13 @@ private:
   static const uint32_t LOCKBUSYLOOP = 8192;
   /** The mininum number of buckets to use mmap. */
   static const size_t MAPZMAPBNUM = 32768;
-public:
+ public:
   /**
    * Cursor to indicate a record.
    */
   class Cursor : public BasicDB::Cursor {
     friend class StashDB;
-  public:
+   public:
     /**
      * Constructor.
      * @param db the container database object.
@@ -273,7 +273,7 @@ public:
       _assert_(true);
       return db_;
     }
-  private:
+   private:
     /**
      * Step the cursor to the next record.
      * @return true on success, or false on failure.
@@ -310,11 +310,11 @@ public:
    * Default constructor.
    */
   explicit StashDB() :
-    mlock_(), rlock_(RLOCKSLOT), flock_(), error_(),
-    logger_(NULL), logkinds_(0), mtrigger_(NULL),
-    omode_(0), curs_(), path_(""), bnum_(DEFBNUM), opaque_(),
-    count_(0), size_(0), buckets_(NULL),
-    tran_(false), trlogs_(), trcount_(0), trsize_(0) {
+      mlock_(), rlock_(RLOCKSLOT), flock_(), error_(),
+      logger_(NULL), logkinds_(0), mtrigger_(NULL),
+      omode_(0), curs_(), path_(""), bnum_(DEFBNUM), opaque_(),
+      count_(0), size_(0), buckets_(NULL),
+      tran_(false), trlogs_(), trcount_(0), trsize_(0) {
     _assert_(true);
   }
   /**
@@ -508,7 +508,7 @@ public:
     error_->set(code, message);
     if (logger_) {
       Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
-        Logger::ERROR : Logger::INFO;
+          Logger::ERROR : Logger::INFO;
       if (kind & logkinds_)
         report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
     }
@@ -927,7 +927,7 @@ public:
     }
     return true;
   }
-protected:
+ protected:
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.
@@ -1001,19 +1001,19 @@ protected:
     _assert_(message);
     if (mtrigger_) mtrigger_->trigger(kind, message);
   }
-private:
+ private:
   /**
    * Record data.
    */
   struct Record {
     /** constructor */
     Record(char* child, const char* kbuf, uint64_t ksiz, const char* vbuf, uint64_t vsiz) :
-      child_(child), kbuf_(kbuf), ksiz_(ksiz), vbuf_(vbuf), vsiz_(vsiz) {
+        child_(child), kbuf_(kbuf), ksiz_(ksiz), vbuf_(vbuf), vsiz_(vsiz) {
       _assert_(kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
     }
     /** constructor */
     Record(const char* rbuf) :
-      child_(NULL), kbuf_(NULL), ksiz_(0), vbuf_(NULL), vsiz_(0) {
+        child_(NULL), kbuf_(NULL), ksiz_(0), vbuf_(NULL), vsiz_(0) {
       _assert_(rbuf);
       deserialize(rbuf);
     }
@@ -1074,7 +1074,7 @@ private:
     std::string value;                   ///< old value
     /** constructor for a full record */
     explicit TranLog(const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) :
-      full(true), key(kbuf, ksiz), value(vbuf, vsiz) {
+        full(true), key(kbuf, ksiz), value(vbuf, vsiz) {
       _assert_(true);
     }
     /** constructor for an empty record */
@@ -1086,10 +1086,10 @@ private:
    * Repeating visitor.
    */
   class Repeater : public Visitor {
-  public:
+   public:
     /** constructor */
     explicit Repeater(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
-  private:
+   private:
     /** process a full record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
@@ -1104,10 +1104,10 @@ private:
    * Setting visitor.
    */
   class Setter : public Visitor {
-  public:
+   public:
     /** constructor */
     explicit Setter(const char* vbuf, size_t vsiz) : vbuf_(vbuf), vsiz_(vsiz) {}
-  private:
+   private:
     /** process a full record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
@@ -1128,7 +1128,7 @@ private:
    * Removing visitor.
    */
   class Remover : public Visitor {
-  private:
+   private:
     /** visit a record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
@@ -1140,7 +1140,7 @@ private:
    * Scoped visitor.
    */
   class ScopedVisitor {
-  public:
+   public:
     /** constructor */
     explicit ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
       _assert_(visitor);
@@ -1151,7 +1151,7 @@ private:
       _assert_(true);
       visitor_->visit_after();
     }
-  private:
+   private:
     Visitor* visitor_;                   ///< visitor
   };
   /**

@@ -49,9 +49,9 @@ namespace kyotocabinet {                 // common namespace
  */
 template <class BASEDB, uint8_t DBTYPE>
 class PlantDB : public BasicDB {
-public:
+ public:
   class Cursor;
-private:
+ private:
   struct Record;
   struct RecordComparator;
   struct LeafNode;
@@ -111,13 +111,13 @@ private:
   static const int32_t ATRANCNUM = 256;
   /** The threshold of busy loop and sleep for locking. */
   static const uint32_t LOCKBUSYLOOP = 8192;
-public:
+ public:
   /**
    * Cursor to indicate a record.
    */
   class Cursor : public BasicDB::Cursor {
     friend class PlantDB;
-  public:
+   public:
     /**
      * Constructor.
      * @param db the container database object.
@@ -355,7 +355,7 @@ public:
       _assert_(true);
       return db_;
     }
-  private:
+   private:
     /**
      * Clear the position.
      */
@@ -934,12 +934,12 @@ public:
    * Default constructor.
    */
   explicit PlantDB() :
-    mlock_(), mtrigger_(NULL), omode_(0), writer_(false), autotran_(false), autosync_(false),
-    db_(), curs_(), apow_(DEFAPOW), fpow_(DEFFPOW), opts_(0), bnum_(DEFBNUM),
-    psiz_(DEFPSIZ), pccap_(DEFPCCAP),
-    root_(0), first_(0), last_(0), lcnt_(0), icnt_(0), count_(0), cusage_(0),
-    lslots_(), islots_(), reccomp_(), linkcomp_(),
-    tran_(false), trclock_(0), trlcnt_(0), trcount_(0) {
+      mlock_(), mtrigger_(NULL), omode_(0), writer_(false), autotran_(false), autosync_(false),
+      db_(), curs_(), apow_(DEFAPOW), fpow_(DEFFPOW), opts_(0), bnum_(DEFBNUM),
+      psiz_(DEFPSIZ), pccap_(DEFPCCAP),
+      root_(0), first_(0), last_(0), lcnt_(0), icnt_(0), count_(0), cusage_(0),
+      lslots_(), islots_(), reccomp_(), linkcomp_(),
+      tran_(false), trclock_(0), trlcnt_(0), trcount_(0) {
     _assert_(true);
   }
   /**
@@ -1497,9 +1497,9 @@ public:
       if (!dump_meta()) err = true;
     }
     class Wrapper : public FileProcessor {
-    public:
+     public:
       Wrapper(FileProcessor* proc, int64_t count) : proc_(proc), count_(count) {}
-    private:
+     private:
       bool process(const std::string& path, int64_t count, int64_t size) {
         if (proc_) return proc_->process(path, count_, size);
         return true;
@@ -2017,7 +2017,7 @@ public:
     }
     return reccomp_.comp;
   }
-protected:
+ protected:
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.
@@ -2080,7 +2080,7 @@ protected:
     _assert_(message);
     if (mtrigger_) mtrigger_->trigger(kind, message);
   }
-private:
+ private:
   /**
    * Record data.
    */
@@ -2172,7 +2172,7 @@ private:
    * Scoped visitor.
    */
   class ScopedVisitor {
-  public:
+   public:
     /** constructor */
     explicit ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
       _assert_(visitor);
@@ -2183,7 +2183,7 @@ private:
       _assert_(true);
       visitor_->visit_after();
     }
-  private:
+   private:
     Visitor* visitor_;                   ///< visitor
   };
   /**
@@ -2418,12 +2418,12 @@ private:
     char hbuf[NUMBUFSIZ];
     size_t hsiz = std::sprintf(hbuf, "%c%llX", LNPREFIX, (long long)id);
     class VisitorImpl : public DB::Visitor {
-    public:
+     public:
       explicit VisitorImpl() : node_(NULL) {}
       LeafNode* pop() {
         return node_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         uint64_t prev;
@@ -2779,12 +2779,12 @@ private:
     char hbuf[NUMBUFSIZ];
     size_t hsiz = std::sprintf(hbuf, "%c%llX", INPREFIX, (long long)(id - INIDBASE));
     class VisitorImpl : public DB::Visitor {
-    public:
+     public:
       explicit VisitorImpl() : node_(NULL) {}
       InnerNode* pop() {
         return node_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         uint64_t heir;
@@ -3325,12 +3325,12 @@ private:
     if (!load_meta()) return false;
     bool err = false;
     class VisitorImpl : public DB::Visitor {
-    public:
+     public:
       explicit VisitorImpl() : count_(0) {}
       int64_t count() {
         return count_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         if (ksiz < 2 || kbuf[0] != LNPREFIX) return NOP;

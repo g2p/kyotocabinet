@@ -340,7 +340,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
   oprintf("setting records:\n");
   stime = kc::time();
   class ThreadSet : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::BasicDB* db, int64_t rnum, int32_t thnum,
                    bool rnd, bool tran) {
       id_ = id;
@@ -479,7 +479,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::BasicDB* db_;
     int64_t rnum_;
@@ -510,7 +510,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
     oprintf("adding records:\n");
     stime = kc::time();
     class ThreadAdd : public kc::Thread {
-    public:
+     public:
       void setparams(int32_t id, kc::BasicDB* db, int64_t rnum, int32_t thnum,
                      bool rnd, bool tran) {
         id_ = id;
@@ -550,7 +550,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
           }
         }
       }
-    private:
+     private:
       int32_t id_;
       kc::BasicDB* db_;
       int64_t rnum_;
@@ -582,7 +582,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
     oprintf("appending records:\n");
     stime = kc::time();
     class ThreadAppend : public kc::Thread {
-    public:
+     public:
       void setparams(int32_t id, kc::BasicDB* db, int64_t rnum, int32_t thnum,
                      bool rnd, bool tran) {
         id_ = id;
@@ -621,7 +621,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
           }
         }
       }
-    private:
+     private:
       int32_t id_;
       kc::BasicDB* db_;
       int64_t rnum_;
@@ -663,7 +663,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
   oprintf("getting records:\n");
   stime = kc::time();
   class ThreadGet : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::BasicDB* db, int64_t rnum, int32_t thnum,
                    bool rnd, bool tran) {
       id_ = id;
@@ -811,7 +811,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::BasicDB* db_;
     int64_t rnum_;
@@ -842,7 +842,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
     oprintf("getting records with a buffer:\n");
     stime = kc::time();
     class ThreadGetBuffer : public kc::Thread {
-    public:
+     public:
       void setparams(int32_t id, kc::BasicDB* db, int64_t rnum, int32_t thnum,
                      bool rnd, bool tran) {
         id_ = id;
@@ -888,7 +888,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
           }
         }
       }
-    private:
+     private:
       int32_t id_;
       kc::BasicDB* db_;
       int64_t rnum_;
@@ -921,15 +921,15 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
     stime = kc::time();
     int64_t cnt = db.count();
     class VisitorIterator : public kc::DB::Visitor {
-    public:
+     public:
       explicit VisitorIterator(int64_t rnum, bool rnd) :
-        rnum_(rnum), rnd_(rnd), cnt_(0), rbuf_() {
+          rnum_(rnum), rnd_(rnd), cnt_(0), rbuf_() {
         std::memset(rbuf_, '+', sizeof(rbuf_));
       }
       int64_t cnt() {
         return cnt_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         cnt_++;
@@ -982,15 +982,15 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
     stime = kc::time();
     int64_t cnt = db.count();
     class VisitorCursor : public kc::DB::Visitor {
-    public:
+     public:
       explicit VisitorCursor(int64_t rnum, bool rnd) :
-        rnum_(rnum), rnd_(rnd), cnt_(0), rbuf_() {
+          rnum_(rnum), rnd_(rnd), cnt_(0), rbuf_() {
         std::memset(rbuf_, '-', sizeof(rbuf_));
       }
       int64_t cnt() {
         return cnt_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         cnt_++;
@@ -1083,10 +1083,10 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
       err = true;
     }
     class SyncProcessor : public kc::BasicDB::FileProcessor {
-    public:
+     public:
       explicit SyncProcessor(int64_t rnum, bool rnd, int64_t size) :
-        rnum_(rnum), rnd_(rnd), size_(size) {}
-    private:
+          rnum_(rnum), rnd_(rnd), size_(size) {}
+     private:
       bool process(const std::string& path, int64_t count, int64_t size) {
         if (size != size_) return false;
         return true;
@@ -1138,7 +1138,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
   oprintf("removing records:\n");
   stime = kc::time();
   class ThreadRemove : public kc::Thread {
-  public:
+   public:
     void setparams(int32_t id, kc::BasicDB* db, int64_t rnum, int32_t thnum,
                    bool rnd, bool etc, bool tran) {
       id_ = id;
@@ -1280,7 +1280,7 @@ static int32_t procorder(const char* tname, int64_t rnum, int32_t thnum, bool rn
         }
       }
     }
-  private:
+   private:
     int32_t id_;
     kc::BasicDB* db_;
     int64_t rnum_;
@@ -1339,7 +1339,7 @@ static int32_t procqueue(const char* tname, int64_t rnum, int32_t thnum, int32_t
       err = true;
     }
     class ThreadQueue : public kc::Thread {
-    public:
+     public:
       void setparams(int32_t id, PROTODB* db, int64_t rnum, int32_t thnum, bool rnd,
                      int64_t width) {
         id_ = id;
@@ -1447,7 +1447,7 @@ static int32_t procqueue(const char* tname, int64_t rnum, int32_t thnum, int32_t
         }
         delete cur;
       }
-    private:
+     private:
       int32_t id_;
       PROTODB* db_;
       int64_t rnum_;
@@ -1529,7 +1529,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
       err = true;
     }
     class ThreadWicked : public kc::Thread {
-    public:
+     public:
       void setparams(int32_t id, PROTODB* db, int64_t rnum, int32_t thnum,
                      const char* lbuf) {
         id_ = id;
@@ -1668,9 +1668,9 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
                   }
                 } else {
                   class VisitorImpl : public kc::DB::Visitor {
-                  public:
+                   public:
                     explicit VisitorImpl(const char* lbuf) : lbuf_(lbuf) {}
-                  private:
+                   private:
                     const char* visit_full(const char* kbuf, size_t ksiz,
                                            const char* vbuf, size_t vsiz, size_t* sp) {
                       const char* rv = NOP;
@@ -1768,7 +1768,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
               }
             } else {
               class SyncProcessor : public kc::BasicDB::FileProcessor {
-              private:
+               private:
                 bool process(const std::string& path, int64_t count, int64_t size) {
                   yield();
                   return true;
@@ -1794,7 +1794,7 @@ static int32_t procwicked(const char* tname, int64_t rnum, int32_t thnum, int32_
         }
         delete cur;
       }
-    private:
+     private:
       int32_t id_;
       PROTODB* db_;
       int64_t rnum_;
@@ -1853,7 +1853,7 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
       err = true;
     }
     class ThreadTran : public kc::Thread {
-    public:
+     public:
       void setparams(int32_t id, PROTODB* db, PROTODB* paradb, int64_t rnum,
                      int32_t thnum, const char* lbuf) {
         id_ = id;
@@ -1892,10 +1892,10 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
             vsiz = myrand(RECBUFSIZL) / (myrand(5) + 1);
           }
           class VisitorImpl : public kc::DB::Visitor {
-          public:
+           public:
             explicit VisitorImpl(const char* vbuf, size_t vsiz, kc::BasicDB* paradb) :
-              vbuf_(vbuf), vsiz_(vsiz), paradb_(paradb) {}
-          private:
+                vbuf_(vbuf), vsiz_(vsiz), paradb_(paradb) {}
+           private:
             const char* visit_full(const char* kbuf, size_t ksiz,
                                    const char* vbuf, size_t vsiz, size_t* sp) {
               return visit_empty(kbuf, ksiz, sp);
@@ -1970,9 +1970,9 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
               }
             }
             class Remover : public kc::DB::Visitor {
-            public:
+             public:
               explicit Remover(kc::BasicDB* paradb) : paradb_(paradb) {}
-            private:
+             private:
               const char* visit_full(const char* kbuf, size_t ksiz,
                                      const char* vbuf, size_t vsiz, size_t* sp) {
                 if (myrand(200) == 0) return NOP;
@@ -2023,7 +2023,7 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
         }
         delete cur;
       }
-    private:
+     private:
       int32_t id_;
       PROTODB* db_;
       PROTODB* paradb_;
@@ -2055,13 +2055,13 @@ static int32_t proctran(const char* tname, int64_t rnum, int32_t thnum, int32_t 
       err = true;
     }
     class VisitorImpl : public kc::DB::Visitor {
-    public:
+     public:
       explicit VisitorImpl(int64_t rnum, kc::BasicDB* paradb) :
-        rnum_(rnum), paradb_(paradb), err_(false), cnt_(0) {}
+          rnum_(rnum), paradb_(paradb), err_(false), cnt_(0) {}
       bool error() {
         return err_;
       }
-    private:
+     private:
       const char* visit_full(const char* kbuf, size_t ksiz,
                              const char* vbuf, size_t vsiz, size_t* sp) {
         cnt_++;

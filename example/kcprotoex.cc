@@ -22,10 +22,9 @@ int main(int argc, char** argv) {
   }
 
   // retrieve a record
-  string* value = db.get("foo");
-  if (value) {
-    cout << *value << endl;
-    delete value;
+  string value;
+  if (db.get("foo", &value)) {
+    cout << value << endl;
   } else {
     cerr << "get error: " << db.error().name() << endl;
   }
@@ -33,10 +32,9 @@ int main(int argc, char** argv) {
   // traverse records
   DB::Cursor* cur = db.cursor();
   cur->jump();
-  pair<string, string>* rec;
-  while ((rec = cur->get_pair(true)) != NULL) {
-    cout << rec->first << ":" << rec->second << endl;
-    delete rec;
+  string ckey, cvalue;
+  while (cur->get(&ckey, &cvalue, true)) {
+    cout << ckey << ":" << cvalue << endl;
   }
   delete cur;
 

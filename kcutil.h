@@ -996,7 +996,7 @@ inline uint32_t hton32(uint32_t num) {
   _assert_(true);
   if (BIGEND) return num;
   return ((num & 0x000000ffUL) << 24) | ((num & 0x0000ff00UL) << 8) | \
-    ((num & 0x00ff0000UL) >> 8) | ((num & 0xff000000UL) >> 24);
+      ((num & 0x00ff0000UL) >> 8) | ((num & 0xff000000UL) >> 24);
 }
 
 
@@ -1007,9 +1007,9 @@ inline uint64_t hton64(uint64_t num) {
   _assert_(true);
   if (BIGEND) return num;
   return ((num & 0x00000000000000ffULL) << 56) | ((num & 0x000000000000ff00ULL) << 40) |
-    ((num & 0x0000000000ff0000ULL) << 24) | ((num & 0x00000000ff000000ULL) << 8) |
-    ((num & 0x000000ff00000000ULL) >> 8) | ((num & 0x0000ff0000000000ULL) >> 24) |
-    ((num & 0x00ff000000000000ULL) >> 40) | ((num & 0xff00000000000000ULL) >> 56);
+      ((num & 0x0000000000ff0000ULL) << 24) | ((num & 0x00000000ff000000ULL) << 8) |
+      ((num & 0x000000ff00000000ULL) >> 8) | ((num & 0x0000ff0000000000ULL) >> 24) |
+      ((num & 0x00ff000000000000ULL) >> 40) | ((num & 0xff00000000000000ULL) >> 56);
 }
 
 
@@ -1189,9 +1189,9 @@ inline uint64_t hashmurmur(const void* buf, size_t size) {
   const unsigned char* rp = (const unsigned char*)buf;
   while (size >= sizeof(uint64_t)) {
     uint64_t num = ((uint64_t)rp[0] << 0) | ((uint64_t)rp[1] << 8) |
-      ((uint64_t)rp[2] << 16) | ((uint64_t)rp[3] << 24) |
-      ((uint64_t)rp[4] << 32) | ((uint64_t)rp[5] << 40) |
-      ((uint64_t)rp[6] << 48) | ((uint64_t)rp[7] << 56);
+        ((uint64_t)rp[2] << 16) | ((uint64_t)rp[3] << 24) |
+        ((uint64_t)rp[4] << 32) | ((uint64_t)rp[5] << 40) |
+        ((uint64_t)rp[6] << 48) | ((uint64_t)rp[7] << 56);
     num *= mul;
     num ^= num >> rtt;
     num *= mul;
@@ -1263,7 +1263,7 @@ inline uint32_t hashpath(const void* buf, size_t size, char* obuf) {
     }
     uint64_t hash = hashmurmur(buf, size);
     rv = (((hash & 0xffff000000000000ULL) >> 48) | ((hash & 0x0000ffff00000000ULL) >> 16)) ^
-      (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
+        (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
   } else {
     *(wp++) = 'f' + 1 + (size & 0x0f);
     for (int32_t i = 0; i <= 6; i += 3) {
@@ -1277,10 +1277,10 @@ inline uint32_t hashpath(const void* buf, size_t size, char* obuf) {
     }
     uint64_t hash = hashmurmur(buf, size);
     rv = (((hash & 0xffff000000000000ULL) >> 48) | ((hash & 0x0000ffff00000000ULL) >> 16)) ^
-      (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
+        (((hash & 0x000000000000ffffULL) << 16) | ((hash & 0x00000000ffff0000ULL) >> 16));
     uint64_t inc = hashfnv(buf, size);
     inc = (((inc & 0xffff000000000000ULL) >> 48) | ((inc & 0x0000ffff00000000ULL) >> 16)) ^
-      (((inc & 0x000000000000ffffULL) << 16) | ((inc & 0x00000000ffff0000ULL) >> 16));
+        (((inc & 0x000000000000ffffULL) << 16) | ((inc & 0x00000000ffff0000ULL) >> 16));
     for (size_t i = 0; i < sizeof(hash); i++) {
       uint32_t least = hash >> ((sizeof(hash) - 1) * 8);
       uint64_t num = least >> 4;

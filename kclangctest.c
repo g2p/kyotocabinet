@@ -40,32 +40,17 @@ const char* g_progname;                  /* program name */
 int main(int argc, char** argv);
 static void usage(void);
 static int64_t myrand(int64_t range);
-static void iprintf(const char* format, ...);
-static void iputchar(char c);
+static void oprintf(const char* format, ...);
+static void oputchar(char c);
 static void eprintf(const char* format, ...);
 static void dberrprint(KCDB* db, int32_t line, const char* func);
 const char* visitfull(const char* kbuf, size_t ksiz,
                       const char* vbuf, size_t vsiz, size_t* sp, void* opq);
 static int32_t runorder(int argc, char** argv);
+static int32_t runmap(int argc, char** argv);
 static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t etc,
                          int32_t tran, int32_t oflags);
-
-
-const char* myfull(const char* kbuf, size_t ksiz,
-                   const char* vbuf, size_t vsiz, size_t* sp, void* opq) {
-
-  fwrite(kbuf, 1, ksiz, stdout);
-  putchar('\t');
-  fwrite(vbuf, 1, vsiz, stdout);
-  putchar('\n');
-
-  return KCVISNOP;
-}
-
-void setval(KCSTR* str, const char* val) {
-  str->buf = (char*)val;
-  str->size = strlen(val);
-}
+static int32_t procmap(int64_t rnum, int32_t rnd, int32_t etc, int64_t bnum);
 
 
 /* main routine */
@@ -77,15 +62,17 @@ int main(int argc, char **argv) {
   rv = 0;
   if (!strcmp(argv[1], "order")) {
     rv = runorder(argc, argv);
+  } else if (!strcmp(argv[1], "map")) {
+    rv = runmap(argc, argv);
   } else {
     usage();
   }
   if (rv != 0) {
-    iprintf("FAILED:");
+    oprintf("FAILED:");
     for (i = 0; i < argc; i++) {
-      iprintf(" %s", argv[i]);
+      oprintf(" %s", argv[i]);
     }
-    iprintf("\n\n");
+    oprintf("\n\n");
   }
   return rv;
 }
@@ -98,6 +85,7 @@ static void usage() {
   eprintf("usage:\n");
   eprintf("  %s order [-rnd] [-etc] [-tran] [-oat|-oas|-onl|-otl|-onr] path rnum\n",
           g_progname);
+  eprintf("  %s map [-rnd] [-etc] [-bnum num] rnum\n", g_progname);
   eprintf("\n");
   exit(1);
 }
@@ -115,7 +103,7 @@ static int64_t myrand(int64_t range) {
 
 
 /* print formatted error string and flush the buffer */
-static void iprintf(const char* format, ...) {
+static void oprintf(const char* format, ...) {
   va_list ap;
   va_start(ap, format);
   vprintf(format, ap);
@@ -125,7 +113,7 @@ static void iprintf(const char* format, ...) {
 
 
 /* print a character and flush the buffer */
-static void iputchar(char c) {
+static void oputchar(char c) {
   putchar(c);
   fflush(stdout);
 }
@@ -149,7 +137,7 @@ static void dberrprint(KCDB* db, int32_t line, const char* func) {
   path = kcdbpath(db);
   ecode = kcdbecode(db);
   emsg = kcdbemsg(db);
-  iprintf("%s: %d: %s: %s: %d: %s: %s\n",
+  oprintf("%s: %d: %s: %s: %d: %s: %s\n",
           g_progname, line, func, path ? path : "-", ecode, kcecodename(ecode), emsg);
   kcfree(path);
 }
@@ -173,8 +161,8 @@ static void dbmetaprint(KCDB* db, int32_t verbose) {
       kcfree(status);
     }
   } else {
-    iprintf("count: %ld\n", (long)kcdbcount(db));
-    iprintf("size: %ld\n", (long)kcdbsize(db));
+    oprintf("count: %ld\n", (long)kcdbcount(db));
+    oprintf("size: %ld\n", (long)kcdbsize(db));
   }
 }
 
@@ -200,9 +188,9 @@ const char* visitfull(const char* kbuf, size_t ksiz,
     }
   }
   if (arg->rnum > 250 && arg->cnt % (arg->rnum / 250) == 0) {
-    iputchar('.');
+    oputchar('.');
     if (arg->cnt == arg->rnum || arg->cnt % (arg->rnum / 10) == 0)
-      iprintf(" (%08ld)\n", (long)arg->cnt);
+      oprintf(" (%08ld)\n", (long)arg->cnt);
   }
   return rv;
 }
@@ -212,8 +200,8 @@ const char* visitfull(const char* kbuf, size_t ksiz,
 static int32_t runorder(int argc, char** argv) {
   int32_t argbrk = FALSE;
   const char* path, *rstr;
-  int32_t rnd, etc, tran;
-  int32_t i, mode, oflags, rnum;
+  int32_t rnd, etc, tran, mode, oflags, i;
+  int64_t rnum;
   path = NULL;
   rstr = NULL;
   rnd = FALSE;
@@ -254,9 +242,47 @@ static int32_t runorder(int argc, char** argv) {
     }
   }
   if (!path || !rstr) usage();
-  rnum = atoi(rstr);
+  rnum = kcatoix(rstr);
   if (rnum < 1) usage();
   return procorder(path, rnum, rnd, etc, tran, oflags);
+}
+
+
+/* parse arguments of map command */
+static int32_t runmap(int argc, char** argv) {
+  int32_t argbrk = FALSE;
+  const char* rstr;
+  int32_t rnd, etc, i;
+  int64_t rnum, bnum;
+  rstr = NULL;
+  rnd = FALSE;
+  etc = FALSE;
+  bnum = -1;
+  for (i = 2; i < argc; i++) {
+    if (!argbrk && argv[i][0] == '-') {
+      if (!strcmp(argv[i], "--")) {
+        argbrk = TRUE;
+      } else if (!strcmp(argv[i], "-rnd")) {
+        rnd = TRUE;
+      } else if (!strcmp(argv[i], "-etc")) {
+        etc = TRUE;
+      } else if (!strcmp(argv[i], "-bnum")) {
+        if (++i >= argc) usage();
+        bnum = kcatoix(argv[i]);
+      } else {
+        usage();
+      }
+    } else if (!rstr) {
+      argbrk = TRUE;
+      rstr = argv[i];
+    } else {
+      usage();
+    }
+  }
+  if (!rstr) usage();
+  rnum = kcatoix(rstr);
+  if (rnum < 1) usage();
+  return procmap(rnum, rnd, etc, bnum);
 }
 
 
@@ -272,11 +298,11 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
   int64_t i, cnt;
   double stime, etime;
   VISARG visarg;
-  iprintf("<In-order Test>\n  path=%s  rnum=%ld  rnd=%d  etc=%d  tran=%d  oflags=%d\n\n",
+  oprintf("<In-order Test>\n  path=%s  rnum=%ld  rnd=%d  etc=%d  tran=%d  oflags=%d\n\n",
           path, (long)rnum, rnd, etc, tran, oflags);
   err = FALSE;
   db = kcdbnew();
-  iprintf("opening the database:\n");
+  oprintf("opening the database:\n");
   stime = kctime();
   if (!kcdbopen(db, path, KCOWRITER | KCOCREATE | KCOTRUNCATE | oflags)) {
     dberrprint(db, __LINE__, "kcdbopen");
@@ -284,8 +310,8 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
   }
   etime = kctime();
   dbmetaprint(db, FALSE);
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("setting records:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("setting records:\n");
   stime = kctime();
   for (i = 1; !err && i <= rnum; i++) {
     if (tran && !kcdbbegintran(db, FALSE)) {
@@ -302,15 +328,15 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
       err = TRUE;
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08ld)\n", (long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
     }
   }
   etime = kctime();
   dbmetaprint(db, FALSE);
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   if (etc) {
-    iprintf("adding records:\n");
+    oprintf("adding records:\n");
     stime = kctime();
     for (i = 1; !err && i <= rnum; i++) {
       if (tran && !kcdbbegintran(db, FALSE)) {
@@ -327,16 +353,16 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
         err = TRUE;
       }
       if (rnum > 250 && i % (rnum / 250) == 0) {
-        iputchar('.');
-        if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08ld)\n", (long)i);
+        oputchar('.');
+        if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
       }
     }
     etime = kctime();
     dbmetaprint(db, FALSE);
-    iprintf("time: %.3f\n", etime - stime);
+    oprintf("time: %.3f\n", etime - stime);
   }
   if (etc) {
-    iprintf("appending records:\n");
+    oprintf("appending records:\n");
     stime = kctime();
     for (i = 1; !err && i <= rnum; i++) {
       if (tran && !kcdbbegintran(db, FALSE)) {
@@ -353,15 +379,15 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
         err = TRUE;
       }
       if (rnum > 250 && i % (rnum / 250) == 0) {
-        iputchar('.');
-        if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08ld)\n", (long)i);
+        oputchar('.');
+        if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
       }
     }
     etime = kctime();
     dbmetaprint(db, FALSE);
-    iprintf("time: %.3f\n", etime - stime);
+    oprintf("time: %.3f\n", etime - stime);
   }
-  iprintf("getting records:\n");
+  oprintf("getting records:\n");
   stime = kctime();
   for (i = 1; !err && i <= rnum; i++) {
     if (tran && !kcdbbegintran(db, FALSE)) {
@@ -385,15 +411,15 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
       err = TRUE;
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08ld)\n", (long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
     }
   }
   etime = kctime();
   dbmetaprint(db, FALSE);
-  iprintf("time: %.3f\n", etime - stime);
+  oprintf("time: %.3f\n", etime - stime);
   if (etc) {
-    iprintf("getting records with a buffer:\n");
+    oprintf("getting records with a buffer:\n");
     stime = kctime();
     for (i = 1; !err && i <= rnum; i++) {
       if (tran && !kcdbbegintran(db, FALSE)) {
@@ -416,16 +442,16 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
         err = TRUE;
       }
       if (rnum > 250 && i % (rnum / 250) == 0) {
-        iputchar('.');
-        if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08ld)\n", (long)i);
+        oputchar('.');
+        if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
       }
     }
     etime = kctime();
     dbmetaprint(db, FALSE);
-    iprintf("time: %.3f\n", etime - stime);
+    oprintf("time: %.3f\n", etime - stime);
   }
   if (etc) {
-    iprintf("traversing the database by the inner iterator:\n");
+    oprintf("traversing the database by the inner iterator:\n");
     stime = kctime();
     cnt = kcdbcount(db);
     visarg.rnum = rnum;
@@ -440,7 +466,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
       dberrprint(db, __LINE__, "kcdbiterate");
       err = TRUE;
     }
-    if (rnd) iprintf(" (end)\n");
+    if (rnd) oprintf(" (end)\n");
     if (tran && !kcdbendtran(db, TRUE)) {
       dberrprint(db, __LINE__, "kcdbendtran");
       err = TRUE;
@@ -451,10 +477,10 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
     }
     etime = kctime();
     dbmetaprint(db, FALSE);
-    iprintf("time: %.3f\n", etime - stime);
+    oprintf("time: %.3f\n", etime - stime);
   }
   if (etc) {
-    iprintf("traversing the database by the outer cursor:\n");
+    oprintf("traversing the database by the outer cursor:\n");
     stime = kctime();
     cnt = kcdbcount(db);
     visarg.rnum = rnum;
@@ -498,7 +524,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
         }
       }
     }
-    iprintf(" (end)\n");
+    oprintf(" (end)\n");
     kccurdel(paracur);
     kccurdel(cur);
     if (tran && !kcdbendtran(db, TRUE)) {
@@ -511,10 +537,10 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
     }
     etime = kctime();
     dbmetaprint(db, FALSE);
-    iprintf("time: %.3f\n", etime - stime);
+    oprintf("time: %.3f\n", etime - stime);
   }
   if (etc) {
-    iprintf("synchronizing the database:\n");
+    oprintf("synchronizing the database:\n");
     stime = kctime();
     if (!kcdbsync(db, FALSE, NULL, NULL)) {
       dberrprint(db, __LINE__, "kcdbsync");
@@ -526,7 +552,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
     }
     etime = kctime();
     dbmetaprint(db, FALSE);
-    iprintf("time: %.3f\n", etime - stime);
+    oprintf("time: %.3f\n", etime - stime);
   }
   if (etc) {
     corepath = kcdbpath(db);
@@ -542,7 +568,7 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
       snappath = kcmalloc(256);
       sprintf(snappath, "kclangctest.kcss");
     }
-    iprintf("copying the database file:\n");
+    oprintf("copying the database file:\n");
     stime = kctime();
     if (!kcdbcopy(db, copypath)) {
       dberrprint(db, __LINE__, "kcdbcopy");
@@ -550,9 +576,9 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
     }
     etime = kctime();
     dbmetaprint(db, FALSE);
-    iprintf("time: %.3f\n", etime - stime);
+    oprintf("time: %.3f\n", etime - stime);
     remove(copypath);
-    iprintf("dumping records into snapshot:\n");
+    oprintf("dumping records into snapshot:\n");
     stime = kctime();
     if (!kcdbdumpsnap(db, snappath)) {
       dberrprint(db, __LINE__, "kcdbdumpsnap");
@@ -560,8 +586,8 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
     }
     etime = kctime();
     dbmetaprint(db, FALSE);
-    iprintf("time: %.3f\n", etime - stime);
-    iprintf("loading records into snapshot:\n");
+    oprintf("time: %.3f\n", etime - stime);
+    oprintf("loading records into snapshot:\n");
     stime = kctime();
     cnt = kcdbcount(db);
     if (rnd && myrand(2) == 0 && !kcdbclear(db)) {
@@ -574,13 +600,13 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
     }
     etime = kctime();
     dbmetaprint(db, FALSE);
-    iprintf("time: %.3f\n", etime - stime);
+    oprintf("time: %.3f\n", etime - stime);
     remove(snappath);
     kcfree(copypath);
     kcfree(snappath);
     kcfree(corepath);
   }
-  iprintf("removing records:\n");
+  oprintf("removing records:\n");
   stime = kctime();
   for (i = 1; !err && i <= rnum; i++) {
     if (tran && !kcdbbegintran(db, FALSE)) {
@@ -598,23 +624,201 @@ static int32_t procorder(const char* path, int64_t rnum, int32_t rnd, int32_t et
       err = TRUE;
     }
     if (rnum > 250 && i % (rnum / 250) == 0) {
-      iputchar('.');
-      if (i == rnum || i % (rnum / 10) == 0) iprintf(" (%08ld)\n", (long)i);
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
     }
   }
   etime = kctime();
   dbmetaprint(db, TRUE);
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("closing the database:\n");
+  oprintf("time: %.3f\n", etime - stime);
+  oprintf("closing the database:\n");
   stime = kctime();
   if (!kcdbclose(db)) {
     dberrprint(db, __LINE__, "kcdbclose");
     err = TRUE;
   }
   etime = kctime();
-  iprintf("time: %.3f\n", etime - stime);
-  iprintf("%s\n\n", err ? "error" : "ok");
+  oprintf("time: %.3f\n", etime - stime);
   kcdbdel(db);
+  oprintf("%s\n\n", err ? "error" : "ok");
+  return err ? 1 : 0;
+}
+
+
+/* perform map command */
+static int32_t procmap(int64_t rnum, int32_t rnd, int32_t etc, int64_t bnum) {
+  KCMAP* map;
+  KCMAPITER* iter;
+  KCMAPSORT* sort;
+  int32_t err;
+  char kbuf[RECBUFSIZ];
+  const char* vbuf, *ikbuf;
+  size_t ksiz, vsiz;
+  int64_t i, cnt;
+  double stime, etime;
+  oprintf("<Memory-saving Hash Map Test>\n  rnum=%ld  rnd=%d  etc=%d  bnum=%ld\n\n",
+          (long)rnum, rnd, etc, (long)bnum);
+  err = FALSE;
+  if (bnum < 0) bnum = 0;
+  map = kcmapnew(bnum);
+  oprintf("setting records:\n");
+  stime = kctime();
+  for (i = 1; !err && i <= rnum; i++) {
+    ksiz = sprintf(kbuf, "%08ld", (long)(rnd ? myrand(rnum) + 1 : i));
+    kcmapset(map, kbuf, ksiz, kbuf, ksiz);
+    if (rnum > 250 && i % (rnum / 250) == 0) {
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
+    }
+  }
+  etime = kctime();
+  oprintf("count: %ld\n", (long)kcmapcount(map));
+  oprintf("time: %.3f\n", etime - stime);
+  if (etc) {
+    oprintf("adding records:\n");
+    stime = kctime();
+    for (i = 1; !err && i <= rnum; i++) {
+      ksiz = sprintf(kbuf, "%08ld", (long)(rnd ? myrand(rnum) + 1 : i));
+      kcmapadd(map, kbuf, ksiz, kbuf, ksiz);
+      if (rnum > 250 && i % (rnum / 250) == 0) {
+        oputchar('.');
+        if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
+      }
+    }
+    etime = kctime();
+    oprintf("count: %ld\n", (long)kcmapcount(map));
+    oprintf("time: %.3f\n", etime - stime);
+  }
+  if (etc) {
+    oprintf("appending records:\n");
+    stime = kctime();
+    for (i = 1; !err && i <= rnum; i++) {
+      ksiz = sprintf(kbuf, "%08ld", (long)(rnd ? myrand(rnum) + 1 : i));
+      kcmapappend(map, kbuf, ksiz, kbuf, ksiz);
+      if (rnum > 250 && i % (rnum / 250) == 0) {
+        oputchar('.');
+        if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
+      }
+    }
+    etime = kctime();
+    oprintf("count: %ld\n", (long)kcmapcount(map));
+    oprintf("time: %.3f\n", etime - stime);
+  }
+  oprintf("getting records:\n");
+  stime = kctime();
+  for (i = 1; !err && i <= rnum; i++) {
+    ksiz = sprintf(kbuf, "%08ld", (long)(rnd ? myrand(rnum) + 1 : i));
+    vbuf = kcmapget(map, kbuf, ksiz, &vsiz);
+    if (vbuf) {
+      if (vsiz < ksiz || memcmp(vbuf, kbuf, ksiz)) {
+        eprintf("%s: kcmapget failed\n", g_progname);
+        err = TRUE;
+      }
+    } else if (!rnd) {
+      eprintf("%s: kcmapget failed\n", g_progname);
+      err = TRUE;
+    }
+    if (rnum > 250 && i % (rnum / 250) == 0) {
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
+    }
+  }
+  etime = kctime();
+  oprintf("count: %ld\n", (long)kcmapcount(map));
+  oprintf("time: %.3f\n", etime - stime);
+  if (etc) {
+    oprintf("traversing records:\n");
+    stime = kctime();
+    cnt = 0;
+    iter = kcmapiterator(map);
+    while (!err && (ikbuf = kcmapiterget(iter, &ksiz, &vbuf, &vsiz)) != NULL) {
+      if (rnd) {
+        ksiz = sprintf(kbuf, "%08ld", (long)myrand(rnum));
+        switch (myrand(3)) {
+          case 0: {
+            kcmapremove(map, kbuf, ksiz);
+            break;
+          }
+          case 1: {
+            kcmapappend(map, kbuf, ksiz, kbuf, ksiz);
+            break;
+          }
+        }
+      }
+      if (!kcmapitergetkey(iter, &ksiz)) {
+        eprintf("%s: kcmapitergetkey failed\n", g_progname);
+        err = TRUE;
+      }
+      if (!kcmapitergetvalue(iter, &vsiz)) {
+        eprintf("%s: kcmapitergetvalue failed\n", g_progname);
+        err = TRUE;
+      }
+      cnt++;
+      if (rnum > 250 && cnt % (rnum / 250) == 0) {
+        oputchar('.');
+        if (cnt == rnum || cnt % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)cnt);
+      }
+      kcmapiterstep(iter);
+    }
+    if (rnd) oprintf(" (end)\n");
+    kcmapiterdel(iter);
+    if (!rnd && cnt != kcmapcount(map)) {
+      eprintf("%s: kcmapcount failed\n", g_progname);
+      err = TRUE;
+    }
+    etime = kctime();
+    oprintf("count: %ld\n", (long)kcmapcount(map));
+    oprintf("time: %.3f\n", etime - stime);
+  }
+  if (etc) {
+    oprintf("sorting records:\n");
+    stime = kctime();
+    cnt = 0;
+    sort = kcmapsorter(map);
+    while (!err && (ikbuf = kcmapsortget(sort, &ksiz, &vbuf, &vsiz)) != NULL) {
+      if (!kcmapsortgetkey(sort, &ksiz)) {
+        eprintf("%s: kcmapsortgetkey failed\n", g_progname);
+        err = TRUE;
+      }
+      if (!kcmapsortgetvalue(sort, &vsiz)) {
+        eprintf("%s: kcmapsortgetvalue failed\n", g_progname);
+        err = TRUE;
+      }
+      cnt++;
+      if (rnum > 250 && cnt % (rnum / 250) == 0) {
+        oputchar('.');
+        if (cnt == rnum || cnt % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)cnt);
+      }
+      kcmapsortstep(sort);
+    }
+    if (rnd) oprintf(" (end)\n");
+    kcmapsortdel(sort);
+    if (!rnd && cnt != kcmapcount(map)) {
+      eprintf("%s: kcmapcount failed\n", g_progname);
+      err = TRUE;
+    }
+    etime = kctime();
+    oprintf("count: %ld\n", (long)kcmapcount(map));
+    oprintf("time: %.3f\n", etime - stime);
+  }
+  oprintf("removing records:\n");
+  stime = kctime();
+  for (i = 1; !err && i <= rnum; i++) {
+    ksiz = sprintf(kbuf, "%08ld", (long)(rnd ? myrand(rnum) + 1 : i));
+    if (!kcmapremove(map, kbuf, ksiz) && !rnd) {
+      eprintf("%s: kcmapremove failed\n", g_progname);
+      err = TRUE;
+    }
+    if (rnum > 250 && i % (rnum / 250) == 0) {
+      oputchar('.');
+      if (i == rnum || i % (rnum / 10) == 0) oprintf(" (%08ld)\n", (long)i);
+    }
+  }
+  etime = kctime();
+  oprintf("count: %ld\n", (long)kcmapcount(map));
+  oprintf("time: %.3f\n", etime - stime);
+  kcmapdel(map);
+  oprintf("%s\n\n", err ? "error" : "ok");
   return err ? 1 : 0;
 }
 

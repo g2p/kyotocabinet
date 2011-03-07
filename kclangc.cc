@@ -218,9 +218,9 @@ int32_t kcdbaccept(KCDB* db, const char* kbuf, size_t ksiz,
   _assert_(db && kbuf && ksiz <= MEMMAXSIZ);
   PolyDB* pdb = (PolyDB*)db;
   class VisitorImpl : public DB::Visitor {
-  public:
+   public:
     explicit VisitorImpl(KCVISITFULL fullproc, KCVISITEMPTY emptyproc, void* opq) :
-      fullproc_(fullproc), emptyproc_(emptyproc), opq_(opq) {}
+        fullproc_(fullproc), emptyproc_(emptyproc), opq_(opq) {}
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       if (!fullproc_) return NOP;
@@ -230,7 +230,7 @@ int32_t kcdbaccept(KCDB* db, const char* kbuf, size_t ksiz,
       if (!emptyproc_) return NOP;
       return emptyproc_(kbuf, ksiz, sp, opq_);
     }
-  private:
+   private:
     KCVISITFULL fullproc_;
     KCVISITEMPTY emptyproc_;
     void* opq_;
@@ -254,9 +254,9 @@ int32_t kcdbacceptbulk(KCDB* db, const KCSTR* keys, size_t knum,
     xkeys.push_back(std::string(keys[i].buf, keys[i].size));
   }
   class VisitorImpl : public DB::Visitor {
-  public:
+   public:
     explicit VisitorImpl(KCVISITFULL fullproc, KCVISITEMPTY emptyproc, void* opq) :
-      fullproc_(fullproc), emptyproc_(emptyproc), opq_(opq) {}
+        fullproc_(fullproc), emptyproc_(emptyproc), opq_(opq) {}
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       if (!fullproc_) return NOP;
@@ -266,7 +266,7 @@ int32_t kcdbacceptbulk(KCDB* db, const KCSTR* keys, size_t knum,
       if (!emptyproc_) return NOP;
       return emptyproc_(kbuf, ksiz, sp, opq_);
     }
-  private:
+   private:
     KCVISITFULL fullproc_;
     KCVISITEMPTY emptyproc_;
     void* opq_;
@@ -283,14 +283,14 @@ int32_t kcdbiterate(KCDB* db, KCVISITFULL fullproc, void* opq, int32_t writable)
   _assert_(db);
   PolyDB* pdb = (PolyDB*)db;
   class VisitorImpl : public DB::Visitor {
-  public:
+   public:
     explicit VisitorImpl(KCVISITFULL fullproc, void* opq) : fullproc_(fullproc), opq_(opq) {}
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       if (!fullproc_) return NOP;
       return fullproc_(kbuf, ksiz, vbuf, vsiz, sp, opq_);
     }
-  private:
+   private:
     KCVISITFULL fullproc_;
     void* opq_;
   };
@@ -410,7 +410,7 @@ int64_t kcdbsetbulk(KCDB* db, const KCREC* recs, size_t rnum, int32_t atomic) {
   for (size_t i = 0; i < rnum; i++) {
     const KCREC* rec = recs + i;
     xrecs[std::string(rec->key.buf, rec->key.size)] =
-      std::string(rec->value.buf, rec->value.size);
+        std::string(rec->value.buf, rec->value.size);
   }
   return pdb->set_bulk(xrecs, atomic);
 }
@@ -486,13 +486,13 @@ int32_t kcdbsync(KCDB* db, int32_t hard, KCFILEPROC proc, void* opq) {
   _assert_(db);
   PolyDB* pdb = (PolyDB*)db;
   class FileProcessorImpl : public BasicDB::FileProcessor {
-  public:
+   public:
     explicit FileProcessorImpl(KCFILEPROC proc, void* opq) : proc_(proc), opq_(opq) {}
     bool process(const std::string& path, int64_t count, int64_t size) {
       if (!proc_) return true;
       return proc_(path.c_str(), count, size, opq_);
     }
-  private:
+   private:
     KCFILEPROC proc_;
     void* opq_;
   };
@@ -508,13 +508,13 @@ int32_t kcdboccupy(KCDB* db, int32_t writable, KCFILEPROC proc, void* opq) {
   _assert_(db);
   PolyDB* pdb = (PolyDB*)db;
   class FileProcessorImpl : public BasicDB::FileProcessor {
-  public:
+   public:
     explicit FileProcessorImpl(KCFILEPROC proc, void* opq) : proc_(proc), opq_(opq) {}
     bool process(const std::string& path, int64_t count, int64_t size) {
       if (!proc_) return true;
       return proc_(path.c_str(), count, size, opq_);
     }
-  private:
+   private:
     KCFILEPROC proc_;
     void* opq_;
   };
@@ -724,14 +724,14 @@ int32_t kccuraccept(KCCUR* cur, KCVISITFULL fullproc, void* opq,
   _assert_(cur);
   PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
   class VisitorImpl : public DB::Visitor {
-  public:
+   public:
     explicit VisitorImpl(KCVISITFULL fullproc, void* opq) : fullproc_(fullproc), opq_(opq) {}
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {
       if (!fullproc_) return NOP;
       return fullproc_(kbuf, ksiz, vbuf, vsiz, sp, opq_);
     }
-  private:
+   private:
     KCVISITFULL fullproc_;
     void* opq_;
   };
@@ -877,6 +877,225 @@ const char* kccuremsg(KCCUR* cur) {
   _assert_(cur);
   PolyDB::Cursor* pcur = (PolyDB::Cursor*)cur;
   return pcur->error().message();
+}
+
+
+/**
+ * Create a string hash map object.
+ */
+KCMAP* kcmapnew(size_t bnum) {
+  _assert_(true);
+  return (KCMAP*)new TinyHashMap(bnum);
+}
+
+
+/**
+ * Destroy a map object.
+ */
+void kcmapdel(KCMAP* map) {
+  _assert_(map);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  delete thm;
+}
+
+
+/**
+ * Set the value of a record.
+ */
+void kcmapset(KCMAP* map, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+  _assert_(map && kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  thm->set(kbuf, ksiz, vbuf, vsiz);
+}
+
+
+/**
+ * Add a record.
+ */
+int32_t kcmapadd(KCMAP* map, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+  _assert_(map && kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  return thm->add(kbuf, ksiz, vbuf, vsiz);
+}
+
+
+/**
+ * Replace the value of a record.
+ */
+int32_t kcmapreplace(KCMAP* map, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+  _assert_(map && kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  return thm->replace(kbuf, ksiz, vbuf, vsiz);
+}
+
+
+/**
+ * Append the value of a record.
+ */
+void kcmapappend(KCMAP* map, const char* kbuf, size_t ksiz, const char* vbuf, size_t vsiz) {
+  _assert_(map && kbuf && ksiz <= MEMMAXSIZ && vbuf && vsiz <= MEMMAXSIZ);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  thm->append(kbuf, ksiz, vbuf, vsiz);
+}
+
+
+/**
+ * Remove a record.
+ */
+int32_t kcmapremove(KCMAP* map, const char* kbuf, size_t ksiz) {
+  _assert_(map && kbuf && ksiz <= MEMMAXSIZ);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  return thm->remove(kbuf, ksiz);
+}
+
+
+/**
+ * Retrieve the value of a record.
+ */
+const char* kcmapget(KCMAP* map, const char* kbuf, size_t ksiz, size_t* sp) {
+  _assert_(map && kbuf && ksiz <= MEMMAXSIZ && sp);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  return thm->get(kbuf, ksiz, sp);
+}
+
+
+/**
+ * Remove all records.
+ */
+void kcmapclear(KCMAP* map){
+  _assert_(map);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  thm->clear();
+}
+
+
+/**
+ * Get the number of records.
+ */
+size_t kcmapcount(KCMAP* map) {
+  _assert_(map);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  return thm->count();
+}
+
+
+/**
+ * Create a string hash map iterator object.
+ */
+KCMAPITER* kcmapiterator(KCMAP* map) {
+  _assert_(map);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  return (KCMAPITER*)new TinyHashMap::Iterator(thm);
+}
+
+
+/**
+ * Destroy an iterator object.
+ */
+void kcmapiterdel(KCMAPITER* iter) {
+  _assert_(iter);
+  TinyHashMap::Iterator* thmi = (TinyHashMap::Iterator*)iter;
+  delete thmi;
+}
+
+
+/**
+ * Get the key of the current record.
+ */
+const char* kcmapitergetkey(KCMAPITER* iter, size_t* sp) {
+  _assert_(iter && sp);
+  TinyHashMap::Iterator* thmi = (TinyHashMap::Iterator*)iter;
+  return thmi->get_key(sp);
+}
+
+
+/**
+ * Get the value of the current record.
+ */
+const char* kcmapitergetvalue(KCMAPITER* iter, size_t* sp) {
+  _assert_(iter && sp);
+  TinyHashMap::Iterator* thmi = (TinyHashMap::Iterator*)iter;
+  return thmi->get_value(sp);
+}
+
+
+/**
+ * Get a pair of the key and the value of the current record.
+ */
+const char* kcmapiterget(KCMAPITER* iter, size_t* ksp, const char** vbp, size_t* vsp) {
+  _assert_(iter && ksp && vbp && vsp);
+  TinyHashMap::Iterator* thmi = (TinyHashMap::Iterator*)iter;
+  return thmi->get(ksp, vbp, vsp);
+}
+
+
+/**
+ * Step the cursor to the next record.
+ */
+void kcmapiterstep(KCMAPITER* iter) {
+  _assert_(iter);
+  TinyHashMap::Iterator* thmi = (TinyHashMap::Iterator*)iter;
+  return thmi->step();
+}
+
+
+/**
+ * Create a string hash map sorter object.
+ */
+KCMAPSORT* kcmapsorter(KCMAP* map) {
+  _assert_(map);
+  TinyHashMap* thm = (TinyHashMap*)map;
+  return (KCMAPSORT*)new TinyHashMap::Sorter(thm);
+}
+
+
+/**
+ * Destroy an sorter object.
+ */
+void kcmapsortdel(KCMAPSORT* sort) {
+  _assert_(sort);
+  TinyHashMap::Sorter* thms = (TinyHashMap::Sorter*)sort;
+  delete thms;
+}
+
+
+/**
+ * Get the key of the current record.
+ */
+const char* kcmapsortgetkey(KCMAPSORT* sort, size_t* sp) {
+  _assert_(sort && sp);
+  TinyHashMap::Sorter* thms = (TinyHashMap::Sorter*)sort;
+  return thms->get_key(sp);
+}
+
+
+/**
+ * Get the value of the current record.
+ */
+const char* kcmapsortgetvalue(KCMAPSORT* sort, size_t* sp) {
+  _assert_(sort && sp);
+  TinyHashMap::Sorter* thms = (TinyHashMap::Sorter*)sort;
+  return thms->get_value(sp);
+}
+
+
+/**
+ * Get a pair of the key and the value of the current record.
+ */
+const char* kcmapsortget(KCMAPSORT* sort, size_t* ksp, const char** vbp, size_t* vsp) {
+  _assert_(sort && ksp && vbp && vsp);
+  TinyHashMap::Sorter* thms = (TinyHashMap::Sorter*)sort;
+  return thms->get(ksp, vbp, vsp);
+}
+
+
+/**
+ * Step the cursor to the next record.
+ */
+void kcmapsortstep(KCMAPSORT* sort) {
+  _assert_(sort);
+  TinyHashMap::Sorter* thms = (TinyHashMap::Sorter*)sort;
+  return thms->step();
 }
 
 

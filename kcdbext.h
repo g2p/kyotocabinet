@@ -42,10 +42,10 @@ namespace kyotocabinet {                 // common namespace
  * calculation with less CPU loading and less memory usage.
  */
 class MapReduce {
-public:
+ public:
   class MapEmitter;
   class ValueIterator;
-private:
+ private:
   class MapVisitor;
   struct MergeLine;
   /** An alias of vector of loaded values. */
@@ -66,14 +66,14 @@ private:
   static const int64_t MRDBMSIZ = 516LL * 4096;
   /** The page cache capacity of temprary databases. */
   static const int64_t MRDBPCCAP = 16LL << 20;
-public:
+ public:
   /**
    * Data emitter for the mapper.
    */
   class MapEmitter {
     friend class MapReduce;
     friend class MapReduce::MapVisitor;
-  public:
+   public:
     /**
      * Emit a record from the mapper.
      * @param kbuf the pointer to the key region.
@@ -96,7 +96,7 @@ public:
       mr_->csiz_ += rsiz;
       return !err;
     }
-  private:
+   private:
     /**
      * Default constructor.
      */
@@ -121,7 +121,7 @@ public:
    */
   class ValueIterator {
     friend class MapReduce;
-  public:
+   public:
     /**
      * Get the next value.
      * @param sp the pointer to the variable into which the size of the region of the return
@@ -147,12 +147,12 @@ public:
       if (vsiz_ < 1) vptr_ = NULL;
       return vbuf;
     }
-  private:
+   private:
     /**
      * Default constructor.
      */
     explicit ValueIterator(Values::const_iterator vit, Values::const_iterator vend) :
-      vit_(vit), vend_(vend), vptr_(NULL), vsiz_(0) {
+        vit_(vit), vend_(vend), vptr_(NULL), vsiz_(0) {
       _assert_(true);
     }
     /**
@@ -185,8 +185,8 @@ public:
    * Default constructor.
    */
   explicit MapReduce() :
-    rcomp_(NULL), tmpdbs_(NULL), dbnum_(MRDEFDBNUM), dbclock_(0), keyclock_(0),
-    cache_(NULL), csiz_(0), clim_(MRDEFCLIM), cbnum_(MRDEFCBNUM) {
+      rcomp_(NULL), tmpdbs_(NULL), dbnum_(MRDEFDBNUM), dbclock_(0), keyclock_(0),
+      cache_(NULL), csiz_(0), clim_(MRDEFCLIM), cbnum_(MRDEFCBNUM) {
     _assert_(true);
   }
   /**
@@ -322,8 +322,8 @@ public:
       uint32_t ts = time() * 1000;
       for (size_t i = 0; i < dbnum_; i++) {
         std::string childpath =
-          strprintf("%s%cmr-%04x-%04x-%08x-%03d%ckct",
-                    tmppath.c_str(), File::PATHCHR, pid, tid, ts, (int)(i + 1), File::EXTCHR);
+            strprintf("%s%cmr-%04x-%04x-%08x-%03d%ckct",
+                      tmppath.c_str(), File::PATHCHR, pid, tid, ts, (int)(i + 1), File::EXTCHR);
         TreeDB* tdb = new TreeDB;
         int32_t myopts = TreeDB::TSMALL | TreeDB::TLINEAR;
         if (!(opts & XNOCOMP)) myopts |= TreeDB::TCOMPRESS;
@@ -412,12 +412,12 @@ public:
     cbnum_ = cbnum > 0 ? cbnum : MRDEFCBNUM;
     if (cbnum_ > INT16MAX) cbnum_ = nearbyprime(cbnum_);
   }
-private:
+ private:
   /**
    * Checker for the map process.
    */
   class MapChecker : public BasicDB::ProgressChecker {
-  public:
+   public:
     /** constructor */
     explicit MapChecker() : stop_(false) {}
     /** stop the process */
@@ -428,7 +428,7 @@ private:
     bool stopped() {
       return stop_;
     }
-  private:
+   private:
     /** check whether stopped */
     bool check(const char* name, const char* message, int64_t curcnt, int64_t allcnt) {
       return !stop_;
@@ -439,11 +439,11 @@ private:
    * Visitor for the map process.
    */
   class MapVisitor : public BasicDB::Visitor {
-  public:
+   public:
     /** constructor */
     explicit MapVisitor(MapReduce* mr, MapChecker* checker, int64_t scale) :
-      mr_(mr), checker_(checker), emitter_(mr), scale_(scale),
-      stime_(0), err_(false) {}
+        mr_(mr), checker_(checker), emitter_(mr), scale_(scale),
+        stime_(0), err_(false) {}
     /** get the error flag */
     bool error() {
       return err_;
@@ -470,7 +470,7 @@ private:
       if (!err_ && !mr_->execute_reduce()) err_ = true;
       if (!mr_->postprocess()) err_ = true;
     }
-  private:
+   private:
     /** visit a record */
     const char* visit_full(const char* kbuf, size_t ksiz,
                            const char* vbuf, size_t vsiz, size_t* sp) {

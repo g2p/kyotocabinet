@@ -46,9 +46,9 @@ namespace kyotocabinet {                 // common namespace
  */
 template <class STRMAP, uint8_t DBTYPE>
 class ProtoDB : public BasicDB {
-public:
+ public:
   class Cursor;
-private:
+ private:
   struct TranLog;
   class ScopedVisitor;
   /** An alias of list of cursors. */
@@ -59,13 +59,13 @@ private:
   static const size_t OPAQUESIZ = 16;
   /** The threshold of busy loop and sleep for locking. */
   static const uint32_t LOCKBUSYLOOP = 8192;
-public:
+ public:
   /**
    * Cursor to indicate a record.
    */
   class Cursor : public BasicDB::Cursor {
     friend class ProtoDB;
-  public:
+   public:
     /**
      * Constructor.
      * @param db the container database object.
@@ -316,7 +316,7 @@ public:
       _assert_(true);
       return db_;
     }
-  private:
+   private:
     /**
      * Search for a record.
      */
@@ -339,9 +339,9 @@ public:
    * Default constructor.
    */
   explicit ProtoDB() :
-    mlock_(), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
-    omode_(0), recs_(), curs_(), path_(""), size_(0), opaque_(),
-    tran_(false), trlogs_(), trsize_(0) {
+      mlock_(), error_(), logger_(NULL), logkinds_(0), mtrigger_(NULL),
+      omode_(0), recs_(), curs_(), path_(""), size_(0), opaque_(),
+      tran_(false), trlogs_(), trsize_(0) {
     _assert_(true);
     map_tune();
   }
@@ -612,7 +612,7 @@ public:
     error_->set(code, message);
     if (logger_) {
       Logger::Kind kind = code == Error::BROKEN || code == Error::SYSTEM ?
-        Logger::ERROR : Logger::INFO;
+          Logger::ERROR : Logger::INFO;
       if (kind & logkinds_)
         report(file, line, func, kind, "%d: %s: %s", code, Error::codename(code), message);
     }
@@ -1006,7 +1006,7 @@ public:
     }
     return true;
   }
-protected:
+ protected:
   /**
    * Report a message for debugging.
    * @param file the file name of the program source code.
@@ -1080,7 +1080,7 @@ protected:
     _assert_(message);
     if (mtrigger_) mtrigger_->trigger(kind, message);
   }
-private:
+ private:
   /**
    * Transaction log.
    */
@@ -1090,7 +1090,7 @@ private:
     std::string value;                   ///< old value
     /** constructor for a full record */
     explicit TranLog(const std::string& pkey, const std::string& pvalue) :
-      full(true), key(pkey), value(pvalue) {
+        full(true), key(pkey), value(pvalue) {
       _assert_(true);
     }
     /** constructor for an empty record */
@@ -1102,7 +1102,7 @@ private:
    * Scoped visitor.
    */
   class ScopedVisitor {
-  public:
+   public:
     /** constructor */
     explicit ScopedVisitor(Visitor* visitor) : visitor_(visitor) {
       _assert_(visitor);
@@ -1113,7 +1113,7 @@ private:
       _assert_(true);
       visitor_->visit_after();
     }
-  private:
+   private:
     Visitor* visitor_;                   ///< visitor
   };
   /**
